@@ -16,18 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.accounting.producttoaccountmapping.exception;
+package org.apache.fineract.statement.service;
 
-import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
+import java.util.Map;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
 
-/**
- * A {@link RuntimeException} thrown when product to GL account mapping are not found.
- */
-public class ProductToGLAccountMappingNotFoundException extends AbstractPlatformResourceNotFoundException {
+public interface AccountStatementService {
 
-    public ProductToGLAccountMappingNotFoundException(final PortfolioProductType type, final Long productId, final String accountType) {
-        super("error.msg.productToAccountMapping.not.found", "Mapping for product of type " + type.toString() + " with Id " + productId
-                + " does not exist for an account of type " + accountType, type.toString(), productId, accountType);
-    }
+    void createAccountStatement(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
+
+    Map<String, Object> updateAccountStatement(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
 }

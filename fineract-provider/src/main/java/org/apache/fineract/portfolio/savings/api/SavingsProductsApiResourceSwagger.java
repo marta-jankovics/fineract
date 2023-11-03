@@ -43,6 +43,54 @@ final class SavingsProductsApiResourceSwagger {
             public Integer id;
         }
 
+        static final class PostSavingsProductStatement {
+
+            static final class StatementType {
+
+                private StatementType() {}
+
+                @Schema(example = "chargepaymentmode.regular")
+                public String code;
+                @Schema(example = "0")
+                public Integer id;
+                @Schema(example = "chargepaymentmode.regular")
+                public String description;
+            }
+
+            static final class StatementPublishType {
+
+                private StatementPublishType() {}
+
+                @Schema(example = "statementPublishType.s3")
+                public String code;
+                @Schema(example = "0")
+                public Integer id;
+                @Schema(example = "statementPublishType.s3")
+                public String description;
+            }
+
+            static final class StatementBatchType {
+
+                private StatementBatchType() {}
+
+                @Schema(example = "statementBatchType.single")
+                public String code;
+                @Schema(example = "0")
+                public Integer id;
+                @Schema(example = "statementBatchType.single")
+                public String description;
+            }
+
+            private PostSavingsProductStatement() {}
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            public StatementType statementType;
+            public StatementPublishType publishType;
+            public StatementBatchType batchType;
+            public String recurrence;
+        }
+
         @Schema(example = "Passbook Savings")
         public String name;
         @Schema(example = "PBSV")
@@ -72,6 +120,7 @@ final class SavingsProductsApiResourceSwagger {
         public Set<PostSavingsCharges> charges;
         @Schema(example = "accountMappingForPayment")
         public String accountMappingForPayment;
+        public Set<PostSavingsProductStatement> statements;
     }
 
     @Schema(description = "PostSavingsProductsResponse")

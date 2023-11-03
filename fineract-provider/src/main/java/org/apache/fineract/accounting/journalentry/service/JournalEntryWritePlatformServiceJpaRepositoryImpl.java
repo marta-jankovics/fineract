@@ -56,7 +56,6 @@ import org.apache.fineract.accounting.journalentry.exception.JournalEntryInvalid
 import org.apache.fineract.accounting.journalentry.exception.JournalEntryInvalidException.GlJournalEntryInvalidReason;
 import org.apache.fineract.accounting.journalentry.exception.JournalEntryRuntimeException;
 import org.apache.fineract.accounting.journalentry.serialization.JournalEntryCommandFromApiJsonDeserializer;
-import org.apache.fineract.accounting.producttoaccountmapping.domain.PortfolioProductType;
 import org.apache.fineract.accounting.provisioning.domain.LoanProductProvisioningEntry;
 import org.apache.fineract.accounting.provisioning.domain.ProvisioningEntry;
 import org.apache.fineract.accounting.rule.domain.AccountingRule;
@@ -76,6 +75,7 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.organisation.office.domain.Office;
 import org.apache.fineract.organisation.office.domain.OfficeRepositoryWrapper;
 import org.apache.fineract.organisation.office.domain.OrganisationCurrencyRepositoryWrapper;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.paymentdetail.domain.PaymentDetail;
 import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePlatformService;
 import org.apache.fineract.useradministration.domain.AppUser;

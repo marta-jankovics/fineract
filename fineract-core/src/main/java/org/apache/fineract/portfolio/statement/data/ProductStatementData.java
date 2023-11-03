@@ -16,18 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.accounting.producttoaccountmapping.exception;
+package org.apache.fineract.portfolio.statement.data;
 
-import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.statement.domain.StatementBatchType;
+import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
+import org.apache.fineract.portfolio.statement.domain.StatementType;
 
-/**
- * A {@link RuntimeException} thrown when product to GL account mapping are not found.
- */
-public class ProductToGLAccountMappingNotFoundException extends AbstractPlatformResourceNotFoundException {
+@Getter
+@AllArgsConstructor
+public class ProductStatementData {
 
-    public ProductToGLAccountMappingNotFoundException(final PortfolioProductType type, final Long productId, final String accountType) {
-        super("error.msg.productToAccountMapping.not.found", "Mapping for product of type " + type.toString() + " with Id " + productId
-                + " does not exist for an account of type " + accountType, type.toString(), productId, accountType);
-    }
+    private final Long productId;
+    private final PortfolioProductType productType;
+    private final String statementCode;
+    private final StatementType statementType;
+    private final StatementPublishType publishType;
+    private final StatementBatchType batchType;
+    private final String recurrence;
 }

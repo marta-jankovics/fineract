@@ -22,6 +22,7 @@ import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.accountingRuleParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.chargesParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.taxGroupIdParamName;
+import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import jakarta.persistence.PersistenceException;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 import org.apache.fineract.infrastructure.entityaccess.domain.FineractEntityAccessType;
 import org.apache.fineract.infrastructure.entityaccess.service.FineractEntityAccessUtil;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.charge.domain.Charge;
 import org.apache.fineract.portfolio.savings.DepositAccountType;
 import org.apache.fineract.portfolio.savings.SavingsApiConstants;
@@ -51,6 +53,7 @@ import org.apache.fineract.portfolio.savings.domain.SavingsProductAssembler;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductRepository;
 import org.apache.fineract.portfolio.savings.exception.SavingsProductNotFoundException;
 import org.apache.fineract.portfolio.tax.domain.TaxGroup;
+import org.apache.fineract.statement.service.ProductStatementService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +67,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
     private final SavingsProductAssembler savingsProductAssembler;
     private final ProductToGLAccountMappingWritePlatformService accountMappingWritePlatformService;
     private final FineractEntityAccessUtil fineractEntityAccessUtil;
+    private final ProductStatementService productStatementService;
 
     /*
      * Guaranteed to throw an exception no matter what the data integrity issue is.
@@ -108,6 +112,8 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             // save accounting mappings
             this.accountMappingWritePlatformService.createSavingProductToGLAccountMapping(product.getId(), command,
                     DepositAccountType.SAVINGS_DEPOSIT);
+
+            productStatementService.createProductStatement(product.getId(), PortfolioProductType.SAVING, command);
 
             // check if the office specific products are enabled. If yes, then
             // save this savings product against a specific office
@@ -168,6 +174,12 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
                     .updateSavingsProductToGLAccountMapping(product.getId(), command, accountingTypeChanged, product.getAccountingType(),
                             DepositAccountType.SAVINGS_DEPOSIT);
             changes.putAll(accountingMappingChanges);
+
+            Map<String, Object> statementChanges = productStatementService.updateProductStatement(product.getId(),
+                    PortfolioProductType.SAVING, command);
+            if (statementChanges != null) {
+                changes.put(PARAM_STATEMENTS, statementChanges);
+            }
 
             if (!changes.isEmpty()) {
                 this.savingProductRepository.saveAndFlush(product);

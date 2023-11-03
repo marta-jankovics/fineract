@@ -138,6 +138,8 @@ import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPos
 import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPosterTask;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionSearchService;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionsSearchServiceImpl;
+import org.apache.fineract.statement.service.AccountStatementService;
+import org.apache.fineract.statement.service.ProductStatementService;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -386,13 +388,14 @@ public class SavingsConfiguration {
             SavingsAccountDomainService savingsAccountDomainService, SavingsAccountWritePlatformService savingsAccountWritePlatformService,
             AccountNumberFormatRepositoryWrapper accountNumberFormatRepository, BusinessEventNotifierService businessEventNotifierService,
             EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService, GSIMRepositoy gsimRepository,
-            GroupRepositoryWrapper groupRepositoryWrapper, GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService) {
+            GroupRepositoryWrapper groupRepositoryWrapper, GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService,
+            AccountStatementService accountStatementService) {
         return new SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl(context, savingAccountRepository, savingAccountAssembler,
                 savingsAccountDataValidator, accountNumberGenerator, clientRepository, groupRepository, savingsProductRepository,
                 noteRepository, staffRepository, savingsAccountApplicationTransitionApiJsonValidator, savingsAccountChargeAssembler,
                 commandProcessingService, savingsAccountDomainService, savingsAccountWritePlatformService, accountNumberFormatRepository,
                 businessEventNotifierService, entityDatatableChecksWritePlatformService, gsimRepository, groupRepositoryWrapper,
-                gsimWritePlatformService);
+                gsimWritePlatformService, accountStatementService);
     }
 
     @Bean
@@ -414,9 +417,9 @@ public class SavingsConfiguration {
             SavingsProductRepository savingProductRepository, SavingsProductDataValidator fromApiJsonDataValidator,
             SavingsProductAssembler savingsProductAssembler,
             ProductToGLAccountMappingWritePlatformService accountMappingWritePlatformService,
-            FineractEntityAccessUtil fineractEntityAccessUtil) {
+            FineractEntityAccessUtil fineractEntityAccessUtil, ProductStatementService productStatementService) {
         return new SavingsProductWritePlatformServiceJpaRepositoryImpl(context, savingProductRepository, fromApiJsonDataValidator,
-                savingsProductAssembler, accountMappingWritePlatformService, fineractEntityAccessUtil);
+                savingsProductAssembler, accountMappingWritePlatformService, fineractEntityAccessUtil, productStatementService);
     }
 
     @Bean

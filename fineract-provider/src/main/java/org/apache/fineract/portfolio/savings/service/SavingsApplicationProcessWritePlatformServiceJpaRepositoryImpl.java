@@ -58,6 +58,7 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.organisation.monetary.domain.Money;
 import org.apache.fineract.organisation.staff.domain.Staff;
 import org.apache.fineract.organisation.staff.domain.StaffRepositoryWrapper;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.client.domain.AccountNumberGenerator;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepositoryWrapper;
@@ -85,6 +86,7 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductRepository;
 import org.apache.fineract.portfolio.savings.exception.SavingsProductNotFoundException;
+import org.apache.fineract.statement.service.AccountStatementService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,6 +116,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
     private final GSIMRepositoy gsimRepository;
     private final GroupRepositoryWrapper groupRepositoryWrapper;
     private final GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService;
+    private final AccountStatementService accountStatementService;
 
     @Transactional
     @Override
@@ -234,6 +237,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
                     StatusEnum.CREATE.getCode().longValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(),
                     account.productId());
+
+            accountStatementService.createAccountStatement(savingsId, account.getSavingsProductId(), PortfolioProductType.SAVING, command);
 
             businessEventNotifierService.notifyPostBusinessEvent(new SavingsCreateBusinessEvent(account));
 
