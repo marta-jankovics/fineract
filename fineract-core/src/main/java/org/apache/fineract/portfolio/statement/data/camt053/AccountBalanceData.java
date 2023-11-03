@@ -18,21 +18,43 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import static org.apache.fineract.portfolio.statement.data.camt053.CreditDebitIndicator.CRDT;
+import static org.apache.fineract.portfolio.statement.data.camt053.CreditDebitIndicator.DBIT;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 
 @Getter
 @AllArgsConstructor
 public class AccountBalanceData {
 
+    public static final String BALANCE_CODE_END_OF_PERIOD = "CLBD";
+    public static final String BALANCE_CODE_FULL_OF_PERIOD = "XPCD";
+    public static final String BALANCE_CODE_BEGIN_OF_PERIOD = "OPBD";
+
+    @NotNull
     @JsonProperty("Type")
     private final BalanceTypeData type;
+    @NotNull
     @JsonProperty("Amount")
     private final BalanceAmountData amount;
+    @NotNull
     @JsonProperty("CreditDebitIndicator")
     private final CreditDebitIndicator creditDebitIndicator;
+    @NotNull
     @JsonProperty("Date")
-    private final BalanceDateData date;
+    private final DateAndTimeData date;
 
+    public static AccountBalanceData create(@NotNull String code, @NotNull BigDecimal amount, @NotNull String currency,
+            @NotNull LocalDate date) {
+        CreditDebitIndicator crdDbt = MathUtil.isLessThanZero(amount) ? DBIT : CRDT;
+        amount = MathUtil.abs(amount);
+        return new AccountBalanceData(BalanceTypeData.create(code), new BalanceAmountData(amount, currency), crdDbt,
+                new DateAndTimeData(date));
+    }
 }

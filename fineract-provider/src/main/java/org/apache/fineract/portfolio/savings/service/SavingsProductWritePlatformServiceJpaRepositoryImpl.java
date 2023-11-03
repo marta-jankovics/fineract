@@ -101,7 +101,6 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
     @Transactional
     @Override
     public CommandProcessingResult create(final JsonCommand command) {
-
         try {
             this.fromApiJsonDataValidator.validateForCreate(command.json());
 
@@ -113,7 +112,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             this.accountMappingWritePlatformService.createSavingProductToGLAccountMapping(product.getId(), command,
                     DepositAccountType.SAVINGS_DEPOSIT);
 
-            productStatementService.createProductStatement(product.getId(), PortfolioProductType.SAVING, command);
+            productStatementService.createProductStatements(product.getId(), PortfolioProductType.SAVING, command);
 
             // check if the office specific products are enabled. If yes, then
             // save this savings product against a specific office
@@ -175,7 +174,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
                             DepositAccountType.SAVINGS_DEPOSIT);
             changes.putAll(accountingMappingChanges);
 
-            Map<String, Object> statementChanges = productStatementService.updateProductStatement(product.getId(),
+            Map<String, Object> statementChanges = productStatementService.updateProductStatements(product.getId(),
                     PortfolioProductType.SAVING, command);
             if (statementChanges != null) {
                 changes.put(PARAM_STATEMENTS, statementChanges);

@@ -223,7 +223,7 @@ public class ExecuteReportMailingJobsTasklet implements Tasklet {
         if (StringUtils.isNotBlank(recurrencePattern) && startDateTime != null) {
             final LocalDate nextDayLocalDate = startDateTime.plus(Duration.ofDays(1)).toLocalDate();
             final LocalDate nextRecurringLocalDate = CalendarUtils.getNextRecurringDate(recurrencePattern, startDateTime.toLocalDate(),
-                    nextDayLocalDate);
+                    nextDayLocalDate, true);
             final String nextDateTimeString = nextRecurringLocalDate + " " + startDateTime.getHour() + ":" + startDateTime.getMinute() + ":"
                     + startDateTime.getSecond();
             final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT);

@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
 import org.apache.fineract.portfolio.savings.domain.interest.PostingPeriod;
@@ -337,5 +338,14 @@ public final class SavingsAccountSummary {
 
     public BigDecimal getTotalWithholdTax() {
         return this.totalWithholdTax;
+    }
+
+    public BigDecimal getTotalCredit() {
+        return MathUtil.add(totalDeposits, totalInterestPosted);
+    }
+
+    public BigDecimal getTotalDebit() {
+        return MathUtil.add(MathUtil.add(totalWithdrawals, totalWithdrawalFees, totalAnnualFees, totalFeeCharge, totalPenaltyCharge),
+                totalOverdraftInterestDerived, totalWithholdTax);
     }
 }

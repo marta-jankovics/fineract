@@ -81,7 +81,7 @@ public enum SavingsAccountStatusType {
     }
 
     public boolean hasStateOf(final SavingsAccountStatusType state) {
-        return this.value.equals(state.getValue());
+        return this == state;
     }
 
     public Integer getValue() {
@@ -93,23 +93,23 @@ public enum SavingsAccountStatusType {
     }
 
     public boolean isSubmittedAndPendingApproval() {
-        return this.value.equals(SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue());
+        return this == SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL;
     }
 
     public boolean isApproved() {
-        return this.value.equals(SavingsAccountStatusType.APPROVED.getValue());
+        return this == SavingsAccountStatusType.APPROVED;
     }
 
     public boolean isRejected() {
-        return this.value.equals(SavingsAccountStatusType.REJECTED.getValue());
+        return this == SavingsAccountStatusType.REJECTED;
     }
 
     public boolean isApplicationWithdrawnByApplicant() {
-        return this.value.equals(SavingsAccountStatusType.WITHDRAWN_BY_APPLICANT.getValue());
+        return this == SavingsAccountStatusType.WITHDRAWN_BY_APPLICANT;
     }
 
     public boolean isActive() {
-        return this.value.equals(SavingsAccountStatusType.ACTIVE.getValue());
+        return this == SavingsAccountStatusType.ACTIVE;
     }
 
     public boolean isActiveOrAwaitingApprovalOrDisbursal() {
@@ -117,15 +117,15 @@ public enum SavingsAccountStatusType {
     }
 
     public boolean isClosed() {
-        return this.value.equals(SavingsAccountStatusType.CLOSED.getValue()) || isRejected() || isApplicationWithdrawnByApplicant();
+        return this == SavingsAccountStatusType.CLOSED || isRejected() || isApplicationWithdrawnByApplicant();
     }
 
     public boolean isTransferInProgress() {
-        return this.value.equals(SavingsAccountStatusType.TRANSFER_IN_PROGRESS.getValue());
+        return this == SavingsAccountStatusType.TRANSFER_IN_PROGRESS;
     }
 
     public boolean isTransferOnHold() {
-        return this.value.equals(SavingsAccountStatusType.TRANSFER_ON_HOLD.getValue());
+        return this == SavingsAccountStatusType.TRANSFER_ON_HOLD;
     }
 
     public boolean isUnderTransfer() {
@@ -133,10 +133,10 @@ public enum SavingsAccountStatusType {
     }
 
     public boolean isMatured() {
-        return this.value.equals(SavingsAccountStatusType.MATURED.getValue());
+        return this == SavingsAccountStatusType.MATURED;
     }
 
     public boolean isPreMatureClosure() {
-        return this.value.equals(SavingsAccountStatusType.PRE_MATURE_CLOSURE.getValue());
+        return this == SavingsAccountStatusType.PRE_MATURE_CLOSURE;
     }
 }

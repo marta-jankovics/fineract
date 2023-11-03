@@ -24,7 +24,14 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 
 public interface AccountStatementService {
 
-    void createAccountStatement(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
+    String ENTITY_NAME_STATEMENT = "ACCOUNTSTATEMENT";
+    String ENTITY_NAME_STATEMENT_RESULT = "ACCOUNTSTATEMENT_RESULT";
+    String ACTION_NAME_CREATE = "CREATE";
+    String ACTION_NAME_PUBLISH = "PUBLISH";
 
-    Map<String, Object> updateAccountStatement(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
+    void createAccountStatements(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
+
+    Map<String, Object> updateAccountStatements(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
+
+    void activateAccountStatements(Long accountId, PortfolioProductType productType);
 }

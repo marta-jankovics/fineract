@@ -18,9 +18,11 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -28,18 +30,20 @@ import lombok.Getter;
 @AllArgsConstructor
 public class StatementData {
 
+    @NotNull
     @JsonProperty("Identification")
     private final String identification;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "^[+-]?[0-9]+(.[0-9]+)?$")
-    private final BigDecimal amount;
     @JsonProperty("FromToDate")
     private final DateTimePeriodData fromToDate;
+    @NotNull
     @JsonProperty("Account")
     private final AccountData account;
+    @NotNull
     @JsonProperty("Balance")
-    private final AccountBalanceData balance;
+    private final AccountBalanceData[] balances;
     @JsonProperty("TransactionsSummary")
     private final TransactionsSummaryData transactionsSummary;
+    @JsonInclude(NON_EMPTY)
     @JsonProperty("Entry")
     private final TransactionData[] transactions;
     @JsonProperty("AdditionalStatementInformation")

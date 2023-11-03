@@ -18,4 +18,6 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
-public abstract class EnvelopeData {}
+public abstract class EnvelopeData {
+
+}

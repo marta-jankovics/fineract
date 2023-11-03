@@ -18,18 +18,35 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
-@AllArgsConstructor
 public class Camt053Data {
 
+    @NotNull
     @JsonProperty("GroupHeader")
     private final GroupHeaderData groupHeader;
+    @NotNull
     @JsonProperty("Statement")
-    private final StatementData[] statements;
+    private StatementData[] statements;
+    @JsonInclude(NON_EMPTY)
     @JsonProperty("SupplementaryData")
-    private final SupplementaryData supplementaryData;
+    private SupplementaryData[] supplementaryDatas;
+
+    public Camt053Data(@NotNull GroupHeaderData groupHeader) {
+        this.groupHeader = groupHeader;
+    }
+
+    public void add(@NotNull StatementData statement, SupplementaryData supplementaryData) {
+        statements = ArrayUtils.add(statements, statement);
+        if (supplementaryData != null) {
+            supplementaryDatas = ArrayUtils.add(supplementaryDatas, supplementaryData);
+        }
+    }
 }

@@ -23,12 +23,15 @@ import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
@@ -66,63 +69,108 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
     @Column(name = "sequence_prefix", nullable = true, length = 10)
     private String sequencePrefix;
 
-    @Column(name = "last_date")
-    private LocalDate lastDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statement_status", nullable = false, length = 100)
+    private StatementStatus statementStatus;
 
-    @Column(name = "next_date")
-    private LocalDate nextDate;
-
-    @Column(name = "sequence_no", precision = 4)
+    @Column(name = "sequence_no", precision = 4, nullable = false)
     private Integer sequenceNo;
 
-    public AccountStatement(@NotNull ProductStatement productStatement, @NotNull Long accountId, String recurrence, String sequencePrefix) {
+    @Column(name = "statement_date", nullable = true)
+    private LocalDate statementDate; // date for which the last statement was generated (not the date of generation)
+
+    @Column(name = "statement_balance", nullable = true)
+    private BigDecimal statementBalance;
+
+    @ManyToOne
+    @JoinColumn(name = "statement_result_id", nullable = true)
+    private AccountStatementResult statementResult;
+
+    @Column(name = "next_statement_date", nullable = true)
+    private LocalDate nextStatementDate;
+
+    protected AccountStatement(@NotNull ProductStatement productStatement, @NotNull Long accountId, String recurrence,
+            String sequencePrefix) {
         this.productStatement = productStatement;
+        this.accountId = accountId;
         this.recurrence = recurrence;
         this.sequencePrefix = sequencePrefix;
+        this.statementStatus = StatementStatus.INACTIVE;
     }
 
     public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull AccountStatementData statementData) {
-        AccountStatement statement = new AccountStatement(productStatement, statementData.getAccountId(),
+        return new AccountStatement(productStatement, statementData.getAccountId(),
                 Optional.ofNullable(statementData.getRecurrence()).orElse(productStatement.getRecurrence()),
                 statementData.getSequencePrefix());
-        LocalDate transactionDate = DateUtils.getBusinessLocalDate();
-        statement.setNextDate(statement.calcNextDate(transactionDate));
-        statement.setSequenceNo(statement.calcNextSequence(transactionDate));
-        return statement;
     }
 
-    public void update(@NotNull AccountStatementData statementData, @NotNull Map<String, Object> changes) {
+    public boolean update(@NotNull AccountStatementData statementData, @NotNull Map<String, Object> changes) {
+        boolean changed = false;
         String recurrence = statementData.getRecurrence();
         if (recurrence != null && !Objects.equals(this.recurrence, recurrence)) {
             setRecurrence(recurrence);
             changes.put(PARAM_RECURRENCE, recurrence);
+            changed = true;
         }
         String sequencePrefix = statementData.getSequencePrefix();
         if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
             setRecurrence(sequencePrefix);
             changes.put(PARAM_SEQUENCE_PREFIX, sequencePrefix);
+            changed = true;
         }
+        return changed;
     }
 
-    public void initNext(LocalDate transactionDate) {
-        setLastDate(transactionDate);
-        setNextDate(calcNextDate(transactionDate));
-        setSequenceNo(calcNextSequence(transactionDate));
+    public String getStatementCode() {
+        return productStatement.getStatementCode();
     }
 
-    public LocalDate calcNextDate(LocalDate transactionDate) {
+    public void setStatementBalance(BigDecimal balance) {
+        this.statementBalance = balance;
+    }
+
+    public void activate() {
+        LocalDate transactionDate = DateUtils.getBusinessLocalDate();
+        setNextStatementDate(calcNextDate(transactionDate));
+        setSequenceNo(calcNextSequence());
+        setStatementStatus(statementStatus.activate());
+    }
+
+    public void inactivate() {
+        setNextStatementDate(null);
+        setStatementStatus(statementStatus.inactivate());
+    }
+
+    public boolean canGenerate() {
+        return statementStatus.canGenerate();
+    }
+
+    public void generate() {
+        statementStatus.generate();
+    }
+
+    public void generated(AccountStatementResult result) {
+        setStatementResult(result);
+        setStatementDate(nextStatementDate);
+        setNextStatementDate(calcNextDate(nextStatementDate));
+        setSequenceNo(calcNextSequence());
+        setStatementStatus(statementStatus.generate());
+    }
+
+    public LocalDate calcNextDate(@NotNull LocalDate startDate) {
         if (recurrence == null) {
             return null;
         }
-        LocalDate seedDate = lastDate == null ? transactionDate : lastDate;
-        return CalendarUtils.getNextRecurringDate(getRecurrence(), seedDate, transactionDate);
+        // nextDate might be calculated earlier than today, but it is ok, the next generation job will generate again
+        LocalDate seedDate = statementDate == null ? startDate : statementDate;
+        return CalendarUtils.getNextRecurringDate(getRecurrence(), seedDate, startDate, false);
     }
 
-    public Integer calcNextSequence(LocalDate transactionDate) {
-        if (sequenceNo == null || lastDate == null) {
+    public Integer calcNextSequence() {
+        if (sequenceNo == null || statementDate == null) {
             return 1;
         }
-        if (lastDate.getYear() < transactionDate.getYear()) {
+        if (statementDate.getYear() < nextStatementDate.getYear()) {
             return 1;
         }
         return sequenceNo + 1;

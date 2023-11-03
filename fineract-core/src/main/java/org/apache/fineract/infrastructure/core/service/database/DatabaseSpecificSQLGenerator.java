@@ -56,8 +56,8 @@ public class DatabaseSpecificSQLGenerator {
         return arg;
     }
 
-    public String formatValue(JdbcJavaType columnType, String value) {
-        return (columnType.isStringType() || columnType.isAnyDateType()) ? format("'%s'", value) : value;
+    public String formatValue(JdbcJavaType columnType, Object value) {
+        return (columnType.isStringType() || columnType.isAnyDateType()) ? format("'%s'", value) : String.valueOf(value);
     }
 
     public String groupConcat(String arg) {

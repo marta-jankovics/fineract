@@ -28,7 +28,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum StatementPublishType {
 
-    S3(0, "statementPublishType.s3"),;
+    S3(0, "statementPublishType.s3"), //
+    ;
 
     public static final StatementPublishType[] VALUES = values();
 

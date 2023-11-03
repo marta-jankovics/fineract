@@ -28,7 +28,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum StatementType {
 
-    CAMT053(0, "statementType.camt053"),;
+    CAMT053(0, "statementType.camt053"), //
+    ;
 
     public static final StatementType[] VALUES = values();
 

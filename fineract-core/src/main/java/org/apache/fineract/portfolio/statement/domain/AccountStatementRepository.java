@@ -18,13 +18,24 @@
  */
 package org.apache.fineract.portfolio.statement.domain;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface AccountStatementRepository extends JpaRepository<AccountStatement, Long>, JpaSpecificationExecutor<AccountStatement> {
 
-    Optional<AccountStatement> findByProductStatementProductIdAndProductStatementProductTypeAndProductStatementStatementCodeAndAccountId(
-            Long productId, PortfolioProductType productType, String statementCode, Long accountId);
+    String HAS_RESULT_REFERENCE = "select case when (count(st) > 0) then 'true' else 'false' end from AccountStatement st where st.statementResult.id = :resultId and st.id not in :statementIds";
+
+    Optional<AccountStatement> findByAccountIdAndProductStatementProductTypeAndProductStatementStatementCode(Long accountId,
+            PortfolioProductType productType, String statementCode);
+
+    List<AccountStatement> findByAccountIdAndProductStatementProductType(Long accountId, PortfolioProductType productType);
+
+    @Query(HAS_RESULT_REFERENCE)
+    boolean hasResultReference(@Param("resultId") Long resultId, @Param("statementIds") Collection<Long> statementIds);
 }

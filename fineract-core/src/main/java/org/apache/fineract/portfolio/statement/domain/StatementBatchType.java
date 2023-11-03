@@ -28,8 +28,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum StatementBatchType {
 
-    SINGLE(0, "statementBatchType.single"), ACCOUNT(1, "statementBatchType.product"), PRODUCT(2, "statementBatchType.product"), CLIENT(3,
-            "statementBatchType.client"),;
+    SINGLE(0, "statementBatchType.single"), //
+    ACCOUNT(1, "statementBatchType.product"), //
+    PRODUCT(2, "statementBatchType.product"), //
+    CLIENT(3, "statementBatchType.client"), //
+    ;
 
     public static final StatementBatchType[] VALUES = values();
 

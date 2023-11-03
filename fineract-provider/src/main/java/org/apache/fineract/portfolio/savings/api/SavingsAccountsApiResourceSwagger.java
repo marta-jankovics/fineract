@@ -221,6 +221,18 @@ final class SavingsAccountsApiResourceSwagger {
 
         private PostSavingsAccountsRequest() {}
 
+        static final class PostSavingsAccountStatement {
+
+            private PostSavingsAccountStatement() {}
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            @Schema(example = "K")
+            public String sequencePrefix;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+            public String recurrence;
+        }
+
         @Schema(example = "1")
         public Integer clientId;
         @Schema(example = "1")
@@ -233,6 +245,7 @@ final class SavingsAccountsApiResourceSwagger {
         public String submittedOnDate;
         @Schema(example = "123")
         public String externalId;
+        public Set<PostSavingsAccountStatement> statements;
     }
 
     @Schema(description = "PostSavingsAccountsResponse")
@@ -297,10 +310,23 @@ final class SavingsAccountsApiResourceSwagger {
 
         private PutSavingsAccountsAccountIdRequest() {}
 
+        static final class PutSavingsAccountStatement {
+
+            private PutSavingsAccountStatement() {}
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            @Schema(example = "K")
+            public String sequencePrefix;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+            public String recurrence;
+        }
+
         @Schema(example = "en")
         public String locale;
         @Schema(example = "5.9999999999")
         public Double nominalAnnualInterestRate;
+        public Set<PutSavingsAccountStatement> statements;
     }
 
     @Schema(description = "PutSavingsAccountsAccountIdResponse")

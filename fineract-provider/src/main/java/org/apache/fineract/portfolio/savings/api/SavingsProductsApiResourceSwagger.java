@@ -45,49 +45,17 @@ final class SavingsProductsApiResourceSwagger {
 
         static final class PostSavingsProductStatement {
 
-            static final class StatementType {
-
-                private StatementType() {}
-
-                @Schema(example = "chargepaymentmode.regular")
-                public String code;
-                @Schema(example = "0")
-                public Integer id;
-                @Schema(example = "chargepaymentmode.regular")
-                public String description;
-            }
-
-            static final class StatementPublishType {
-
-                private StatementPublishType() {}
-
-                @Schema(example = "statementPublishType.s3")
-                public String code;
-                @Schema(example = "0")
-                public Integer id;
-                @Schema(example = "statementPublishType.s3")
-                public String description;
-            }
-
-            static final class StatementBatchType {
-
-                private StatementBatchType() {}
-
-                @Schema(example = "statementBatchType.single")
-                public String code;
-                @Schema(example = "0")
-                public Integer id;
-                @Schema(example = "statementBatchType.single")
-                public String description;
-            }
-
             private PostSavingsProductStatement() {}
 
             @Schema(example = "ABC123")
             public String statementCode;
-            public StatementType statementType;
-            public StatementPublishType publishType;
-            public StatementBatchType batchType;
+            @Schema(allowableValues = { "CAMT053" })
+            public String statementType;
+            @Schema(allowableValues = { "S3" })
+            public String publishType;
+            @Schema(allowableValues = { "SINGLE", "ACCOUNT", "PRODUCT", "CLIENT" })
+            public String batchType;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
             public String recurrence;
         }
 
@@ -137,12 +105,29 @@ final class SavingsProductsApiResourceSwagger {
 
         private PutSavingsProductsProductIdRequest() {}
 
+        static final class PutSavingsProductStatement {
+
+            private PutSavingsProductStatement() {}
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            @Schema(allowableValues = { "CAMT053" })
+            public String statementType;
+            @Schema(allowableValues = { "S3" })
+            public String publishType;
+            @Schema(allowableValues = { "SINGLE", "ACCOUNT", "PRODUCT", "CLIENT" })
+            public String batchType;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+            public String recurrence;
+        }
+
         @Schema(example = "Passbook Savings Lite.")
         public String description;
         @Schema(example = "en")
         public String locale;
         @Schema(example = "5.73")
         public Double interestRate;
+        public Set<PutSavingsProductStatement> statements;
     }
 
     @Schema(description = "PutSavingsProductsProductIdResponse")

@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
@@ -28,5 +29,6 @@ import lombok.Getter;
 public class BalanceSummaryData {
 
     @JsonProperty("Sum")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "^[+-]?[0-9]+(.[0-9]+)?$")
     private final BigDecimal sum;
 }

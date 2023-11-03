@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.statement.data;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.portfolio.PortfolioProductType;
@@ -30,6 +31,10 @@ import org.apache.fineract.portfolio.statement.domain.StatementType;
 public class AccountStatementGenerationData {
 
     private final Long accountStatementId;
+    private final Long accountId;
+    private final LocalDate generationDate;
+    private final Long productId;
+    private final String clientId;
     private final PortfolioProductType productType;
     private final String statementCode;
     private final StatementType statementType;

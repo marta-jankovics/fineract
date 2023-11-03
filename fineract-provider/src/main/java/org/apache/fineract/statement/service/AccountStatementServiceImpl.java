@@ -19,40 +19,48 @@
 package org.apache.fineract.statement.service;
 
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENT_CODE;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.products.exception.ResourceNotFoundException;
+import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
+import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.statement.data.AccountStatementData;
 import org.apache.fineract.portfolio.statement.data.StatementParser;
 import org.apache.fineract.portfolio.statement.domain.AccountStatement;
 import org.apache.fineract.portfolio.statement.domain.AccountStatementRepository;
 import org.apache.fineract.portfolio.statement.domain.ProductStatement;
 import org.apache.fineract.portfolio.statement.domain.ProductStatementRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
 public class AccountStatementServiceImpl implements AccountStatementService {
 
-    private final StatementParser statementParser;
-    private final ProductStatementRepository productStatementRepository;
-    private final AccountStatementRepository statementRepository;
+    protected final StatementParser statementParser;
+    protected final ProductStatementRepository productStatementRepository;
+    protected final AccountStatementRepository statementRepository;
+    protected final SavingsAccountRepositoryWrapper savingsAccountRepository;
 
     @Transactional
     @Override
-    public void createAccountStatement(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command) {
+    public void createAccountStatements(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command) {
+        boolean addDefault = true;
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statements = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statements != null) {
+                addDefault = false;
                 for (int i = 0; i < statements.size(); i++) {
                     final JsonObject statementObject = statements.get(i).getAsJsonObject();
                     AccountStatementData statementData = statementParser.parseAccountStatementForCreate(statementObject, accountId);
@@ -65,32 +73,82 @@ public class AccountStatementServiceImpl implements AccountStatementService {
                 }
             }
         }
+        if (addDefault) {
+            createDefaultAccountStatements(accountId, productId, productType);
+        }
+    }
+
+    protected void createDefaultAccountStatements(Long accountId, Long productId, PortfolioProductType productType) {
+        List<ProductStatement> prodStatements = productStatementRepository.findByProductIdAndProductType(productId, productType);
+        if (prodStatements.isEmpty()) {
+            return;
+        }
+        AccountStatementData statementData = createDefaultAccountStatementData(accountId);
+        for (ProductStatement prodStatement : prodStatements) {
+            AccountStatement statement = AccountStatement.create(prodStatement, statementData);
+            statementRepository.save(statement);
+        }
+    }
+
+    @NotNull
+    protected AccountStatementData createDefaultAccountStatementData(Long accountId) {
+        return new AccountStatementData(accountId, null, null, null);
     }
 
     @Transactional
     @Override
-    public Map<String, Object> updateAccountStatement(Long accountId, Long productId, PortfolioProductType productType,
+    public Map<String, Object> updateAccountStatements(Long accountId, Long productId, PortfolioProductType productType,
             JsonCommand command) {
-        HashMap<String, Object> changes = null;
+        HashMap<String, HashMap<String, String>> changes = null;
         if (command.parameterExists(PARAM_STATEMENTS)) {
-            final JsonArray statements = command.arrayOfParameterNamed(PARAM_STATEMENTS);
-            if (statements != null) {
+            final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);
+            if (statementArray != null) {
+                List<AccountStatement> existingStatements = statementRepository.findByAccountIdAndProductStatementProductType(accountId,
+                        productType);
+                Map<String, AccountStatement> statementsByCode = existingStatements.stream()
+                        .collect(Collectors.toMap(AccountStatement::getStatementCode, v -> v));
                 changes = new HashMap<>();
-                for (int i = 0; i < statements.size(); i++) {
-                    final JsonObject statementObject = statements.get(i).getAsJsonObject();
-                    AccountStatementData statementData = statementParser.parseAccountStatementForUpdate(statementObject);
+                SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(accountId);
+                for (JsonElement statementElement : statementArray) {
+                    final JsonObject statementObject = statementElement.getAsJsonObject();
+                    AccountStatementData statementData = statementParser.parseAccountStatementForUpdate(statementObject, accountId);
                     final String code = statementData.getStatementCode();
-                    AccountStatement statement = statementRepository
-                            .findByProductStatementProductIdAndProductStatementProductTypeAndProductStatementStatementCodeAndAccountId(
-                                    productId, productType, code, accountId)
-                            .orElseThrow(() -> new ResourceNotFoundException("account.statement", code));
-                    HashMap<String, Object> updated = new HashMap<>();
-                    statement.update(statementData, updated);
+                    AccountStatement statement = statementsByCode.get(code);
+                    if (statement == null) {
+                        ProductStatement prodStatement = productStatementRepository
+                                .findByProductIdAndProductTypeAndStatementCode(productId, productType, code)
+                                .orElseThrow(() -> new ResourceNotFoundException("product.statement", code));
+                        statement = AccountStatement.create(prodStatement, statementData);
+                        if (account.isActive()) {
+                            statement.activate();
+                        }
+                        changes.computeIfAbsent("added", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, code);
+                    } else {
+                        HashMap<String, Object> updated = new HashMap<>();
+                        statementsByCode.remove(code);
+                        if (statement.update(statementData, updated)) {
+                            changes.computeIfAbsent("updated", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, code);
+                        }
+                    }
                     statementRepository.save(statement);
-                    changes.put(code, updated);
+                }
+                for (AccountStatement statement : statementsByCode.values()) {
+                    statementRepository.delete(statement);
+                    changes.computeIfAbsent("deleted", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, statement.getStatementCode());
+                }
+                if (changes.isEmpty()) {
+                    changes = null;
                 }
             }
         }
-        return changes;
+        return (Map) changes;
+    }
+
+    @Override
+    public void activateAccountStatements(Long accountId, PortfolioProductType productType) {
+        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
+        for (AccountStatement statement : statements) {
+            statement.activate();
+        }
     }
 }

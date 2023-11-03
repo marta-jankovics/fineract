@@ -18,12 +18,15 @@
  */
 package org.apache.fineract.portfolio.statement.domain;
 
+import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface ProductStatementRepository extends JpaRepository<ProductStatement, Long>, JpaSpecificationExecutor<ProductStatement> {
+
+    List<ProductStatement> findByProductIdAndProductType(Long productId, PortfolioProductType productType);
 
     Optional<ProductStatement> findByProductIdAndProductTypeAndStatementCode(Long productId, PortfolioProductType productType,
             String statementCode);

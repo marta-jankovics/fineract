@@ -18,40 +18,62 @@
  */
 package org.apache.fineract.statement.job;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
-import org.apache.fineract.infrastructure.core.service.database.RoutingDataSourceServiceFactory;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
-import org.apache.fineract.statement.provider.AccountStatementGenerationServiceProvider;
-import org.apache.fineract.statement.service.AccountStatementGenerationService;
+import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
+import org.apache.fineract.portfolio.statement.domain.StatementType;
+import org.apache.fineract.statement.provider.AccountStatementServiceProvider;
+import org.apache.fineract.statement.service.AccountStatementGenerationReadService;
+import org.apache.fineract.statement.service.AccountStatementGenerationWriteService;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor // jobparam: contribution.getStepExecution().getJobParameters().getParameters(), value:
+                         // chunkContext.getStepContext().getJobParameters(), jobparam:
+                         // chunkContext.getStepContext().getStepExecution().getJobParameters().getParameters()
 public class GenerateAccountStatementsTasklet implements Tasklet {
 
-    private final RoutingDataSourceServiceFactory dataSourceServiceFactory;
+    private final AccountStatementServiceProvider statementServiceProvider;
     private final PlatformSecurityContext securityContext;
-    private final AccountStatementGenerationServiceProvider statementGenerationServiceProvider;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+    public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
+        // AppUser user = securityContext.authenticatedUser();
+        // user.validateHasCreatePermission(AccountStatementService.ENTITY_NAME_STATEMENT_RESULT);
+
+        String deleteResultS = (String) chunkContext.getStepContext().getJobParameters().get("auto-delete-result");
+        boolean deleteResult = Strings.isEmpty(deleteResultS) || Boolean.parseBoolean(deleteResultS);
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
         for (PortfolioProductType productType : PortfolioProductType.values()) {
-            AccountStatementGenerationService service = statementGenerationServiceProvider
-                    .findAccountStatementGenerationService(productType);
-            if (service != null) {
-                List<AccountStatementGenerationData> statementGenerations = service.retrieveStatementsToGenerate(transactionDate);
-                for (AccountStatementGenerationData statementGeneration : statementGenerations) {
-                    service.generateStatement(statementGeneration, transactionDate);
+            AccountStatementGenerationReadService readService = statementServiceProvider
+                    .findAccountStatementGenerationReadService(productType);
+            if (readService == null) {
+                continue;
+            }
+            Map<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> generationsMap = readService
+                    .retrieveStatementsToGenerate(productType, transactionDate);
+            for (StatementType statementType : generationsMap.keySet()) {
+                Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> byPublishType = generationsMap
+                        .get(statementType);
+                for (StatementPublishType publishType : byPublishType.keySet()) {
+                    AccountStatementGenerationWriteService writeService = statementServiceProvider
+                            .getAccountStatementGenerationWriteService(productType, statementType, publishType);
+                    Map<String, List<AccountStatementGenerationData>> byBatchKey = byPublishType.get(publishType);
+                    for (List<AccountStatementGenerationData> generationBatch : byBatchKey.values()) {
+                        writeService.generateStatementBatch(productType, statementType, publishType, generationBatch, deleteResult);
+                    }
                 }
             }
         }

@@ -16,19 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.service;
+package org.apache.fineract.portfolio.statement.data.camt053;
 
-import jakarta.ws.rs.core.Response;
-import java.time.LocalDate;
-import java.util.List;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 
-public interface AccountStatementGenerationService {
+@AllArgsConstructor
+public class PartyData {
 
-    boolean isSupportProductType(PortfolioProductType productType);
+    @NotNull
+    @JsonProperty("Party")
+    private final PartyIdentificationData party;
 
-    List<AccountStatementGenerationData> retrieveStatementsToGenerate(LocalDate transactionDate);
+    public static PartyData create(String name) {
+        return name == null ? null : new PartyData(new PartyIdentificationData(name));
+    }
 
-    Response generateStatement(AccountStatementGenerationData statementGeneration, LocalDate transactionDate);
 }

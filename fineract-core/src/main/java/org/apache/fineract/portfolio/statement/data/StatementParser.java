@@ -21,8 +21,10 @@ package org.apache.fineract.portfolio.statement.data;
 import com.google.common.base.Enums;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
@@ -31,8 +33,6 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.domain.StatementBatchType;
 import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
 import org.apache.fineract.portfolio.statement.domain.StatementType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -103,15 +103,15 @@ public final class StatementParser {
         return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence);
     }
 
-    public ProductStatementData parseProductStatementForUpdate(String json) {
+    public ProductStatementData parseProductStatementForUpdate(String json, Long productId, PortfolioProductType productType) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
         final JsonElement element = fromJsonHelper.parse(json);
-        return parseProductStatementForUpdate(element);
+        return parseProductStatementForUpdate(element, productId, productType);
     }
 
-    public ProductStatementData parseProductStatementForUpdate(JsonElement element) {
+    public ProductStatementData parseProductStatementForUpdate(JsonElement element, Long productId, PortfolioProductType productType) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), PRODUCT_STATEMENT_UPDATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(PRODUCT_STATEMENT_RESOURCE);
@@ -136,7 +136,7 @@ public final class StatementParser {
 
         validator.throwValidationErrors();
 
-        return new ProductStatementData(null, null, code, statementType, publishType, batchType, recurrence);
+        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence);
     }
 
     public AccountStatementData parseAccountStatementForCreate(String json, Long accountId) {
@@ -163,15 +163,15 @@ public final class StatementParser {
         return new AccountStatementData(accountId, code, recurrence, prefix);
     }
 
-    public AccountStatementData parseAccountStatementForUpdate(String json) {
+    public AccountStatementData parseAccountStatementForUpdate(String json, Long accountId) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
         final JsonObject element = fromJsonHelper.parse(json).getAsJsonObject();
-        return parseAccountStatementForUpdate(element);
+        return parseAccountStatementForUpdate(element, accountId);
     }
 
-    public AccountStatementData parseAccountStatementForUpdate(JsonObject element) {
+    public AccountStatementData parseAccountStatementForUpdate(JsonObject element, Long accountId) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), ACCOUNT_STATEMENT_UPDATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(ACCOUNT_STATEMENT_RESOURCE);
@@ -191,7 +191,7 @@ public final class StatementParser {
 
         validator.throwValidationErrors();
 
-        return new AccountStatementData(null, code, recurrence, prefix);
+        return new AccountStatementData(accountId, code, recurrence, prefix);
     }
 
     private String parseStatementCode(JsonElement element, DataValidatorBuilder validator) {

@@ -18,8 +18,11 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMATTER;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,10 +31,21 @@ import lombok.Getter;
 @AllArgsConstructor
 public class DateTimePeriodData {
 
+    public static final String DATETIME_PATTERN = "YYYY-MM-DD'T'hh:mm:ss";
+    public static final String START_OF_DAY = "T00:00:00";
+    public static final String END_OF_DAY = "T24:00:00";
+
+    @NotNull
     @JsonProperty("FromDateTime")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY-MM-DDThh:mm:ss.sss")
-    private final LocalDate fromDateTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
+    private final String fromDateTime;
+    @NotNull
     @JsonProperty("ToDateTime")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY-MM-DDThh:mm:ss.sss")
-    private final LocalDate toDateTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
+    private final String toDateTime;
+
+    public static DateTimePeriodData create(@NotNull LocalDate fromDate, @NotNull LocalDate toDate) {
+        return new DateTimePeriodData(fromDate.format(DEFAULT_DATE_FORMATTER) + START_OF_DAY,
+                toDate.format(DEFAULT_DATE_FORMATTER) + END_OF_DAY);
+    }
 }

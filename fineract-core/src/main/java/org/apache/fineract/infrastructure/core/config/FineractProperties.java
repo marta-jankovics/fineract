@@ -56,6 +56,8 @@ public class FineractProperties {
 
     private FineractReportProperties report;
 
+    private FineractStatementProperties statement;
+
     private FineractJobProperties job;
 
     private FineractTemplateProperties template;
@@ -374,6 +376,21 @@ public class FineractProperties {
 
         private String bucketName;
         private Boolean enabled;
+    }
+
+    @Getter
+    @Setter
+    public static class FineractStatementProperties {
+
+        private FineractStatementS3Properties s3;
+    }
+
+    @Getter
+    @Setter
+    public static class FineractStatementS3Properties {
+
+        private String folder;
+        private Integer length;
     }
 
     @Getter

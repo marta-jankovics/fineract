@@ -84,31 +84,38 @@ public class ProductStatement extends AbstractPersistableCustom {
                 Optional.ofNullable(statementData.getBatchType()).orElse(StatementBatchType.getDefault()), statementData.getRecurrence());
     }
 
-    public void update(@NotNull ProductStatementData statementData, @NotNull Map<String, Object> changes) {
+    public boolean update(@NotNull ProductStatementData statementData, @NotNull Map<String, Object> changes) {
+        boolean changed = false;
         String statementCode = statementData.getStatementCode();
         if (statementCode != null && !Objects.equals(this.statementCode, statementCode)) {
             setStatementCode(statementCode);
             changes.put(PARAM_STATEMENT_CODE, statementCode);
+            changed = true;
         }
         StatementType statementType = statementData.getStatementType();
         if (statementType != null && this.statementType != statementType) {
             setStatementType(statementType);
             changes.put(PARAM_STATEMENT_TYPE, statementType);
+            changed = true;
         }
         StatementPublishType publishType = statementData.getPublishType();
         if (publishType != null && this.publishType != publishType) {
             setPublishType(publishType);
             changes.put(PARAM_PUBLISH_TYPE, publishType);
+            changed = true;
         }
         StatementBatchType batchType = statementData.getBatchType();
         if (batchType != null && this.batchType != batchType) {
             setBatchType(batchType);
             changes.put(PARAM_BATCH_TYPE, batchType);
+            changed = true;
         }
         String recurrence = statementData.getRecurrence();
         if (recurrence != null && !Objects.equals(this.recurrence, recurrence)) {
             setRecurrence(recurrence);
             changes.put(PARAM_RECURRENCE, recurrence);
+            changed = true;
         }
+        return changed;
     }
 }

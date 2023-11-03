@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,8 +28,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BalanceAmountData {
 
+    @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "^[+-]?[0-9]+(.[0-9]+)?$")
     private final BigDecimal amount;
+    @NotNull
     @JsonFormat(pattern = "^[A-Z]{3,3}$")
     private final String currency;
 }

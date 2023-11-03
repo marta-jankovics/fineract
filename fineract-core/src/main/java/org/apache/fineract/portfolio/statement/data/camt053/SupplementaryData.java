@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,6 +27,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SupplementaryData {
 
+    @NotNull
     @JsonProperty("Envelope")
     private final EnvelopeData envelope;
+
+    public static SupplementaryData create(EnvelopeData envelope) {
+        return envelope == null ? null : new SupplementaryData(envelope);
+    }
 }

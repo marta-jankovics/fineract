@@ -25,7 +25,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BalanceCodeOrProprietaryData {
+public class CodeOrProprietaryData {
 
     @JsonProperty("Code")
     @Size(min = 1, max = 4)

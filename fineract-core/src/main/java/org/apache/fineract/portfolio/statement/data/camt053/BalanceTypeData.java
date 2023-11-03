@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,6 +27,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BalanceTypeData {
 
+    @NotNull
     @JsonProperty("CodeOrProprietary")
-    private final BalanceCodeOrProprietaryData codeOrProprietary;
+    private final CodeOrProprietaryData codeOrProprietary;
+
+    public static BalanceTypeData create(@NotNull String code) {
+        return new BalanceTypeData(new CodeOrProprietaryData(code, null));
+    }
 }

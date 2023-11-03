@@ -24,7 +24,7 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 
 public interface ProductStatementService {
 
-    void createProductStatement(Long productId, PortfolioProductType productType, JsonCommand command);
+    void createProductStatements(Long productId, PortfolioProductType productType, JsonCommand command);
 
-    Map<String, Object> updateProductStatement(Long productId, PortfolioProductType productType, JsonCommand command);
+    Map<String, Object> updateProductStatements(Long productId, PortfolioProductType productType, JsonCommand command);
 }

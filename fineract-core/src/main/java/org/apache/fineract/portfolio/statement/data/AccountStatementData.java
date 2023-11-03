@@ -29,4 +29,5 @@ public class AccountStatementData {
     private final String statementCode;
     private final String recurrence;
     private final String sequencePrefix;
+
 }

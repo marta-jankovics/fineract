@@ -16,30 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.savings.statement.data;
+package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashMap;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.portfolio.statement.data.camt053.EnvelopeData;
 
 @Getter
 @AllArgsConstructor
-public class SupplementaryEnvelopeData extends EnvelopeData {
+public class BankTransactionPropietaryData {
 
-    @JsonProperty("SubscriptionPackage")
-    private final String subscriptionPackage;
-    @JsonProperty("CustomerShortName")
-    private final String customerShortName;
-    @JsonProperty("CustomerAddress")
-    private final String customerAddress;
-
-    public static SupplementaryEnvelopeData create(HashMap<String, Object> clientDetails) {
-        if (clientDetails == null || clientDetails.isEmpty()) {
-            return null;
-        }
-        return new SupplementaryEnvelopeData((String) clientDetails.get("subscription_package"), (String) clientDetails.get("short_name"),
-                (String) clientDetails.get("address"));
-    }
+    @NotNull
+    @JsonProperty("Code")
+    @Size(min = 1, max = 35)
+    private final String code;
+    @JsonProperty("Issuer")
+    @Size(min = 1, max = 35)
+    private final String issuer;
 }

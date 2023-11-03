@@ -79,13 +79,16 @@ public final class CalendarUtils {
         return nextDate;
     }
 
-    public static LocalDate getNextRecurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate startDate) {
+    public static LocalDate getNextRecurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate startDate,
+            boolean adjustDate) {
         final Recur recur = CalendarUtils.getICalRecur(recurringRule);
         if (recur == null) {
             return null;
         }
         LocalDate nextDate = getNextRecurringDate(recur, seedDate, startDate);
-        nextDate = (LocalDate) adjustDate(nextDate, seedDate, getMeetingPeriodFrequencyType(recurringRule));
+        if (adjustDate) {
+            nextDate = (LocalDate) adjustDate(nextDate, seedDate, getMeetingPeriodFrequencyType(recurringRule));
+        }
         return nextDate;
     }
 

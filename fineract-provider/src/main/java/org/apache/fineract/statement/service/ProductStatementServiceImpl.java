@@ -19,16 +19,19 @@
 package org.apache.fineract.statement.service;
 
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENT_CODE;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.portfolio.products.exception.ResourceNotFoundException;
 import org.apache.fineract.portfolio.statement.data.ProductStatementData;
 import org.apache.fineract.portfolio.statement.data.StatementParser;
 import org.apache.fineract.portfolio.statement.domain.ProductStatement;
@@ -46,7 +49,7 @@ public class ProductStatementServiceImpl implements ProductStatementService {
 
     @Transactional
     @Override
-    public void createProductStatement(Long productId, PortfolioProductType productType, JsonCommand command) {
+    public void createProductStatements(Long productId, PortfolioProductType productType, JsonCommand command) {
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statements = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statements != null) {
@@ -63,26 +66,42 @@ public class ProductStatementServiceImpl implements ProductStatementService {
 
     @Transactional
     @Override
-    public Map<String, Object> updateProductStatement(Long productId, PortfolioProductType productType, JsonCommand command) {
-        HashMap<String, Object> changes = null;
+    public Map<String, Object> updateProductStatements(Long productId, PortfolioProductType productType, JsonCommand command) {
+        HashMap<String, HashMap<String, String>> changes = null;
         if (command.parameterExists(PARAM_STATEMENTS)) {
-            final JsonArray statements = command.arrayOfParameterNamed(PARAM_STATEMENTS);
-            if (statements != null) {
+            final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);
+            if (statementArray != null) {
+                List<ProductStatement> existingStatements = statementRepository.findByProductIdAndProductType(productId, productType);
+                Map<String, ProductStatement> statementsByCode = existingStatements.stream()
+                        .collect(Collectors.toMap(ProductStatement::getStatementCode, v -> v));
                 changes = new HashMap<>();
-                for (int i = 0; i < statements.size(); i++) {
-                    final JsonObject statementObject = statements.get(i).getAsJsonObject();
-                    ProductStatementData statementData = statementParser.parseProductStatementForUpdate(statementObject);
+                for (JsonElement statementElement : statementArray) {
+                    final JsonObject statementObject = statementElement.getAsJsonObject();
+                    ProductStatementData statementData = statementParser.parseProductStatementForUpdate(statementObject, productId,
+                            productType);
                     final String code = statementData.getStatementCode();
-                    ProductStatement statement = statementRepository
-                            .findByProductIdAndProductTypeAndStatementCode(productId, productType, code)
-                            .orElseThrow(() -> new ResourceNotFoundException("product.statement", code));
-                    HashMap<String, Object> updated = new HashMap<>();
-                    statement.update(statementData, updated);
+                    ProductStatement statement = statementsByCode.get(code);
+                    if (statement == null) {
+                        statement = ProductStatement.create(statementData);
+                        changes.computeIfAbsent("added", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, code);
+                    } else {
+                        HashMap<String, Object> updated = new HashMap<>();
+                        statementsByCode.remove(code);
+                        if (statement.update(statementData, updated)) {
+                            changes.computeIfAbsent("updated", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, code);
+                        }
+                    }
                     statementRepository.save(statement);
-                    changes.put(code, updated);
+                }
+                for (ProductStatement statement : statementsByCode.values()) {
+                    statementRepository.delete(statement);
+                    changes.computeIfAbsent("deleted", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, statement.getStatementCode());
+                }
+                if (changes.isEmpty()) {
+                    changes = null;
                 }
             }
         }
-        return changes;
+        return (Map) changes;
     }
 }

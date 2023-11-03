@@ -18,10 +18,9 @@
  */
 package org.apache.fineract.statement.job;
 
-import org.apache.fineract.infrastructure.core.service.database.RoutingDataSourceServiceFactory;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
-import org.apache.fineract.statement.provider.AccountStatementGenerationServiceProvider;
+import org.apache.fineract.statement.provider.AccountStatementServiceProvider;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -41,17 +40,9 @@ public class GenerateAccountStatementsConfig {
     @Autowired
     private PlatformTransactionManager transactionManager;
     @Autowired
-    private RoutingDataSourceServiceFactory dataSourceServiceFactory;
+    private AccountStatementServiceProvider statementServiceProvider;
     @Autowired
     private PlatformSecurityContext securityContext;
-    @Autowired
-    private AccountStatementGenerationServiceProvider statementGenerationServiceProvider;
-
-    @Bean
-    protected Step generateStatementsStep() {
-        return new StepBuilder(JobName.GENERATE_STATEMENTS.name(), jobRepository).tasklet(generateStatementsTasklet(), transactionManager)
-                .build();
-    }
 
     @Bean
     public Job generateStatementsJob() {
@@ -60,7 +51,13 @@ public class GenerateAccountStatementsConfig {
     }
 
     @Bean
+    protected Step generateStatementsStep() {
+        return new StepBuilder(JobName.GENERATE_STATEMENTS.name(), jobRepository).tasklet(generateStatementsTasklet(), transactionManager)
+                .build();
+    }
+
+    @Bean
     public GenerateAccountStatementsTasklet generateStatementsTasklet() {
-        return new GenerateAccountStatementsTasklet(dataSourceServiceFactory, securityContext, statementGenerationServiceProvider);
+        return new GenerateAccountStatementsTasklet(statementServiceProvider, securityContext);
     }
 }

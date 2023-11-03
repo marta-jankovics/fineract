@@ -20,6 +20,7 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -27,9 +28,18 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AccountData {
 
+    @NotNull
     @JsonProperty("Identification")
     private final AccountIdentificationData identification;
     @JsonFormat(pattern = "^[A-Z]{3,3}$")
     @JsonProperty("Currency")
     private final String currency;
+
+    public static AccountData create(String iban, String identification, String currency) {
+        IdentificationData other = (iban != null || identification == null) ? null : new IdentificationData(identification);
+        if (iban == null && other == null) {
+            return null;
+        }
+        return new AccountData(new AccountIdentificationData(iban, other), currency);
+    }
 }

@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,4 +32,9 @@ public class TransactionsSummaryData {
     @JsonProperty("TotalDebitEntries")
     private final BalanceSummaryData totalDebitEntries;
 
+    public static TransactionsSummaryData create(BigDecimal credit, BigDecimal debit) {
+        BalanceSummaryData totalCredit = credit == null ? null : new BalanceSummaryData(credit);
+        BalanceSummaryData totalDebit = debit == null ? null : new BalanceSummaryData(debit);
+        return new TransactionsSummaryData(totalCredit, totalDebit);
+    }
 }

@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.savings.service;
 
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
+import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -86,7 +87,7 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductRepository;
 import org.apache.fineract.portfolio.savings.exception.SavingsProductNotFoundException;
-import org.apache.fineract.statement.service.AccountStatementService;
+import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,7 +117,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
     private final GSIMRepositoy gsimRepository;
     private final GroupRepositoryWrapper groupRepositoryWrapper;
     private final GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService;
-    private final AccountStatementService accountStatementService;
+    private final SavingsStatementService accountStatementService;
 
     @Transactional
     @Override
@@ -238,7 +239,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                     StatusEnum.CREATE.getCode().longValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(),
                     account.productId());
 
-            accountStatementService.createAccountStatement(savingsId, account.getSavingsProductId(), PortfolioProductType.SAVING, command);
+            accountStatementService.createAccountStatements(savingsId, account.getSavingsProductId(), PortfolioProductType.SAVING, command);
 
             businessEventNotifierService.notifyPostBusinessEvent(new SavingsCreateBusinessEvent(account));
 
@@ -298,9 +299,10 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             account.modifyApplication(command, changes);
             account.validateNewApplicationState(SAVINGS_ACCOUNT_RESOURCE_NAME);
             account.validateAccountValuesWithProduct();
+            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId, account.getSavingsProductId(),
+                    PortfolioProductType.SAVING, command);
 
             if (!changes.isEmpty()) {
-
                 if (changes.containsKey(SavingsApiConstants.clientIdParamName)) {
                     final Long clientId = command.longValueOfParameterNamed(SavingsApiConstants.clientIdParamName);
                     if (clientId != null) {
@@ -360,6 +362,9 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                 }
 
                 this.savingAccountRepository.saveAndFlush(account);
+            }
+            if (statementChanges != null) {
+                changes.put(PARAM_STATEMENTS, statementChanges);
             }
 
             return new CommandProcessingResultBuilder() //

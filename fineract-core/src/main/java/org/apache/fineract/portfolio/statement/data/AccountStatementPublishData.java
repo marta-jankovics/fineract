@@ -16,19 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.statement.data.camt053;
+package org.apache.fineract.portfolio.statement.data;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
+import org.apache.fineract.portfolio.statement.domain.StatementType;
 
 @Getter
 @AllArgsConstructor
-public class BalanceDateData {
+public class AccountStatementPublishData {
 
-    @JsonProperty("Date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY-MM-DD")
-    private final LocalDate date;
+    private final Long accountStatementResultId;
+    private final String resultCode;
+    private final PortfolioProductType productType;
+    private final StatementType statementType;
+    private final StatementPublishType publishType;
 }

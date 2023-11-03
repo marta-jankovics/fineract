@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,6 +28,7 @@ import lombok.Getter;
 public class AccountIdentificationData {
 
     @JsonProperty("IBAN")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "^[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}$")
     private final String iban;
     @JsonProperty("Other")
     private final IdentificationData other;
