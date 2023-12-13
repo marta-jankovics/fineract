@@ -18,11 +18,14 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,15 +34,18 @@ import lombok.Getter;
 public class StatementData {
 
     @NotNull
-    @JsonProperty("Identification")
+    @JsonProperty(value = "Identification", required = true)
     private final String identification;
+    @JsonProperty("CreationDateTime")
+    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    private final OffsetDateTime creationDateTime;
     @JsonProperty("FromToDate")
     private final DateTimePeriodData fromToDate;
     @NotNull
-    @JsonProperty("Account")
+    @JsonProperty(value = "Account", required = true)
     private final AccountData account;
     @NotNull
-    @JsonProperty("Balance")
+    @JsonProperty(value = "Balance", required = true)
     private final AccountBalanceData[] balances;
     @JsonProperty("TransactionsSummary")
     private final TransactionsSummaryData transactionsSummary;

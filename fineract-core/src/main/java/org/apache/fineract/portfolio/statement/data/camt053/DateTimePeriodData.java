@@ -36,11 +36,11 @@ public class DateTimePeriodData {
     public static final String END_OF_DAY = "T24:00:00";
 
     @NotNull
-    @JsonProperty("FromDateTime")
+    @JsonProperty(value = "FromDateTime", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
     private final String fromDateTime;
     @NotNull
-    @JsonProperty("ToDateTime")
+    @JsonProperty(value = "ToDateTime", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
     private final String toDateTime;
 

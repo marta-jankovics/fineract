@@ -21,6 +21,7 @@ package org.apache.fineract.portfolio.savings.statement.data;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import lombok.Getter;
+import org.apache.fineract.portfolio.paymentdetail.domain.PaymentDetail;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
 import org.apache.fineract.portfolio.statement.data.camt053.BalanceAmountData;
 import org.apache.fineract.portfolio.statement.data.camt053.EntryDetailsData;
@@ -40,14 +41,15 @@ public class SavingsEntryDetailsData extends EntryDetailsData {
     }
 
     public static SavingsEntryDetailsData create(@NotNull SavingsAccountTransaction transaction, Map<String, Object> clientDetails,
-            @NotNull String currency, Map<String, Object> details) {
-        if (details == null) {
-            return null;
-        }
+            @NotNull String currency, @NotNull Map<String, Object> details) {
         String endToEndId = (String) details.get("end_to_end_id");
-        TransactionReferencesData references = new TransactionReferencesData(endToEndId, String.valueOf(transaction.getId()));
+        TransactionReferencesData references = TransactionReferencesData.create(endToEndId, String.valueOf(transaction.getId()));
         BalanceAmountData balance = new BalanceAmountData(transaction.getAmount(), currency);
         String paymentTypeCode = (String) details.get("payment_type_code");
+        if (paymentTypeCode == null) {
+            PaymentDetail paymentDetail = transaction.getPaymentDetail();
+            paymentTypeCode = paymentDetail == null ? null : paymentDetail.getPaymentType().getName();
+        }
         TransactionPartiesData parties = createParties(clientDetails, currency, details, paymentTypeCode);
         String unstructuredInfo = (String) details.get("remittance_information_unstructured");
         RemittanceInfoData remittanceInfo = RemittanceInfoData.create(unstructuredInfo);
@@ -72,9 +74,9 @@ public class SavingsEntryDetailsData extends EntryDetailsData {
         String partnerIban = (String) details.get("partner_account_iban");
         String partnerIdentifier = (String) details.get("partner_secondary_identifier");
 
-        PartyData party = PartyData.create(shortName);
+        PartyData party = PartyData.create(shortName, null);
         RelatedAccountData account = RelatedAccountData.create(iban, identifier, currency);
-        PartyData partner = PartyData.create(partnerName);
+        PartyData partner = PartyData.create(partnerName, null);
         RelatedAccountData partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, currency);
         if (party == null && account == null && partner == null && partnerAccount == null) {
             return null;
@@ -85,7 +87,7 @@ public class SavingsEntryDetailsData extends EntryDetailsData {
                 : new TransactionPartiesData(partner, partnerAccount, party, account);
     }
 
-    private static SupplementaryData createSupplementaryData(Map<String, Object> clientDetails, Map<String, Object> details,
+    private static SupplementaryData createSupplementaryData(Map<String, Object> clientDetails, @NotNull Map<String, Object> details,
             String paymentTypeCode) {
         boolean onUs = paymentTypeCode != null && paymentTypeCode.startsWith("EMY");
         String identifier = null;
@@ -93,7 +95,6 @@ public class SavingsEntryDetailsData extends EntryDetailsData {
             identifier = onUs ? (String) clientDetails.get("internal_account_id") : (String) clientDetails.get("bban");
         }
         String partnerIdentifier = (String) details.get("partner_secondary_identifier");
-
         boolean outgoing = (Boolean) details.get("isOutgoing");
         SavingsTransactionEnvelopeData envelope = outgoing ? SavingsTransactionEnvelopeData.create(identifier, partnerIdentifier)
                 : SavingsTransactionEnvelopeData.create(partnerIdentifier, identifier);

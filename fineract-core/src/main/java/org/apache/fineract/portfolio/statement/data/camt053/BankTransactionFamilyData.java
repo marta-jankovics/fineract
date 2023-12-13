@@ -21,19 +21,23 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
 @Getter
-@AllArgsConstructor
 public class BankTransactionFamilyData {
 
     @NotNull
-    @JsonProperty("Code")
+    @JsonProperty(value = "Code", required = true)
     @Size(min = 1, max = 4)
     private final String code;
     @NotNull
-    @JsonProperty("SubFamilyCode")
+    @JsonProperty(value = "SubFamilyCode", required = true)
     @Size(min = 1, max = 4)
     private final String subFamilyCode;
+
+    public BankTransactionFamilyData(@NotNull String code, @NotNull String subFamilyCode) {
+        this.code = StatementUtils.ensureSize(code, "Code", 1, 4, false);
+        this.subFamilyCode = StatementUtils.ensureSize(subFamilyCode, "SubFamilyCode", 1, 4, false);
+    }
 }

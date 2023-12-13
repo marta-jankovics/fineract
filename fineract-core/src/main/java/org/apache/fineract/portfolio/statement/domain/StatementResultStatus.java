@@ -63,6 +63,6 @@ public enum StatementResultStatus {
             throw new PlatformDataIntegrityException("error.msg.invalid.statement.result.status",
                     "Can not perform action: statement publish", this);
         }
-        return this;
+        return PUBLISHED;
     }
 }

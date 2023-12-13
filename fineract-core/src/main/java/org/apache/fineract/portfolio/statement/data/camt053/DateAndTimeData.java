@@ -32,7 +32,7 @@ import lombok.Getter;
 public class DateAndTimeData {
 
     @NotNull
-    @JsonProperty("Date")
+    @JsonProperty(value = "Date", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DEFAULT_DATE_FORMAT)
     private final LocalDate date;
 

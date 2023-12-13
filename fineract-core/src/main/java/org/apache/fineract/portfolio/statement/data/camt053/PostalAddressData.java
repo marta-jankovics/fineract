@@ -20,21 +20,20 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.portfolio.statement.StatementUtils;
 
 @Getter
-public class CodeOrProprietaryData {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class PostalAddressData {
 
-    @JsonProperty("Code")
-    @Size(min = 1, max = 4)
-    private final String code;
-    @JsonProperty("Proprietary")
-    @Size(min = 1, max = 35)
-    private final String proprietary;
+    @JsonProperty("AddressLine")
+    @Size(min = 1, max = 7)
+    private final String[] addressLines;
 
-    public CodeOrProprietaryData(String code, String proprietary) {
-        this.code = StatementUtils.ensureSize(code, "Code", 1, 4);
-        this.proprietary = StatementUtils.ensureSize(proprietary, "Proprietary", 1, 35);
+    public static PostalAddressData create(String address) {
+        return address == null ? null : new PostalAddressData(StatementUtils.ensureLines(address, "AddressLine", 1, 70, 7));
     }
 }

@@ -54,9 +54,9 @@ public final class SavingsTransactionData extends TransactionData {
     }
 
     public static SavingsTransactionData create(@NotNull SavingsAccountTransaction transaction, Map<String, Object> clientDetails,
-            @NotNull String currency, int statementType, Map<String, Object> details) {
+            @NotNull String currency, int statementType, @NotNull Map<String, Object> details) {
         SavingsEntryDetailsData entryDetails = null;
-        String structuredData = details == null ? null : (String) details.get("entry_details");
+        String structuredData = (String) details.get("entry_details");
         if (Strings.isEmpty(structuredData)) {
             structuredData = null;
             entryDetails = SavingsEntryDetailsData.create(transaction, clientDetails, currency, details);

@@ -20,14 +20,19 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
-@AllArgsConstructor
-public class RemittanceInfoData {
+@Getter
+public final class RemittanceInfoData {
 
     @JsonProperty("Unstructured")
     @Size(min = 1, max = 140)
     private final String unstructured;
+
+    private RemittanceInfoData(String unstructured) {
+        this.unstructured = StatementUtils.ensureSize(unstructured, "Unstructured", 1, 140);
+    }
 
     public static RemittanceInfoData create(String unstructured) {
         return unstructured == null ? null : new RemittanceInfoData(unstructured);

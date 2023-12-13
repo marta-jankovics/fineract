@@ -20,13 +20,27 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
-@AllArgsConstructor
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PartyIdentificationData {
 
     @JsonProperty("Name")
     @Size(min = 1, max = 140)
     private final String name;
+    @JsonProperty("PostalAddress")
+    private final PostalAddressData address;
 
+    public static PartyIdentificationData create(String name, String address) {
+        name = StatementUtils.ensureSize(name, "Name", 1, 140);
+        PostalAddressData addressLine = PostalAddressData.create(address);
+        if (name == null && address == null) {
+            return null;
+        }
+        return new PartyIdentificationData(name, addressLine);
+    }
 }

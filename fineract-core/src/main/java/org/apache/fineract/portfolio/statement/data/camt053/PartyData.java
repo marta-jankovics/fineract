@@ -20,17 +20,20 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@AllArgsConstructor
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PartyData {
 
     @NotNull
-    @JsonProperty("Party")
+    @JsonProperty(value = "Party", required = true)
     private final PartyIdentificationData party;
 
-    public static PartyData create(String name) {
-        return name == null ? null : new PartyData(new PartyIdentificationData(name));
+    public static PartyData create(String name, String address) {
+        PartyIdentificationData party = PartyIdentificationData.create(name, address);
+        return party == null ? null : new PartyData(party);
     }
-
 }

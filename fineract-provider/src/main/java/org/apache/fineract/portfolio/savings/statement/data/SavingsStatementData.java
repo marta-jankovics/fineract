@@ -27,6 +27,7 @@ import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,22 +54,24 @@ public class SavingsStatementData extends StatementData {
     @JsonIgnore
     private transient boolean isConversionAccount;
 
-    public SavingsStatementData(String identification, DateTimePeriodData fromToDate, AccountData account, AccountBalanceData[] balances,
-            TransactionsSummaryData transactionsSummary, TransactionData[] transactions, String additionalStatementInformation,
-            boolean isConversionAccount) {
-        super(identification, fromToDate, account, balances, transactionsSummary, transactions, additionalStatementInformation);
+    private SavingsStatementData(String identification, OffsetDateTime creationDateTime, DateTimePeriodData fromToDate, AccountData account,
+            AccountBalanceData[] balances, TransactionsSummaryData transactionsSummary, TransactionData[] transactions,
+            String additionalStatementInformation, boolean isConversionAccount) {
+        super(identification, creationDateTime, fromToDate, account, balances, transactionsSummary, transactions,
+                additionalStatementInformation);
         this.isConversionAccount = isConversionAccount;
     }
 
     public static SavingsStatementData create(@NotNull AccountStatement statement, @NotNull SavingsAccount account,
             Map<String, Object> clientDetails, @NotNull Map<String, Object> accountDetails, @NotNull LocalDate fromDate,
-            @NotNull LocalDate toDate, @NotNull String identification, int statementType, boolean isConversionAccount,
-            @NotNull List<SavingsAccountTransaction> transactions, @NotNull Map<Long, Map<String, Object>> transactionDetails) {
+            @NotNull LocalDate toDate, @NotNull String identification, @NotNull OffsetDateTime creationDateTime, int statementType,
+            boolean isConversionAccount, @NotNull List<SavingsAccountTransaction> transactions,
+            @NotNull Map<Long, Map<String, Object>> transactionDetails) {
         DateTimePeriodData fromToDate = DateTimePeriodData.create(fromDate, toDate);
         String iban = null; // (String) accountDetails.get("iban"); only one of the identifiers can be stored here
         String otherId = (String) accountDetails.get("internal_account_id");
         String currency = account.getCurrency().getCode();
-        AccountData accountData = AccountData.create(iban, otherId, currency);
+        AccountData accountData = AccountData.create(iban, otherId, clientDetails, currency);
         AccountBalanceData opening = AccountBalanceData.create(BALANCE_CODE_BEGIN_OF_PERIOD,
                 MathUtil.nullToZero(statement.getStatementBalance()), currency, fromDate);
         BigDecimal balance = account.getSummaryOnDate(toDate).getAccountBalance();
@@ -85,8 +88,9 @@ public class SavingsStatementData extends StatementData {
                     transactionDetails.get(transaction.getId())));
         }
 
-        return new SavingsStatementData(identification, fromToDate, accountData, new AccountBalanceData[] { opening, closure, total },
-                trSum, entries.toArray(new SavingsTransactionData[size]), calcAdditionalInfo(statementType), isConversionAccount);
+        return new SavingsStatementData(identification, creationDateTime, fromToDate, accountData,
+                new AccountBalanceData[] { opening, closure, total }, trSum, entries.toArray(new SavingsTransactionData[size]),
+                calcAdditionalInfo(statementType), isConversionAccount);
     }
 
     @Transient

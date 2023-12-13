@@ -20,30 +20,34 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
-@AllArgsConstructor
 public class TransactionDetailsData {
 
     @JsonProperty("References")
     private final TransactionReferencesData references;
-
     @JsonProperty("Amount")
     private final BalanceAmountData amount;
-
     @JsonProperty("RelatedParties")
     private final TransactionPartiesData relatedParties;
-
     @JsonProperty("RemittanceInformation")
     private final RemittanceInfoData remittanceInfo;
-
     @JsonProperty("AdditionalTransactionInformation")
     @Size(min = 1, max = 35)
     private final String additionalInfo;
-
     @JsonProperty("SupplementaryData")
     private SupplementaryData[] supplementaryDatas;
+
+    public TransactionDetailsData(TransactionReferencesData references, BalanceAmountData amount, TransactionPartiesData relatedParties,
+            RemittanceInfoData remittanceInfo, String additionalInfo, SupplementaryData[] supplementaryDatas) {
+        this.references = references;
+        this.amount = amount;
+        this.relatedParties = relatedParties;
+        this.remittanceInfo = remittanceInfo;
+        this.additionalInfo = StatementUtils.ensureSize(additionalInfo, "AdditionalTransactionInformation", 1, 35);
+        this.supplementaryDatas = supplementaryDatas;
+    }
 
     public void add(SupplementaryData supplementaryData) {
         if (supplementaryData != null) {

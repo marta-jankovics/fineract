@@ -25,6 +25,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.data.AccountStatementPublishData;
@@ -47,24 +48,26 @@ public class PublishAccountStatementsTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
-        // AppUser user = securityContext.authenticatedUser();
-        // user.validateHasActionPermission(AccountStatementService.ACTION_NAME_PUBLISH,
-        // AccountStatementService.ENTITY_NAME_STATEMENT_RESULT);
-
+        log.info("Processing " + JobName.PUBLISH_STATEMENTS.name() + " job");
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
         for (PortfolioProductType productType : PortfolioProductType.values()) {
             AccountStatementPublishReadService readService = statementServiceProvider.findAccountStatementPublishReadService(productType);
             if (readService == null) {
+                log.debug("Read service for {} - {} is not implemented", JobName.PUBLISH_STATEMENTS, productType);
                 continue;
             }
+            log.debug("Processing {} - {}", JobName.PUBLISH_STATEMENTS, productType);
             Map<StatementType, Map<StatementPublishType, List<AccountStatementPublishData>>> generationsMap = readService
                     .retrieveStatementsToPublish(productType, transactionDate);
+            log.info("Statements to publish for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
+
             for (StatementType statementType : generationsMap.keySet()) {
                 Map<StatementPublishType, List<AccountStatementPublishData>> byPublishType = generationsMap.get(statementType);
                 for (StatementPublishType publishType : byPublishType.keySet()) {
                     AccountStatementPublisher publisher = statementServiceProvider.getAccountStatementPublishWriteService(productType,
                             statementType, publishType);
                     List<AccountStatementPublishData> publishBatch = byPublishType.get(publishType);
+                    log.info("Processing publish statement batch for {} - {} - {}", productType, statementType, publishType);
                     publisher.publish(productType, statementType, publishType, publishBatch);
                 }
             }

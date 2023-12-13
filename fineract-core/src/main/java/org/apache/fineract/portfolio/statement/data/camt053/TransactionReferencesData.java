@@ -20,16 +20,24 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TransactionReferencesData {
 
     @JsonProperty("EndToEndIdentification")
     @Size(min = 1, max = 35)
     private final String endToEndIdentification;
-
     @JsonProperty("TransactionIdentification")
     @Size(min = 1, max = 35)
     private final String identification;
+
+    public static TransactionReferencesData create(String endToEndIdentification, String identification) {
+        endToEndIdentification = StatementUtils.ensureSize(endToEndIdentification, "EndToEndIdentification", 1, 35);
+        identification = StatementUtils.ensureSize(identification, "TransactionIdentification", 1, 35);
+        return endToEndIdentification == null && identification == null ? null
+                : new TransactionReferencesData(endToEndIdentification, identification);
+    }
 }

@@ -20,14 +20,21 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdentificationData {
 
     @JsonProperty("Identification")
     @Size(min = 1, max = 34)
     private final String identification;
+
+    public static IdentificationData create(String identification) {
+        identification = StatementUtils.ensureSize(identification, "Identification", 1, 34);
+        return identification == null ? null : new IdentificationData(identification);
+    }
 }

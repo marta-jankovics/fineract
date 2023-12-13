@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.portfolio.statement.data.camt053;
 
+import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
@@ -30,10 +32,10 @@ import lombok.Getter;
 public class GroupHeaderData {
 
     @NotNull
-    @JsonProperty("MessageIdentification")
+    @JsonProperty(value = "MessageIdentification", required = true)
     private final String messageIdentification;
     @NotNull
-    @JsonProperty("CreationDateTime")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    @JsonProperty(value = "CreationDateTime", required = true)
+    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private final OffsetDateTime creationDateTime;
 }

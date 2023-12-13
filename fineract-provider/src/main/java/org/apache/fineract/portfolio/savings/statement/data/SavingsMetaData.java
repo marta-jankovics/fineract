@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.base.Strings;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -72,6 +73,15 @@ public class SavingsMetaData extends StatementMetaData {
     }
 
     public String mapToString(JsonMapper mapper) throws JsonProcessingException {
+        customerIds = emptyToNull(customerIds);
+        accountIds = emptyToNull(accountIds);
+        ibans = emptyToNull(ibans);
         return mapper.writeValueAsString(this);
+    }
+
+    private String[] emptyToNull(String[] values) {
+        return values == null || values.length == 0 || Arrays.stream(values).filter(e -> e != null && !e.isBlank()).findAny().isEmpty()
+                ? null
+                : values;
     }
 }

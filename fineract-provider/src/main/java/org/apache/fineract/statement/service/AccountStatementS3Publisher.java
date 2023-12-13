@@ -75,6 +75,7 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
 
         for (AccountStatementPublishData publishData : publishBatch) {
             Long resultId = publishData.getAccountStatementResultId();
+            log.info("Start to publish statement result for id {}", resultId);
             AccountStatementResult result = statementResultRepository.findById(resultId)
                     .orElseThrow(() -> new ResourceNotFoundException("account.statement.result", resultId.toString()));
             String content = result.getContent();
@@ -92,9 +93,11 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
                 throw new IllegalArgumentException("The statement file name '" + fileName + "' must be shorter than " + nameLengt);
             }
             String filePath = StringUtils.isBlank(folder) ? fileName : (folder + File.separator + fileName);
+            log.debug("Statement result is ready to publish to {} for id {}", filePath, resultId);
             s3Client.putObject(builder -> builder.bucket(bucket).key(filePath).metadata(metadata).build(), RequestBody.fromString(content));
             result.published();
             statementResultRepository.save(result);
+            log.info("Statement result is published to {} for id {}", filePath, resultId);
         }
         return respBuilder.status(NO_CONTENT).build();
     }

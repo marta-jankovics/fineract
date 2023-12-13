@@ -24,30 +24,26 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.portfolio.TransactionEntryType;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
 @Getter
-@AllArgsConstructor
 public class TransactionData {
 
     @NotNull
-    @JsonProperty("Amount")
+    @JsonProperty(value = "Amount", required = true)
     private final BalanceAmountData amount;
     @NotNull
-    @JsonProperty("CreditDebitIndicator")
+    @JsonProperty(value = "CreditDebitIndicator", required = true)
     private final CreditDebitIndicator creditDebitIndicator;
     @NotNull
-    @JsonProperty("Status")
+    @JsonProperty(value = "Status", required = true)
     private final CodeOrProprietaryData status;
     @JsonProperty("AccountServicerReference")
     @Size(min = 1, max = 35)
     private final String accountServicerReference;
     @NotNull
-    @JsonProperty("BankTransactionCode")
+    @JsonProperty(value = "BankTransactionCode", required = true)
     private final BankTransactionCodeData transactionCode;
     @JsonProperty("BookingDate")
     private final DateAndTimeData bookingDate;
@@ -57,12 +53,17 @@ public class TransactionData {
     @JsonProperty("EntryDetails")
     private final EntryDetailsData[] details;
 
-    public static TransactionData create(@NotNull BigDecimal amount, @NotNull String currency, TransactionEntryType entryType,
-            @NotNull TransactionStatus status, String accountServicerReference, LocalDate bookingDate, LocalDate valueDate,
-            EntryDetailsData[] entryDetailsData) {
-        return new TransactionData(new BalanceAmountData(amount, currency), CreditDebitIndicator.forTransactionEntryType(entryType),
-                new CodeOrProprietaryData(status.name(), null), accountServicerReference, new BankTransactionCodeData(null, null),
-                DateAndTimeData.create(bookingDate), DateAndTimeData.create(valueDate), entryDetailsData);
+    public TransactionData(@NotNull BalanceAmountData amount, @NotNull CreditDebitIndicator creditDebitIndicator,
+            @NotNull CodeOrProprietaryData status, String accountServicerReference, @NotNull BankTransactionCodeData transactionCode,
+            DateAndTimeData bookingDate, DateAndTimeData valueDate, EntryDetailsData[] details) {
+        this.amount = amount;
+        this.creditDebitIndicator = creditDebitIndicator;
+        this.status = status;
+        this.accountServicerReference = StatementUtils.ensureSize(accountServicerReference, "AccountServicerReference", 1, 35);
+        this.transactionCode = transactionCode;
+        this.bookingDate = bookingDate;
+        this.valueDate = valueDate;
+        this.details = details;
     }
 
     public enum TransactionStatus {

@@ -109,10 +109,6 @@ public final class AccountStatementResult extends AbstractAuditableWithUTCDateTi
         return resultStatus.canPublish();
     }
 
-    public void publish() {
-        resultStatus.publish();
-    }
-
     public void published() {
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
         setPublishedOn(transactionDate);

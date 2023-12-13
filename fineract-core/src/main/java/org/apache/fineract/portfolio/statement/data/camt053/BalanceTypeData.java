@@ -28,7 +28,7 @@ import lombok.Getter;
 public class BalanceTypeData {
 
     @NotNull
-    @JsonProperty("CodeOrProprietary")
+    @JsonProperty(value = "CodeOrProprietary", required = true)
     private final CodeOrProprietaryData codeOrProprietary;
 
     public static BalanceTypeData create(@NotNull String code) {

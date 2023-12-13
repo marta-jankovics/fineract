@@ -21,25 +21,35 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import java.util.Map;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AccountData {
 
     @NotNull
-    @JsonProperty("Identification")
+    @JsonProperty(value = "Identification", required = true)
     private final AccountIdentificationData identification;
     @JsonFormat(pattern = "^[A-Z]{3,3}$")
     @JsonProperty("Currency")
     private final String currency;
+    @JsonProperty("Owner")
+    private final PartyIdentificationData owner;
 
-    public static AccountData create(String iban, String identification, String currency) {
-        IdentificationData other = (iban != null || identification == null) ? null : new IdentificationData(identification);
-        if (iban == null && other == null) {
+    public static AccountData create(String iban, String identification, Map<String, Object> clientDetails, String currency) {
+        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification);
+        if (idData == null) {
             return null;
         }
-        return new AccountData(new AccountIdentificationData(iban, other), currency);
+        PartyIdentificationData owner = null;
+        if (clientDetails != null) {
+            String name = (String) clientDetails.get("short_name");
+            String address = (String) clientDetails.get("address");
+            owner = PartyIdentificationData.create(name, address);
+        }
+        return new AccountData(idData, currency, owner);
     }
 }

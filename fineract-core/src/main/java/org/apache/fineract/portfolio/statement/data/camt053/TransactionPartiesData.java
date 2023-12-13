@@ -26,21 +26,11 @@ public class TransactionPartiesData {
 
     @JsonProperty("Debtor")
     private final PartyData debtor;
-
     @JsonProperty("DebtorAccount")
     private final RelatedAccountData debtorAccount;
-
     @JsonProperty("Creditor")
     private final PartyData creditor;
-
     @JsonProperty("CreditorAccount")
     private final RelatedAccountData creditorAccount;
 
-    public static TransactionPartiesData createDebtor(String name, String iban, String identification, String currency) {
-        return new TransactionPartiesData(PartyData.create(name), RelatedAccountData.create(iban, identification, currency), null, null);
-    }
-
-    public static TransactionPartiesData createCreditor(String name, String iban, String identification, String currency) {
-        return new TransactionPartiesData(null, null, PartyData.create(name), RelatedAccountData.create(iban, identification, currency));
-    }
 }

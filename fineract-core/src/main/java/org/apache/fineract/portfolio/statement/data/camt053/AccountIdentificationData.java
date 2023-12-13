@@ -20,11 +20,12 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AccountIdentificationData {
 
     @JsonProperty("IBAN")
@@ -32,4 +33,12 @@ public class AccountIdentificationData {
     private final String iban;
     @JsonProperty("Other")
     private final IdentificationData other;
+
+    public static AccountIdentificationData create(String iban, String other) {
+        IdentificationData idData = iban != null ? null : IdentificationData.create(other);
+        if (iban == null && idData == null) {
+            return null;
+        }
+        return new AccountIdentificationData(iban, idData);
+    }
 }

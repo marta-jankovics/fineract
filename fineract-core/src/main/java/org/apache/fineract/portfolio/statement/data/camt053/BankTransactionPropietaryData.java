@@ -21,18 +21,22 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.portfolio.statement.StatementUtils;
 
 @Getter
-@AllArgsConstructor
 public class BankTransactionPropietaryData {
 
     @NotNull
-    @JsonProperty("Code")
+    @JsonProperty(value = "Code", required = true)
     @Size(min = 1, max = 35)
     private final String code;
     @JsonProperty("Issuer")
     @Size(min = 1, max = 35)
     private final String issuer;
+
+    public BankTransactionPropietaryData(@NotNull String code, String issuer) {
+        this.code = StatementUtils.ensureSize(code, "Code", 1, 35, false);
+        this.issuer = StatementUtils.ensureSize(issuer, "Issuer", 1, 35);
+    }
 }

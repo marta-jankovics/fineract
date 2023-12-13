@@ -28,7 +28,7 @@ import lombok.Getter;
 public class SupplementaryData {
 
     @NotNull
-    @JsonProperty("Envelope")
+    @JsonProperty(value = "Envelope", required = true)
     private final EnvelopeData envelope;
 
     public static SupplementaryData create(EnvelopeData envelope) {

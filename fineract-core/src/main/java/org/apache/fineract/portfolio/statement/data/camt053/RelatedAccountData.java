@@ -21,11 +21,12 @@ package org.apache.fineract.portfolio.statement.data.camt053;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RelatedAccountData {
 
     @NotNull
@@ -36,10 +37,7 @@ public class RelatedAccountData {
     private final String currency;
 
     public static RelatedAccountData create(String iban, String identification, String currency) {
-        IdentificationData other = (iban != null || identification == null) ? null : new IdentificationData(identification);
-        if (iban == null && other == null) {
-            return null;
-        }
-        return new RelatedAccountData(new AccountIdentificationData(iban, other), currency);
+        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification);
+        return idData == null ? null : new RelatedAccountData(idData, currency);
     }
 }

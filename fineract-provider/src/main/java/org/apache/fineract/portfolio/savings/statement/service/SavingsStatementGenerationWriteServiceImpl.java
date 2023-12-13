@@ -52,12 +52,10 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransactionSum
 import org.apache.fineract.portfolio.savings.domain.SavingsHelper;
 import org.apache.fineract.portfolio.savings.exception.SavingsAccountNotFoundException;
 import org.apache.fineract.portfolio.savings.statement.data.SavingsCamt053Data;
-import org.apache.fineract.portfolio.savings.statement.data.SavingsEnvelopeData;
 import org.apache.fineract.portfolio.savings.statement.data.SavingsMetaData;
 import org.apache.fineract.portfolio.savings.statement.data.SavingsStatementData;
 import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
 import org.apache.fineract.portfolio.statement.data.camt053.GroupHeaderData;
-import org.apache.fineract.portfolio.statement.data.camt053.SupplementaryData;
 import org.apache.fineract.portfolio.statement.domain.AccountStatement;
 import org.apache.fineract.portfolio.statement.domain.AccountStatementRepository;
 import org.apache.fineract.portfolio.statement.domain.AccountStatementResult;
@@ -105,7 +103,8 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
         SavingsCamt053Data camt053 = new SavingsCamt053Data(headerData);
         SavingsMetaData metadataData = new SavingsMetaData();
         for (AccountStatement statement : statements.values()) {
-            generateResultData(statement, camt053, metadataData);
+            log.debug("Generating statement result for id {}", statement.getId());
+            generateResultData(statement, camt053, metadataData, creationDateTime);
         }
         String content;
         String metadata;
@@ -113,6 +112,7 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
             content = camt053.mapToString(JSON_MAPPER);
             metadata = metadataData.mapToString(JSON_MAPPER);
         } catch (JsonProcessingException e) {
+            log.error("Statement result json mapping has failed for " + productType + " - " + statementType + " - " + publishType, e);
             throw ErrorHandler.getMappable(e);
         }
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
@@ -122,7 +122,8 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
         return AccountStatementResult.create(messageId, productType, statementType, publishType, content, metadata, path, name);
     }
 
-    private void generateResultData(AccountStatement statement, SavingsCamt053Data result, SavingsMetaData metadata) {
+    private void generateResultData(AccountStatement statement, SavingsCamt053Data result, SavingsMetaData metadata,
+            OffsetDateTime creationDateTime) {
         statement.generate(); // validation
 
         Long accountId = statement.getAccountId();
@@ -136,7 +137,6 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
         Long disposalAccountId = isConversionAccount ? Long.valueOf((String) accountDetails.get("disposal_account_id")) : accountId;
 
         Map<String, Object> clientDetails = accountStatementService.retrieveClientDetails(clientId);
-        SupplementaryData supplementaryData = SupplementaryData.create(SavingsEnvelopeData.create(clientDetails));
 
         String pfx = statement.getSequencePrefix();
         LocalDate generationDate = statement.getNextStatementDate();
@@ -176,22 +176,24 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
             List<SavingsAccountTransaction> bookedTransactions = transactions.stream()
                     .filter(e -> !pendingTransactionIds.contains(e.getId())).toList();
             SavingsStatementData booked = SavingsStatementData.create(statement, account, clientDetails, accountDetails, fromDate,
-                    generationDate, identification, STATEMENT_TYPE_BOOKED, isConversionAccount, bookedTransactions, transactionDetailsById);
-            result.add(booked, supplementaryData);
+                    generationDate, identification, creationDateTime, STATEMENT_TYPE_BOOKED, isConversionAccount, bookedTransactions,
+                    transactionDetailsById);
+            result.add(booked, null);
 
             closureBalance = booked.getClosureBalance();
             List<SavingsAccountTransaction> pendingTransactions = transactions.stream()
                     .filter(e -> pendingTransactionIds.contains(e.getId())).toList();
             if (!pendingTransactions.isEmpty()) {
                 SavingsStatementData pending = SavingsStatementData.create(statement, account, clientDetails, accountDetails, fromDate,
-                        generationDate, identification, STATEMENT_TYPE_PENDING, isConversionAccount, pendingTransactions,
+                        generationDate, identification, creationDateTime, STATEMENT_TYPE_PENDING, isConversionAccount, pendingTransactions,
                         transactionDetailsById);
                 result.add(pending, null);
             }
         } else {
             SavingsStatementData all = SavingsStatementData.create(statement, account, clientDetails, accountDetails, fromDate,
-                    generationDate, identification, STATEMENT_TYPE_ALL, isConversionAccount, transactions, transactionDetailsById);
-            result.add(all, supplementaryData);
+                    generationDate, identification, creationDateTime, STATEMENT_TYPE_ALL, isConversionAccount, transactions,
+                    transactionDetailsById);
+            result.add(all, null);
             closureBalance = all.getClosureBalance();
         }
         metadata.add(clientDetails, accountDetails, isConversionAccount, account.getCurrency().getCode(), fromDate, generationDate);

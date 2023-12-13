@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.products.exception.ResourceNotFoundException;
 import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
@@ -37,6 +38,7 @@ import org.apache.fineract.portfolio.statement.domain.AccountStatementResultRepo
 import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
 import org.apache.fineract.portfolio.statement.domain.StatementType;
 
+@Slf4j
 public abstract class AccountStatementGenerationWriteServiceImpl implements AccountStatementGenerationWriteService {
 
     private final AccountStatementRepository statementRepository;
@@ -65,6 +67,7 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
         AccountStatementResult statementResult = generateResult(productType, statementType, publishType, generationBatch, statements);
         for (AccountStatement statement : statements.values()) {
             statement.generated(statementResult);
+            log.info("Statement result generated for id {}", statement.getId());
             statementRepository.save(statement);
         }
         if (deleteResult) {
@@ -72,6 +75,7 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
             for (AccountStatementResult existingResult : existingResults.values()) {
                 if (existingResult.getResultStatus().isPublished()
                         || !statementRepository.hasResultReference(existingResult.getId(), statementIds)) {
+                    log.info("Delete existing statement result {}", existingResult.getId());
                     statementResultRepository.delete(existingResult);
                 }
             }

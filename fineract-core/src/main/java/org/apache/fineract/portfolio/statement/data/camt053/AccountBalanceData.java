@@ -38,16 +38,16 @@ public class AccountBalanceData {
     public static final String BALANCE_CODE_BEGIN_OF_PERIOD = "OPBD";
 
     @NotNull
-    @JsonProperty("Type")
+    @JsonProperty(value = "Type", required = true)
     private final BalanceTypeData type;
     @NotNull
-    @JsonProperty("Amount")
+    @JsonProperty(value = "Amount", required = true)
     private final BalanceAmountData amount;
     @NotNull
-    @JsonProperty("CreditDebitIndicator")
+    @JsonProperty(value = "CreditDebitIndicator", required = true)
     private final CreditDebitIndicator creditDebitIndicator;
     @NotNull
-    @JsonProperty("Date")
+    @JsonProperty(value = "Date", required = true)
     private final DateAndTimeData date;
 
     public static AccountBalanceData create(@NotNull String code, @NotNull BigDecimal amount, @NotNull String currency,

@@ -30,10 +30,10 @@ import org.apache.commons.lang3.ArrayUtils;
 public class Camt053Data {
 
     @NotNull
-    @JsonProperty("GroupHeader")
+    @JsonProperty(value = "GroupHeader", required = true)
     private final GroupHeaderData groupHeader;
     @NotNull
-    @JsonProperty("Statement")
+    @JsonProperty(value = "Statement", required = true)
     private StatementData[] statements;
     @JsonInclude(NON_EMPTY)
     @JsonProperty("SupplementaryData")

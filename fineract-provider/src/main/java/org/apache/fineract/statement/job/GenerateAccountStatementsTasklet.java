@@ -25,6 +25,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
@@ -40,9 +41,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
-@RequiredArgsConstructor // jobparam: contribution.getStepExecution().getJobParameters().getParameters(), value:
-                         // chunkContext.getStepContext().getJobParameters(), jobparam:
-                         // chunkContext.getStepContext().getStepExecution().getJobParameters().getParameters()
+@RequiredArgsConstructor
 public class GenerateAccountStatementsTasklet implements Tasklet {
 
     private final AccountStatementServiceProvider statementServiceProvider;
@@ -50,9 +49,7 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
-        // AppUser user = securityContext.authenticatedUser();
-        // user.validateHasCreatePermission(AccountStatementService.ENTITY_NAME_STATEMENT_RESULT);
-
+        log.info("Processing " + JobName.GENERATE_STATEMENTS.name() + " job");
         String deleteResultS = (String) chunkContext.getStepContext().getJobParameters().get("auto-delete-result");
         boolean deleteResult = Strings.isEmpty(deleteResultS) || Boolean.parseBoolean(deleteResultS);
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
@@ -60,10 +57,14 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
             AccountStatementGenerationReadService readService = statementServiceProvider
                     .findAccountStatementGenerationReadService(productType);
             if (readService == null) {
+                log.debug("Read service for {} - {} is not implemented", JobName.GENERATE_STATEMENTS, productType);
                 continue;
             }
+            log.debug("Processing {} - {}", JobName.GENERATE_STATEMENTS, productType);
             Map<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> generationsMap = readService
                     .retrieveStatementsToGenerate(productType, transactionDate);
+            log.info("Statements to generate for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
+
             for (StatementType statementType : generationsMap.keySet()) {
                 Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> byPublishType = generationsMap
                         .get(statementType);
@@ -71,6 +72,8 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
                     AccountStatementGenerationWriteService writeService = statementServiceProvider
                             .getAccountStatementGenerationWriteService(productType, statementType, publishType);
                     Map<String, List<AccountStatementGenerationData>> byBatchKey = byPublishType.get(publishType);
+                    log.info("Processing {} statement generation batches for {} - {} - {}", byBatchKey.values().size(), productType,
+                            statementType, publishType);
                     for (List<AccountStatementGenerationData> generationBatch : byBatchKey.values()) {
                         writeService.generateStatementBatch(productType, statementType, publishType, generationBatch, deleteResult);
                     }
