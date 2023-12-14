@@ -96,12 +96,13 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
         this.recurrence = recurrence;
         this.sequencePrefix = sequencePrefix;
         this.statementStatus = StatementStatus.INACTIVE;
+        this.sequenceNo = 0;
     }
 
     public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull AccountStatementData statementData) {
         return new AccountStatement(productStatement, statementData.getAccountId(),
                 Optional.ofNullable(statementData.getRecurrence()).orElse(productStatement.getRecurrence()),
-                statementData.getSequencePrefix());
+                Optional.ofNullable(statementData.getSequencePrefix()).orElse(productStatement.getSequencePrefix()));
     }
 
     public boolean update(@NotNull AccountStatementData statementData, @NotNull Map<String, Object> changes) {

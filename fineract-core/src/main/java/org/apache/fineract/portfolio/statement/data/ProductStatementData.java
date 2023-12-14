@@ -36,4 +36,5 @@ public class ProductStatementData {
     private final StatementPublishType publishType;
     private final StatementBatchType batchType;
     private final String recurrence;
+    private final String sequencePrefix;
 }

@@ -21,6 +21,7 @@ package org.apache.fineract.portfolio.statement.domain;
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_BATCH_TYPE;
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_PUBLISH_TYPE;
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_RECURRENCE;
+import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_SEQUENCE_PREFIX;
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENT_CODE;
 import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENT_TYPE;
 
@@ -77,11 +78,15 @@ public class ProductStatement extends AbstractPersistableCustom {
     @Column(name = "recurrence", nullable = true, length = 100)
     private String recurrence;
 
+    @Column(name = "sequence_prefix", nullable = true, length = 10)
+    private String sequencePrefix;
+
     public static ProductStatement create(@NotNull ProductStatementData statementData) {
         return new ProductStatement(statementData.getProductId(), statementData.getProductType(), statementData.getStatementCode(),
                 Optional.ofNullable(statementData.getStatementType()).orElse(StatementType.getDefault()),
                 Optional.ofNullable(statementData.getPublishType()).orElse(StatementPublishType.getDefault()),
-                Optional.ofNullable(statementData.getBatchType()).orElse(StatementBatchType.getDefault()), statementData.getRecurrence());
+                Optional.ofNullable(statementData.getBatchType()).orElse(StatementBatchType.getDefault()), statementData.getRecurrence(),
+                statementData.getSequencePrefix());
     }
 
     public boolean update(@NotNull ProductStatementData statementData, @NotNull Map<String, Object> changes) {
@@ -114,6 +119,12 @@ public class ProductStatement extends AbstractPersistableCustom {
         if (recurrence != null && !Objects.equals(this.recurrence, recurrence)) {
             setRecurrence(recurrence);
             changes.put(PARAM_RECURRENCE, recurrence);
+            changed = true;
+        }
+        String sequencePrefix = statementData.getSequencePrefix();
+        if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
+            setSequencePrefix(sequencePrefix);
+            changes.put(PARAM_SEQUENCE_PREFIX, sequencePrefix);
             changed = true;
         }
         return changed;

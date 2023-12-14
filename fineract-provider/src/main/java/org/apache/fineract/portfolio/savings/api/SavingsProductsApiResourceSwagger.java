@@ -57,6 +57,8 @@ final class SavingsProductsApiResourceSwagger {
             public String batchType;
             @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
             public String recurrence;
+            @Schema(example = "K")
+            public String sequencePrefix;
         }
 
         @Schema(example = "Passbook Savings")
@@ -119,6 +121,8 @@ final class SavingsProductsApiResourceSwagger {
             public String batchType;
             @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
             public String recurrence;
+            @Schema(example = "K")
+            public String sequencePrefix;
         }
 
         @Schema(example = "Passbook Savings Lite.")

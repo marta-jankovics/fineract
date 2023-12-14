@@ -74,9 +74,12 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     protected AccountStatementData createDefaultAccountStatementData(Long accountId) {
         SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(accountId);
         HashMap<String, Object> accountDetails = retrieveAccountDetails(account.clientId(), accountId);
-        boolean isConversionAccount = accountDetails != null
-                && String.valueOf(accountId).equals(accountDetails.get("conversion_account_id"));
-        return new AccountStatementData(accountId, null, null, isConversionAccount ? DEFAULT_PREFIX_CONVERSION : DEFAULT_PREFIX_DISPOSAL);
+        String prefix = null;
+        if (accountDetails != null) {
+            boolean isConversionAccount = String.valueOf(accountId).equals(accountDetails.get("conversion_account_id"));
+            prefix = isConversionAccount ? DEFAULT_PREFIX_CONVERSION : DEFAULT_PREFIX_DISPOSAL;
+        }
+        return new AccountStatementData(accountId, null, null, prefix);
     }
 
     @Override

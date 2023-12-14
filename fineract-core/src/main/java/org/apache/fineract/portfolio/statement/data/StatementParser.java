@@ -55,10 +55,10 @@ public final class StatementParser {
     public static final String PARAM_LOCALE = "locale";
 
     private static final Set<String> PRODUCT_STATEMENT_CREATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_STATEMENT_TYPE,
-            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_LOCALE);
+            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
 
     private static final Set<String> PRODUCT_STATEMENT_UPDATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_STATEMENT_TYPE,
-            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_LOCALE);
+            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
 
     private static final Set<String> ACCOUNT_STATEMENT_CREATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_RECURRENCE,
             PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
@@ -97,10 +97,11 @@ public final class StatementParser {
         final StatementBatchType batchType = parseBatchType(element, validator);
 
         final String recurrence = parseRecurrence(element, validator);
+        final String prefix = parseSequencePrefix(element, validator);
 
         validator.throwValidationErrors();
 
-        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence);
+        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix);
     }
 
     public ProductStatementData parseProductStatementForUpdate(String json, Long productId, PortfolioProductType productType) {
@@ -133,10 +134,14 @@ public final class StatementParser {
         if (fromJsonHelper.parameterExists(PARAM_BATCH_TYPE, element)) {
             recurrence = parseRecurrence(element, validator);
         }
+        String prefix = null;
+        if (fromJsonHelper.parameterExists(PARAM_SEQUENCE_PREFIX, element)) {
+            prefix = parseSequencePrefix(element, validator);
+        }
 
         validator.throwValidationErrors();
 
-        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence);
+        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix);
     }
 
     public AccountStatementData parseAccountStatementForCreate(String json, Long accountId) {
