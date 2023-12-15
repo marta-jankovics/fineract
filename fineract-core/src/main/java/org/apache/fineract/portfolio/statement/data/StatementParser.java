@@ -52,13 +52,14 @@ public final class StatementParser {
     public static final String PARAM_RECURRENCE = "recurrence";
     public static final String PARAM_ACCOUNT_ID = "accountId";
     public static final String PARAM_SEQUENCE_PREFIX = "sequencePrefix";
+    public static final String PARAM_STATEMENT_INHERIT = "inherit";
     public static final String PARAM_LOCALE = "locale";
 
     private static final Set<String> PRODUCT_STATEMENT_CREATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_STATEMENT_TYPE,
             PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
 
     private static final Set<String> PRODUCT_STATEMENT_UPDATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_STATEMENT_TYPE,
-            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
+            PARAM_PUBLISH_TYPE, PARAM_BATCH_TYPE, PARAM_RECURRENCE, PARAM_SEQUENCE_PREFIX, PARAM_STATEMENT_INHERIT, PARAM_LOCALE);
 
     private static final Set<String> ACCOUNT_STATEMENT_CREATE_PARAMETERS = Set.of(PARAM_STATEMENT_CODE, PARAM_RECURRENCE,
             PARAM_SEQUENCE_PREFIX, PARAM_LOCALE);
@@ -101,7 +102,7 @@ public final class StatementParser {
 
         validator.throwValidationErrors();
 
-        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix);
+        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix, false);
     }
 
     public ProductStatementData parseProductStatementForUpdate(String json, Long productId, PortfolioProductType productType) {
@@ -139,9 +140,14 @@ public final class StatementParser {
             prefix = parseSequencePrefix(element, validator);
         }
 
+        boolean inherit = false;
+        if (fromJsonHelper.parameterExists(PARAM_STATEMENT_INHERIT, element)) {
+            inherit = Boolean.TRUE.equals(fromJsonHelper.extractBooleanNamed(PARAM_STATEMENT_INHERIT, element));
+        }
+
         validator.throwValidationErrors();
 
-        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix);
+        return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix, inherit);
     }
 
     public AccountStatementData parseAccountStatementForCreate(String json, Long accountId) {

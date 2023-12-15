@@ -28,6 +28,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,6 +98,34 @@ public class AccountStatementServiceImpl implements AccountStatementService {
 
     @Transactional
     @Override
+    public void inheritProductStatement(Long productId, PortfolioProductType productType, String statementCode) {
+        ProductStatement prodStatement = productStatementRepository
+                .findByProductIdAndProductTypeAndStatementCode(productId, productType, statementCode)
+                .orElseThrow(() -> new ResourceNotFoundException("product.statement", statementCode));
+        List<SavingsAccount> accounts = savingsAccountRepository.findByProductId(productId);
+        for (SavingsAccount account : accounts) {
+            if (account.isClosed()) {
+                continue;
+            }
+            Long accountId = account.getId();
+            Optional<AccountStatement> exisingStatement = statementRepository
+                    .findByAccountIdAndProductStatementProductTypeAndProductStatementStatementCode(accountId, productType, statementCode);
+            AccountStatement statement;
+            if (exisingStatement.isEmpty()) {
+                statement = AccountStatement.create(prodStatement, accountId);
+                if (account.isActive()) {
+                    statement.activate();
+                }
+            } else {
+                statement = exisingStatement.get();
+                statement.inherit(prodStatement);
+            }
+            statementRepository.save(statement);
+        }
+    }
+
+    @Transactional
+    @Override
     public Map<String, Object> updateAccountStatements(Long accountId, Long productId, PortfolioProductType productType,
             JsonCommand command) {
         HashMap<String, HashMap<String, String>> changes = null;
@@ -149,6 +178,14 @@ public class AccountStatementServiceImpl implements AccountStatementService {
         List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
         for (AccountStatement statement : statements) {
             statement.activate();
+        }
+    }
+
+    @Override
+    public void inactivateAccountStatements(Long accountId, PortfolioProductType productType) {
+        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
+        for (AccountStatement statement : statements) {
+            statement.inactivate();
         }
     }
 }

@@ -19,11 +19,13 @@
 package org.apache.fineract.portfolio.savings.statement.service;
 
 import static org.apache.fineract.portfolio.PortfolioProductType.SAVING;
+import static org.apache.fineract.portfolio.statement.domain.StatementStatus.ACTIVE;
 
 import jakarta.validation.constraints.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,7 +40,6 @@ import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
 import org.apache.fineract.portfolio.statement.domain.StatementType;
 import org.apache.fineract.statement.service.AccountStatementGenerationReadService;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -58,7 +59,11 @@ public class SavingsStatementGenerationReadServiceImpl implements AccountStateme
     public Map<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> retrieveStatementsToGenerate(
             @NotNull PortfolioProductType productType, @NotNull LocalDate transactionDate) {
         final StatementGenerationMapper rm = new StatementGenerationMapper();
-        final MapSqlParameterSource params = new MapSqlParameterSource("transactionDate", transactionDate);
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("transactionDate", transactionDate);
+        params.put("statementStatus", ACTIVE.name());
+
         List<AccountStatementGenerationData> statementGenerations = namedParameterTemplate.query(rm.schema(), params, rm);
         return statementGenerations.stream().collect(Collectors.groupingBy(AccountStatementGenerationData::getStatementType,
                 Collectors.groupingBy(AccountStatementGenerationData::getPublishType, Collectors.groupingBy(this::calcBatchId))));
@@ -81,7 +86,7 @@ public class SavingsStatementGenerationReadServiceImpl implements AccountStateme
                 + "ps.statement_type as statementType, ps.publish_type as publishType, ps.batch_type as batchType ";
         private static final String FROM = "FROM m_account_statement st JOIN m_savings_account sa on st.account_id = sa.id "
                 + "JOIN m_product_statement ps on st.product_statement_id = ps.id ";
-        private static final String WHERE = "WHERE st.next_statement_date <= :transactionDate AND sa.status_enum = "
+        private static final String WHERE = "WHERE st.next_statement_date <= :transactionDate AND st.statement_status = :statementStatus AND sa.status_enum = "
                 + SavingsAccountStatusType.ACTIVE.getValue();
 
         private static final String SCHEMA = SELECT + FROM + WHERE;

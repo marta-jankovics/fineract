@@ -31,7 +31,11 @@ public interface AccountStatementService {
 
     void createAccountStatements(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
 
+    void inheritProductStatement(Long productId, PortfolioProductType productType, String statementCode);
+
     Map<String, Object> updateAccountStatements(Long accountId, Long productId, PortfolioProductType productType, JsonCommand command);
 
     void activateAccountStatements(Long accountId, PortfolioProductType productType);
+
+    void inactivateAccountStatements(Long accountId, PortfolioProductType productType);
 }

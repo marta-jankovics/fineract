@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
 import org.apache.fineract.portfolio.statement.data.ProductStatementData;
 import org.apache.fineract.portfolio.statement.data.StatementParser;
 import org.apache.fineract.portfolio.statement.domain.ProductStatement;
@@ -46,6 +47,7 @@ public class ProductStatementServiceImpl implements ProductStatementService {
 
     private final StatementParser statementParser;
     private final ProductStatementRepository statementRepository;
+    private final SavingsStatementService accountStatementService;
 
     @Transactional
     @Override
@@ -92,6 +94,9 @@ public class ProductStatementServiceImpl implements ProductStatementService {
                         }
                     }
                     statementRepository.save(statement);
+                    if (statementData.isInherit()) {
+                        accountStatementService.inheritProductStatement(productId, productType, code);
+                    }
                 }
                 for (ProductStatement statement : statementsByCode.values()) {
                     statementRepository.delete(statement);
