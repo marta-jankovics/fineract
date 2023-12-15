@@ -86,7 +86,7 @@ public class SavingsStatementGenerationReadServiceImpl implements AccountStateme
                 + "ps.statement_type as statementType, ps.publish_type as publishType, ps.batch_type as batchType ";
         private static final String FROM = "FROM m_account_statement st JOIN m_savings_account sa on st.account_id = sa.id "
                 + "JOIN m_product_statement ps on st.product_statement_id = ps.id ";
-        private static final String WHERE = "WHERE st.next_statement_date <= :transactionDate AND st.statement_status = :statementStatus AND sa.status_enum = "
+        private static final String WHERE = "WHERE st.next_statement_date < :transactionDate AND st.statement_status = :statementStatus AND sa.status_enum = "
                 + SavingsAccountStatusType.ACTIVE.getValue();
 
         private static final String SCHEMA = SELECT + FROM + WHERE;
