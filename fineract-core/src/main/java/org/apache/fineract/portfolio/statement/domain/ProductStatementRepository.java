@@ -23,11 +23,17 @@ import java.util.Optional;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductStatementRepository extends JpaRepository<ProductStatement, Long>, JpaSpecificationExecutor<ProductStatement> {
 
+    String HAS_ACCOUNT_REFERENCE = "select case when (count(st) > 0) then 'true' else 'false' end from AccountStatement st where st.productStatement.id = :prodStatementId";
+
     List<ProductStatement> findByProductIdAndProductType(Long productId, PortfolioProductType productType);
 
-    Optional<ProductStatement> findByProductIdAndProductTypeAndStatementCode(Long productId, PortfolioProductType productType,
-            String statementCode);
+    Optional<ProductStatement> findByStatementCode(String statementCode);
+
+    @Query(HAS_ACCOUNT_REFERENCE)
+    boolean hasAccountReference(@Param("prodStatementId") Long prodStatementId);
 }

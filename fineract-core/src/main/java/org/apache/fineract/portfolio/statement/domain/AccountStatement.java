@@ -190,7 +190,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
         if (sequenceNo == null || statementDate == null) {
             return 1;
         }
-        if (statementDate.getYear() < nextStatementDate.getYear()) {
+        if (nextStatementDate != null && statementDate.getYear() < nextStatementDate.getYear()) {
             return 1;
         }
         return sequenceNo + 1;

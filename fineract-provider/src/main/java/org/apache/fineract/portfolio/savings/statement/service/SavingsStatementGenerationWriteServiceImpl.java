@@ -112,7 +112,8 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
             content = camt053.mapToString(JSON_MAPPER);
             metadata = metadataData.mapToString(JSON_MAPPER);
         } catch (JsonProcessingException e) {
-            log.error("Statement result json mapping has failed for " + productType + " - " + statementType + " - " + publishType, e);
+            log.error("Statement result json mapping has failed for {} - {} - {}. Reason: {}", productType, statementType, publishType,
+                    e.getMessage());
             throw ErrorHandler.getMappable(e);
         }
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();

@@ -259,4 +259,8 @@
             <column name="can_maker_checker" valueBoolean="false"/>
         </insert>
     </changeSet>
+    <changeSet author="fineract" id="007">
+        <dropUniqueConstraint constraintName="uk_product_statement" tableName="m_product_statement"/>
+        <addUniqueConstraint columnNames="statement_code" constraintName="uk_product_statement" tableName="m_product_statement"/>
+    </changeSet>
 </databaseChangeLog>

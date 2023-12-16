@@ -74,7 +74,7 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
             Set<Long> statementIds = statements.keySet();
             for (AccountStatementResult existingResult : existingResults.values()) {
                 if (existingResult.getResultStatus().isPublished()
-                        || !statementRepository.hasResultReference(existingResult.getId(), statementIds)) {
+                        || !statementResultRepository.hasAccountReference(existingResult.getId(), statementIds)) {
                     log.info("Delete existing statement result {}", existingResult.getId());
                     statementResultRepository.delete(existingResult);
                 }

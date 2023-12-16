@@ -48,7 +48,7 @@ public class PublishAccountStatementsTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
-        log.info("Processing " + JobName.PUBLISH_STATEMENTS.name() + " job");
+        log.info("Processing {} job", JobName.PUBLISH_STATEMENTS);
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
         for (PortfolioProductType productType : PortfolioProductType.values()) {
             AccountStatementPublishReadService readService = statementServiceProvider.findAccountStatementPublishReadService(productType);

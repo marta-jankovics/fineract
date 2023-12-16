@@ -49,7 +49,7 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
-        log.info("Processing " + JobName.GENERATE_STATEMENTS.name() + " job");
+        log.info("Processing {} job", JobName.GENERATE_STATEMENTS);
         String deleteResultS = (String) chunkContext.getStepContext().getJobParameters().get("auto-delete-result");
         boolean deleteResult = Strings.isEmpty(deleteResultS) || Boolean.parseBoolean(deleteResultS);
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();

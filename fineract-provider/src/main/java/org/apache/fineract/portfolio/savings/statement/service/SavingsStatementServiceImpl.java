@@ -32,12 +32,14 @@ import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeader
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetRowData;
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.savings.SavingsAccountTransactionType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.portfolio.statement.data.AccountStatementData;
 import org.apache.fineract.portfolio.statement.data.StatementParser;
+import org.apache.fineract.portfolio.statement.domain.AccountStatement;
 import org.apache.fineract.portfolio.statement.domain.AccountStatementRepository;
 import org.apache.fineract.portfolio.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.service.AccountStatementServiceImpl;
@@ -56,17 +58,19 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     private final GenericDataService genericDataService;
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final JdbcTemplate jdbcTemplate;
+    private final SavingsAccountRepositoryWrapper savingsAccountRepository;
 
     @Autowired
     public SavingsStatementServiceImpl(StatementParser statementParser, ProductStatementRepository productStatementRepository,
-            AccountStatementRepository statementRepository, SavingsAccountRepositoryWrapper savingsAccountRepositoryWrapper,
-            ReadWriteNonCoreDataService nonCoreDataService, GenericDataService genericDataService,
-            DatabaseSpecificSQLGenerator sqlGenerator, JdbcTemplate jdbcTemplate) {
-        super(statementParser, productStatementRepository, statementRepository, savingsAccountRepositoryWrapper);
+            AccountStatementRepository statementRepository, ReadWriteNonCoreDataService nonCoreDataService,
+            GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, JdbcTemplate jdbcTemplate,
+            SavingsAccountRepositoryWrapper savingsAccountRepositoryWrapper) {
+        super(statementParser, productStatementRepository, statementRepository);
         this.nonCoreDataService = nonCoreDataService;
         this.genericDataService = genericDataService;
         this.sqlGenerator = sqlGenerator;
         this.jdbcTemplate = jdbcTemplate;
+        this.savingsAccountRepository = savingsAccountRepositoryWrapper;
     }
 
     @Override
@@ -80,6 +84,25 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
             prefix = isConversionAccount ? DEFAULT_PREFIX_CONVERSION : DEFAULT_PREFIX_DISPOSAL;
         }
         return new AccountStatementData(accountId, null, null, prefix);
+    }
+
+    @Override
+    protected List<Long> getAccountIds(Long productId, PortfolioProductType productType) {
+        return savingsAccountRepository.findByProductId(productId).stream().map(SavingsAccount::getId).toList();
+    }
+
+    @Override
+    protected boolean preStatementCreate(@NotNull Long accountId) {
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(accountId);
+        return !account.isClosed();
+    }
+
+    @Override
+    protected void postStatementCreate(@NotNull AccountStatement statement) {
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(statement.getAccountId());
+        if (account.isActive()) {
+            statement.activate();
+        }
     }
 
     @Override

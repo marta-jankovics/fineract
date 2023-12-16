@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
 import org.apache.fineract.portfolio.statement.data.ProductStatementData;
@@ -99,8 +100,13 @@ public class ProductStatementServiceImpl implements ProductStatementService {
                     }
                 }
                 for (ProductStatement statement : statementsByCode.values()) {
+                    String statementCode = statement.getStatementCode();
+                    if (statementRepository.hasAccountReference(statement.getId())) {
+                        throw new PlatformDataIntegrityException("error.msg.product.statement.delete",
+                                "Product statement can not be deleted because it is used on Account level " + statementCode, statementCode);
+                    }
                     statementRepository.delete(statement);
-                    changes.computeIfAbsent("deleted", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, statement.getStatementCode());
+                    changes.computeIfAbsent("deleted", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, statementCode);
                 }
                 if (changes.isEmpty()) {
                     changes = null;
