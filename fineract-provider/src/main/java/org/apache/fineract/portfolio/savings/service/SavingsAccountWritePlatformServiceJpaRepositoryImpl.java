@@ -977,6 +977,8 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
         businessEventNotifierService.notifyPostBusinessEvent(new SavingsCloseBusinessEvent(account));
         // disable all standing orders linked to the savings account
         disableStandingInstructionsLinkedToClosedSavings(account);
+        accountStatementService.inactivateAccountStatements(account.getId(), PortfolioProductType.SAVING);
+
         return new CommandProcessingResultBuilder() //
                 .withEntityId(savingsId) //
                 .withOfficeId(account.officeId()) //

@@ -70,4 +70,6 @@ public interface SavingsAccountRepository extends JpaRepository<SavingsAccount, 
 
     @Query("SELECT sa.id FROM SavingsAccount sa WHERE sa.externalId = :externalId")
     Long findIdByExternalId(@Param("externalId") ExternalId externalId);
+
+    List<SavingsAccount> findByProductId(@Param("productId") Long productId);
 }

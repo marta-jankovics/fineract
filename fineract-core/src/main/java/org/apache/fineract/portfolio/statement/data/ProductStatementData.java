@@ -37,4 +37,5 @@ public class ProductStatementData {
     private final StatementBatchType batchType;
     private final String recurrence;
     private final String sequencePrefix;
+    private final boolean inherit;
 }

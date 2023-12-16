@@ -123,6 +123,8 @@ final class SavingsProductsApiResourceSwagger {
             public String recurrence;
             @Schema(example = "K")
             public String sequencePrefix;
+            @Schema(example = "false")
+            public boolean inherit;
         }
 
         @Schema(example = "Passbook Savings Lite.")

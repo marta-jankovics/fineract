@@ -179,4 +179,8 @@ public class SavingsAccountRepositoryWrapper {
     public Long findIdByExternalId(final ExternalId externalId) {
         return this.repository.findIdByExternalId(externalId);
     }
+
+    public List<SavingsAccount> findByProductId(Long productId) {
+        return this.repository.findByProductId(productId);
+    }
 }

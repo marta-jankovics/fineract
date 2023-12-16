@@ -70,7 +70,7 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
         String filePfx = productType + "_" + statementType;
         String fileExt = ".json";
         FineractProperties.FineractStatementS3Properties s3 = properties.getStatement().getS3();
-        String folder = s3.getFolder();
+        String s3Folder = s3.getFolder();
         Integer nameLengt = s3.getLength();
 
         for (AccountStatementPublishData publishData : publishBatch) {
@@ -81,6 +81,7 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
             String content = result.getContent();
             Map<String, String> metadata = buildMetadata(result.getMetadata());
             String resultPath = result.getResultPath();
+            String folder = s3Folder;
             if (!StringUtils.isBlank(resultPath)) {
                 folder = StringUtils.isBlank(folder) ? resultPath : (folder + File.separator + resultPath);
             }

@@ -105,6 +105,10 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
                 Optional.ofNullable(statementData.getSequencePrefix()).orElse(productStatement.getSequencePrefix()));
     }
 
+    public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull Long accountId) {
+        return new AccountStatement(productStatement, accountId, productStatement.getRecurrence(), productStatement.getSequencePrefix());
+    }
+
     public boolean update(@NotNull AccountStatementData statementData, @NotNull Map<String, Object> changes) {
         boolean changed = false;
         String recurrence = statementData.getRecurrence();
@@ -117,6 +121,21 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
         if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
             setRecurrence(sequencePrefix);
             changes.put(PARAM_SEQUENCE_PREFIX, sequencePrefix);
+            changed = true;
+        }
+        return changed;
+    }
+
+    public boolean inherit(@NotNull ProductStatement productStatement) {
+        boolean changed = false;
+        String recurrence = productStatement.getRecurrence();
+        if (recurrence != null && !Objects.equals(this.recurrence, recurrence)) {
+            setRecurrence(recurrence);
+            changed = true;
+        }
+        String sequencePrefix = productStatement.getSequencePrefix();
+        if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
+            setRecurrence(sequencePrefix);
             changed = true;
         }
         return changed;
@@ -171,7 +190,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
         if (sequenceNo == null || statementDate == null) {
             return 1;
         }
-        if (statementDate.getYear() < nextStatementDate.getYear()) {
+        if (nextStatementDate != null && statementDate.getYear() < nextStatementDate.getYear()) {
             return 1;
         }
         return sequenceNo + 1;

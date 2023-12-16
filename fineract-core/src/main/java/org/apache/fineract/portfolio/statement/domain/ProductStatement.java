@@ -50,7 +50,7 @@ import org.apache.fineract.portfolio.statement.data.ProductStatementData;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "m_product_statement", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "product_id", "product_type", "statement_code" }, name = "uk_product_statement") })
+        @UniqueConstraint(columnNames = { "statement_code" }, name = "uk_product_statement") })
 public class ProductStatement extends AbstractPersistableCustom {
 
     @Column(name = "product_id", nullable = false)

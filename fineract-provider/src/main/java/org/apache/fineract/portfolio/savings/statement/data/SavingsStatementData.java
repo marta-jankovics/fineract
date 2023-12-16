@@ -44,7 +44,7 @@ import org.apache.fineract.portfolio.statement.data.camt053.TransactionData;
 import org.apache.fineract.portfolio.statement.data.camt053.TransactionsSummaryData;
 import org.apache.fineract.portfolio.statement.domain.AccountStatement;
 
-public class SavingsStatementData extends StatementData {
+public final class SavingsStatementData extends StatementData {
 
     public static final int STATEMENT_TYPE_ALL = 0;
     public static final int STATEMENT_TYPE_BOOKED = 1;

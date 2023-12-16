@@ -299,8 +299,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             account.modifyApplication(command, changes);
             account.validateNewApplicationState(SAVINGS_ACCOUNT_RESOURCE_NAME);
             account.validateAccountValuesWithProduct();
-            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId, account.getSavingsProductId(),
-                    PortfolioProductType.SAVING, command);
+            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId, PortfolioProductType.SAVING,
+                    command);
 
             if (!changes.isEmpty()) {
                 if (changes.containsKey(SavingsApiConstants.clientIdParamName)) {
