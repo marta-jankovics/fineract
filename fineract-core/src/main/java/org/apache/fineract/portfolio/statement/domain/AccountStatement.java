@@ -135,7 +135,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
         }
         String sequencePrefix = productStatement.getSequencePrefix();
         if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
-            setRecurrence(sequencePrefix);
+            setSequencePrefix(sequencePrefix);
             changed = true;
         }
         return changed;
