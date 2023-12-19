@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership. The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="binx currentaccount" id="1">
+        <createTable tableName="custom_m_current_account">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="account_no" type="VARCHAR(20)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="external_id" type="VARCHAR(100)">
+                <constraints unique="true"/>
+            </column>
+            <column name="client_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="300" name="status_enum" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="sub_status_enum" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="1" name="account_type_enum" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="submittedon_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="submittedon_userid" type="BIGINT">
+                    <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="approvedon_date" type="date"/>
+            <column defaultValueComputed="NULL" name="approvedon_userid" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="rejectedon_date" type="date"/>
+            <column defaultValueComputed="NULL" name="rejectedon_userid" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="withdrawnon_date" type="date"/>
+            <column defaultValueComputed="NULL" name="withdrawnon_userid" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="activatedon_date" type="date"/>
+            <column defaultValueComputed="NULL" name="activatedon_userid" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="closedon_date" type="date"/>
+            <column defaultValueComputed="NULL" name="closedon_userid" type="BIGINT"/>
+            <column name="currency_code" type="VARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_digits" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="currency_multiplesof" type="SMALLINT"/>
+            <column defaultValueBoolean="false" name="allow_overdraft" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="overdraft_limit" type="DECIMAL(19, 6)"/>
+            <column defaultValueComputed="NULL" name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column defaultValueNumeric="1" name="version" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="binx currentaccount" id="2" context="mysql">
+        <addColumn tableName="custom_m_current_account">
+            <column name="created_on_utc" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on_utc" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="binx currentaccount" id="2" context="postgresql">
+        <addColumn tableName="custom_m_current_account">
+            <column name="created_on_utc" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on_utc" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="binx currentaccount" id="3">
+        <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_created_by" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_last_modified_by" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="approvedon_userid" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_approvedon_userid" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="rejectedon_userid" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_rejectedon_userid" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="withdrawnon_userid" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_withdrawnon_userid" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="activatedon_userid" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_activatedon_userid" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="closedon_userid" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_closedon_userid" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="client_id" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_client_id" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_client" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="custom_m_current_account"
+                                 constraintName="FK_custom_m_current_account_product_id" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="custom_m_current_product" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
