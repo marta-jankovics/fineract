@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.organisation.office.domain;
+package org.apache.fineract.currentaccount.exception;
 
-import java.util.List;
-import org.apache.fineract.organisation.monetary.data.CurrencyData;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
+import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
+import org.springframework.dao.EmptyResultDataAccessException;
 
-@Repository
-public interface OrganisationCurrencyRepository
-        extends JpaRepository<OrganisationCurrency, Long>, JpaSpecificationExecutor<OrganisationCurrency> {
+public class CurrentProductNotFoundException extends AbstractPlatformResourceNotFoundException {
 
-    List<CurrencyData> findAllAndSortBy(Sort sort);
+    public CurrentProductNotFoundException(final Long id) {
+        super("error.msg.currentproduct.id.invalid", "Current product with identifier " + id + " does not exist", id);
+    }
+
+    public CurrentProductNotFoundException(Long id, EmptyResultDataAccessException e) {
+        super("error.msg.currentproduct.id.invalid", "Current product with identifier " + id + " does not exist", id, e);
+    }
 }

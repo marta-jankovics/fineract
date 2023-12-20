@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.domain.ApplicationCurrencyRepository;
-import org.apache.fineract.organisation.office.domain.OrganisationCurrencyRepository;
+import org.apache.fineract.organisation.monetary.domain.OrganisationCurrencyRepository;
 import org.springframework.data.domain.Sort;
 
 @RequiredArgsConstructor
@@ -36,13 +36,13 @@ public class CurrencyReadPlatformServiceImpl implements CurrencyReadPlatformServ
     @Override
     public List<CurrencyData> retrieveAllowedCurrencies() {
         this.context.authenticatedUser();
-        return organisationCurrencyRepository.findAllAndSortBy(Sort.by("name"));
+        return organisationCurrencyRepository.findAllSorted(Sort.by("name"));
     }
 
     @Override
     public List<CurrencyData> retrieveAllPlatformCurrencies() {
         this.context.authenticatedUser();
-        return currencyRepository.findAllCurrencyDataAndSortBy(Sort.by("name"));
+        return currencyRepository.findAllSorted(Sort.by("name"));
     }
 
     @Override

@@ -23,22 +23,22 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_account_transaction", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"external_id"}, name = "sa_external_id_UNIQUE")})
+        @UniqueConstraint(columnNames = { "external_id" }, name = "sa_external_id_UNIQUE") })
 public class CurrentAccountTransaction extends AbstractAuditableWithUTCDateTimeCustom {
+
     @Basic
     @Column(name = "current_account_id", nullable = false)
     private Long currentAccountId;

@@ -20,24 +20,31 @@ package org.apache.fineract.currentaccount.domain;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
-
-import java.math.BigDecimal;
+import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_current_product", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"}, name = "sp_unq_name"),
-        @UniqueConstraint(columnNames = {"short_name"}, name = "sp_unq_short_name")})
+@AllArgsConstructor
+@Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
+        @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key") })
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom {
+
     @Basic
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -47,18 +54,11 @@ public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom {
     @Basic
     @Column(name = "description", length = 500)
     private String description;
-    @Basic
-    @Column(name = "currency_code", nullable = false, length = 3)
-    private String currencyCode;
-    @Basic
-    @Column(name = "currency_digits", nullable = false)
-    private Integer currencyDigits;
-    @Basic
-    @Column(name = "currency_multiples_of")
-    private Integer currencyMultiplesOf;
-    @Basic
+    @Embedded
+    private MonetaryCurrency currency;
+    @Enumerated(EnumType.STRING)
     @Column(name = "accounting_type", nullable = false)
-    private Integer accountingType;
+    private AccountingRuleType accountingType;
     @Basic
     @Column(name = "allow_overdraft", nullable = false)
     private boolean allowOverdraft;

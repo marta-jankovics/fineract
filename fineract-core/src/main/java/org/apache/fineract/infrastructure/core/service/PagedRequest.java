@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.Data;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @Data
@@ -38,6 +40,17 @@ public class PagedRequest<T> {
     private int size = DEFAULT_PAGE_SIZE;
 
     private final List<SortOrder> sorts = new ArrayList<>();
+
+    public static Pageable createFrom(Integer page, Integer size, String direction, String orderBy) {
+        page = ObjectUtils.defaultIfNull(page, 0);
+        size = ObjectUtils.defaultIfNull(size, DEFAULT_PAGE_SIZE);
+        Sort sort = Sort.unsorted();
+        if (orderBy != null) {
+            Sort.Direction orderDirection = direction != null ? Sort.Direction.fromString(direction) : Sort.Direction.ASC;
+            sort = Sort.by(orderDirection, orderBy);
+        }
+        return PageRequest.of(page, size, sort);
+    }
 
     public Optional<T> getRequest() {
         return Optional.ofNullable(request);

@@ -16,13 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.configuration;
+package org.apache.fineract.currentaccount.data;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.ComponentScan;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import lombok.Data;
+import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
-@AutoConfiguration
-@ComponentScan("org.apache.fineract.currentaccount")
-@ConditionalOnProperty("fineract.module.currentaccount.enabled")
-public class CurrentAccountAutoConfiguration {}
+@Data
+public class CurrentProductResponseData implements Serializable {
+
+    // Current product data
+    private final Long id;
+    private final String name;
+    private final String shortName;
+    private final String description;
+    private final CurrencyData currency;
+    private final EnumOptionData accountingType;
+    private final boolean allowOverdraft;
+    private final BigDecimal overdraftLimit;
+    private final BigDecimal minRequiredBalance;
+
+}

@@ -3664,4 +3664,28 @@ public class CommandWrapperBuilder {
         this.href = "/loans/" + loanId + "/delinquency-action";
         return this;
     }
+
+    public CommandWrapperBuilder createCurrentProduct() {
+        this.actionName = "CREATE";
+        this.entityName = "CURRENTPRODUCT";
+        this.entityId = null;
+        this.href = "/currentproducts/template";
+        return this;
+    }
+
+    public CommandWrapperBuilder updateCurrentProduct(final Long productId) {
+        this.actionName = "UPDATE";
+        this.entityName = "CURRENTPRODUCT";
+        this.entityId = productId;
+        this.href = "/currentproducts/" + productId;
+        return this;
+    }
+
+    public CommandWrapperBuilder deleteCurrentProduct(final Long productId) {
+        this.actionName = "DELETE";
+        this.entityName = "CURRENTPRODUCT";
+        this.entityId = productId;
+        this.href = "/currentproducts/" + productId;
+        return this;
+    }
 }

@@ -16,13 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.organisation.office.domain;
+package org.apache.fineract.currentaccount.service.read;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.apache.fineract.currentaccount.data.CurrentProductResponseData;
+import org.apache.fineract.currentaccount.data.CurrentProductTemplateResponseData;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-public interface OrganisationCurrencyRepository
-        extends JpaRepository<OrganisationCurrency, Long>, JpaSpecificationExecutor<OrganisationCurrency> {
+public interface CurrentProductReadService {
 
-    OrganisationCurrency findOneByCode(String currencyCode);
+    Page<CurrentProductResponseData> retrieveAll(Pageable pageRequest);
+
+    CurrentProductResponseData retrieveById(Long productId);
+
+    CurrentProductTemplateResponseData retrieveTemplate();
 }

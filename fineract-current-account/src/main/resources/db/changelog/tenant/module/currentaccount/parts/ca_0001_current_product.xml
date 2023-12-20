@@ -40,8 +40,8 @@
             <column name="currency_digits" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="currency_multiples_of" type="SMALLINT"/>
-            <column name="accounting_type" type="SMALLINT">
+            <column defaultValueComputed="NULL" name="currency_multiplesof" type="SMALLINT"/>
+            <column name="accounting_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
             <column defaultValueBoolean="false" name="allow_overdraft" type="boolean">

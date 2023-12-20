@@ -87,7 +87,7 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="current_account_id" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_savings_account_id" deferrable="false" initiallyDeferred="false"
+                                 constraintName="FK_m_current_account_transaction_current_account_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_account" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="payment_detail_id" baseTableName="m_current_account_transaction"

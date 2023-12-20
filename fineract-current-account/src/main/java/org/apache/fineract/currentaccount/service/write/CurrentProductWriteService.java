@@ -16,13 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.configuration;
+package org.apache.fineract.currentaccount.service.write;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.ComponentScan;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
-@AutoConfiguration
-@ComponentScan("org.apache.fineract.currentaccount")
-@ConditionalOnProperty("fineract.module.currentaccount.enabled")
-public class CurrentAccountAutoConfiguration {}
+public interface CurrentProductWriteService {
+
+    CommandProcessingResult create(JsonCommand command);
+
+    CommandProcessingResult update(Long productId, JsonCommand command);
+
+    CommandProcessingResult delete(Long productId);
+}
