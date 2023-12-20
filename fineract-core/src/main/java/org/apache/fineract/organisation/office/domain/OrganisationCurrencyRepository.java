@@ -16,13 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.organisation.monetary.domain;
+package org.apache.fineract.organisation.office.domain;
 
+import java.util.List;
+import org.apache.fineract.organisation.monetary.data.CurrencyData;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
-public interface ApplicationCurrencyRepository
-        extends JpaRepository<ApplicationCurrency, Long>, JpaSpecificationExecutor<ApplicationCurrency> {
+@Repository
+public interface OrganisationCurrencyRepository
+        extends JpaRepository<OrganisationCurrency, Long>, JpaSpecificationExecutor<OrganisationCurrency> {
 
-    ApplicationCurrency findOneByCode(String currencyCode);
+    List<CurrencyData> findAllAndSortBy(Sort sort);
 }

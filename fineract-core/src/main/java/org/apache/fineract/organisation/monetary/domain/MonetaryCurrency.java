@@ -20,9 +20,11 @@ package org.apache.fineract.organisation.monetary.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Setter;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
 @Embeddable
+@Setter
 public class MonetaryCurrency {
 
     @Column(name = "currency_code", length = 3, nullable = false)

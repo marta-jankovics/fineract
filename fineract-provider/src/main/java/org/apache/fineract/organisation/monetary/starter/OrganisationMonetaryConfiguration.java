@@ -19,6 +19,7 @@
 package org.apache.fineract.organisation.monetary.starter;
 
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.apache.fineract.organisation.monetary.domain.ApplicationCurrencyRepository;
 import org.apache.fineract.organisation.monetary.domain.ApplicationCurrencyRepositoryWrapper;
 import org.apache.fineract.organisation.monetary.serialization.CurrencyCommandFromApiJsonDeserializer;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
@@ -34,15 +35,15 @@ import org.apache.fineract.portfolio.savings.service.SavingsProductReadPlatformS
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 public class OrganisationMonetaryConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrencyReadPlatformService.class)
-    public CurrencyReadPlatformService currencyReadPlatformService(PlatformSecurityContext context, JdbcTemplate jdbcTemplate) {
-        return new CurrencyReadPlatformServiceImpl(context, jdbcTemplate);
+    public CurrencyReadPlatformService currencyReadPlatformService(PlatformSecurityContext context,
+            ApplicationCurrencyRepository currencyRepository, OrganisationCurrencyRepository organisationCurrencyRepository) {
+        return new CurrencyReadPlatformServiceImpl(context, currencyRepository, organisationCurrencyRepository);
     }
 
     @Bean
