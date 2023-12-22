@@ -977,8 +977,9 @@ public class DataValidatorBuilder {
         }
         final Iterable<String> inputs = Splitter.onPattern(VALID_INPUT_SEPERATOR).split(validInputs);
         boolean validationErr = true;
+        String formatValue = this.value != null ? this.value.toString().trim() : null;
         for (final String input : inputs) {
-            if (input.equalsIgnoreCase(this.value.toString().trim())) {
+            if (input.equalsIgnoreCase(formatValue)) {
                 validationErr = false;
                 break;
             }

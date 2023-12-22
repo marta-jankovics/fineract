@@ -483,8 +483,8 @@ public class GroupsApiResource {
             result = commandsSourceWritePlatformService.logCommandSource(commandRequest);
             return toApiJsonSerializer.serialize(result);
         } else {
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "activate", "generateCollectionSheet",
-                    "saveCollectionSheet", "unassignStaff", "assignRole", "unassignRole", "updateassignRole" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "activate", "generateCollectionSheet", "saveCollectionSheet",
+                    "unassignStaff", "assignRole", "unassignRole", "updateassignRole");
         }
 
     }

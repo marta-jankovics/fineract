@@ -303,12 +303,11 @@ public class SavingsAccountsApiResource {
             result = commandsSourceWritePlatformService.logCommandSource(commandRequest);
         }
         if (result == null) {
-            throw new UnrecognizedQueryParamException("command", commandParam,
-                    new Object[] { "reject", "withdrawnByApplicant", "approve", "undoapproval", "activate", "calculateInterest",
-                            "postInterest", "close", "assignSavingsOfficer", "unassignSavingsOfficer",
-                            SavingsApiConstants.COMMAND_BLOCK_DEBIT, SavingsApiConstants.COMMAND_UNBLOCK_DEBIT,
-                            SavingsApiConstants.COMMAND_BLOCK_CREDIT, SavingsApiConstants.COMMAND_UNBLOCK_CREDIT,
-                            SavingsApiConstants.COMMAND_BLOCK_ACCOUNT, SavingsApiConstants.COMMAND_UNBLOCK_ACCOUNT });
+            throw new UnrecognizedQueryParamException("command", commandParam, "reject", "withdrawnByApplicant", "approve", "undoapproval",
+                    "activate", "calculateInterest", "postInterest", "close", "assignSavingsOfficer", "unassignSavingsOfficer",
+                    SavingsApiConstants.COMMAND_BLOCK_DEBIT, SavingsApiConstants.COMMAND_UNBLOCK_DEBIT,
+                    SavingsApiConstants.COMMAND_BLOCK_CREDIT, SavingsApiConstants.COMMAND_UNBLOCK_CREDIT,
+                    SavingsApiConstants.COMMAND_BLOCK_ACCOUNT, SavingsApiConstants.COMMAND_UNBLOCK_ACCOUNT);
         }
 
         return toApiJsonSerializer.serialize(result);
@@ -481,7 +480,7 @@ public class SavingsAccountsApiResource {
         context.authenticatedUser().validateHasReadPermission(SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME);
 
         if (!(is(chargeStatus, "all") || is(chargeStatus, "active") || is(chargeStatus, "inactive"))) {
-            throw new UnrecognizedQueryParamException("status", chargeStatus, new Object[] { "all", "active", "inactive" });
+            throw new UnrecognizedQueryParamException("status", chargeStatus, "all", "active", "inactive");
         }
 
         ExternalId accountExternalId = ExternalIdFactory.produce(externalId);
@@ -586,12 +585,11 @@ public class SavingsAccountsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam,
-                    new Object[] { "reject", "withdrawnByApplicant", "approve", "undoapproval", "activate", "calculateInterest",
-                            "postInterest", "close", "assignSavingsOfficer", "unassignSavingsOfficer",
-                            SavingsApiConstants.COMMAND_BLOCK_DEBIT, SavingsApiConstants.COMMAND_UNBLOCK_DEBIT,
-                            SavingsApiConstants.COMMAND_BLOCK_CREDIT, SavingsApiConstants.COMMAND_UNBLOCK_CREDIT,
-                            SavingsApiConstants.COMMAND_BLOCK_ACCOUNT, SavingsApiConstants.COMMAND_UNBLOCK_ACCOUNT });
+            throw new UnrecognizedQueryParamException("command", commandParam, "reject", "withdrawnByApplicant", "approve", "undoapproval",
+                    "activate", "calculateInterest", "postInterest", "close", "assignSavingsOfficer", "unassignSavingsOfficer",
+                    SavingsApiConstants.COMMAND_BLOCK_DEBIT, SavingsApiConstants.COMMAND_UNBLOCK_DEBIT,
+                    SavingsApiConstants.COMMAND_BLOCK_CREDIT, SavingsApiConstants.COMMAND_UNBLOCK_CREDIT,
+                    SavingsApiConstants.COMMAND_BLOCK_ACCOUNT, SavingsApiConstants.COMMAND_UNBLOCK_ACCOUNT);
         }
 
         return toApiJsonSerializer.serialize(result);

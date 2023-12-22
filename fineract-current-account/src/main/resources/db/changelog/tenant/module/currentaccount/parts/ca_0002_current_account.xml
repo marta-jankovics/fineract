@@ -27,7 +27,7 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="account_no" type="VARCHAR(20)">
+            <column name="account_no" type="VARCHAR(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="external_id" type="VARCHAR(100)">
@@ -39,43 +39,43 @@
             <column name="product_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="300" name="status_enum" type="SMALLINT">
+            <column name="status" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="0" name="sub_status_enum" type="SMALLINT">
-                <constraints nullable="false"/>
-            </column>
-            <column defaultValueNumeric="1" name="account_type_enum" type="SMALLINT">
+            <column name="account_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="submitted_on_date" type="date">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="submitted_on_userid" type="BIGINT">
+            <column name="submitted_by_user_id" type="BIGINT">
                     <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="approved_on_date" type="date"/>
-            <column defaultValueComputed="NULL" name="approved_on_user_id" type="BIGINT"/>
-            <column defaultValueComputed="NULL" name="rejected_on_date" type="date"/>
-            <column defaultValueComputed="NULL" name="rejected_on_user_id" type="BIGINT"/>
-            <column defaultValueComputed="NULL" name="withdrawn_on_date" type="date"/>
-            <column defaultValueComputed="NULL" name="withdrawn_on_user_id" type="BIGINT"/>
-            <column defaultValueComputed="NULL" name="activated_on_date" type="date"/>
-            <column defaultValueComputed="NULL" name="activated_on_user_id" type="BIGINT"/>
-            <column defaultValueComputed="NULL" name="closed_on_date" type="date"/>
-            <column defaultValueComputed="NULL" name="closed_on_user_id" type="BIGINT"/>
+            <column name="approved_on_date" type="date"/>
+            <column name="approved_by_user_id" type="BIGINT"/>
+            <column name="rejected_on_date" type="date"/>
+            <column name="rejected_by_user_id" type="BIGINT"/>
+            <column name="withdrawn_on_date" type="date"/>
+            <column name="withdrawn_by_user_id" type="BIGINT"/>
+            <column name="activated_on_date" type="date"/>
+            <column name="activated_by_user_id" type="BIGINT"/>
+            <column name="closed_on_date" type="date"/>
+            <column name="closed_by_user_id" type="BIGINT"/>
             <column name="currency_code" type="VARCHAR(3)">
                 <constraints nullable="false"/>
             </column>
             <column name="currency_digits" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="currency_multiples_of" type="SMALLINT"/>
+            <column name="currency_multiplesof" type="SMALLINT"/>
             <column defaultValueBoolean="false" name="allow_overdraft" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="overdraft_limit" type="DECIMAL(19, 6)"/>
-            <column defaultValueComputed="NULL" name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column name="overdraft_limit" type="DECIMAL(19, 6)"/>
+            <column defaultValueBoolean="false" name="enforce_min_required_balance" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_required_balance" type="DECIMAL(19, 6)"/>
             <column defaultValueNumeric="1" name="version" type="INT">
                 <constraints nullable="false"/>
             </column>
@@ -122,24 +122,24 @@
                                  constraintName="FK_m_current_account_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="approved_on_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_approved_on_user_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="approved_by_user_id" baseTableName="m_current_account"
+                                 constraintName="FK_m_current_account_approved_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="rejected_on_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_rejected_on_user_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="rejected_by_user_id" baseTableName="m_current_account"
+                                 constraintName="FK_m_current_account_rejected_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="withdrawn_on_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_withdrawn_on_user_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="withdrawn_by_user_id" baseTableName="m_current_account"
+                                 constraintName="FK_m_current_account_withdrawn_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="activated_on_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_activated_on_user_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="activated_by_user_id" baseTableName="m_current_account"
+                                 constraintName="FK_m_current_account_activated_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="closed_on_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_closed_on_user_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="closed_by_user_id" baseTableName="m_current_account"
+                                 constraintName="FK_m_current_account_closed_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="client_id" baseTableName="m_current_account"

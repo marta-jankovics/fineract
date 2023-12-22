@@ -40,15 +40,18 @@
             <column name="currency_digits" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="currency_multiplesof" type="SMALLINT"/>
+            <column name="currency_multiplesof" type="SMALLINT"/>
             <column name="accounting_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
             <column defaultValueBoolean="false" name="allow_overdraft" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueComputed="NULL" name="overdraft_limit" type="DECIMAL(19, 6)"/>
-            <column defaultValueComputed="NULL" name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column name="overdraft_limit" type="DECIMAL(19, 6)"/>
+            <column defaultValueBoolean="false" name="enforce_min_required_balance" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_required_balance" type="DECIMAL(19, 6)"/>
         </createTable>
     </changeSet>
     <changeSet author="fineract" id="2" context="mysql">

@@ -204,8 +204,8 @@ public class SavingsAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam,
-                    new Object[] { "deposit", "withdrawal", SavingsApiConstants.COMMAND_HOLD_AMOUNT });
+            throw new UnrecognizedQueryParamException("command", commandParam, "deposit", "withdrawal",
+                    SavingsApiConstants.COMMAND_HOLD_AMOUNT);
         }
 
         return this.toApiJsonSerializer.serialize(result);
@@ -248,9 +248,9 @@ public class SavingsAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam,
-                    new Object[] { SavingsApiConstants.COMMAND_UNDO_TRANSACTION, SavingsApiConstants.COMMAND_ADJUST_TRANSACTION,
-                            SavingsApiConstants.COMMAND_RELEASE_AMOUNT, SavingsApiConstants.COMMAND_REVERSE_TRANSACTION });
+            throw new UnrecognizedQueryParamException("command", commandParam, SavingsApiConstants.COMMAND_UNDO_TRANSACTION,
+                    SavingsApiConstants.COMMAND_ADJUST_TRANSACTION, SavingsApiConstants.COMMAND_RELEASE_AMOUNT,
+                    SavingsApiConstants.COMMAND_REVERSE_TRANSACTION);
         }
 
         return this.toApiJsonSerializer.serialize(result);

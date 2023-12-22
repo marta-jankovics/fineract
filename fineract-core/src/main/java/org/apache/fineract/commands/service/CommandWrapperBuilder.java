@@ -3688,4 +3688,82 @@ public class CommandWrapperBuilder {
         this.href = "/currentproducts/" + productId;
         return this;
     }
+
+    public CommandWrapperBuilder createCurrentAccount() {
+        this.actionName = "CREATE";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = null;
+        this.href = "/currentaccounts/template";
+        return this;
+    }
+
+    public CommandWrapperBuilder updateCurrentAccount(final Long accountId) {
+        this.actionName = "UPDATE";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.href = "/currentaccounts/" + accountId;
+        return this;
+    }
+
+    public CommandWrapperBuilder deleteCurrentAccount(final Long accountId) {
+        this.actionName = "DELETE";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.href = "/currentaccounts/" + accountId;
+        return this;
+    }
+
+    public CommandWrapperBuilder rejectCurrentAccountApplication(final Long accountId) {
+        this.actionName = "REJECT";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.savingsId = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=reject";
+        return this;
+    }
+
+    public CommandWrapperBuilder withdrawCurrentAccountApplication(final Long accountId) {
+        this.actionName = "WITHDRAW";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.savingsId = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=withdrawnByApplicant";
+        return this;
+    }
+
+    public CommandWrapperBuilder approveCurrentAccountApplication(final Long accountId) {
+        this.actionName = "APPROVE";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.savingsId = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=approve";
+        return this;
+    }
+
+    public CommandWrapperBuilder undoCurrentAccountApplication(final Long accountId) {
+        this.actionName = "APPROVALUNDO";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.savingsId = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=undoApproval";
+        return this;
+    }
+
+    public CommandWrapperBuilder currentAccountActivation(final Long accountId) {
+        this.actionName = "ACTIVATE";
+        this.entityName = "CURRENTACCOUNT";
+        this.savingsId = accountId;
+        this.entityId = null;
+        this.href = "/currentaccounts/" + accountId + "?command=activate";
+        return this;
+    }
+
+    public CommandWrapperBuilder closeCurrentAccountApplication(final Long accountId) {
+        this.actionName = "CLOSE";
+        this.entityName = "CURRENTACCOUNT";
+        this.entityId = accountId;
+        this.savingsId = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=close";
+        return this;
+    }
 }

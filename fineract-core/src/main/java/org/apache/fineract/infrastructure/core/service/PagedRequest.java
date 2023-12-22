@@ -41,15 +41,19 @@ public class PagedRequest<T> {
 
     private final List<SortOrder> sorts = new ArrayList<>();
 
-    public static Pageable createFrom(Integer page, Integer size, String direction, String orderBy) {
+    public static Pageable createFrom(Long offset, Integer limit, Integer page, Integer size, String direction, String orderBy) {
+        PaginationType paginationType = offset != null || limit != null ? PaginationType.OFFSET_LIMIT : PaginationType.PAGE_SIZE;
         page = ObjectUtils.defaultIfNull(page, 0);
         size = ObjectUtils.defaultIfNull(size, DEFAULT_PAGE_SIZE);
+        offset = ObjectUtils.defaultIfNull(offset, 0L);
+        limit = ObjectUtils.defaultIfNull(limit, DEFAULT_PAGE_SIZE);
         Sort sort = Sort.unsorted();
         if (orderBy != null) {
             Sort.Direction orderDirection = direction != null ? Sort.Direction.fromString(direction) : Sort.Direction.ASC;
             sort = Sort.by(orderDirection, orderBy);
         }
-        return PageRequest.of(page, size, sort);
+        return PaginationType.OFFSET_LIMIT.equals(paginationType) ? new OffsetLimitPagedRequest(offset, limit, sort)
+                : PageRequest.of(page, size, sort);
     }
 
     public Optional<T> getRequest() {

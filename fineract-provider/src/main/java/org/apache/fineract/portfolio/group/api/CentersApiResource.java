@@ -353,8 +353,8 @@ public class CentersApiResource {
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
             return this.toApiJsonSerializer.serialize(result);
         } else {
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "activate", "generateCollectionSheet",
-                    "saveCollectionSheet", "close", "associateGroups", "disassociateGroups" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "activate", "generateCollectionSheet", "saveCollectionSheet",
+                    "close", "associateGroups", "disassociateGroups");
         }
 
     }

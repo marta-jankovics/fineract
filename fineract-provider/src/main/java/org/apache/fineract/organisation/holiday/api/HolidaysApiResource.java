@@ -122,7 +122,7 @@ public class HolidaysApiResource {
         }
 
         if (result == null) {
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "activate" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "activate");
         }
 
         return this.toApiJsonSerializer.serialize(result);

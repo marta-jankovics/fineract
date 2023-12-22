@@ -99,7 +99,7 @@ public class SavingsAccountChargesApiResource {
         this.context.authenticatedUser().validateHasReadPermission(SAVINGS_ACCOUNT_CHARGE_RESOURCE_NAME);
 
         if (!(is(chargeStatus, "all") || is(chargeStatus, "active") || is(chargeStatus, "inactive"))) {
-            throw new UnrecognizedQueryParamException("status", chargeStatus, new Object[] { "all", "active", "inactive" });
+            throw new UnrecognizedQueryParamException("status", chargeStatus, "all", "active", "inactive");
         }
 
         final Collection<SavingsAccountChargeData> savingsAccountCharges = this.savingsAccountChargeReadPlatformService

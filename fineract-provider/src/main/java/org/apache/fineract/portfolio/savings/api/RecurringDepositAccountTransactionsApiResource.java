@@ -103,7 +103,7 @@ public class RecurringDepositAccountTransactionsApiResource {
          * Check @Param commandParam description for deposit or withdrawal
          */
         if (!(is(commandParam, "deposit") || is(commandParam, "withdrawal"))) {
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "deposit", "withdrawal" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "deposit", "withdrawal");
         }
 
         /***
@@ -180,7 +180,7 @@ public class RecurringDepositAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "deposit", "withdrawal" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "deposit", "withdrawal");
         }
 
         return this.toApiJsonSerializer.serialize(result);
@@ -221,7 +221,7 @@ public class RecurringDepositAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "undo", "modify" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "undo", "modify");
         }
 
         return this.toApiJsonSerializer.serialize(result);

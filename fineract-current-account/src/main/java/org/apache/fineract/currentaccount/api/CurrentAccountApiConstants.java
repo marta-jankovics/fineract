@@ -27,44 +27,19 @@ public class CurrentAccountApiConstants {
     public static final String CURRENT_ACCOUNT_CHARGE_RESOURCE_NAME = "currentaccountcharge";
 
     // actions
-    public static final String postInterestValidationOnClosure = "postInterestValidationOnClosure";
-    public static final String summitalAction = ".summital";
-    public static final String approvalAction = ".approval";
-    public static final String undoApprovalAction = ".undoApproval";
-    public static final String rejectAction = ".reject";
-    public static final String withdrawnByApplicantAction = ".withdrawnByApplicant";
-    public static final String activateAction = ".activate";
-    public static final String modifyApplicationAction = ".modify";
-    public static final String deleteApplicationAction = ".delete";
-    public static final String undoTransactionAction = ".undotransaction";
-    public static final String applyAnnualFeeTransactionAction = ".applyannualfee";
-    public static final String adjustTransactionAction = ".adjusttransaction";
-    public static final String closeAction = ".close";
-    public static final String payChargeTransactionAction = ".paycharge";
-    public static final String waiveChargeTransactionAction = ".waivecharge";
-    public static final String updateMaturityDetailsAction = ".updateMaturityDetails";
-    public static final String blockAction = ".block";
-    public static final String unblockAction = ".unblock";
-    public static final String blockCreditsAction = ".blockCredits";
-    public static final String unblockCreditsAction = ".unblockCredits";
-    public static final String blockDebitsAction = ".blockDebits";
-    public static final String unblockDebitsAction = ".unblockDebits";
+    public static final String submitAction = "submit";
+    public static final String approveAction = "approve";
+    public static final String undoApprovalAction = "undoApproval";
+    public static final String rejectAction = "reject";
+    public static final String withdrawnByApplicantAction = "withdrawnByApplicant";
+    public static final String activateAction = "activate";
+    public static final String modifyApplicationAction = "modify";
+    public static final String deleteApplicationAction = "delete";
+    public static final String closeAction = "close";
 
     // command
-    public static final String COMMAND_UNDO_TRANSACTION = "undo";
-    public static final String COMMAND_REVERSE_TRANSACTION = "reverse";
-    public static final String COMMAND_ADJUST_TRANSACTION = "modify";
-    public static final String COMMAND_WAIVE_CHARGE = "waive";
-    public static final String COMMAND_PAY_CHARGE = "paycharge";
-    public static final String COMMAND_INACTIVATE_CHARGE = "inactivate";
     public static final String COMMAND_HOLD_AMOUNT = "holdAmount";
     public static final String COMMAND_RELEASE_AMOUNT = "releaseAmount";
-    public static final String COMMAND_UNBLOCK_ACCOUNT = "unblock";
-    public static final String COMMAND_BLOCK_ACCOUNT = "block";
-    public static final String COMMAND_BLOCK_CREDIT = "blockCredit";
-    public static final String COMMAND_BLOCK_DEBIT = "blockDebit";
-    public static final String COMMAND_UNBLOCK_DEBIT = "unblockDebit";
-    public static final String COMMAND_UNBLOCK_CREDIT = "unblockCredit";
 
     // general
     public static final String localeParamName = "locale";
@@ -79,7 +54,6 @@ public class CurrentAccountApiConstants {
     public static final String accountNoParamName = "accountNo";
     public static final String externalIdParamName = "externalId";
     public static final String statusParamName = "status";
-    public static final String subStatusParamName = "subStatus";
     public static final String reasonForBlockParamName = "reasonForBlock";
     public static final String clientIdParamName = "clientId";
     public static final String isRetailAccountParamName = "isRetailAccount";

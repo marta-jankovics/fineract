@@ -134,7 +134,7 @@ public class FixedDepositAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "deposit", "withdrawal" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "deposit", "withdrawal");
         }
 
         return this.toApiJsonSerializer.serialize(result);
@@ -166,7 +166,7 @@ public class FixedDepositAccountTransactionsApiResource {
 
         if (result == null) {
             //
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "undo", "modify" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "undo", "modify");
         }
 
         return this.toApiJsonSerializer.serialize(result);

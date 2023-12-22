@@ -18,23 +18,6 @@
  */
 package org.apache.fineract.currentaccount.handler.product;
 
-import lombok.RequiredArgsConstructor;
-import org.apache.fineract.commands.annotation.CommandType;
 import org.apache.fineract.commands.handler.NewCommandSourceHandler;
-import org.apache.fineract.currentaccount.service.write.CurrentProductWriteService;
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-import org.springframework.stereotype.Service;
 
-@Service
-@CommandType(entity = "CURRENTPRODUCT", action = "CREATE")
-@RequiredArgsConstructor
-public class CreateCurrentProductCommandHandler implements NewCommandSourceHandler {
-
-    private final CurrentProductWriteService writePlatformService;
-
-    @Override
-    public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.create(command);
-    }
-}
+public interface CreateCurrentProductCommandHandler extends NewCommandSourceHandler {}
