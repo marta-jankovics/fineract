@@ -23,6 +23,7 @@ public class CurrentAccountApiConstants {
 
     public static final String CURRENT_PRODUCT_RESOURCE_NAME = "currentproduct";
     public static final String CURRENT_ACCOUNT_RESOURCE_NAME = "currentaccount";
+    public static final String CURRENT_TRANSACTION_RESOURCE_NAME = "currenttransaction";
     public static final String CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME = "currentaccount.transaction";
     public static final String CURRENT_ACCOUNT_CHARGE_RESOURCE_NAME = "currentaccountcharge";
 
@@ -38,8 +39,11 @@ public class CurrentAccountApiConstants {
     public static final String closeAction = "close";
 
     // command
-    public static final String COMMAND_HOLD_AMOUNT = "holdAmount";
-    public static final String COMMAND_RELEASE_AMOUNT = "releaseAmount";
+    public static final String COMMAND = "command";
+    public static final String COMMAND_DEPOSIT = "deposit";
+    public static final String COMMAND_WITHDRAW = "withdraw";
+    public static final String COMMAND_HOLD = "hold";
+    public static final String COMMAND_RELEASE = "release";
 
     // general
     public static final String localeParamName = "locale";

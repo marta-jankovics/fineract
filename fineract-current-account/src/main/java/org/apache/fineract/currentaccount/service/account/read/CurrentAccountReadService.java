@@ -28,11 +28,11 @@ public interface CurrentAccountReadService {
 
     Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
 
-    CurrentAccountResponseData retrieveById(Long currentId);
+    CurrentAccountResponseData retrieveById(Long accountId);
 
     CurrentAccountTemplateResponseData retrieveTemplate();
 
     CurrentAccountResponseData retrieveByExternalId(ExternalId externalId);
 
-    Long retrieveAccountIdByExternalId(ExternalId accountExternalId);
+    Long retrieveAccountIdByExternalId(ExternalId externalId);
 }

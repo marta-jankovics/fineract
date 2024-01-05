@@ -46,10 +46,10 @@ import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom {
 
     @Basic
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100, unique = true)
     private String name;
     @Basic
-    @Column(name = "short_name", nullable = false, length = 4)
+    @Column(name = "short_name", nullable = false, length = 4, unique = true)
     private String shortName;
     @Basic
     @Column(name = "description", length = 500)

@@ -19,20 +19,21 @@
 package org.apache.fineract.currentaccount.validator.account;
 
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
 
 public interface CurrentAccountDataValidator {
 
-    void validateForSubmit(String json);
+    void validateForSubmit(JsonCommand command);
 
-    void validateForUpdate(CurrentAccount account, String json);
+    void validateForUpdate(JsonCommand command, CurrentAccount account);
 
-    void validateApproval(String json);
+    void validateApproval(JsonCommand command);
 
-    void validateRejection(String json);
+    void validateRejection(JsonCommand command);
 
-    void validateWithdrawal(String json);
+    void validateWithdrawal(JsonCommand command);
 
-    void validateActivation(String json);
+    void validateActivation(JsonCommand command);
 
-    void validateClosing(String json);
+    void validateClosing(JsonCommand command);
 }

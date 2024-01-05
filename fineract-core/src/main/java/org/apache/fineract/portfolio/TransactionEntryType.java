@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.portfolio;
 
+import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+
 public enum TransactionEntryType {
 
     CREDIT(1, "transactionEntryType.credit"), //
@@ -50,5 +52,9 @@ public enum TransactionEntryType {
 
     public TransactionEntryType getReversal() {
         return this == CREDIT ? DEBIT : CREDIT;
+    }
+
+    public EnumOptionData toEnumOptionData() {
+        return new EnumOptionData(getValue().longValue(), getCode(), name());
     }
 }

@@ -34,10 +34,13 @@
                     <constraints unique="true"/>
                 </column>
                 <column defaultValueComputed="NULL" name="payment_detail_id" type="BIGINT"/>
-                <column name="transaction_type_enum" type="SMALLINT">
+                <column name="transaction_type_enum" type="VARCHAR(50)">
                     <constraints nullable="false"/>
                 </column>
                 <column name="transaction_date" type="date">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="submitted_on_date" type="date">
                     <constraints nullable="false"/>
                 </column>
                 <column name="amount" type="DECIMAL(19, 6)">

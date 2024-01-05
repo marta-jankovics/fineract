@@ -50,9 +50,9 @@ import org.apache.fineract.portfolio.accountdetails.domain.AccountType;
 public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom {
 
     @Basic
-    @Column(name = "account_no", nullable = false, length = 50)
+    @Column(name = "account_no", nullable = false, length = 50, unique = true)
     private String accountNo;
-    @Column(name = "external_id", length = 100)
+    @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
     @Basic
     @Column(name = "client_id", nullable = false)

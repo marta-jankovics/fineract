@@ -20,10 +20,12 @@ package org.apache.fineract.currentaccount.data.account;
 
 import java.io.Serializable;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 
 @Data
+@Builder
 public class CurrentAccountTemplateResponseData implements Serializable {
 
     private final List<CurrentProductResponseData> productOptions;

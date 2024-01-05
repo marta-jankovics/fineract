@@ -1,0 +1,48 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.fineract.currentaccount.api.transaction;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
+
+final class CurrentTransactionsApiResourceSwagger {
+
+    private CurrentTransactionsApiResourceSwagger() {}
+
+    @Schema(description = "PostCurrentAccountTransactionsRequest")
+    public static final class PostCurrentAccountTransactionsRequest {
+
+        private PostCurrentAccountTransactionsRequest() {}
+
+        @Schema(example = "27 March 2022")
+        public String transactionDate;
+        @Schema(example = "1000")
+        public BigDecimal transactionAmount;
+        @Schema(example = "en")
+        public String locale;
+        @Schema(example = "dd MMMM yyyy")
+        public String dateFormat;
+        @Schema(example = "true")
+        public String lienAllowed;
+        @Schema(example = "String")
+        public String reasonForBlock;
+        @Schema(example = "1")
+        public Integer paymentTypeId;
+    }
+}

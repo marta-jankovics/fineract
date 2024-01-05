@@ -19,10 +19,11 @@
 package org.apache.fineract.currentaccount.validator.product;
 
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
 
 public interface CurrentProductDataValidator {
 
-    void validateForCreate(String json);
+    void validateForCreate(JsonCommand command);
 
-    void validateForUpdate(String json, CurrentProduct product);
+    void validateForUpdate(JsonCommand command, CurrentProduct product);
 }
