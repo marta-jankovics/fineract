@@ -36,7 +36,7 @@ import org.apache.fineract.portfolio.paymenttype.domain.PaymentType;
 @Entity
 @Getter
 @Table(name = "m_payment_detail")
-public class PaymentDetail extends AbstractPersistableCustom {
+public class PaymentDetail extends AbstractPersistableCustom<Long> {
 
     @ManyToOne
     @JoinColumn(name = "payment_type_id", nullable = false)

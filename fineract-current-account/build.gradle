@@ -28,6 +28,10 @@ compileJava.doLast {
         from file("src/main/resources/jpa/currentaccount/persistence.xml")
         into "${source}/META-INF/"
     }
+    copy {
+        from file("src/main/resources/jpa/currentaccount/orm.xml")
+        into "${source}/META-INF/"
+    }
     javaexec {
         description = 'Performs EclipseLink static weaving of entity classes'
         def target = source

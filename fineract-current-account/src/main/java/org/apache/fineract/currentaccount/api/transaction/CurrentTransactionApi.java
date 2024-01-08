@@ -16,8 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.handler.account;
+package org.apache.fineract.currentaccount.api.transaction;
 
-import org.apache.fineract.commands.handler.NewCommandSourceHandler;
+import java.util.UUID;
+import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
+import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
+import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
-public interface CurrentAccountWithdrawApplicationCommandHandler extends NewCommandSourceHandler {}
+public interface CurrentTransactionApi {
+
+    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
+
+    CurrentTransactionResponseData retrieveOne(UUID accountId, UUID transactionId);
+
+    CommandProcessingResult transaction(UUID accountId, String commandParam, String apiRequestBodyAsJson);
+
+    CommandProcessingResult transaction(UUID accountId, UUID transactionId, String commandParam, String apiRequestBodyAsJson);
+}

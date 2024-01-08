@@ -18,13 +18,14 @@
  */
 package org.apache.fineract.currentaccount.exception.account;
 
+import java.util.UUID;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 public class CurrentAccountNotFoundException extends AbstractPlatformResourceNotFoundException {
 
-    public CurrentAccountNotFoundException(final Long id) {
+    public CurrentAccountNotFoundException(final UUID id) {
         super("error.msg.currentaccount.id.invalid", "Current account with identifier " + id + " does not exist", id);
     }
 
@@ -33,7 +34,7 @@ public class CurrentAccountNotFoundException extends AbstractPlatformResourceNot
                 "Current account with external identifier " + externalId.getValue() + " does not exist");
     }
 
-    public CurrentAccountNotFoundException(Long id, EmptyResultDataAccessException e) {
+    public CurrentAccountNotFoundException(UUID id, EmptyResultDataAccessException e) {
         super("error.msg.currentaccount.id.invalid", "Current account with identifier " + id + " does not exist", id, e);
     }
 }

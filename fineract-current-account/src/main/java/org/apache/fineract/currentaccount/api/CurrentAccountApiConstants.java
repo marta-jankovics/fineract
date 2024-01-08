@@ -29,11 +29,9 @@ public class CurrentAccountApiConstants {
 
     // actions
     public static final String submitAction = "submit";
-    public static final String rejectAction = "reject";
-    public static final String withdrawnByApplicantAction = "withdrawnByApplicant";
+    public static final String cancelAction = "cancel";
     public static final String activateAction = "activate";
     public static final String modifyApplicationAction = "modify";
-    public static final String deleteApplicationAction = "delete";
     public static final String closeAction = "close";
 
     // command
@@ -71,8 +69,7 @@ public class CurrentAccountApiConstants {
     public static final String fieldOfficerIdParamName = "fieldOfficerId";
 
     public static final String submittedOnDateParamName = "submittedOnDate";
-    public static final String rejectedOnDateParamName = "rejectedOnDate";
-    public static final String withdrawnOnDateParamName = "withdrawnOnDate";
+    public static final String cancelledOnDateParamName = "cancelledOnDate";
     public static final String activatedOnDateParamName = "activatedOnDate";
     public static final String closedOnDateParamName = "closedOnDate";
 
@@ -151,17 +148,17 @@ public class CurrentAccountApiConstants {
 
     public static final String noteParamName = "note";
 
-    // Savings account associations
+    // Current account associations
     public static final String transactions = "transactions";
     public static final String charges = "charges";
     public static final String linkedAccount = "linkedAccount";
 
-    // Savings on hold transaction
+    // Current on hold transaction
     public static final String onHoldTransactionTypeParamName = "transactionType";
     public static final String onHoldTransactionDateParamName = "transactionDate";
     public static final String onHoldReversedParamName = "reversed";
 
-    // Savings Dormancy
+    // Current Dormancy
     public static final String isDormancyTrackingActiveParamName = "isDormancyTrackingActive";
     public static final String daysToInactiveParamName = "daysToInactive";
     public static final String daysToDormancyParamName = "daysToDormancy";

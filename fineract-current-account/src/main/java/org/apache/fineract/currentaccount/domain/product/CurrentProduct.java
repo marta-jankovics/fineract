@@ -18,15 +18,18 @@
  */
 package org.apache.fineract.currentaccount.domain.product;
 
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +37,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
+import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.Converter;
 
 @Entity
 @Getter
@@ -43,32 +49,40 @@ import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 @AllArgsConstructor
 @Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
         @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key") })
-public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom {
+@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
-    @Basic
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Getter(onMethod = @__(@Override))
+    @Convert(value = "uuidConverter")
+    private UUID id;
+
     @Column(name = "name", nullable = false, length = 100, unique = true)
     private String name;
-    @Basic
+
     @Column(name = "short_name", nullable = false, length = 4, unique = true)
     private String shortName;
-    @Basic
+
     @Column(name = "description", length = 500)
     private String description;
+
     @Embedded
     private MonetaryCurrency currency;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "accounting_type", nullable = false)
     private AccountingRuleType accountingType;
-    @Basic
+
     @Column(name = "allow_overdraft", nullable = false)
     private boolean allowOverdraft;
-    @Basic
+
     @Column(name = "overdraft_limit", precision = 6)
     private BigDecimal overdraftLimit;
-    @Basic
+
     @Column(name = "enforce_min_required_balance")
     private boolean enforceMinRequiredBalance;
-    @Basic
+
     @Column(name = "min_required_balance", precision = 6)
     private BigDecimal minRequiredBalance;
 }

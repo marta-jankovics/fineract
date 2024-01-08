@@ -37,6 +37,6 @@ public class CurrentTransactionWithdrawCommandHandlerImpl implements CurrentTran
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.withdraw(command.entityId(), command);
+        return this.writePlatformService.withdraw(command.getResourceUUID(), command);
     }
 }

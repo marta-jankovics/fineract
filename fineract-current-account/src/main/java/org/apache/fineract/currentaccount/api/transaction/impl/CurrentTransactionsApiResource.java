@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.api.transaction;
+package org.apache.fineract.currentaccount.api.transaction.impl;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -31,12 +32,14 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
+import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
@@ -49,7 +52,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Tag(name = "Current Account Transactions", description = "")
 @RequiredArgsConstructor
-public class CurrentTransactionsApiResource {
+public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private final PlatformSecurityContext context;
     private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
@@ -59,25 +62,28 @@ public class CurrentTransactionsApiResource {
         return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
     }
 
+    @Override
     @GET
     @Path("template")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public CurrentTransactionTemplateResponseData retrieveTemplate(@PathParam("accountId") final Long accountId) {
+    public CurrentTransactionTemplateResponseData retrieveTemplate(@PathParam("accountId") final UUID accountId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentAccountTransactionReadService.retrieveTemplate(accountId);
     }
 
+    @Override
     @GET
     @Path("{transactionId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public CurrentTransactionResponseData retrieveOne(@PathParam("accountId") final Long accountId,
-            @PathParam("transactionId") final Long transactionId) {
+    public CurrentTransactionResponseData retrieveOne(@PathParam("accountId") final UUID accountId,
+            @PathParam("transactionId") final UUID transactionId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentAccountTransactionReadService.retrieveTransactionById(accountId, transactionId);
     }
 
+    @Override
     @POST
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
@@ -85,9 +91,9 @@ public class CurrentTransactionsApiResource {
             + "Example Requests:\n" + "\n" + "\n" + "currentaccounts/{accountId}/transactions/?command=deposit\n" + "\n"
             + "Accepted command = deposit, withdraw, hold")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentAccountTransactionsRequest.class)))
-    public CommandProcessingResult transaction(@PathParam("accountId") final Long accountId,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, final String apiRequestBodyAsJson) {
-        final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(apiRequestBodyAsJson);
+    public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
+            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+        final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
 
         CommandProcessingResult result = null;
         if (is(commandParam, CurrentAccountApiConstants.COMMAND_DEPOSIT)) {
@@ -109,6 +115,7 @@ public class CurrentTransactionsApiResource {
         return result;
     }
 
+    @Override
     @POST
     @Path("{transactionId}")
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -117,10 +124,10 @@ public class CurrentTransactionsApiResource {
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n"
             + "Accepted command = releaseAmount")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentAccountTransactionsRequest.class)))
-    public CommandProcessingResult transaction(@PathParam("accountId") final Long accountId,
-            @PathParam("transactionId") final Long transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
-            final String apiRequestBodyAsJson) {
-        final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(apiRequestBodyAsJson);
+    public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
+            @PathParam("transactionId") final UUID transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
+        final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
 
         CommandProcessingResult result = null;
         if (is(commandParam, CurrentAccountApiConstants.COMMAND_RELEASE)) {

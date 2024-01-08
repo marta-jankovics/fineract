@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.handler.account.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import org.apache.fineract.currentaccount.handler.account.CurrentAccountDeleteApplicationCommandHandler;
+import org.apache.fineract.currentaccount.handler.account.CurrentAccountCancelledApplicationCommandHandler;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -28,16 +28,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@CommandType(entity = "CURRENTACCOUNT", action = "DELETE")
+@CommandType(entity = "CURRENTACCOUNT", action = "CANCELLED")
 @RequiredArgsConstructor
-public class CurrentAccountDeleteApplicationCommandHandlerImpl implements CurrentAccountDeleteApplicationCommandHandler {
+public class CurrentAccountCancelledApplicationCommandHandlerImpl implements CurrentAccountCancelledApplicationCommandHandler {
 
     private final CurrentAccountWriteService writePlatformService;
 
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.deleteApplication(command.entityId());
-    }
 
+        return this.writePlatformService.cancelApplication(command.getResourceUUID(), command);
+    }
 }

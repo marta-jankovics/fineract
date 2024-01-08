@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.commands.domain;
 
+import java.util.UUID;
 import org.apache.fineract.useradministration.api.PasswordPreferencesApiConstants;
 
 public class CommandWrapper {
@@ -33,7 +34,7 @@ public class CommandWrapper {
     private final String entityName;
     private final String taskPermissionName;
     private final Long entityId;
-    private final Long subentityId;
+    private final Long subEntityId;
     private final String href;
     private final String json;
     private final String transactionId;
@@ -43,56 +44,16 @@ public class CommandWrapper {
     private final String jobName;
 
     private final String idempotencyKey;
+    private final UUID entityUUID;
+    private final UUID transactionUUID;
 
-    @SuppressWarnings("unused")
-    private Long templateId;
+    public CommandWrapper(final Long commandId, final Long officeId, final Long groupId, final Long clientId, final Long loanId,
+            final Long savingsId, final String actionName, final String entityName, final Long entityId, final Long subEntityId,
+            final String href, final String json, final String transactionId, final Long productId, final Long creditBureauId,
+            final Long organisationCreditBureauId, final String jobName, final String idempotencyKey, final UUID entityUUID,
+            final UUID transactionUUID) {
 
-    public static CommandWrapper wrap(final String actionName, final String entityName, final Long resourceId, final Long subresourceId) {
-        return new CommandWrapper(null, actionName, entityName, resourceId, subresourceId, null, null);
-    }
-
-    public static CommandWrapper fromExistingCommand(final Long commandId, final String actionName, final String entityName,
-            final Long resourceId, final Long subresourceId, final String resourceGetUrl, final Long productId) {
-        return new CommandWrapper(commandId, actionName, entityName, resourceId, subresourceId, resourceGetUrl, productId);
-    }
-
-    public static CommandWrapper fromExistingCommand(final Long commandId, final String actionName, final String entityName,
-            final Long resourceId, final Long subresourceId, final String resourceGetUrl, final Long productId, final Long officeId,
-            final Long groupId, final Long clientId, final Long loanId, final Long savingsId, final String transactionId,
-            final Long creditBureauId, final Long organisationCreditBureauId, final String idempotencyKey) {
-        return new CommandWrapper(commandId, actionName, entityName, resourceId, subresourceId, resourceGetUrl, productId, officeId,
-                groupId, clientId, loanId, savingsId, transactionId, creditBureauId, organisationCreditBureauId, idempotencyKey);
-    }
-
-    private CommandWrapper(final Long commandId, final String actionName, final String entityName, final Long resourceId,
-            final Long subresourceId, final String resourceGetUrl, final Long productId) {
         this.commandId = commandId;
-        this.officeId = null;
-        this.groupId = null;
-        this.clientId = null;
-        this.loanId = null;
-        this.savingsId = null;
-        this.actionName = actionName;
-        this.entityName = entityName;
-        this.taskPermissionName = actionName + "_" + entityName;
-        this.entityId = resourceId;
-        this.subentityId = subresourceId;
-        this.href = resourceGetUrl;
-        this.json = null;
-        this.transactionId = null;
-        this.productId = productId;
-        this.creditBureauId = null;
-        this.organisationCreditBureauId = null;
-        this.jobName = null;
-        this.idempotencyKey = null;
-    }
-
-    public CommandWrapper(final Long officeId, final Long groupId, final Long clientId, final Long loanId, final Long savingsId,
-            final String actionName, final String entityName, final Long entityId, final Long subentityId, final String href,
-            final String json, final String transactionId, final Long productId, final Long templateId, final Long creditBureauId,
-            final Long organisationCreditBureauId, final String jobName, final String idempotencyKey) {
-
-        this.commandId = null;
         this.officeId = officeId;
         this.groupId = groupId;
         this.clientId = clientId;
@@ -102,42 +63,32 @@ public class CommandWrapper {
         this.entityName = entityName;
         this.taskPermissionName = actionName + "_" + entityName;
         this.entityId = entityId;
-        this.subentityId = subentityId;
+        this.subEntityId = subEntityId;
         this.href = href;
         this.json = json;
         this.transactionId = transactionId;
         this.productId = productId;
-        this.templateId = templateId;
         this.creditBureauId = creditBureauId;
         this.organisationCreditBureauId = organisationCreditBureauId;
         this.jobName = jobName;
         this.idempotencyKey = idempotencyKey;
+        this.entityUUID = entityUUID;
+        this.transactionUUID = transactionUUID;
     }
 
-    private CommandWrapper(final Long commandId, final String actionName, final String entityName, final Long resourceId,
-            final Long subresourceId, final String resourceGetUrl, final Long productId, final Long officeId, final Long groupId,
-            final Long clientId, final Long loanId, final Long savingsId, final String transactionId, final Long creditBureauId,
-            final Long organisationCreditBureauId, final String idempotencyKey) {
+    public static CommandWrapper wrap(final String actionName, final String entityName) {
+        return new CommandWrapper(null, null, null, null, null, null, actionName, entityName, null, null, null, null, null, null, null,
+                null, null, null, null, null);
+    }
 
-        this.commandId = commandId;
-        this.officeId = officeId;
-        this.groupId = groupId;
-        this.clientId = clientId;
-        this.loanId = loanId;
-        this.savingsId = savingsId;
-        this.actionName = actionName;
-        this.entityName = entityName;
-        this.taskPermissionName = actionName + "_" + entityName;
-        this.entityId = resourceId;
-        this.subentityId = subresourceId;
-        this.href = resourceGetUrl;
-        this.json = null;
-        this.transactionId = transactionId;
-        this.productId = productId;
-        this.creditBureauId = creditBureauId;
-        this.organisationCreditBureauId = organisationCreditBureauId;
-        this.jobName = null;
-        this.idempotencyKey = idempotencyKey;
+    public static CommandWrapper fromExistingCommand(final Long commandId, final String actionName, final String entityName,
+            final Long resourceId, final Long subResourceId, final String resourceGetUrl, final String json, final Long productId,
+            final Long officeId, final Long groupId, final Long clientId, final Long loanId, final Long savingsId,
+            final String transactionId, final Long creditBureauId, final Long organisationCreditBureauId, final String jobname,
+            final String idempotencyKey, final UUID entityUUID, final UUID transactionUUID) {
+        return new CommandWrapper(commandId, officeId, groupId, clientId, loanId, savingsId, actionName, entityName, resourceId,
+                subResourceId, resourceGetUrl, json, transactionId, productId, creditBureauId, organisationCreditBureauId, jobname,
+                idempotencyKey, entityUUID, transactionUUID);
     }
 
     public Long getCreditBureauId() {
@@ -182,19 +133,19 @@ public class CommandWrapper {
 
     public boolean isDeleteOneToOne() {
         /* also covers case of deleting all of a one to many */
-        return isDatatableResource() && isDeleteOperation() && this.subentityId == null;
+        return isDatatableResource() && isDeleteOperation() && this.subEntityId == null;
     }
 
     public boolean isDeleteMultiple() {
-        return isDatatableResource() && isDeleteOperation() && this.subentityId != null;
+        return isDatatableResource() && isDeleteOperation() && this.subEntityId != null;
     }
 
     public boolean isUpdateOneToOne() {
-        return isDatatableResource() && isUpdateOperation() && this.subentityId == null;
+        return isDatatableResource() && isUpdateOperation() && this.subEntityId == null;
     }
 
     public boolean isUpdateMultiple() {
-        return isDatatableResource() && isUpdateOperation() && this.subentityId != null;
+        return isDatatableResource() && isUpdateOperation() && this.subEntityId != null;
     }
 
     public boolean isRegisterDatatable() {
@@ -227,7 +178,7 @@ public class CommandWrapper {
     }
 
     public Long getSubentityId() {
-        return this.subentityId;
+        return this.subEntityId;
     }
 
     public String getTransactionId() {
@@ -291,7 +242,7 @@ public class CommandWrapper {
     }
 
     public Long subresourceId() {
-        return this.subentityId;
+        return this.subEntityId;
     }
 
     public String taskPermissionName() {
@@ -358,5 +309,13 @@ public class CommandWrapper {
 
     public String getJobName() {
         return jobName;
+    }
+
+    public UUID getEntityUUID() {
+        return entityUUID;
+    }
+
+    public UUID getTransactionUUID() {
+        return transactionUUID;
     }
 }

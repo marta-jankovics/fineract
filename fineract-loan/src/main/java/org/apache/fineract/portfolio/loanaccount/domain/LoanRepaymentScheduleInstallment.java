@@ -39,7 +39,7 @@ import org.apache.fineract.portfolio.repaymentwithpostdatedchecks.domain.PostDat
 
 @Entity
 @Table(name = "m_loan_repayment_schedule")
-public class LoanRepaymentScheduleInstallment extends AbstractAuditableWithUTCDateTimeCustom
+public class LoanRepaymentScheduleInstallment extends AbstractAuditableWithUTCDateTimeCustom<Long>
         implements Comparable<LoanRepaymentScheduleInstallment> {
 
     @ManyToOne(optional = false)

@@ -90,7 +90,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         final String externalId = this.fromApiJsonHelper.extractStringNamed(externalIdParamName, element);
-        final Long productId = this.fromApiJsonHelper.extractLongNamed(productIdParamName, element);
+        final UUID productId = UUID.fromString(this.fromApiJsonHelper.extractStringNamed(productIdParamName, element));
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
                 .orElseThrow(() -> new CurrentProductNotFoundException(productId));
@@ -229,17 +229,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     @Override
-    public Map<String, Object> rejectApplication(CurrentAccount account, JsonCommand command) {
+    public Map<String, Object> cancelApplication(CurrentAccount account, JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.rejectAction);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.cancelAction);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.rejectedOnDateParamName)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.cancelledOnDateParamName)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -247,101 +247,39 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
         }
 
-        account.setStatus(CurrentAccountStatus.REJECTED);
+        account.setStatus(CurrentAccountStatus.CANCELLED);
         actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
 
-        LocalDate rejectedOn = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.rejectedOnDateParamName);
-        if (rejectedOn == null) {
-            rejectedOn = DateUtils.getBusinessLocalDate();
+        LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.cancelledOnDateParamName);
+        if (cancelledOnDate == null) {
+            cancelledOnDate = DateUtils.getBusinessLocalDate();
         }
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
 
-        account.setRejectedOnDate(rejectedOn);
-        account.setRejectedByUserId(context.authenticatedUser().getId());
-        account.setClosedOnDate(rejectedOn);
+        account.setCancelledOnDate(cancelledOnDate);
+        account.setCancelledByUserId(context.authenticatedUser().getId());
+        account.setClosedOnDate(cancelledOnDate);
         account.setClosedByUserId(context.authenticatedUser().getId());
 
         actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
         actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.rejectedOnDateParamName, fmt.format(rejectedOn));
-        actualChanges.put(CurrentAccountApiConstants.closedOnDateParamName, fmt.format(rejectedOn));
+        actualChanges.put(CurrentAccountApiConstants.cancelledOnDateParamName, fmt.format(cancelledOnDate));
+        actualChanges.put(CurrentAccountApiConstants.closedOnDateParamName, fmt.format(cancelledOnDate));
 
         final LocalDate submittalDate = account.getSubmittedOnDate();
-        if (DateUtils.isBefore(rejectedOn, submittalDate)) {
+        if (DateUtils.isBefore(cancelledOnDate, submittalDate)) {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String submittalDateAsString = formatter.format(submittalDate);
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.rejectedOnDateParamName).value(submittalDateAsString)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.cancelledOnDateParamName).value(submittalDateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
 
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);
             }
         }
-        if (DateUtils.isAfterBusinessDate(rejectedOn)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.rejectedOnDateParamName).value(rejectedOn)
-                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        return actualChanges;
-    }
-
-    @Override
-    public Map<String, Object> withdrawApplication(CurrentAccount account, JsonCommand command) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.withdrawnByApplicantAction);
-
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.withdrawnOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        account.setStatus(CurrentAccountStatus.WITHDRAWN_BY_APPLICANT);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
-
-        LocalDate withdrawnOn = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.withdrawnOnDateParamName);
-        if (withdrawnOn == null) {
-            withdrawnOn = DateUtils.getBusinessLocalDate();
-        }
-        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-
-        account.setWithdrawnOnDate(withdrawnOn);
-        account.setWithdrawnByUserId(context.authenticatedUser().getId());
-        account.setClosedOnDate(withdrawnOn);
-        account.setClosedByUserId(context.authenticatedUser().getId());
-
-        actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.withdrawnOnDateParamName, fmt.format(withdrawnOn));
-        actualChanges.put(CurrentAccountApiConstants.closedOnDateParamName, fmt.format(withdrawnOn));
-
-        final LocalDate submittalDate = account.getSubmittedOnDate();
-        if (DateUtils.isBefore(withdrawnOn, submittalDate)) {
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-            final String submittalDateAsString = formatter.format(submittalDate);
-
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.withdrawnOnDateParamName).value(submittalDateAsString)
-                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-        if (DateUtils.isAfterBusinessDate(withdrawnOn)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.withdrawnOnDateParamName).value(withdrawnOn)
+        if (DateUtils.isAfterBusinessDate(cancelledOnDate)) {
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.cancelledOnDateParamName).value(cancelledOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
 
             if (!dataValidationErrors.isEmpty()) {

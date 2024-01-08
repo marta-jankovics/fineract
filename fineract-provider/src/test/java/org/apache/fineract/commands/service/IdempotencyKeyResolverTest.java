@@ -59,7 +59,7 @@ public class IdempotencyKeyResolverTest {
     public void testIPKResolveFromRequest() {
         String idk = "bar";
         fineractRequestContextHolder.setAttribute(SynchronousCommandProcessingService.IDEMPOTENCY_KEY_ATTRIBUTE, idk);
-        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent", 1L, 1L);
+        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent");
         String resolvedIdk = underTest.resolve(wrapper);
         Assertions.assertEquals(idk, resolvedIdk);
     }
@@ -68,7 +68,7 @@ public class IdempotencyKeyResolverTest {
     public void testIPKResolveFromGenerate() {
         String idk = "idk";
         when(idempotencyKeyGenerator.create()).thenReturn(idk);
-        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent", 1L, 1L);
+        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent");
         String resolvedIdk = underTest.resolve(wrapper);
         Assertions.assertEquals(idk, resolvedIdk);
     }
@@ -77,7 +77,7 @@ public class IdempotencyKeyResolverTest {
     public void testIPKResolveFromWrapper() {
         String idk = "idk";
         CommandWrapper wrapper = new CommandWrapper(null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null, null, null, idk);
+                null, null, null, idk, null, null);
         String resolvedIdk = underTest.resolve(wrapper);
         Assertions.assertEquals(idk, resolvedIdk);
     }

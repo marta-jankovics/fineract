@@ -19,6 +19,7 @@
 package org.apache.fineract.commands.service;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.infrastructure.accountnumberformat.service.AccountNumberFormatConstants;
 import org.apache.fineract.portfolio.client.api.ClientApiConstants;
@@ -37,28 +38,23 @@ public class CommandWrapperBuilder {
     private String actionName;
     private String entityName;
     private Long entityId;
-    private Long subentityId;
+    private Long subEntityId;
     private String href;
     private String json = "{}";
     private String transactionId;
     private Long productId;
-    private Long templateId;
     private Long creditBureauId;
     private Long organisationCreditBureauId;
     private String jobName;
     private String idempotencyKey;
+    private UUID entityUUID;
+    private UUID transactionUUID;
 
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "TODO: fix this!")
     public CommandWrapper build() {
-        return new CommandWrapper(this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId, this.actionName, this.entityName,
-                this.entityId, this.subentityId, this.href, this.json, this.transactionId, this.productId, this.templateId,
-                this.creditBureauId, this.organisationCreditBureauId, this.jobName, this.idempotencyKey);
-    }
-
-    public CommandWrapper build(String idempotencyKey) {
-        return new CommandWrapper(this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId, this.actionName, this.entityName,
-                this.entityId, this.subentityId, this.href, this.json, this.transactionId, this.productId, this.templateId,
-                this.creditBureauId, this.organisationCreditBureauId, this.jobName, idempotencyKey);
+        return new CommandWrapper(null, this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId, this.actionName,
+                this.entityName, this.entityId, this.subEntityId, this.href, this.json, this.transactionId, this.productId,
+                this.creditBureauId, this.organisationCreditBureauId, this.jobName, this.idempotencyKey, entityUUID, transactionUUID);
     }
 
     public CommandWrapperBuilder updateCreditBureau() {
@@ -203,7 +199,7 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder withSubEntityId(final Long withSubEntityId) {
-        this.subentityId = withSubEntityId;
+        this.subEntityId = withSubEntityId;
         return this;
     }
 
@@ -359,7 +355,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETE";
         this.entityName = "GUARANTOR";
         this.entityId = guarantorId;
-        this.subentityId = guarantorFundingId;
+        this.subEntityId = guarantorFundingId;
         this.loanId = loanId;
         this.href = "/loans/" + loanId + "/guarantors/" + guarantorId;
         return this;
@@ -741,7 +737,7 @@ public class CommandWrapperBuilder {
     private void commonDatatableSettings(final String datatable, final Long apptableId, final Long datatableId) {
         this.entityName = datatable;
         this.entityId = apptableId;
-        this.subentityId = datatableId;
+        this.subEntityId = datatableId;
         if (datatableId == null) {
             this.href = "/datatables/" + datatable + "/" + apptableId;
         } else {
@@ -1211,7 +1207,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder updateCodeValue(final Long codeId, final Long codeValueId) {
         this.actionName = "UPDATE";
         this.entityName = "CODEVALUE";
-        this.subentityId = codeValueId;
+        this.subEntityId = codeValueId;
         this.entityId = codeId;
         this.href = "/codes/" + codeId + "/codevalues/" + codeValueId;
         return this;
@@ -1220,7 +1216,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder deleteCodeValue(final Long codeId, final Long codeValueId) {
         this.actionName = "DELETE";
         this.entityName = "CODEVALUE";
-        this.subentityId = codeValueId;
+        this.subEntityId = codeValueId;
         this.entityId = codeId;
         this.href = "/codes/" + codeId + "/codevalues/" + codeValueId;
         return this;
@@ -1550,7 +1546,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subentityId = transactionId;
+        this.subEntityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=undo";
         return this;
@@ -1561,7 +1557,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subentityId = transactionId;
+        this.subEntityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=reverse";
         return this;
@@ -1572,7 +1568,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subentityId = transactionId;
+        this.subEntityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=modify";
         return this;
@@ -1737,7 +1733,7 @@ public class CommandWrapperBuilder {
         this.actionName = "CREATE";
         this.entityName = "CHARTSLAB";
         this.entityId = null;
-        this.subentityId = chartId; // refer to chart id
+        this.subEntityId = chartId; // refer to chart id
         this.href = "/interestratechart/" + chartId + "/chartdetails/template";
         return this;
     }
@@ -1746,7 +1742,7 @@ public class CommandWrapperBuilder {
         this.actionName = "UPDATE";
         this.entityName = "CHARTSLAB";
         this.entityId = chartSlabId;
-        this.subentityId = chartId;// refers parent chart
+        this.subEntityId = chartId;// refers parent chart
         this.href = "/interestratechart/" + chartId + "/chartdetails/" + chartSlabId;
         return this;
     }
@@ -1755,7 +1751,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETE";
         this.entityName = "CHARTSLAB";
         this.entityId = chartSlabId;
-        this.subentityId = chartId;// refers parent chart
+        this.subEntityId = chartId;// refers parent chart
         this.href = "/interestratechart/" + chartId + "/chartdetails/" + chartSlabId;
         return this;
     }
@@ -1798,7 +1794,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subentityId = resourceDetails.subresourceId();
+        this.subEntityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/notes/template";
         return this;
     }
@@ -1815,7 +1811,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subentityId = resourceDetails.subresourceId();
+        this.subEntityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/notes";
         return this;
     }
@@ -1832,7 +1828,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subentityId = resourceDetails.subresourceId();
+        this.subEntityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/calendars/" + noteId;
         return this;
     }
@@ -2486,7 +2482,7 @@ public class CommandWrapperBuilder {
         this.entityName = "RECURRINGDEPOSITACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subentityId = transactionId;
+        this.subEntityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/recurringdepositaccounts/" + accountId + "/transactions/" + transactionId + "?command=modify";
         return this;
@@ -2497,7 +2493,7 @@ public class CommandWrapperBuilder {
         this.entityName = "RECURRINGDEPOSITACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subentityId = transactionId;
+        this.subEntityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/recurringdepositaccounts/" + accountId + "/transactions/" + transactionId + "?command=undo";
         return this;
@@ -2774,7 +2770,7 @@ public class CommandWrapperBuilder {
         this.actionName = "UPDATECASHIERALLOCATION";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subentityId = cashierId;
+        this.subEntityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId;
         return this;
     }
@@ -2783,7 +2779,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETECASHIERALLOCATION";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subentityId = cashierId;
+        this.subEntityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId;
         return this;
     }
@@ -2792,7 +2788,7 @@ public class CommandWrapperBuilder {
         this.actionName = "ALLOCATECASHTOCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subentityId = cashierId;
+        this.subEntityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/allocate";
         return this;
     }
@@ -2801,7 +2797,7 @@ public class CommandWrapperBuilder {
         this.actionName = "SETTLECASHFROMCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subentityId = cashierId;
+        this.subEntityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/settle";
         return this;
     }
@@ -3668,23 +3664,22 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder createCurrentProduct() {
         this.actionName = "CREATE";
         this.entityName = "CURRENTPRODUCT";
-        this.entityId = null;
         this.href = "/currentproducts/template";
         return this;
     }
 
-    public CommandWrapperBuilder updateCurrentProduct(final Long productId) {
+    public CommandWrapperBuilder updateCurrentProduct(final UUID productId) {
         this.actionName = "UPDATE";
         this.entityName = "CURRENTPRODUCT";
-        this.entityId = productId;
+        this.entityUUID = productId;
         this.href = "/currentproducts/" + productId;
         return this;
     }
 
-    public CommandWrapperBuilder deleteCurrentProduct(final Long productId) {
+    public CommandWrapperBuilder deleteCurrentProduct(final UUID productId) {
         this.actionName = "DELETE";
         this.entityName = "CURRENTPRODUCT";
-        this.entityId = productId;
+        this.entityUUID = productId;
         this.href = "/currentproducts/" + productId;
         return this;
     }
@@ -3692,104 +3687,103 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder createCurrentAccount() {
         this.actionName = "CREATE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = null;
         this.href = "/currentaccounts/template";
         return this;
     }
 
-    public CommandWrapperBuilder updateCurrentAccount(final Long accountId) {
+    public CommandWrapperBuilder updateCurrentAccount(final UUID accountId) {
         this.actionName = "UPDATE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId;
         return this;
     }
 
-    public CommandWrapperBuilder deleteCurrentAccount(final Long accountId) {
+    public CommandWrapperBuilder deleteCurrentAccount(final UUID accountId) {
         this.actionName = "DELETE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId;
         return this;
     }
 
-    public CommandWrapperBuilder rejectCurrentAccountApplication(final Long accountId) {
+    public CommandWrapperBuilder rejectCurrentAccountApplication(final UUID accountId) {
         this.actionName = "REJECT";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=reject";
         return this;
     }
 
-    public CommandWrapperBuilder withdrawCurrentAccountApplication(final Long accountId) {
-        this.actionName = "WITHDRAW";
+    public CommandWrapperBuilder cancelCurrentAccountApplication(final UUID accountId) {
+        this.actionName = "CANCEL";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
-        this.href = "/currentaccounts/" + accountId + "?command=withdrawnByApplicant";
+        this.entityUUID = accountId;
+        this.href = "/currentaccounts/" + accountId + "?command=cancel";
         return this;
     }
 
-    public CommandWrapperBuilder approveCurrentAccountApplication(final Long accountId) {
+    public CommandWrapperBuilder approveCurrentAccountApplication(final UUID accountId) {
         this.actionName = "APPROVE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=approve";
         return this;
     }
 
-    public CommandWrapperBuilder undoCurrentAccountApplication(final Long accountId) {
+    public CommandWrapperBuilder undoCurrentAccountApplication(final UUID accountId) {
         this.actionName = "APPROVALUNDO";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=undoApproval";
         return this;
     }
 
-    public CommandWrapperBuilder currentAccountActivation(final Long accountId) {
+    public CommandWrapperBuilder currentAccountActivation(final UUID accountId) {
         this.actionName = "ACTIVATE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=activate";
         return this;
     }
 
-    public CommandWrapperBuilder closeCurrentAccountApplication(final Long accountId) {
+    public CommandWrapperBuilder closeCurrentAccountApplication(final UUID accountId) {
         this.actionName = "CLOSE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=close";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionDeposit(final Long accountId) {
+    public CommandWrapperBuilder currentTransactionDeposit(final UUID accountId) {
         this.actionName = "DEPOSIT";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionWithdraw(final Long accountId) {
+    public CommandWrapperBuilder currentTransactionWithdraw(final UUID accountId) {
         this.actionName = "WITHDRAW";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionHold(final Long accountId) {
+    public CommandWrapperBuilder currentTransactionHold(final UUID accountId) {
         this.actionName = "HOLD";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityId = accountId;
+        this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionRelease(final Long accountId, final Long transactionId) {
+    public CommandWrapperBuilder currentTransactionRelease(final UUID accountId, final UUID transactionUUID) {
         this.actionName = "RELEASEAMOUNT";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityId = accountId;
-        this.transactionId = transactionId.toString();
+        this.entityUUID = accountId;
+        this.transactionUUID = transactionUUID;
         this.href = "/currentaccounts/" + accountId + "/transactions/" + transactionId + "?command=release";
         return this;
     }

@@ -18,11 +18,12 @@
  */
 package org.apache.fineract.currentaccount.exception.transaction;
 
+import java.util.UUID;
 import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
 
 public class CurrentTransactionNotFoundException extends AbstractPlatformResourceNotFoundException {
 
-    public CurrentTransactionNotFoundException(final Long accountId, final Long transactionId) {
+    public CurrentTransactionNotFoundException(final UUID accountId, final UUID transactionId) {
         super("error.msg.current.account.transaction.id.invalid",
                 "Current account with identifier " + accountId + " and transaction identifier " + transactionId + " does not exist",
                 accountId, transactionId);

@@ -18,12 +18,13 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read;
 
+import java.util.UUID;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 
 public interface CurrentTransactionReadService {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(Long accountId);
+    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
 
-    CurrentTransactionResponseData retrieveTransactionById(Long accountId, Long transactionId);
+    CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId);
 }

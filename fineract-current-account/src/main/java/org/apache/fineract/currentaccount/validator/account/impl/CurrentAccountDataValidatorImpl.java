@@ -22,6 +22,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNoParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.activatedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.cancelledOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
@@ -31,9 +32,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.productIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.rejectedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.submittedOnDateParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.withdrawnOnDateParamName;
 
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -146,13 +145,13 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
     }
 
     @Override
-    public void validateRejection(JsonCommand command) {
+    public void validateCancellation(JsonCommand command) {
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
         }
 
         final Set<String> disbursementParameters = new HashSet<>(
-                Arrays.asList(rejectedOnDateParamName, localeParamName, dateFormatParamName));
+                Arrays.asList(cancelledOnDateParamName, localeParamName, dateFormatParamName));
 
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), disbursementParameters);
@@ -161,31 +160,8 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
-        final LocalDate rejectedOnDate = command.localDateValueOfParameterNamed(rejectedOnDateParamName);
-        baseDataValidator.reset().parameter(rejectedOnDateParamName).value(rejectedOnDate).ignoreIfNull()
-                .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
-
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
-    }
-
-    @Override
-    public void validateWithdrawal(JsonCommand command) {
-        if (StringUtils.isBlank(command.json())) {
-            throw new InvalidJsonException();
-        }
-
-        final Set<String> disbursementParameters = new HashSet<>(
-                Arrays.asList(withdrawnOnDateParamName, localeParamName, dateFormatParamName));
-
-        final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
-        command.checkForUnsupportedParameters(typeOfMap, command.json(), disbursementParameters);
-
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
-
-        final LocalDate withdrawnOnDate = command.localDateValueOfParameterNamed(withdrawnOnDateParamName);
-        baseDataValidator.reset().parameter(withdrawnOnDateParamName).value(withdrawnOnDate).ignoreIfNull()
+        final LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(cancelledOnDateParamName);
+        baseDataValidator.reset().parameter(cancelledOnDateParamName).value(cancelledOnDate).ignoreIfNull()
                 .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);

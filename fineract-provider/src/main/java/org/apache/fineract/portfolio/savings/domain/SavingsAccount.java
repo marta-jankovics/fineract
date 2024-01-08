@@ -137,7 +137,7 @@ import org.springframework.util.CollectionUtils;
 @DiscriminatorColumn(name = "deposit_type_enum", discriminatorType = DiscriminatorType.INTEGER)
 @DiscriminatorValue("100")
 @SuppressWarnings({ "MemberName" })
-public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom {
+public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SavingsAccount.class);
 

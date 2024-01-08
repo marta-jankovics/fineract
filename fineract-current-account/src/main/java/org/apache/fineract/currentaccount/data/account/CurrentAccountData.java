@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.Data;
 import org.apache.fineract.currentaccount.enums.account.CurrentAccountStatus;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -30,19 +31,17 @@ import org.apache.fineract.portfolio.accountdetails.domain.AccountType;
 public class CurrentAccountData implements Serializable {
 
     // Current product data
-    private final Long id;
+    private final UUID id;
     private final String accountNo;
     private final ExternalId externalId;
     private final Long clientId;
-    private final Long productId;
+    private final UUID productId;
     private final CurrentAccountStatus status;
     private final AccountType accountType;
     private final LocalDate submittedOnDate;
     private final Long submittedOnUserId;
-    private final LocalDate rejectedOnDate;
-    private final Long rejectedOnUserId;
-    private final LocalDate withdrawnOnDate;
-    private final Long withdrawnOnUserId;
+    private final LocalDate cancelledOnDate;
+    private final Long cancelledOnUserId;
     private final LocalDate activatedOnDate;
     private final Long activatedOnUserId;
     private final LocalDate closedOnDate;

@@ -41,7 +41,7 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "m_account_statement_result")
-public final class AccountStatementResult extends AbstractAuditableWithUTCDateTimeCustom {
+public final class AccountStatementResult extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Version
     int version;

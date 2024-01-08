@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write;
 
+import java.util.UUID;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,14 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 public interface CurrentTransactionWriteService {
 
     @Transactional
-    CommandProcessingResult deposit(Long accountId, JsonCommand command);
+    CommandProcessingResult deposit(UUID accountId, JsonCommand command);
 
     @Transactional
-    CommandProcessingResult withdraw(Long accountId, JsonCommand command);
+    CommandProcessingResult withdraw(UUID accountId, JsonCommand command);
 
     @Transactional
-    CommandProcessingResult hold(Long accountId, JsonCommand command);
+    CommandProcessingResult hold(UUID accountId, JsonCommand command);
 
     @Transactional
-    CommandProcessingResult release(Long accountId, JsonCommand command);
+    CommandProcessingResult release(UUID accountId, JsonCommand command);
 }

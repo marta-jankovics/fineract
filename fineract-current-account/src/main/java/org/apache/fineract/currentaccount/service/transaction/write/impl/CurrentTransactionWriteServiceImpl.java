@@ -18,9 +18,9 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write.impl;
 
-import jakarta.persistence.PersistenceException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -58,7 +58,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional
     @Override
-    public CommandProcessingResult deposit(Long accountId, JsonCommand command) {
+    public CommandProcessingResult deposit(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateDeposit(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -70,11 +70,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
-        // businessEventNotifierService.notifyPostBusinessEvent(new SavingsDepositBusinessEvent(deposit));
+        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(depositTransaction.getId()) //
+                .withEntityUUID(depositTransaction.getId()) //
                 .withEntityExternalId(depositTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -86,7 +86,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
             currentAccountTransactionRepository.saveAndFlush(transaction);
         } catch (final DataAccessException dve) {
             handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
-        } catch (final PersistenceException dve) {
+        } catch (final Exception dve) {
             Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
             handleDataIntegrityIssues(command, throwable, dve);
         }
@@ -94,7 +94,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional
     @Override
-    public CommandProcessingResult withdraw(Long accountId, JsonCommand command) {
+    public CommandProcessingResult withdraw(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateWithdraw(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -106,11 +106,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
-        // businessEventNotifierService.notifyPostBusinessEvent(new SavingsDepositBusinessEvent(deposit));
+        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(withdrawTransaction.getId()) //
+                .withEntityUUID(withdrawTransaction.getId()) //
                 .withEntityExternalId(withdrawTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -119,7 +119,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional
     @Override
-    public CommandProcessingResult hold(Long accountId, JsonCommand command) {
+    public CommandProcessingResult hold(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateHold(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -130,11 +130,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
-        // businessEventNotifierService.notifyPostBusinessEvent(new SavingsDepositBusinessEvent(deposit));
+        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(holdTransaction.getId()) //
+                .withEntityUUID(holdTransaction.getId()) //
                 .withEntityExternalId(holdTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -143,9 +143,9 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional
     @Override
-    public CommandProcessingResult release(Long accountId, JsonCommand command) {
+    public CommandProcessingResult release(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateRelease(command);
-        final Long transactionId = Long.valueOf(command.getTransactionId());
+        final UUID transactionId = command.getTransactionUUID();
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         final CurrentTransaction holdTransaction = currentAccountTransactionRepository.findById(transactionId)
@@ -158,11 +158,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
-        // businessEventNotifierService.notifyPostBusinessEvent(new SavingsDepositBusinessEvent(deposit));
+        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(releaseTransaction.getId()) //
+                .withEntityUUID(releaseTransaction.getId()) //
                 .withEntityExternalId(releaseTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //

@@ -27,9 +27,7 @@ public interface CurrentAccountDataValidator {
 
     void validateForUpdate(JsonCommand command, CurrentAccount account);
 
-    void validateRejection(JsonCommand command);
-
-    void validateWithdrawal(JsonCommand command);
+    void validateCancellation(JsonCommand command);
 
     void validateActivation(JsonCommand command);
 

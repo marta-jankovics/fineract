@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.service.product.read.impl;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingDropdownReadPlatformService;
@@ -56,7 +57,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public CurrentProductResponseData retrieveById(Long productId) {
+    public CurrentProductResponseData retrieveById(UUID productId) {
         CurrentProductData currentProductData = currentProductRepository.findCurrentProductData(productId);
         if (currentProductData == null) {
             throw new CurrentProductNotFoundException(productId);

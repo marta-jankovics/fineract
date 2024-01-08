@@ -51,7 +51,7 @@ import org.apache.fineract.portfolio.statement.data.AccountStatementData;
 @Entity
 @Table(name = "m_account_statement", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "product_statement_id", "account_id" }, name = "uk_account_statement") })
-public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom {
+public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Version
     int version;

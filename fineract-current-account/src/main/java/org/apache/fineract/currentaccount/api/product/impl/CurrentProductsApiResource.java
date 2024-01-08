@@ -34,6 +34,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
@@ -66,14 +67,12 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
             + "currentproducts")
-    public Page<CurrentProductResponseData> retrieveAll(@QueryParam("offset") @Parameter(description = "offset") final Long offset,
-            @QueryParam("limit") @Parameter(description = "limit") final Integer limit,
-            @QueryParam("page") @Parameter(description = "page") final Integer page,
+    public Page<CurrentProductResponseData> retrieveAll(@QueryParam("page") @Parameter(description = "page") final Integer page,
             @QueryParam("size") @Parameter(description = "size") final Integer size,
             @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
             @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(offset, limit, page, size, sortOrder, orderBy));
+        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(page, size, sortOrder, orderBy));
     }
 
     @Override
@@ -83,7 +82,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
             + "currentproducts/1")
-    public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final Long productId) {
+    public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final UUID productId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
         return this.currentProductReadService.retrieveById(productId);
     }
@@ -120,7 +119,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
-    public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final Long productId,
+    public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final UUID productId,
             @Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
         return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
@@ -132,7 +131,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
-    public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final Long productId) {
+    public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final UUID productId) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(productId).build();
         return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
     }

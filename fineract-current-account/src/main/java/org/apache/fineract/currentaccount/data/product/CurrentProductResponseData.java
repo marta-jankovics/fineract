@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.Data;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -28,7 +29,7 @@ import org.apache.fineract.organisation.monetary.data.CurrencyData;
 public class CurrentProductResponseData implements Serializable {
 
     // Current product data
-    private final Long id;
+    private final UUID id;
     private final String name;
     private final String shortName;
     private final String description;

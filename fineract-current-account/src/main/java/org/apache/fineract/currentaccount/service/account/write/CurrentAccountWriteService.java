@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.account.write;
 
+import java.util.UUID;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
@@ -25,15 +26,11 @@ public interface CurrentAccountWriteService {
 
     CommandProcessingResult submitApplication(JsonCommand command);
 
-    CommandProcessingResult modifyApplication(Long savingsId, JsonCommand command);
+    CommandProcessingResult modifyApplication(UUID accountId, JsonCommand command);
 
-    CommandProcessingResult deleteApplication(Long savingsId);
+    CommandProcessingResult cancelApplication(UUID accountId, JsonCommand command);
 
-    CommandProcessingResult rejectApplication(Long savingsId, JsonCommand command);
+    CommandProcessingResult activate(UUID accountId, JsonCommand command);
 
-    CommandProcessingResult applicantWithdrawsFromApplication(Long savingsId, JsonCommand command);
-
-    CommandProcessingResult activate(Long savingsId, JsonCommand command);
-
-    CommandProcessingResult close(Long savingsId, JsonCommand command);
+    CommandProcessingResult close(UUID accountId, JsonCommand command);
 }

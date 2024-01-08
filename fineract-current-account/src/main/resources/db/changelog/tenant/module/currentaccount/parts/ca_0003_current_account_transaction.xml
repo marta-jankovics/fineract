@@ -24,10 +24,10 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="fineract" id="1">
             <createTable tableName="m_current_account_transaction">
-                <column autoIncrement="true" name="id" type="BIGINT">
+                <column name="id" type="UUID">
                     <constraints nullable="false" primaryKey="true"/>
                 </column>
-                <column name="current_account_id" type="BIGINT">
+                <column name="account_id" type="UUID">
                     <constraints nullable="false"/>
                 </column>
                 <column name="external_id" type="VARCHAR(100)">
@@ -89,8 +89,8 @@
                                  constraintName="FK_m_current_account_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="current_account_id" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_current_account_id" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="m_current_account_transaction"
+                                 constraintName="FK_m_current_account_transaction_account_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_account" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="payment_detail_id" baseTableName="m_current_account_transaction"

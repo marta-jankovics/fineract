@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
@@ -49,7 +50,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
-    public CurrentAccountResponseData retrieveById(final Long accountId) {
+    public CurrentAccountResponseData retrieveById(final UUID accountId) {
         CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountData(accountId);
         if (currentAccountData == null) {
             throw new CurrentAccountNotFoundException(accountId);
@@ -78,8 +79,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
-    public Long retrieveAccountIdByExternalId(ExternalId accountExternalId) {
-        Long id = currentAccountRepository.findIdByExternalId(accountExternalId);
+    public UUID retrieveAccountIdByExternalId(ExternalId accountExternalId) {
+        UUID id = currentAccountRepository.findIdByExternalId(accountExternalId);
         if (id == null) {
             throw new CurrentAccountNotFoundException(accountExternalId);
         }

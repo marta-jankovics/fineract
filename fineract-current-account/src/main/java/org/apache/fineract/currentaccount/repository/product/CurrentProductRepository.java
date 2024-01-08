@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.repository.product;
 
 import java.util.List;
+import java.util.UUID;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentProductRepository extends JpaRepository<CurrentProduct, Long> {
+public interface CurrentProductRepository extends JpaRepository<CurrentProduct, UUID> {
 
     String FIND_CURRENT_PRODUCT_DETAILS = "SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ";
 
@@ -38,7 +39,7 @@ public interface CurrentProductRepository extends JpaRepository<CurrentProduct, 
     Page<CurrentProductData> findAllCurrentProductData(Pageable pageable);
 
     @Query(FIND_CURRENT_PRODUCT_DETAILS + " AND cp.id = :productId")
-    CurrentProductData findCurrentProductData(@Param("productId") Long productId);
+    CurrentProductData findCurrentProductData(@Param("productId") UUID productId);
 
     @Query(FIND_CURRENT_PRODUCT_DETAILS)
     List<CurrentProductData> findAllSorted(Sort sort);

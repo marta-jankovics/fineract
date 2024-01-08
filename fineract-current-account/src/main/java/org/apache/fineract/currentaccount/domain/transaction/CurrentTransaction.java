@@ -18,14 +18,17 @@
  */
 package org.apache.fineract.currentaccount.domain.transaction;
 
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +36,9 @@ import lombok.NoArgsConstructor;
 import org.apache.fineract.currentaccount.enums.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.Converter;
 
 @Entity
 @Getter
@@ -40,33 +46,40 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_account_transaction", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_transaction_external_id_key") })
-public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom {
+@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
-    @Basic
-    @Column(name = "current_account_id", nullable = false)
-    private Long currentAccountId;
-    @Basic
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Getter(onMethod = @__(@Override))
+    @Convert(value = "uuidConverter")
+    private UUID id;
+
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
+
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
-    @Basic
+
     @Column(name = "payment_detail_id")
     private Long paymentDetailId;
-    @Basic
+
     @Enumerated
     @Column(name = "transaction_type_enum", nullable = false)
     private CurrentTransactionType transactionType;
-    @Basic
+
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
-    @Basic
+
     @Column(name = "submitted_on_date", nullable = false)
     private LocalDate submittedOnDate;
-    @Basic
+
     @Column(name = "amount", nullable = false, precision = 6)
     private BigDecimal transactionAmount;
 
-    public static CurrentTransaction newInstance(Long accountId, ExternalId externalId, Long paymentDetailId,
+    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, Long paymentDetailId,
             CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount) {
-        return new CurrentTransaction(accountId, externalId, paymentDetailId, transactionType, transactionDate, submittedOnDate, amount);
+        return new CurrentTransaction(null, accountId, externalId, paymentDetailId, transactionType, transactionDate, submittedOnDate,
+                amount);
     }
 }

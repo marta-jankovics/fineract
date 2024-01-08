@@ -37,6 +37,6 @@ public class CurrentAccountActivateCommandHandlerImpl implements CurrentAccountA
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.activate(command.entityId(), command);
+        return this.writePlatformService.activate(command.getResourceUUID(), command);
     }
 }

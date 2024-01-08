@@ -149,7 +149,7 @@ import org.apache.fineract.useradministration.domain.AppUser;
 @Entity
 @Table(name = "m_loan", uniqueConstraints = { @UniqueConstraint(columnNames = { "account_no" }, name = "loan_account_no_UNIQUE"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "loan_externalid_UNIQUE") })
-public class Loan extends AbstractAuditableWithUTCDateTimeCustom {
+public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     public static final String RECALCULATE_LOAN_SCHEDULE = "recalculateLoanSchedule";
     public static final String ACCOUNT_NO = "accountNo";

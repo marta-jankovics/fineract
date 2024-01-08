@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.service.transaction.read.impl;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
@@ -45,7 +46,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     private final CurrentTransactionResponseDataMapper currentAccountTransactionResponseDataMapper;
 
     @Override
-    public CurrentTransactionTemplateResponseData retrieveTemplate(Long accountId) {
+    public CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId) {
         CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountData(accountId);
         final List<PaymentTypeData> paymentTypeOptions = this.paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         CurrencyData currencyData = new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
@@ -62,7 +63,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     }
 
     @Override
-    public CurrentTransactionResponseData retrieveTransactionById(Long accountId, Long transactionId) {
+    public CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId) {
         CurrentTransactionData currentAccountTransactionData = currentAccountTransactionRepository.findByIdAndAccountId(accountId,
                 transactionId);
         if (currentAccountTransactionData == null) {

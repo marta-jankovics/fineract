@@ -20,4 +20,4 @@ package org.apache.fineract.currentaccount.handler.account;
 
 import org.apache.fineract.commands.handler.NewCommandSourceHandler;
 
-public interface CurrentAccountRejectApplicationCommandHandler extends NewCommandSourceHandler {}
+public interface CurrentAccountCancelledApplicationCommandHandler extends NewCommandSourceHandler {}

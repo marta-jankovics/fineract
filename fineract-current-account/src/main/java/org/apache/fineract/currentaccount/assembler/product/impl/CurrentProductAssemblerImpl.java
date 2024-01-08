@@ -60,7 +60,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         boolean enforceMinRequiredBalance = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
         BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamed(minRequiredBalanceParamName);
 
-        return new CurrentProduct(name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
+        return new CurrentProduct(null, name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
                 enforceMinRequiredBalance, minRequiredBalance);
     }
 

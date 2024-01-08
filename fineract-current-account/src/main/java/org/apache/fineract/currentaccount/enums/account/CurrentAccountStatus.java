@@ -31,13 +31,8 @@ public enum CurrentAccountStatus {
     INVALID(0, "currentAccountStatusType.invalid"), //
     SUBMITTED(100, "currentAccountStatusType.submitted"), //
     ACTIVE(300, "currentAccountStatusType.active"), //
-    TRANSFER_IN_PROGRESS(303, "currentAccountStatusType.transfer.in.progress"), //
-    TRANSFER_ON_HOLD(304, "currentAccountStatusType.transfer.on.hold"), //
-    WITHDRAWN_BY_APPLICANT(400, "currentAccountStatusType.withdrawn.by.applicant"), //
-    REJECTED(500, "currentAccountStatusType.rejected"), //
-    CLOSED(600, "currentAccountStatusType.closed"), //
-    PRE_MATURE_CLOSURE(700, "currentAccountStatusType.pre.mature.closure"), //
-    MATURED(800, "currentAccountStatusType.matured"); //
+    CANCELLED(400, "currentAccountStatusType.cancelled"), //
+    CLOSED(600, "currentAccountStatusType.closed"); //
 
     private final Integer value;
     private final String code;
@@ -51,13 +46,7 @@ public enum CurrentAccountStatus {
         return switch (type) {
             case 100 -> CurrentAccountStatus.SUBMITTED;
             case 300 -> CurrentAccountStatus.ACTIVE;
-            case 303 -> CurrentAccountStatus.TRANSFER_IN_PROGRESS;
-            case 304 -> CurrentAccountStatus.TRANSFER_ON_HOLD;
-            case 400 -> CurrentAccountStatus.WITHDRAWN_BY_APPLICANT;
-            case 500 -> CurrentAccountStatus.REJECTED;
             case 600 -> CurrentAccountStatus.CLOSED;
-            case 700 -> CurrentAccountStatus.PRE_MATURE_CLOSURE;
-            case 800 -> CurrentAccountStatus.MATURED;
             default -> CurrentAccountStatus.INVALID;
         };
     }
@@ -70,12 +59,8 @@ public enum CurrentAccountStatus {
         return this == CurrentAccountStatus.SUBMITTED;
     }
 
-    public boolean isRejected() {
-        return this == CurrentAccountStatus.REJECTED;
-    }
-
-    public boolean isApplicationWithdrawnByApplicant() {
-        return this == CurrentAccountStatus.WITHDRAWN_BY_APPLICANT;
+    public boolean isCancelled() {
+        return this == CurrentAccountStatus.CANCELLED;
     }
 
     public boolean isActive() {
@@ -87,27 +72,7 @@ public enum CurrentAccountStatus {
     }
 
     public boolean isClosed() {
-        return this == CurrentAccountStatus.CLOSED || isRejected() || isApplicationWithdrawnByApplicant();
-    }
-
-    public boolean isTransferInProgress() {
-        return this == CurrentAccountStatus.TRANSFER_IN_PROGRESS;
-    }
-
-    public boolean isTransferOnHold() {
-        return this == CurrentAccountStatus.TRANSFER_ON_HOLD;
-    }
-
-    public boolean isUnderTransfer() {
-        return isTransferInProgress() || isTransferOnHold();
-    }
-
-    public boolean isMatured() {
-        return this == CurrentAccountStatus.MATURED;
-    }
-
-    public boolean isPreMatureClosure() {
-        return this == CurrentAccountStatus.PRE_MATURE_CLOSURE;
+        return this == CurrentAccountStatus.CLOSED || isCancelled();
     }
 
     public Object toEnumOptionData() {

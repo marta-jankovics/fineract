@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.repository.account;
 
+import java.util.UUID;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -29,12 +30,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, Long> {
+public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, UUID> {
 
-    String FIND_CURRENT_ACCOUNT_DETAILS = "SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNo, ca.externalId, ca.clientId, ca.productId, ca.status, ca.accountType, ca.submittedOnDate, ca.submittedByUserId, ca.rejectedOnDate, ca.rejectedByUserId, ca.withdrawnOnDate, ca.withdrawnByUserId, ca.activatedOnDate, ca.activatedByUserId, ca.closedOnDate, ca.closedByUserId, ca.currency.code, ca.currency.digitsAfterDecimal, ca.currency.inMultiplesOf, ca.allowOverdraft, ca.overdraftLimit, ca.enforceMinRequiredBalance, ca.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentAccount ca, ApplicationCurrency curr WHERE curr.code = ca.currency.code ";
+    String FIND_CURRENT_ACCOUNT_DETAILS = "SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNo, ca.externalId, ca.clientId, ca.productId, ca.status, ca.accountType, ca.submittedOnDate, ca.submittedByUserId, ca.cancelledOnDate, ca.cancelledByUserId, ca.activatedOnDate, ca.activatedByUserId, ca.closedOnDate, ca.closedByUserId, ca.currency.code, ca.currency.digitsAfterDecimal, ca.currency.inMultiplesOf, ca.allowOverdraft, ca.overdraftLimit, ca.enforceMinRequiredBalance, ca.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentAccount ca, ApplicationCurrency curr WHERE curr.code = ca.currency.code ";
 
     @Query(FIND_CURRENT_ACCOUNT_DETAILS + " AND ca.id = :id")
-    CurrentAccountData findCurrentAccountData(@Param("id") Long id);
+    CurrentAccountData findCurrentAccountData(@Param("id") UUID id);
 
     @Query(FIND_CURRENT_ACCOUNT_DETAILS + " AND ca.externalId = :externalId")
     CurrentAccountData findCurrentAccountData(@Param("externalId") ExternalId externalId);
@@ -42,5 +43,5 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     @Query(FIND_CURRENT_ACCOUNT_DETAILS)
     Page<CurrentAccountData> findAllCurrentAccountData(Pageable pageable);
 
-    Long findIdByExternalId(ExternalId accountExternalId);
+    UUID findIdByExternalId(ExternalId accountExternalId);
 }

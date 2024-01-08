@@ -18,35 +18,27 @@
  */
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
-import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
 
-import jakarta.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
-import org.apache.fineract.currentaccount.enums.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
-import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
-import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
 import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
-import org.apache.fineract.portfolio.savings.SavingsApiConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,13 +66,13 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //
                     .withClientId(account.getClientId()) //
-                    .withEntityId(account.getId()) //
+                    .withEntityUUID(account.getId()) //
                     .withEntityExternalId(account.getExternalId()).withClientId(account.getClientId()) //
                     .build();
         } catch (final DataAccessException dve) {
             handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
             return CommandProcessingResult.empty();
-        } catch (final PersistenceException dve) {
+        } catch (final Exception dve) {
             Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
             handleDataIntegrityIssues(command, throwable, dve);
             return CommandProcessingResult.empty();
@@ -89,7 +81,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult modifyApplication(final Long accountId, final JsonCommand command) {
+    public CommandProcessingResult modifyApplication(final UUID accountId, final JsonCommand command) {
         try {
             final CurrentAccount account = currentAccountRepository.findById(accountId)
                     .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -102,7 +94,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //
-                    .withEntityId(account.getId()) //
+                    .withEntityUUID(account.getId()) //
                     .withEntityExternalId(account.getExternalId()) //
                     .withClientId(account.getClientId()) //
                     .with(changes) //
@@ -110,7 +102,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         } catch (final DataAccessException dve) {
             handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
             return CommandProcessingResult.resourceResult(-1L);
-        } catch (final PersistenceException dve) {
+        } catch (final Exception dve) {
             Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
             handleDataIntegrityIssues(command, throwable, dve);
             return CommandProcessingResult.empty();
@@ -119,48 +111,20 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult deleteApplication(final Long accountId) {
+    public CommandProcessingResult cancelApplication(final UUID accountId, final JsonCommand command) {
+        currentAccountDataValidator.validateCancellation(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
-        if (CurrentAccountStatus.SUBMITTED.equals(account.getStatus())) {
-            currentAccountRepository.delete(account);
-        } else {
-            final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-            final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                    .resource(SAVINGS_ACCOUNT_RESOURCE_NAME + SavingsApiConstants.deleteApplicationAction);
-
-            baseDataValidator.reset().parameter(SavingsApiConstants.activatedOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        return new CommandProcessingResultBuilder() //
-                .withEntityId(account.getId()) //
-                .withEntityExternalId(account.getExternalId()) //
-                .withClientId(account.getClientId()) //
-                .build();
-    }
-
-    @Transactional
-    @Override
-    public CommandProcessingResult rejectApplication(final Long accountId, final JsonCommand command) {
-        currentAccountDataValidator.validateRejection(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
-        checkClientActive(account);
-        final Map<String, Object> changes = currentAccountAssembler.rejectApplication(account, command);
+        final Map<String, Object> changes = currentAccountAssembler.cancelApplication(account, command);
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
-        // CurrentAccountRejectApplicationBusinessEvent(savingsAccount));
+        // CurrentAccountRejectApplicationBusinessEvent(currentAccount));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
+                .withEntityUUID(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -169,29 +133,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult applicantWithdrawsFromApplication(final Long accountId, final JsonCommand command) {
-        currentAccountDataValidator.validateWithdrawal(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
-        checkClientActive(account);
-        final Map<String, Object> changes = currentAccountAssembler.withdrawApplication(account, command);
-
-        // TODO: Business event handling
-        // businessEventNotifierService.notifyPostBusinessEvent(new
-        // CurrentAccountRejectApplicationBusinessEvent(savingsAccount));
-
-        return new CommandProcessingResultBuilder() //
-                .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
-                .withEntityExternalId(account.getExternalId()) //
-                .withClientId(account.getClientId()) //
-                .with(changes) //
-                .build();
-    }
-
-    @Transactional
-    @Override
-    public CommandProcessingResult activate(final Long accountId, final JsonCommand command) {
+    public CommandProcessingResult activate(final UUID accountId, final JsonCommand command) {
         currentAccountDataValidator.validateActivation(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -200,11 +142,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
-        // CurrentAccountRejectApplicationBusinessEvent(savingsAccount));
+        // CurrentAccountRejectApplicationBusinessEvent(currentAccount));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
+                .withEntityUUID(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -213,7 +155,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult close(final Long accountId, final JsonCommand command) {
+    public CommandProcessingResult close(final UUID accountId, final JsonCommand command) {
         currentAccountDataValidator.validateClosing(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -222,11 +164,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
-        // CurrentAccountRejectApplicationBusinessEvent(savingsAccount));
+        // CurrentAccountRejectApplicationBusinessEvent(currentAccount));
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
+                .withEntityUUID(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -237,7 +179,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
      * Guaranteed to throw an exception no matter what the data integrity issue is.
      */
     private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
-        String msgCode = "error.msg." + CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
+        String msgCode = "error.msg." + CURRENT_ACCOUNT_RESOURCE_NAME;
         String msg = "Unknown data integrity issue with current account.";
         String param = null;
         Object[] msgArgs;

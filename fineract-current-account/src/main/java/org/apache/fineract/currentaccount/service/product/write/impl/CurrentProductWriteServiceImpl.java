@@ -20,8 +20,8 @@ package org.apache.fineract.currentaccount.service.product.write.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 
-import jakarta.persistence.PersistenceException;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -57,12 +57,12 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             currentProductRepository.saveAndFlush(product);
 
             return new CommandProcessingResultBuilder() //
-                    .withEntityId(product.getId()) //
+                    .withEntityUUID(product.getId()) //
                     .build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
             return CommandProcessingResult.empty();
-        } catch (final PersistenceException dve) {
+        } catch (Exception dve) {
             handleDataIntegrityIssues(command, ExceptionUtils.getRootCause(dve.getCause()), dve);
             return CommandProcessingResult.empty();
         }
@@ -70,7 +70,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult update(final Long productId, final JsonCommand command) {
+    public CommandProcessingResult update(final UUID productId, final JsonCommand command) {
         try {
             final CurrentProduct product = this.currentProductRepository.findById(productId)
                     .orElseThrow(() -> new CurrentProductNotFoundException(productId));
@@ -79,12 +79,12 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             final Map<String, Object> changes = currentProductAssembler.update(product, command);
 
             return new CommandProcessingResultBuilder() //
-                    .withEntityId(product.getId()) //
+                    .withEntityUUID(product.getId()) //
                     .with(changes).build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
             return CommandProcessingResult.empty();
-        } catch (final PersistenceException dve) {
+        } catch (final Exception dve) {
             handleDataIntegrityIssues(command, ExceptionUtils.getRootCause(dve.getCause()), dve);
             return CommandProcessingResult.empty();
         }
@@ -92,14 +92,22 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
     @Transactional
     @Override
-    public CommandProcessingResult delete(final Long productId) {
-        if (!this.currentProductRepository.existsById(productId)) {
-            throw new CurrentProductNotFoundException(productId);
+    public CommandProcessingResult delete(final UUID productId) {
+        try {
+            if (!this.currentProductRepository.existsById(productId)) {
+                throw new CurrentProductNotFoundException(productId);
+            }
+            this.currentProductRepository.deleteById(productId);
+            return new CommandProcessingResultBuilder() //
+                    .withEntityUUID(productId) //
+                    .build();
+        } catch (final DataAccessException e) {
+            handleDataIntegrityIssues(null, e.getMostSpecificCause(), e);
+            return CommandProcessingResult.empty();
+        } catch (final Exception dve) {
+            handleDataIntegrityIssues(null, ExceptionUtils.getRootCause(dve.getCause()), dve);
+            return CommandProcessingResult.empty();
         }
-        this.currentProductRepository.deleteById(productId);
-        return new CommandProcessingResultBuilder() //
-                .withEntityId(productId) //
-                .build();
     }
 
     /*

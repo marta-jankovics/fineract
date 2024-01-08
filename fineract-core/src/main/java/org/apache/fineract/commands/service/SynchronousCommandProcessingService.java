@@ -263,7 +263,7 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
 
     private void publishHookEvent(final String entityName, final String actionName, JsonCommand command, final Object result) {
         try {
-            final AppUser appUser = context.authenticatedUser(CommandWrapper.wrap(actionName, entityName, null, null));
+            final AppUser appUser = context.authenticatedUser(CommandWrapper.wrap(actionName, entityName));
 
             final HookEventSource hookEventSource = new HookEventSource(entityName, actionName);
 

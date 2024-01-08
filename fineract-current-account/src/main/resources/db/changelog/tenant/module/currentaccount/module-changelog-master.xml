@@ -25,4 +25,5 @@
   <include relativeToChangelogFile="true" file="parts/ca_0001_current_product.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0002_current_account.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0003_current_account_transaction.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0004_command_source.xml"/>
 </databaseChangeLog>

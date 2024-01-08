@@ -19,9 +19,8 @@
 package org.apache.fineract.currentaccount.api.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.activateAction;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.cancelAction;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closeAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.rejectAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.withdrawnByApplicantAction;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +29,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -38,9 +36,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriInfo;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
@@ -88,15 +85,12 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n" + "\n" + "currentaccounts\n" + "\n" + "\n" + "currentaccounts")
-    public Page<CurrentAccountResponseData> retrieveAll(@Context final UriInfo uriInfo,
-            @QueryParam("offset") @Parameter(description = "offset") final Long offset,
-            @QueryParam("limit") @Parameter(description = "limit") final Integer limit,
-            @QueryParam("page") @Parameter(description = "page") final Integer page,
+    public Page<CurrentAccountResponseData> retrieveAll(@QueryParam("page") @Parameter(description = "page") final Integer page,
             @QueryParam("size") @Parameter(description = "size") final Integer size,
             @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
             @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
-        return currentAccountReadService.retrieveAll(PagedRequest.createFrom(offset, limit, page, size, sortOrder, orderBy));
+        return currentAccountReadService.retrieveAll(PagedRequest.createFrom(page, size, sortOrder, orderBy));
     }
 
     @Override
@@ -106,7 +100,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Retrieve a current application/account", description = "Retrieves a current application/account\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/1")
-    public CurrentAccountResponseData retrieveOne(@PathParam("accountId") @Parameter(description = "accountId") final Long accountId) {
+    public CurrentAccountResponseData retrieveOne(@PathParam("accountId") @Parameter(description = "accountId") final UUID accountId) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveById(accountId);
     }
@@ -131,8 +125,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Mandatory Fields: clientId, productId, accountNo, submittedOnDate\n\n" + "Optional Fields: externalId, submittedOnDate\n\n"
             + "Inherited from Product (if not provided): enforceMinRequiredBalance, minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
-    public CommandProcessingResult submitApplication(@Parameter(hidden = true) final String apiRequestBodyAsJson) {
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentAccount().withJson(apiRequestBodyAsJson).build();
+    public CommandProcessingResult submitApplication(@Parameter(hidden = true) final String requestJson) {
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentAccount().withJson(requestJson).build();
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
@@ -141,20 +135,18 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("{accountId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Reject current application:\n\n"
-            + "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Withdraw current application:\n\n"
-            + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
+    @Operation(summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
+            + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
             + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
-    public CommandProcessingResult handleCommands(@PathParam("accountId") @Parameter(description = "accountId") final Long accountId,
+    public CommandProcessingResult handleCommands(@PathParam("accountId") @Parameter(description = "accountId") final UUID accountId,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
-            @Parameter(hidden = true) final String apiRequestBodyAsJson) {
-        return handleCommands(accountId, null, apiRequestBodyAsJson, commandParam);
+            @Parameter(hidden = true) final String requestJson) {
+        return handleCommands(accountId, null, requestJson, commandParam);
     }
 
     @Override
@@ -162,9 +154,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("/external-id/{externalId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Withdraw current application:\n\n"
-            + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
+    @Operation(summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
+            + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
             + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
@@ -173,8 +164,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
     public CommandProcessingResult handleCommands(@PathParam("externalId") @Parameter(description = "externalId") final String externalId,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
-            @Parameter(hidden = true) final String apiRequestBodyAsJson) {
-        return handleCommands(null, externalId, apiRequestBodyAsJson, commandParam);
+            @Parameter(hidden = true) final String requestJson) {
+        return handleCommands(null, externalId, requestJson, commandParam);
     }
 
     @Override
@@ -182,13 +173,13 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("{accountId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is activate, the details cannot be changed using this method.\n\n"
+    @Operation(summary = "Modify a current application", description = "Modify a current application:\n\n"
+            + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
-    public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final Long accountId,
-            @Parameter(hidden = true) final String apiRequestBodyAsJson) {
-        return updateSavingAccount(accountId, null, apiRequestBodyAsJson);
+    public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final UUID accountId,
+            @Parameter(hidden = true) final String requestJson) {
+        return updateCurrentAccount(accountId, null, requestJson);
     }
 
     @Override
@@ -196,49 +187,28 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("/external-id/{externalId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is active, the details cannot be changed using this method.\n\n"
+    @Operation(summary = "Modify a current application", description = "Modify a current application:\n\n"
+            + "Current application can only be modified when in 'Submitted' state. Once the application is active, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
     public CommandProcessingResult update(@PathParam("externalId") @Parameter(description = "externalId") final String externalId,
-            @Parameter(hidden = true) final String apiRequestBodyAsJson) {
-        return updateSavingAccount(null, externalId, apiRequestBodyAsJson);
+            @Parameter(hidden = true) final String requestJson) {
+        return updateCurrentAccount(null, externalId, requestJson);
     }
 
-    @Override
-    @DELETE
-    @Path("{accountId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Delete a current application", description = "At present we support hard delete of current application so long as its in 'Submitted and pending approval' state. One the application is moves past this state, it is not possible to do a 'hard' delete of the application or the account. An API endpoint will be added to close/de-activate the current account.")
-    public CommandProcessingResult delete(@PathParam("accountId") @Parameter(description = "accountId") final Long accountId) {
-        return deleteSavingAccount(accountId, null);
-    }
-
-    @Override
-    @DELETE
-    @Path("/external-id/{externalId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Delete a current application", description = "At present we support hard delete of current application so long as its in 'Submitted and pending approval' state. One the application is moves past this state, it is not possible to do a 'hard' delete of the application or the account. An API endpoint will be added to close/de-activate the current account.")
-    public CommandProcessingResult delete(@PathParam("externalId") @Parameter(description = "externalId") final String externalId) {
-        return deleteSavingAccount(null, externalId);
-    }
-
-    private CommandProcessingResult updateSavingAccount(Long accountId, String externalId, String apiRequestBodyAsJson) {
+    private CommandProcessingResult updateCurrentAccount(UUID accountId, String externalId, String requestJson) {
         ExternalId accountExternalId = ExternalIdFactory.produce(externalId);
         accountId = getResolvedAccountId(accountId, accountExternalId);
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentAccount(accountId).withJson(apiRequestBodyAsJson)
-                .build();
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentAccount(accountId).withJson(requestJson).build();
 
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
-    private CommandProcessingResult handleCommands(Long accountId, String externalId, String apiRequestBodyAsJson, String commandParam) {
+    private CommandProcessingResult handleCommands(UUID accountId, String externalId, String requestJson, String commandParam) {
         ExternalId accountExternalId = ExternalIdFactory.produce(externalId);
         accountId = getResolvedAccountId(accountId, accountExternalId);
 
-        String jsonApiRequest = apiRequestBodyAsJson;
+        String jsonApiRequest = requestJson;
         if (StringUtils.isBlank(jsonApiRequest)) {
             jsonApiRequest = "{}";
         }
@@ -246,11 +216,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(jsonApiRequest);
 
         CommandProcessingResult result = null;
-        if (is(commandParam, rejectAction)) {
-            final CommandWrapper commandRequest = builder.rejectCurrentAccountApplication(accountId).build();
-            result = commandSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.withdrawnByApplicantAction)) {
-            final CommandWrapper commandRequest = builder.withdrawCurrentAccountApplication(accountId).build();
+        if (is(commandParam, CurrentAccountApiConstants.cancelAction)) {
+            final CommandWrapper commandRequest = builder.cancelCurrentAccountApplication(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         } else if (is(commandParam, CurrentAccountApiConstants.activateAction)) {
             final CommandWrapper commandRequest = builder.currentAccountActivation(accountId).build();
@@ -261,22 +228,14 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         }
 
         if (result == null) {
-            throw new UnrecognizedQueryParamException("command", commandParam, rejectAction, withdrawnByApplicantAction, activateAction,
-                    closeAction);
+            throw new UnrecognizedQueryParamException("command", commandParam, cancelAction, activateAction, closeAction);
         }
 
         return result;
     }
 
-    private CommandProcessingResult deleteSavingAccount(Long accountId, String externalId) {
-        ExternalId accountExternalId = ExternalIdFactory.produce(externalId);
-        accountId = getResolvedAccountId(accountId, accountExternalId);
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentAccount(accountId).build();
-        return commandSourceWritePlatformService.logCommandSource(commandRequest);
-    }
-
-    private Long getResolvedAccountId(Long accountId, ExternalId accountExternalId) {
-        Long resolvedAccountId = accountId;
+    private UUID getResolvedAccountId(UUID accountId, ExternalId accountExternalId) {
+        UUID resolvedAccountId = accountId;
         if (resolvedAccountId == null) {
             accountExternalId.throwExceptionIfEmpty();
             resolvedAccountId = currentAccountReadService.retrieveAccountIdByExternalId(accountExternalId);

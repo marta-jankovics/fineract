@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.api.transaction;
+package org.apache.fineract.currentaccount.api.transaction.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
-final class CurrentTransactionsApiResourceSwagger {
+public final class CurrentTransactionsApiResourceSwagger {
 
     private CurrentTransactionsApiResourceSwagger() {}
 

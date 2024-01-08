@@ -18,16 +18,19 @@
  */
 package org.apache.fineract.currentaccount.domain.account;
 
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,8 +39,11 @@ import lombok.Setter;
 import org.apache.fineract.currentaccount.enums.account.CurrentAccountStatus;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.portfolio.accountdetails.domain.AccountType;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.Converter;
 
 @Entity
 @Getter
@@ -47,74 +53,76 @@ import org.apache.fineract.portfolio.accountdetails.domain.AccountType;
 @Table(name = "m_current_account", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "account_no" }, name = "m_current_account_account_no_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_external_id_key") })
-public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom {
+@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
-    @Basic
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Getter(onMethod = @__(@Override))
+    @Convert(value = "uuidConverter")
+    private UUID id;
+
     @Column(name = "account_no", nullable = false, length = 50, unique = true)
     private String accountNo;
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
-    @Basic
+
     @Column(name = "client_id", nullable = false)
     private Long clientId;
-    @Basic
+
     @Column(name = "product_id", nullable = false)
-    private Long productId;
+    private UUID productId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private CurrentAccountStatus status;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "account_type", nullable = false)
     private AccountType accountType;
-    @Basic
+
     @Column(name = "submitted_on_date", nullable = false)
     private LocalDate submittedOnDate;
-    @Basic
+
     @Column(name = "submitted_by_user_id", nullable = false)
     private Long submittedByUserId;
-    @Basic
-    @Column(name = "rejected_on_date")
-    private LocalDate rejectedOnDate;
-    @Basic
-    @Column(name = "rejected_by_user_id")
-    private Long rejectedByUserId;
-    @Basic
-    @Column(name = "withdrawn_on_date")
-    private LocalDate withdrawnOnDate;
-    @Basic
-    @Column(name = "withdrawn_by_user_id")
-    private Long withdrawnByUserId;
-    @Basic
+
+    @Column(name = "cancelled_on_date")
+    private LocalDate cancelledOnDate;
+
+    @Column(name = "cancelled_by_user_id")
+    private Long cancelledByUserId;
+
     @Column(name = "activated_on_date")
     private LocalDate activatedOnDate;
-    @Basic
+
     @Column(name = "activated_by_user_id")
     private Long activatedByUserId;
-    @Basic
+
     @Column(name = "closed_on_date")
     private LocalDate closedOnDate;
-    @Basic
+
     @Column(name = "closed_by_user_id")
     private Long closedByUserId;
     @Embedded
     private MonetaryCurrency currency;
-    @Basic
+
     @Column(name = "allow_overdraft", nullable = false)
     private boolean allowOverdraft;
-    @Basic
+
     @Column(name = "overdraft_limit", precision = 6)
     private BigDecimal overdraftLimit;
-    @Basic
+
     @Column(name = "enforce_min_required_balance")
     private boolean enforceMinRequiredBalance;
-    @Basic
+
     @Column(name = "min_required_balance", precision = 6)
     private BigDecimal minRequiredBalance;
-    @Basic
+
     @Column(name = "version", nullable = false)
     private int version;
 
-    public static CurrentAccount newInstanceForSubmit(Long clientId, Long productId, String accountNo, MonetaryCurrency currency,
+    public static CurrentAccount newInstanceForSubmit(Long clientId, UUID productId, String accountNo, MonetaryCurrency currency,
             ExternalId externalId, AccountType accountType, LocalDate submittedOnDate, Long submittedById, boolean allowOverdraft,
             BigDecimal overdraftLimit, boolean enforceMinRequiredBalance, BigDecimal minRequiredBalance) {
 

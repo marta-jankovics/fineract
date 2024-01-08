@@ -37,6 +37,6 @@ public class CurrentAccountModifyApplicationCommandHandlerImpl implements Curren
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.modifyApplication(command.entityId(), command);
+        return this.writePlatformService.modifyApplication(command.getResourceUUID(), command);
     }
 }

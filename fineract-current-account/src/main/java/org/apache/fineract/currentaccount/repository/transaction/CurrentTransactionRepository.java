@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.repository.transaction;
 
+import java.util.UUID;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,8 +27,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, Long> {
+public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, UUID> {
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentAccountTransactionData(t.id, t.currentAccountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, curr.code, curr.name, curr.nameCode, curr.displaySymbol, curr.decimalPlaces, curr.inMultiplesOf, pd.id, pd.accountNumber, pd.checkNumber, pd.routingCode, pd.receiptNumber, pd.bankNumber, pt.id, pt.name, pt.description, pt.isCashPayment, pt.position, pt.codeName, pt.isSystemDefined) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, PaymentDetail pd, PaymentType pt WHERE t.currentAccountId = :accountId AND t.id = :transactionId AND ca.id = t.currentAccountId and curr.code = ca.currency.code and t.paymentDetailId = pd.id and pd.paymentType.id = pt.id")
-    CurrentTransactionData findByIdAndAccountId(@Param("accountId") Long accountId, @Param("transactionId") Long transactionId);
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, curr.code, curr.name, curr.nameCode, curr.displaySymbol, curr.decimalPlaces, curr.inMultiplesOf, pd.id, pd.accountNumber, pd.checkNumber, pd.routingCode, pd.receiptNumber, pd.bankNumber, pt.id, pt.name, pt.description, pt.isCashPayment, pt.position, pt.codeName, pt.isSystemDefined) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, PaymentDetail pd, PaymentType pt WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId and curr.code = ca.currency.code and t.paymentDetailId = pd.id and pd.paymentType.id = pt.id")
+    CurrentTransactionData findByIdAndAccountId(@Param("accountId") UUID accountId, @Param("transactionId") UUID transactionId);
 }
