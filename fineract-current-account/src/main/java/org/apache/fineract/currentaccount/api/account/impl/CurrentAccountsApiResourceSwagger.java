@@ -75,8 +75,6 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "en")
         public String locale;
         @Schema(example = "05 September 2014")
-        public String approvedOnDate;
-        @Schema(example = "05 September 2014")
         public String activatedOnDate;
     }
 }

@@ -19,10 +19,8 @@
 package org.apache.fineract.currentaccount.api.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.activateAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.approveAction;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closeAction;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.rejectAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.undoApprovalAction;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.withdrawnByApplicantAction;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,16 +141,12 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("{accountId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Approve current application | Undo approval current application | Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Approve current application:\n\n"
-            + "Approves current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Undo approval current application:\n\n"
-            + "Will move 'approved' current application back to 'Submitted and pending approval' state.\n\n"
-            + "Reject current application:\n\n"
+    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Reject current application:\n\n"
             + "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
             + "Withdraw current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
             + "Activate a current account:\n\n"
-            + "Results in an approved current application being converted into an 'active' current account.\n\n"
+            + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
@@ -168,15 +162,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Path("/external-id/{externalId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Approve current application | Undo approval current application | Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Approve current application:\n\n"
-            + "Approves current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Undo approval current application:\n\n"
-            + "Will move 'approved' current application back to 'Submitted and pending approval' state.\n\n" + "Assign Current Officer:\n\n"
-            + "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
+    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
             + "Withdraw current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
             + "Activate a current account:\n\n"
-            + "Results in an approved current application being converted into an 'active' current account.\n\n"
+            + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
@@ -193,7 +183,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is approved, the details cannot be changed using this method.\n\n"
+            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
     public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final Long accountId,
@@ -207,7 +197,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is approved, the details cannot be changed using this method.\n\n"
+            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is active, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
     public CommandProcessingResult update(@PathParam("externalId") @Parameter(description = "externalId") final String externalId,
@@ -262,12 +252,6 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         } else if (is(commandParam, CurrentAccountApiConstants.withdrawnByApplicantAction)) {
             final CommandWrapper commandRequest = builder.withdrawCurrentAccountApplication(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.approveAction)) {
-            final CommandWrapper commandRequest = builder.approveCurrentAccountApplication(accountId).build();
-            result = commandSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.undoApprovalAction)) {
-            final CommandWrapper commandRequest = builder.undoCurrentAccountApplication(accountId).build();
-            result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         } else if (is(commandParam, CurrentAccountApiConstants.activateAction)) {
             final CommandWrapper commandRequest = builder.currentAccountActivation(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
@@ -277,8 +261,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         }
 
         if (result == null) {
-            throw new UnrecognizedQueryParamException("command", commandParam, rejectAction, withdrawnByApplicantAction, approveAction,
-                    undoApprovalAction, activateAction, closeAction);
+            throw new UnrecognizedQueryParamException("command", commandParam, rejectAction, withdrawnByApplicantAction, activateAction,
+                    closeAction);
         }
 
         return result;

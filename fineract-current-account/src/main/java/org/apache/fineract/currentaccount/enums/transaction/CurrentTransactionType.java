@@ -39,7 +39,7 @@ public enum CurrentTransactionType {
     AMOUNT_HOLD(3, "currentAccountTransactionType.onHold", TransactionEntryType.DEBIT), //
     AMOUNT_RELEASE(4, "currentAccountTransactionType.release", TransactionEntryType.CREDIT); //
 
-    public static final CurrentTransactionType[] VALUES = values();
+    private static final CurrentTransactionType[] VALUES = values();
 
     private static final Map<Integer, CurrentTransactionType> BY_ID = Arrays.stream(VALUES)
             .collect(Collectors.toMap(CurrentTransactionType::getValue, v -> v));

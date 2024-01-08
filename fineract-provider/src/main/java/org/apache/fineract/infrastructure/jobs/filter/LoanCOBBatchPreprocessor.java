@@ -45,7 +45,7 @@ public class LoanCOBBatchPreprocessor implements BatchRequestPreprocessor {
     @Override
     public Either<RuntimeException, BatchRequest> preprocess(BatchRequest batchRequest) {
         TransactionTemplate tr = new TransactionTemplate(transactionManager);
-        tr.setPropagationBehavior(TransactionDefinition.PROPAGATION_SUPPORTS);
+        tr.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
         return tr.execute(status -> {
             try {
                 String method = batchRequest.getMethod();

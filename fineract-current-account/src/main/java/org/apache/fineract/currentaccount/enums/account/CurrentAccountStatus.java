@@ -29,8 +29,7 @@ import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 public enum CurrentAccountStatus {
 
     INVALID(0, "currentAccountStatusType.invalid"), //
-    SUBMITTED_AND_PENDING_APPROVAL(100, "currentAccountStatusType.submitted.and.pending.approval"), //
-    APPROVED(200, "currentAccountStatusType.approved"), //
+    SUBMITTED(100, "currentAccountStatusType.submitted"), //
     ACTIVE(300, "currentAccountStatusType.active"), //
     TRANSFER_IN_PROGRESS(303, "currentAccountStatusType.transfer.in.progress"), //
     TRANSFER_ON_HOLD(304, "currentAccountStatusType.transfer.on.hold"), //
@@ -50,8 +49,7 @@ public enum CurrentAccountStatus {
 
     public static CurrentAccountStatus fromInt(final Integer type) {
         return switch (type) {
-            case 100 -> CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL;
-            case 200 -> CurrentAccountStatus.APPROVED;
+            case 100 -> CurrentAccountStatus.SUBMITTED;
             case 300 -> CurrentAccountStatus.ACTIVE;
             case 303 -> CurrentAccountStatus.TRANSFER_IN_PROGRESS;
             case 304 -> CurrentAccountStatus.TRANSFER_ON_HOLD;
@@ -68,12 +66,8 @@ public enum CurrentAccountStatus {
         return this == state;
     }
 
-    public boolean isSubmittedAndPendingApproval() {
-        return this == CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL;
-    }
-
-    public boolean isApproved() {
-        return this == CurrentAccountStatus.APPROVED;
+    public boolean isSubmitted() {
+        return this == CurrentAccountStatus.SUBMITTED;
     }
 
     public boolean isRejected() {
@@ -88,8 +82,8 @@ public enum CurrentAccountStatus {
         return this == CurrentAccountStatus.ACTIVE;
     }
 
-    public boolean isActiveOrAwaitingApprovalOrDisbursal() {
-        return isApproved() || isSubmittedAndPendingApproval() || isActive();
+    public boolean isSubmittedOrActive() {
+        return isSubmitted() || isActive();
     }
 
     public boolean isClosed() {

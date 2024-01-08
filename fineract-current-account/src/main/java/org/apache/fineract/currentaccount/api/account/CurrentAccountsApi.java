@@ -93,16 +93,12 @@ public interface CurrentAccountsApi {
     @Path("{accountId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Approve current application | Undo approval current application | Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Approve current application:\n\n"
-            + "Approves current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Undo approval current application:\n\n"
-            + "Will move 'approved' current application back to 'Submitted and pending approval' state.\n\n"
-            + "Reject current application:\n\n"
+    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Reject current application:\n\n"
             + "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
             + "Withdraw current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
             + "Activate a current account:\n\n"
-            + "Results in an approved current application being converted into an 'active' current account.\n\n"
+            + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
@@ -115,15 +111,11 @@ public interface CurrentAccountsApi {
     @Path("/external-id/{externalId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Approve current application | Undo approval current application | Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Approve current application:\n\n"
-            + "Approves current application so long as its in 'Submitted and pending approval' state.\n\n"
-            + "Undo approval current application:\n\n"
-            + "Will move 'approved' current application back to 'Submitted and pending approval' state.\n\n" + "Assign Current Officer:\n\n"
-            + "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
+    @Operation(summary = "Reject current application | Withdraw current application | Activate a current account | Close a current account", description = "Rejects current application so long as its in 'Submitted and pending approval' state.\n\n"
             + "Withdraw current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted and pending approval' state.\n\n"
             + "Activate a current account:\n\n"
-            + "Results in an approved current application being converted into an 'active' current account.\n\n"
+            + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
@@ -137,7 +129,7 @@ public interface CurrentAccountsApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is approved, the details cannot be changed using this method.\n\n"
+            + "Current application can only be modified when in 'Submitted' state. Once the application is active, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
     CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") Long accountId,
@@ -148,7 +140,7 @@ public interface CurrentAccountsApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Modify a current application | Modify current account withhold tax applicability", description = "Modify a current application:\n\n"
-            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is approved, the details cannot be changed using this method.\n\n"
+            + "Current application can only be modified when in 'Submitted and pending approval' state. Once the application is active, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
     CommandProcessingResult update(@PathParam("externalId") @Parameter(description = "externalId") String externalId,

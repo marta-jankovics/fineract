@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
-import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.data.AccountStatementPublishData;
 import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
@@ -44,7 +43,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 public class PublishAccountStatementsTasklet implements Tasklet {
 
     private final AccountStatementServiceProvider statementServiceProvider;
-    private final PlatformSecurityContext securityContext;
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
@@ -61,14 +59,14 @@ public class PublishAccountStatementsTasklet implements Tasklet {
                     .retrieveStatementsToPublish(productType, transactionDate);
             log.info("Statements to publish for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
 
-            for (StatementType statementType : generationsMap.keySet()) {
-                Map<StatementPublishType, List<AccountStatementPublishData>> byPublishType = generationsMap.get(statementType);
-                for (StatementPublishType publishType : byPublishType.keySet()) {
+            for (Map.Entry<StatementType, Map<StatementPublishType, List<AccountStatementPublishData>>> statementType : generationsMap
+                    .entrySet()) {
+                for (Map.Entry<StatementPublishType, List<AccountStatementPublishData>> publishType : statementType.getValue().entrySet()) {
                     AccountStatementPublisher publisher = statementServiceProvider.getAccountStatementPublishWriteService(productType,
-                            statementType, publishType);
-                    List<AccountStatementPublishData> publishBatch = byPublishType.get(publishType);
-                    log.info("Processing publish statement batch for {} - {} - {}", productType, statementType, publishType);
-                    publisher.publish(productType, statementType, publishType, publishBatch);
+                            statementType.getKey(), publishType.getKey());
+
+                    log.info("Processing publish statement batch for {} - {} - {}", productType, statementType, publishType.getKey());
+                    publisher.publish(productType, statementType.getKey(), publishType.getKey(), publishType.getValue());
                 }
             }
         }

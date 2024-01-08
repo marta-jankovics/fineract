@@ -19,7 +19,6 @@
 package org.apache.fineract.statement.job;
 
 import org.apache.fineract.infrastructure.jobs.service.JobName;
-import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.statement.provider.AccountStatementServiceProvider;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -41,8 +40,6 @@ public class PublishAccountStatementsConfig {
     private PlatformTransactionManager transactionManager;
     @Autowired
     private AccountStatementServiceProvider statementServiceProvider;
-    @Autowired
-    PlatformSecurityContext securityContext;
 
     @Bean
     public Job publishStatementsJob() {
@@ -58,6 +55,6 @@ public class PublishAccountStatementsConfig {
 
     @Bean
     public PublishAccountStatementsTasklet publishStatementsTasklet() {
-        return new PublishAccountStatementsTasklet(statementServiceProvider, securityContext);
+        return new PublishAccountStatementsTasklet(statementServiceProvider);
     }
 }

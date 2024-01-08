@@ -22,7 +22,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNoParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.activatedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.approvedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
@@ -143,29 +142,6 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
         validateMinRequiredBalanceParams(baseDataValidator, command);
         validateOverdraftParams(baseDataValidator, command);
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
-    }
-
-    @Override
-    public void validateApproval(JsonCommand command) {
-        if (StringUtils.isBlank(command.json())) {
-            throw new InvalidJsonException();
-        }
-
-        final Set<String> disbursementParameters = new HashSet<>(
-                Arrays.asList(approvedOnDateParamName, localeParamName, dateFormatParamName));
-
-        final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
-        command.checkForUnsupportedParameters(typeOfMap, command.json(), disbursementParameters);
-
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
-
-        final LocalDate approvedOnDate = command.localDateValueOfParameterNamed(approvedOnDateParamName);
-        baseDataValidator.reset().parameter(approvedOnDateParamName).value(approvedOnDate).ignoreIfNull()
-                .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
-
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 

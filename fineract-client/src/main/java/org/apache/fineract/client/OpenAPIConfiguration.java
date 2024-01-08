@@ -18,6 +18,4 @@
  */
 package org.apache.fineract.client;
 
-
-public class OpenAPIConfiguration {
-}
+public class OpenAPIConfiguration {}

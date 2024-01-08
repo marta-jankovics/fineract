@@ -39,8 +39,6 @@ public class CurrentAccountResponseData implements Serializable {
     private final EnumOptionData accountType;
     private final LocalDate submittedOnDate;
     private final Long submittedOnUserId;
-    private final LocalDate approvedOnDate;
-    private final Long approvedOnUserId;
     private final LocalDate rejectedOnDate;
     private final Long rejectedOnUserId;
     private final LocalDate withdrawnOnDate;

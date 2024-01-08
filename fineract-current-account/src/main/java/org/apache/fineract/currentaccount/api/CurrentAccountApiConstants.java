@@ -29,8 +29,6 @@ public class CurrentAccountApiConstants {
 
     // actions
     public static final String submitAction = "submit";
-    public static final String approveAction = "approve";
-    public static final String undoApprovalAction = "undoApproval";
     public static final String rejectAction = "reject";
     public static final String withdrawnByApplicantAction = "withdrawnByApplicant";
     public static final String activateAction = "activate";
@@ -75,7 +73,6 @@ public class CurrentAccountApiConstants {
     public static final String submittedOnDateParamName = "submittedOnDate";
     public static final String rejectedOnDateParamName = "rejectedOnDate";
     public static final String withdrawnOnDateParamName = "withdrawnOnDate";
-    public static final String approvedOnDateParamName = "approvedOnDate";
     public static final String activatedOnDateParamName = "activatedOnDate";
     public static final String closedOnDateParamName = "closedOnDate";
 

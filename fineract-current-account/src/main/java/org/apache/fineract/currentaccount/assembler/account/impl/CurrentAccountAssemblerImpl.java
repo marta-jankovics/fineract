@@ -208,7 +208,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (!actualChanges.isEmpty()) {
-            if (!account.getStatus().isSubmittedAndPendingApproval()) {
+            if (!account.getStatus().isSubmitted()) {
                 baseDataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
             }
             actualChanges.put("locale", localeAsInput);
@@ -229,92 +229,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     @Override
-    public Map<String, Object> approve(CurrentAccount account, JsonCommand command) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.approveAction);
-
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL.hasStateOf(currentStatus)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.approvedOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        account.setStatus(CurrentAccountStatus.APPROVED);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
-
-        // only do below if status has changed in the 'approval' case
-        LocalDate approvedOn = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.approvedOnDateParamName);
-        if (approvedOn == null) {
-            approvedOn = DateUtils.getBusinessLocalDate();
-        }
-        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-
-        account.setApprovedOnDate(approvedOn);
-        account.setApprovedByUserId(context.authenticatedUser().getId());
-        actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.approvedOnDateParamName, fmt.format(approvedOn));
-
-        final LocalDate submittalDate = account.getSubmittedOnDate();
-        if (DateUtils.isBefore(approvedOn, submittalDate)) {
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-            final String submittalDateAsString = formatter.format(submittalDate);
-
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.approvedOnDateParamName).value(submittalDateAsString)
-                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-        if (DateUtils.isAfterBusinessDate(approvedOn)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.approvedOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        return actualChanges;
-    }
-
-    @Override
-    public Map<String, Object> undoApplicationApproval(CurrentAccount account) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.undoApprovalAction);
-
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.APPROVED.hasStateOf(currentStatus)) {
-
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.approvedOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.approved.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
-        }
-
-        account.setStatus(CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL);
-        account.setApprovedByUserId(null);
-        account.setApprovedOnDate(null);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
-        actualChanges.put(CurrentAccountApiConstants.approvedOnDateParamName, "");
-
-        return actualChanges;
-    }
-
-    @Override
     public Map<String, Object> rejectApplication(CurrentAccount account, JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
 
@@ -323,7 +237,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.rejectAction);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL.hasStateOf(currentStatus)) {
+        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
             baseDataValidator.reset().parameter(CurrentAccountApiConstants.rejectedOnDateParamName)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
@@ -385,7 +299,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.withdrawnByApplicantAction);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL.hasStateOf(currentStatus)) {
+        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
             baseDataValidator.reset().parameter(CurrentAccountApiConstants.withdrawnOnDateParamName)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
@@ -447,10 +361,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.activateAction);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.APPROVED.hasStateOf(currentStatus)) {
+        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
             baseDataValidator.reset().parameter(CurrentAccountApiConstants.activatedOnDateParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.approved.state");
+                    .failWithCodeNoParameterAddedToErrorCode("not.in.submitted.state");
 
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);
@@ -479,13 +393,13 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
         }
 
-        final LocalDate approvalDate = account.getApprovedOnDate();
-        if (DateUtils.isBefore(activationDate, approvalDate)) {
+        final LocalDate submittedOnDate = account.getSubmittedOnDate();
+        if (DateUtils.isBefore(activationDate, submittedOnDate)) {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-            final String dateAsString = formatter.format(approvalDate);
+            final String dateAsString = formatter.format(submittedOnDate);
 
             baseDataValidator.reset().parameter(CurrentAccountApiConstants.activatedOnDateParamName).value(dateAsString)
-                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.approval.date");
+                    .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submitted.date");
 
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);

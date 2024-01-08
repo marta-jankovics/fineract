@@ -123,7 +123,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
-        if (CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL.equals(account.getStatus())) {
+        if (CurrentAccountStatus.SUBMITTED.equals(account.getStatus())) {
             currentAccountRepository.delete(account);
         } else {
             final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
@@ -142,45 +142,6 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
                 .withEntityId(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
-                .build();
-    }
-
-    @Transactional
-    @Override
-    public CommandProcessingResult approveApplication(final Long accountId, final JsonCommand command) {
-        currentAccountDataValidator.validateApproval(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
-        checkClientActive(account);
-        final Map<String, Object> changes = currentAccountAssembler.approve(account, command);
-
-        // TODO: Business event handling
-        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentAccountApproveBusinessEvent(savingsAccount));
-
-        return new CommandProcessingResultBuilder() //
-                .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
-                .withEntityExternalId(account.getExternalId()) //
-                .withClientId(account.getClientId()) //
-                .with(changes) //
-                .build();
-    }
-
-    @Transactional
-    @Override
-    public CommandProcessingResult undoApplicationApproval(final Long accountId, final JsonCommand command) {
-
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
-        checkClientActive(account);
-        final Map<String, Object> changes = currentAccountAssembler.undoApplicationApproval(account);
-
-        return new CommandProcessingResultBuilder() //
-                .withCommandId(command.commandId()) //
-                .withEntityId(account.getId()) //
-                .withEntityExternalId(account.getExternalId()) //
-                .withClientId(account.getClientId()) //
-                .with(changes) //
                 .build();
     }
 

@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
-import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
 import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
@@ -45,7 +44,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 public class GenerateAccountStatementsTasklet implements Tasklet {
 
     private final AccountStatementServiceProvider statementServiceProvider;
-    private final PlatformSecurityContext securityContext;
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
@@ -65,17 +63,18 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
                     .retrieveStatementsToGenerate(productType, transactionDate);
             log.info("Statements to generate for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
 
-            for (StatementType statementType : generationsMap.keySet()) {
-                Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> byPublishType = generationsMap
-                        .get(statementType);
-                for (StatementPublishType publishType : byPublishType.keySet()) {
+            for (Map.Entry<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> statementType : generationsMap
+                    .entrySet()) {
+                for (Map.Entry<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> publishType : statementType
+                        .getValue().entrySet()) {
                     AccountStatementGenerationWriteService writeService = statementServiceProvider
-                            .getAccountStatementGenerationWriteService(productType, statementType, publishType);
-                    Map<String, List<AccountStatementGenerationData>> byBatchKey = byPublishType.get(publishType);
+                            .getAccountStatementGenerationWriteService(productType, statementType.getKey(), publishType.getKey());
+                    Map<String, List<AccountStatementGenerationData>> byBatchKey = publishType.getValue();
                     log.info("Processing {} statement generation batches for {} - {} - {}", byBatchKey.values().size(), productType,
                             statementType, publishType);
                     for (List<AccountStatementGenerationData> generationBatch : byBatchKey.values()) {
-                        writeService.generateStatementBatch(productType, statementType, publishType, generationBatch, deleteResult);
+                        writeService.generateStatementBatch(productType, statementType.getKey(), publishType.getKey(), generationBatch,
+                                deleteResult);
                     }
                 }
             }

@@ -28,10 +28,6 @@ public interface CurrentAccountAssembler {
 
     Map<String, Object> update(CurrentAccount account, JsonCommand command);
 
-    Map<String, Object> approve(CurrentAccount account, JsonCommand command);
-
-    Map<String, Object> undoApplicationApproval(CurrentAccount account);
-
     Map<String, Object> rejectApplication(CurrentAccount account, JsonCommand command);
 
     Map<String, Object> withdrawApplication(CurrentAccount account, JsonCommand command);

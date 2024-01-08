@@ -29,10 +29,6 @@ public interface CurrentAccountWriteService {
 
     CommandProcessingResult deleteApplication(Long savingsId);
 
-    CommandProcessingResult approveApplication(Long savingsId, JsonCommand command);
-
-    CommandProcessingResult undoApplicationApproval(Long savingsId, JsonCommand command);
-
     CommandProcessingResult rejectApplication(Long savingsId, JsonCommand command);
 
     CommandProcessingResult applicantWithdrawsFromApplication(Long savingsId, JsonCommand command);

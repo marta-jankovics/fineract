@@ -73,12 +73,6 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom {
     @Column(name = "submitted_by_user_id", nullable = false)
     private Long submittedByUserId;
     @Basic
-    @Column(name = "approved_on_date")
-    private LocalDate approvedOnDate;
-    @Basic
-    @Column(name = "approved_by_user_id")
-    private Long approvedByUserId;
-    @Basic
     @Column(name = "rejected_on_date")
     private LocalDate rejectedOnDate;
     @Basic
@@ -128,7 +122,7 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom {
         currentAccount.setClientId(clientId);
         currentAccount.setProductId(productId);
         currentAccount.setAccountNo(accountNo);
-        currentAccount.setStatus(CurrentAccountStatus.SUBMITTED_AND_PENDING_APPROVAL);
+        currentAccount.setStatus(CurrentAccountStatus.SUBMITTED);
         currentAccount.setExternalId(externalId);
         currentAccount.setAccountType(accountType);
         currentAccount.setSubmittedOnDate(submittedOnDate);
