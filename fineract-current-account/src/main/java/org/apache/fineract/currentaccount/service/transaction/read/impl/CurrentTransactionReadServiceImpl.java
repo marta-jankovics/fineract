@@ -35,6 +35,8 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -69,6 +71,13 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
         if (currentAccountTransactionData == null) {
             throw new CurrentTransactionNotFoundException(accountId, transactionId);
         }
+        return currentAccountTransactionResponseDataMapper.map(currentAccountTransactionData);
+    }
+
+    @Override
+    public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable) {
+        Page<CurrentTransactionData> currentAccountTransactionData = currentAccountTransactionRepository.findByAccountId(accountId,
+                pageable);
         return currentAccountTransactionResponseDataMapper.map(currentAccountTransactionData);
     }
 }

@@ -45,12 +45,14 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTem
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
+import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts/{accountId}/transactions")
 @Component
-@Tag(name = "Current Account Transactions", description = "")
+@Tag(name = "Current Account Transactions")
 @RequiredArgsConstructor
 public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
@@ -70,6 +72,20 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     public CurrentTransactionTemplateResponseData retrieveTemplate(@PathParam("accountId") final UUID accountId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentAccountTransactionReadService.retrieveTemplate(accountId);
+    }
+
+    @Override
+    @GET
+    @Consumes({ MediaType.APPLICATION_JSON })
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final UUID accountId,
+            @QueryParam("page") @Parameter(description = "page") final Integer page,
+            @QueryParam("size") @Parameter(description = "size") final Integer size,
+            @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
+            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
+        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
+        return this.currentAccountTransactionReadService.retrieveTransactionByAccountId(accountId,
+                PagedRequest.createFrom(page, size, sortOrder, orderBy));
     }
 
     @Override

@@ -16,19 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.read;
+package org.apache.fineract.currentaccount.service.account.read;
 
 import java.util.UUID;
-import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
-import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 
-public interface CurrentTransactionReadService {
+public interface CurrentAccountBalanceReadService {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
-
-    CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId);
-
-    Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable);
+    CurrentAccountBalanceData getBalance(UUID accountId);
 }

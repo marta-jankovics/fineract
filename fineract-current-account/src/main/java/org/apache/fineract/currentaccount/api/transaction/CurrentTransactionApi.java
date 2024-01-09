@@ -22,10 +22,13 @@ import java.util.UUID;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.springframework.data.domain.Page;
 
 public interface CurrentTransactionApi {
 
     CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
+
+    Page<CurrentTransactionResponseData> retrieveAll(UUID accountId, Integer page, Integer size, String orderBy, String sortOrder);
 
     CurrentTransactionResponseData retrieveOne(UUID accountId, UUID transactionId);
 

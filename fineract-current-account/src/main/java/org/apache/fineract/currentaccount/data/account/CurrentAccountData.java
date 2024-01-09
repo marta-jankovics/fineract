@@ -58,4 +58,5 @@ public class CurrentAccountData implements Serializable {
     private final String currencyName;
     private final String currencyNameCode;
     private final String currencyDisplaySymbol;
+
 }

@@ -16,19 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.read;
+package org.apache.fineract.currentaccount.data.account;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
-import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
-import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import lombok.Data;
 
-public interface CurrentTransactionReadService {
+@Data
+public class CurrentAccountBalanceData implements Serializable {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
-
-    CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId);
-
-    Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable);
+    // Current account balance data
+    private final UUID id;
+    private final UUID accountId;
+    private final BigDecimal availableBalance;
+    private final BigDecimal totalOnHoldBalance;
+    private final OffsetDateTime calculatedTill;
+    private final UUID calculatedTillTransactionId;
 }

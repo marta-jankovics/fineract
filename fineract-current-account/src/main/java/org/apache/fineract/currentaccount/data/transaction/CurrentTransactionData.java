@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Data;
 import org.apache.fineract.currentaccount.enums.transaction.CurrentTransactionType;
@@ -37,6 +38,7 @@ public class CurrentTransactionData implements Serializable {
     private final LocalDate transactionDate;
     private final LocalDate submittedOnDate;
     private final BigDecimal transactionAmount;
+    private final OffsetDateTime createdDateTime;
 
     // Currency data
     private final String currencyCode;
@@ -62,4 +64,71 @@ public class CurrentTransactionData implements Serializable {
     private final Long paymentTypePosition;
     private final String paymentTypeCodeName;
     private final Boolean paymentTypeIsSystemDefined;
+
+    public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
+            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime) {
+        this.id = id;
+        this.accountId = accountId;
+        this.externalId = externalId;
+        this.transactionType = transactionType;
+        this.transactionDate = transactionDate;
+        this.submittedOnDate = submittedOnDate;
+        this.transactionAmount = transactionAmount;
+        this.createdDateTime = createdDateTime;
+        currencyCode = null;
+        currencyName = null;
+        currencyNameCode = null;
+        currencyDisplaySymbol = null;
+        currencyDigitsAfterDecimal = null;
+        currencyInMultiplesOf = null;
+        paymentDetailId = null;
+        paymentDetailAccountNumber = null;
+        paymentDetailCheckNumber = null;
+        paymentDetailRoutingCode = null;
+        paymentDetailReceiptNumber = null;
+        paymentDetailsBankNumber = null;
+        paymentTypeId = null;
+        paymentTypeName = null;
+        paymentTypeDescription = null;
+        paymentTypeIsCashPayment = null;
+        paymentTypePosition = null;
+        paymentTypeCodeName = null;
+        paymentTypeIsSystemDefined = null;
+    }
+
+    public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
+            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
+            String currencyCode, String currencyName, String currencyNameCode, String currencyDisplaySymbol,
+            Integer currencyDigitsAfterDecimal, Integer currencyInMultiplesOf, Long paymentDetailId, String paymentDetailAccountNumber,
+            String paymentDetailCheckNumber, String paymentDetailRoutingCode, String paymentDetailReceiptNumber,
+            String paymentDetailsBankNumber, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
+            Boolean paymentTypeIsCashPayment, Long paymentTypePosition, String paymentTypeCodeName, Boolean paymentTypeIsSystemDefined) {
+        this.id = id;
+        this.accountId = accountId;
+        this.externalId = externalId;
+        this.transactionType = transactionType;
+        this.transactionDate = transactionDate;
+        this.submittedOnDate = submittedOnDate;
+        this.transactionAmount = transactionAmount;
+        this.createdDateTime = createdDateTime;
+        this.currencyCode = currencyCode;
+        this.currencyName = currencyName;
+        this.currencyNameCode = currencyNameCode;
+        this.currencyDisplaySymbol = currencyDisplaySymbol;
+        this.currencyDigitsAfterDecimal = currencyDigitsAfterDecimal;
+        this.currencyInMultiplesOf = currencyInMultiplesOf;
+        this.paymentDetailId = paymentDetailId;
+        this.paymentDetailAccountNumber = paymentDetailAccountNumber;
+        this.paymentDetailCheckNumber = paymentDetailCheckNumber;
+        this.paymentDetailRoutingCode = paymentDetailRoutingCode;
+        this.paymentDetailReceiptNumber = paymentDetailReceiptNumber;
+        this.paymentDetailsBankNumber = paymentDetailsBankNumber;
+        this.paymentTypeId = paymentTypeId;
+        this.paymentTypeName = paymentTypeName;
+        this.paymentTypeDescription = paymentTypeDescription;
+        this.paymentTypeIsCashPayment = paymentTypeIsCashPayment;
+        this.paymentTypePosition = paymentTypePosition;
+        this.paymentTypeCodeName = paymentTypeCodeName;
+        this.paymentTypeIsSystemDefined = paymentTypeIsSystemDefined;
+    }
 }

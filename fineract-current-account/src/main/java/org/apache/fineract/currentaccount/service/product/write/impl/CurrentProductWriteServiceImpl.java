@@ -46,7 +46,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     private final CurrentProductDataValidator currentProductDataValidator;
     private final CurrentProductAssembler currentProductAssembler;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult create(final JsonCommand command) {
         try {
@@ -68,7 +68,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult update(final UUID productId, final JsonCommand command) {
         try {
@@ -90,7 +90,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult delete(final UUID productId) {
         try {

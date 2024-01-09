@@ -79,8 +79,8 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final Long clientId = command.longValueOfParameterNamed(clientIdParamName);
         baseDataValidator.reset().parameter(clientIdParamName).value(clientId).notNull().integerGreaterThanZero();
 
-        final Long productId = command.longValueOfParameterNamed(productIdParamName);
-        baseDataValidator.reset().parameter(productIdParamName).value(productId).notNull().integerGreaterThanZero();
+        final String productId = command.stringValueOfParameterNamed(productIdParamName);
+        baseDataValidator.reset().parameter(productIdParamName).value(productId).notNull().notBlank();
 
         final LocalDate submittedOnDate = command.localDateValueOfParameterNamed(submittedOnDateParamName);
         baseDataValidator.reset().parameter(submittedOnDateParamName).value(submittedOnDate).ignoreIfNull();

@@ -51,4 +51,7 @@ public class CurrentAccountResponseData implements Serializable {
     private final BigDecimal overdraftLimit;
     private final Boolean enforceMinRequiredBalance;
     private final BigDecimal minRequiredBalance;
+    // Optional only filled when a particular account is selected
+    private final BigDecimal availableBalance;
+    private final BigDecimal totalOnHoldBalance;
 }

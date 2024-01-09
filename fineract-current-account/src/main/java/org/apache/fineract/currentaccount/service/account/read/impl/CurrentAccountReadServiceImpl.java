@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
@@ -29,6 +30,7 @@ import org.apache.fineract.currentaccount.data.product.CurrentProductResponseDat
 import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -41,6 +43,7 @@ import org.springframework.data.domain.Sort;
 public class CurrentAccountReadServiceImpl implements CurrentAccountReadService {
 
     private final CurrentAccountRepository currentAccountRepository;
+    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentProductReadService currentProductReadPlatformService;
     private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
 
@@ -55,7 +58,10 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         if (currentAccountData == null) {
             throw new CurrentAccountNotFoundException(accountId);
         }
-        return currentAccountResponseDataMapper.map(currentAccountData);
+        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService.getBalance(accountId);
+
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData.getAvailableBalance(),
+                currentAccountBalanceSnapshotData.getTotalOnHoldBalance());
     }
 
     @Override
@@ -70,12 +76,14 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
 
     @Override
     public CurrentAccountResponseData retrieveByExternalId(ExternalId externalId) {
-        CurrentAccountResponseData currentAccountResponseData = currentAccountResponseDataMapper
-                .map(currentAccountRepository.findCurrentAccountData(externalId));
-        if (currentAccountResponseData == null) {
+        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountData(externalId);
+        if (currentAccountData == null) {
             throw new CurrentAccountNotFoundException(externalId);
         }
-        return currentAccountResponseData;
+        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService
+                .getBalance(currentAccountData.getId());
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData.getAvailableBalance(),
+                currentAccountBalanceSnapshotData.getTotalOnHoldBalance());
     }
 
     @Override

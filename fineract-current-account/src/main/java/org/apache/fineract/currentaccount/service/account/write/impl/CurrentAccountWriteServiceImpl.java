@@ -52,7 +52,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     // TODO: use service eventually
     private final ClientRepository clientRepository;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult submitApplication(final JsonCommand command) {
         try {
@@ -79,7 +79,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult modifyApplication(final UUID accountId, final JsonCommand command) {
         try {
@@ -109,7 +109,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult cancelApplication(final UUID accountId, final JsonCommand command) {
         currentAccountDataValidator.validateCancellation(command);
@@ -131,7 +131,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
                 .build();
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult activate(final UUID accountId, final JsonCommand command) {
         currentAccountDataValidator.validateActivation(command);
@@ -153,7 +153,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
                 .build();
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult close(final UUID accountId, final JsonCommand command) {
         currentAccountDataValidator.validateClosing(command);

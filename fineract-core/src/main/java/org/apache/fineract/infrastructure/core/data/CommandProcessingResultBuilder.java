@@ -46,12 +46,13 @@ public class CommandProcessingResultBuilder {
     private ExternalId entityExternalId;
     private ExternalId subEntityExternalId;
     private UUID entityUUID;
+    private UUID transactionUUID;
 
     public CommandProcessingResult build() {
         return CommandProcessingResult.fromDetails(this.commandId, this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId,
                 this.resourceIdentifier, this.entityId, this.gsimId, this.glimId, this.creditBureauReportData, this.transactionId,
                 this.changes, this.productId, this.rollbackTransaction, this.subEntityId, this.entityExternalId, this.subEntityExternalId,
-                this.entityUUID);
+                this.entityUUID, this.transactionUUID);
     }
 
     public CommandProcessingResultBuilder withCommandId(final Long withCommandId) {
@@ -146,6 +147,11 @@ public class CommandProcessingResultBuilder {
 
     public CommandProcessingResultBuilder withEntityUUID(final UUID entityUUID) {
         this.entityUUID = entityUUID;
+        return this;
+    }
+
+    public CommandProcessingResultBuilder withTransactionUUID(final UUID transactionUUID) {
+        this.transactionUUID = transactionUUID;
         return this;
     }
 }

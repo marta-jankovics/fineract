@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.mapper.account;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
@@ -34,25 +35,31 @@ import org.springframework.data.domain.Page;
 public interface CurrentAccountResponseDataMapper {
 
     default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data) {
-        return data.map(this::map);
+        return data.map(currentAccountData -> map(currentAccountData, null, null));
     }
 
-    @Mapping(target = "currency", source = "currentProductData", qualifiedByName = "currency")
-    @Mapping(target = "status", source = "currentProductData", qualifiedByName = "status")
-    @Mapping(target = "accountType", source = "currentProductData", qualifiedByName = "accountType")
-    CurrentAccountResponseData map(CurrentAccountData currentProductData);
+    default CurrentAccountResponseData map(CurrentAccountData currentAccountData) {
+        return map(currentAccountData, null, null);
+    }
+
+    @Mapping(target = "currency", source = "currentAccountData", qualifiedByName = "currency")
+    @Mapping(target = "status", source = "currentAccountData", qualifiedByName = "status")
+    @Mapping(target = "accountType", source = "currentAccountData", qualifiedByName = "accountType")
+    @Mapping(target = "availableBalance", source = "availableBalance")
+    @Mapping(target = "totalOnHoldBalance", source = "totalOnHoldBalance")
+    CurrentAccountResponseData map(CurrentAccountData currentAccountData, BigDecimal availableBalance, BigDecimal totalOnHoldBalance);
 
     @Named("currency")
-    default CurrencyData mapToCurrencyData(CurrentAccountData currentProductData) {
-        return new CurrencyData(currentProductData.getCurrencyCode(), currentProductData.getCurrencyName(),
-                currentProductData.getDigitsAfterDecimal(), currentProductData.getInMultiplesOf(),
-                currentProductData.getCurrencyDisplaySymbol(), currentProductData.getCurrencyNameCode());
+    default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {
+        return new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
+                currentAccountData.getDigitsAfterDecimal(), currentAccountData.getInMultiplesOf(),
+                currentAccountData.getCurrencyDisplaySymbol(), currentAccountData.getCurrencyNameCode());
     }
 
     @Named("status")
-    default EnumOptionData mapStatus(CurrentAccountData currentProductData) {
-        return new EnumOptionData((long) currentProductData.getStatus().getValue(), currentProductData.getStatus().getCode(),
-                currentProductData.getStatus().name());
+    default EnumOptionData mapStatus(CurrentAccountData currentAccountData) {
+        return new EnumOptionData((long) currentAccountData.getStatus().getValue(), currentAccountData.getStatus().getCode(),
+                currentAccountData.getStatus().name());
     }
 
     @Named("accountType")

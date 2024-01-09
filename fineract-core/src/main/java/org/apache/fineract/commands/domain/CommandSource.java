@@ -140,7 +140,7 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         OffsetDateTime madeOnDate = DateUtils.getAuditOffsetDateTime();
         // TODO: workaround till https://github.com/eclipse-ee4j/eclipselink/issues/2031 got fixed
         String entityUUID = command.getResourceUUID() != null ? command.getResourceUUID().toString() : null;
-        String transactionUUID = command.getResourceUUID() != null ? command.getResourceUUID().toString() : null;
+        String transactionUUID = command.getTransactionUUID() != null ? command.getTransactionUUID().toString() : null;
         return new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getOfficeId(), command.getGroupId(),
                 command.getClientId(), command.getLoanId(), command.getSavingsId(), wrapper.getHref(), command.entityId(),
                 command.subentityId(), command.json(), maker, madeOnDate, null, null, status, command.getProductId(),
@@ -338,6 +338,8 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         this.resourceExternalId = result.getResourceExternalId();
         this.subResourceId = result.getSubResourceId();
         this.subResourceExternalId = result.getSubResourceExternalId();
+        this.entityUUID = result.getResourceUUID() != null ? result.getResourceUUID().toString() : null;
+        this.transactionUUID = result.getTransactionUUID() != null ? result.getTransactionUUID().toString() : null;
     }
 
     public UUID getEntityUUID() {

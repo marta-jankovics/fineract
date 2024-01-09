@@ -56,7 +56,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     // TODO: use service eventually
     private final ClientRepository clientRepository;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult deposit(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateDeposit(command);
@@ -81,18 +81,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .build();
     }
 
-    private void persistTransaction(JsonCommand command, CurrentTransaction transaction) {
-        try {
-            currentAccountTransactionRepository.saveAndFlush(transaction);
-        } catch (final DataAccessException dve) {
-            handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
-        } catch (final Exception dve) {
-            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
-            handleDataIntegrityIssues(command, throwable, dve);
-        }
-    }
-
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult withdraw(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateWithdraw(command);
@@ -117,7 +106,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .build();
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult hold(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateHold(command);
@@ -141,7 +130,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .build();
     }
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult release(UUID accountId, JsonCommand command) {
         this.currentAccountTransactionDataValidator.validateRelease(command);
@@ -167,6 +156,17 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .withClientId(account.getClientId()) //
                 .with(changes) //
                 .build();
+    }
+
+    private void persistTransaction(JsonCommand command, CurrentTransaction transaction) {
+        try {
+            currentAccountTransactionRepository.saveAndFlush(transaction);
+        } catch (final DataAccessException dve) {
+            handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
+        } catch (final Exception dve) {
+            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
+            handleDataIntegrityIssues(command, throwable, dve);
+        }
     }
 
     /*

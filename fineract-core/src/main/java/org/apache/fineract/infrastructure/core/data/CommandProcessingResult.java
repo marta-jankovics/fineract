@@ -51,12 +51,14 @@ public class CommandProcessingResult implements Serializable {
     private final ExternalId resourceExternalId;
     private final ExternalId subResourceExternalId;
     private final UUID resourceUUID;
+    private final UUID transactionUUID;
 
     private CommandProcessingResult(final Long commandId, final Long officeId, final Long groupId, final Long clientId, final Long loanId,
             final Long savingsId, final String resourceIdentifier, final Long resourceId, final String transactionId,
             final Map<String, Object> changes, final Long productId, final Long gsimId, final Long glimId,
             final Map<String, Object> creditBureauReportData, Boolean rollbackTransaction, final Long subResourceId,
-            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID resourceUUID) {
+            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID resourceUUID,
+            final UUID transactionUUID) {
         this.commandId = commandId;
         this.officeId = officeId;
         this.groupId = groupId;
@@ -76,12 +78,13 @@ public class CommandProcessingResult implements Serializable {
         this.resourceExternalId = resourceExternalId;
         this.subResourceExternalId = subResourceExternalId;
         this.resourceUUID = resourceUUID;
+        this.transactionUUID = transactionUUID;
     }
 
     protected CommandProcessingResult(final Long resourceId, final Long officeId, final Long commandId, final Map<String, Object> changes,
             Long clientId) {
         this(commandId, officeId, null, clientId, null, null, resourceId == null ? null : resourceId.toString(), resourceId, null, changes,
-                null, null, null, null, null, null, ExternalId.empty(), ExternalId.empty(), null);
+                null, null, null, null, null, null, ExternalId.empty(), ExternalId.empty(), null, null);
     }
 
     protected CommandProcessingResult(final Long resourceId, final Long officeId, final Long commandId, final Map<String, Object> changes) {
@@ -97,7 +100,8 @@ public class CommandProcessingResult implements Serializable {
                 commandResult.loanId, commandResult.savingsId, commandResult.resourceIdentifier, resourceId, commandResult.transactionId,
                 commandResult.changes, commandResult.productId, commandResult.gsimId, commandResult.glimId,
                 commandResult.creditBureauReportData, commandResult.rollbackTransaction, commandResult.subResourceId,
-                commandResult.resourceExternalId, commandResult.subResourceExternalId, commandResult.resourceUUID);
+                commandResult.resourceExternalId, commandResult.subResourceExternalId, commandResult.resourceUUID,
+                commandResult.transactionUUID);
     }
 
     public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult) {
@@ -108,10 +112,11 @@ public class CommandProcessingResult implements Serializable {
             final Long loanId, final Long savingsId, final String resourceIdentifier, final Long entityId, final Long gsimId,
             final Long glimId, final Map<String, Object> creditBureauReportData, final String transactionId,
             final Map<String, Object> changes, final Long productId, final Boolean rollbackTransaction, final Long subResourceId,
-            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID entityUUID) {
+            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID entityUUID,
+            final UUID transactionUUID) {
         return new CommandProcessingResult(commandId, officeId, groupId, clientId, loanId, savingsId, resourceIdentifier, entityId,
                 transactionId, changes, productId, gsimId, glimId, creditBureauReportData, rollbackTransaction, subResourceId,
-                resourceExternalId, subResourceExternalId, entityUUID);
+                resourceExternalId, subResourceExternalId, entityUUID, transactionUUID);
     }
 
     public static CommandProcessingResult commandOnlyResult(final Long commandId) {

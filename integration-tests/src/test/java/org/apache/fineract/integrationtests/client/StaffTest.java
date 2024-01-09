@@ -58,7 +58,7 @@ public class StaffTest extends IntegrationTest {
     }
 
     Optional<Long> retrieveFirst() {
-        var staff = ok(fineract().staff.retrieveAll18(1L, true, false, "ACTIVE"));
+        var staff = ok(fineract().staff.retrieveAll19(1L, true, false, "ACTIVE"));
         if (staff.size() > 0) {
             return Optional.of((long) staff.get(0).getId());
         }
