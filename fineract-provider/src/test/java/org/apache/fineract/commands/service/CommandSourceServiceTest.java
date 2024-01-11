@@ -69,7 +69,7 @@ public class CommandSourceServiceTest {
 
     @Test
     public void testCreateFromWrapper() {
-        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent", 1L, 1L);
+        CommandWrapper wrapper = CommandWrapper.wrap("act", "ent");
         JsonCommand jsonCommand = JsonCommand.from("{}");
         AppUser appUser = Mockito.mock(AppUser.class);
 
