@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write.impl;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,19 +26,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
 import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
 import org.apache.fineract.currentaccount.exception.transaction.CurrentTransactionNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
+import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -55,16 +60,17 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     private final CurrentTransactionRepository currentTransactionRepository;
     // TODO: use service eventually
     private final ClientRepository clientRepository;
+    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult deposit(UUID accountId, JsonCommand command) {
-        this.currentTransactionDataValidator.validateDeposit(command);
+        currentTransactionDataValidator.validateDeposit(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction depositTransaction = this.currentTransactionAssembler.deposit(account, command, changes);
+        final CurrentTransaction depositTransaction = currentTransactionAssembler.deposit(account, command, changes);
         persistTransaction(command, depositTransaction);
 
         // TODO: accounting and external event emitting
@@ -84,12 +90,14 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult withdraw(UUID accountId, JsonCommand command) {
-        this.currentTransactionDataValidator.validateWithdraw(command);
+        currentTransactionDataValidator.validateWithdraw(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction withdrawTransaction = this.currentTransactionAssembler.withdraw(account, command, changes);
+        final CurrentTransaction withdrawTransaction = currentTransactionAssembler.withdraw(account, command, changes);
+        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
+        testBalance(account, withdrawTransaction, enforce);
         persistTransaction(command, withdrawTransaction);
 
         // TODO: accounting and external event emitting
@@ -109,12 +117,15 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult hold(UUID accountId, JsonCommand command) {
-        this.currentTransactionDataValidator.validateHold(command);
+        currentTransactionDataValidator.validateHold(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction holdTransaction = this.currentTransactionAssembler.hold(account, command, changes);
+        final CurrentTransaction holdTransaction = currentTransactionAssembler.hold(account, command, changes);
+        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
+        testBalance(account, holdTransaction, enforce);
+
         persistTransaction(command, holdTransaction);
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -133,7 +144,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult release(UUID accountId, JsonCommand command) {
-        this.currentTransactionDataValidator.validateRelease(command);
+        currentTransactionDataValidator.validateRelease(command);
         final UUID transactionId = command.getTransactionUUID();
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
@@ -141,7 +152,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction releaseTransaction = this.currentTransactionAssembler.release(account, holdTransaction,
+        final CurrentTransaction releaseTransaction = currentTransactionAssembler.release(account, holdTransaction,
                 changes);
         persistTransaction(command, releaseTransaction);
         // TODO: accounting and external event emitting
@@ -156,6 +167,22 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .withClientId(account.getClientId()) //
                 .with(changes) //
                 .build();
+    }
+
+    private void testBalance(CurrentAccount account, CurrentTransaction debitTransaction, boolean enforce) {
+        if(!enforce) {
+            final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
+            BigDecimal newAvailableBalance = currentAccountBalanceData.getAvailableBalance().subtract(debitTransaction.getTransactionAmount());
+            if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
+                if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
+                    throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");
+                } else {
+                    throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
+                }
+            } else if (account.isEnforceMinRequiredBalance() && account.getMinRequiredBalance().compareTo(newAvailableBalance) > 0) {
+                throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated", "Violated minimum required balance!");
+            }
+        }
     }
 
     private void persistTransaction(JsonCommand command, CurrentTransaction transaction) {

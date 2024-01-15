@@ -22,6 +22,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.bankNumberParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.checkNumberParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.paymentTypeIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.receiptNumberParamName;
@@ -57,7 +58,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
             dateFormatParamName, transactionDateParamName, transactionAmountParamName, paymentTypeIdParamName,
-            transactionAccountNumberParamName, checkNumberParamName, routingCodeParamName, receiptNumberParamName, bankNumberParamName));
+            transactionAccountNumberParamName, checkNumberParamName, routingCodeParamName, receiptNumberParamName, bankNumberParamName, enforceParamName));
 
     @Override
     public void validateDeposit(JsonCommand command) {
@@ -110,6 +111,11 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         baseDataValidator.reset().parameter(paymentTypeIdParamName).value(paymentType).notNull();
 
         validatePaymentTypeDetails(baseDataValidator, command);
+
+        if (command.hasParameter(enforceParamName)) {
+            String enforceStr = command.stringValueOfParameterNamed(enforceParamName);
+            baseDataValidator.reset().parameter(transactionDateParamName).value(enforceStr).validateForBooleanValue();
+        }
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
