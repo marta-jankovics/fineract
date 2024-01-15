@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
@@ -56,9 +55,10 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 @RequiredArgsConstructor
 public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDataValidator {
 
-    protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
-            dateFormatParamName, transactionDateParamName, transactionAmountParamName, paymentTypeIdParamName,
-            transactionAccountNumberParamName, checkNumberParamName, routingCodeParamName, receiptNumberParamName, bankNumberParamName, enforceParamName));
+    protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
+            Arrays.asList(localeParamName, dateFormatParamName, transactionDateParamName, transactionAmountParamName,
+                    paymentTypeIdParamName, transactionAccountNumberParamName, checkNumberParamName, routingCodeParamName,
+                    receiptNumberParamName, bankNumberParamName, enforceParamName));
 
     @Override
     public void validateDeposit(JsonCommand command) {
@@ -101,7 +101,8 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
         if (command.hasParameter(transactionDateParamName)) {
             final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
-            baseDataValidator.reset().parameter(transactionDateParamName).value(transactionDate).notNull().validateDateForEqual(DateUtils.getBusinessLocalDate());
+            baseDataValidator.reset().parameter(transactionDateParamName).value(transactionDate).notNull()
+                    .validateDateForEqual(DateUtils.getBusinessLocalDate());
         }
 
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);

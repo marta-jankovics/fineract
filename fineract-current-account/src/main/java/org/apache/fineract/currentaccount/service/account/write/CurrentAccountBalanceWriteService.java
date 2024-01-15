@@ -22,5 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public interface CurrentAccountBalanceWriteService {
+
     void updateBalance(UUID accountId, OffsetDateTime tillDateTime);
 }

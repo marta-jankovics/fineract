@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
+
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
 import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
@@ -152,8 +153,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction releaseTransaction = currentTransactionAssembler.release(account, holdTransaction,
-                changes);
+        final CurrentTransaction releaseTransaction = currentTransactionAssembler.release(account, holdTransaction, changes);
         persistTransaction(command, releaseTransaction);
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -170,9 +170,10 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     }
 
     private void testBalance(CurrentAccount account, CurrentTransaction debitTransaction, boolean enforce) {
-        if(!enforce) {
+        if (!enforce) {
             final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
-            BigDecimal newAvailableBalance = currentAccountBalanceData.getAvailableBalance().subtract(debitTransaction.getTransactionAmount());
+            BigDecimal newAvailableBalance = currentAccountBalanceData.getAvailableBalance()
+                    .subtract(debitTransaction.getTransactionAmount());
             if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
                 if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
                     throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");
@@ -180,7 +181,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                     throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
                 }
             } else if (account.isEnforceMinRequiredBalance() && account.getMinRequiredBalance().compareTo(newAvailableBalance) > 0) {
-                throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated", "Violated minimum required balance!");
+                throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated",
+                        "Violated minimum required balance!");
             }
         }
     }

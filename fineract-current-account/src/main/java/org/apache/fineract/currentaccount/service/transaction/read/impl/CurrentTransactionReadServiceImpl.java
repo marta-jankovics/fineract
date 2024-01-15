@@ -66,8 +66,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
 
     @Override
     public CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId) {
-        CurrentTransactionData currentTransactionData = currentTransactionRepository.findByIdAndAccountId(accountId,
-                transactionId);
+        CurrentTransactionData currentTransactionData = currentTransactionRepository.findByIdAndAccountId(accountId, transactionId);
         if (currentTransactionData == null) {
             throw new CurrentTransactionNotFoundException(accountId, transactionId);
         }
@@ -76,8 +75,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
 
     @Override
     public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable) {
-        Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId,
-                pageable);
+        Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId, pageable);
         return currentTransactionResponseDataMapper.map(currentTransactionData);
     }
 }

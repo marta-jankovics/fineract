@@ -21,19 +21,14 @@ package org.apache.fineract.currentaccount.service.transaction.write;
 import java.util.UUID;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface CurrentTransactionWriteService {
 
-
     CommandProcessingResult deposit(UUID accountId, JsonCommand command);
-
 
     CommandProcessingResult withdraw(UUID accountId, JsonCommand command);
 
-
     CommandProcessingResult hold(UUID accountId, JsonCommand command);
-
 
     CommandProcessingResult release(UUID accountId, JsonCommand command);
 }

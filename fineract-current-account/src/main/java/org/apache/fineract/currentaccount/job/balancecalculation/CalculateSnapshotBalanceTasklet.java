@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.job.balancecalculation;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -28,10 +31,6 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,8 +43,10 @@ public class CalculateSnapshotBalanceTasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
-            List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService.getLoanIdsWhereBalanceRecalculationRequired(tillDateTime);
-            List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getLoanIdsWhereBalanceSnapshotNotCalculated();
+            List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
+                    .getLoanIdsWhereBalanceRecalculationRequired(tillDateTime);
+            List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService
+                    .getLoanIdsWhereBalanceSnapshotNotCalculated();
             currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
             for (UUID id : currentAccountBalanceIsBehindIds) {
                 currentAccountBalanceWriteService.updateBalance(id, tillDateTime);
@@ -55,6 +56,5 @@ public class CalculateSnapshotBalanceTasklet implements Tasklet {
         }
         return RepeatStatus.FINISHED;
     }
-
 
 }

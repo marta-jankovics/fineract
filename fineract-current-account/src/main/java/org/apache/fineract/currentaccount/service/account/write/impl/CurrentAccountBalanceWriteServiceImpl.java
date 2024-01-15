@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -28,9 +30,6 @@ import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBa
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
 @Slf4j
 @RequiredArgsConstructor
 public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBalanceWriteService {
@@ -39,12 +38,15 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
 
     @Override
-    @Transactional(propagation=Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateBalance(UUID accountId, OffsetDateTime tillDateTime) {
-        CurrentAccountBalanceSnapshot currentAccountBalanceSnapshot = currentAccountBalanceSnapshotRepository.findByAccountId(accountId).orElse(null);
+        CurrentAccountBalanceSnapshot currentAccountBalanceSnapshot = currentAccountBalanceSnapshotRepository.findByAccountId(accountId)
+                .orElse(null);
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountId, tillDateTime);
         if (currentAccountBalanceSnapshot == null) {
-            currentAccountBalanceSnapshot = new CurrentAccountBalanceSnapshot(null, accountId, currentAccountBalanceData.getAvailableBalance(), currentAccountBalanceData.getTotalOnHoldBalance(), currentAccountBalanceData.getCalculatedTill(), currentAccountBalanceData.getCalculatedTillTransactionId(), 1);
+            currentAccountBalanceSnapshot = new CurrentAccountBalanceSnapshot(null, accountId,
+                    currentAccountBalanceData.getAvailableBalance(), currentAccountBalanceData.getTotalOnHoldBalance(),
+                    currentAccountBalanceData.getCalculatedTill(), currentAccountBalanceData.getCalculatedTillTransactionId(), 1);
         } else {
             currentAccountBalanceSnapshot.setAvailableBalance(currentAccountBalanceData.getAvailableBalance());
             currentAccountBalanceSnapshot.setTotalOnHoldBalance(currentAccountBalanceData.getTotalOnHoldBalance());

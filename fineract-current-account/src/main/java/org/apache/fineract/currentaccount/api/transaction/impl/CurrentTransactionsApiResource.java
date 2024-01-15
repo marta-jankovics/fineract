@@ -137,8 +137,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
-            + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n"
-            + "Accepted command = release")
+            + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
             @PathParam("transactionId") final UUID transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,

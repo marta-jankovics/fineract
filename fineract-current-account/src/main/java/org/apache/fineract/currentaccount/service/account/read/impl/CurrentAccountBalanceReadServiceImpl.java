@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -42,15 +41,19 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
     @Override
     public CurrentAccountBalanceData getBalance(UUID accountId) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId), (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
+        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId),
+                (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
     }
 
     @Override
     public CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId, tillDateTime), (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime, tillDateTime));
+        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId, tillDateTime),
+                (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime,
+                        tillDateTime));
     }
 
-    private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransactionData>> fetchTransactions, Function<OffsetDateTime, List<CurrentTransactionData>> fetchTransactionsFrom) {
+    private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransactionData>> fetchTransactions,
+            Function<OffsetDateTime, List<CurrentTransactionData>> fetchTransactionsFrom) {
         CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceSnapshotRepository.getBalance(accountId);
         List<CurrentTransactionData> currentTransactionDataList;
         BigDecimal availableBalance;
