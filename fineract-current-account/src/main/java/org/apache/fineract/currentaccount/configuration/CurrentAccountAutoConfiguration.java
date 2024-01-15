@@ -159,9 +159,9 @@ public class CurrentAccountAutoConfiguration {
     public CurrentTransactionWriteService currentTransactionWriteService(
             CurrentTransactionDataValidator currentTransactionDataValidator,
             CurrentTransactionAssembler currentTransactionAssembler, CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository, ClientRepository clientRepository) {
+            CurrentTransactionRepository currentTransactionRepository, ClientRepository clientRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService) {
         return new CurrentTransactionWriteServiceImpl(currentTransactionDataValidator, currentTransactionAssembler,
-                currentAccountRepository, currentTransactionRepository, clientRepository);
+                currentAccountRepository, currentTransactionRepository, clientRepository, currentAccountBalanceReadService);
     }
 
     @Bean
