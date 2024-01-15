@@ -29,12 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "WITHDRAWAL")
+@CommandType(entity = "CURRENTTRANSACTION", action = "WITHDRAW")
 public class CurrentTransactionWithdrawCommandHandlerImpl implements CurrentTransactionWithdrawCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
         return this.writePlatformService.withdraw(command.getResourceUUID(), command);

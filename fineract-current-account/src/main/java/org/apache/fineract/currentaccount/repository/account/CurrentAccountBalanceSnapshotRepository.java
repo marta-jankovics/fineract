@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.repository.account;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalanceSnapshot;
@@ -31,4 +34,12 @@ public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<C
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cabs.id, cabs.accountId, cabs.availableBalance, cabs.totalOnHoldBalance, cabs.calculatedTill, cabs.calculatedTillTransactionId) FROM CurrentAccountBalanceSnapshot cabs WHERE cabs.accountId = :accountId")
     CurrentAccountBalanceData getBalance(@Param("accountId") UUID accountId);
+
+    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalanceSnapshot cabs, (SELECT ct.accountId, MAX(ct.createdDate) as createdDate FROM CurrentTransaction ct WHERE ct.createdDate <= :tillDateTime GROUP BY ct.accountId) lct WHERE ca.id = cabs.accountId AND lct.accountId = ca.id AND lct.createdDate > cabs.calculatedTill")
+    List<UUID> getLoanIdsWhereBalanceRecalculationRequired(@Param("tillDateTime") OffsetDateTime tillDateTime);
+
+    Optional<CurrentAccountBalanceSnapshot> findByAccountId(UUID accountId);
+
+    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.id NOT IN (SELECT cabs.accountId FROM CurrentAccountBalanceSnapshot cabs)")
+    List<UUID> getLoanIdsWhereBalanceSnapshotNotCalculated();
 }

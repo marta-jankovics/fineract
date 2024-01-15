@@ -23,13 +23,13 @@ import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 
-public interface CurrentAccountTransactionAssembler {
+public interface CurrentTransactionAssembler {
 
     CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
     CurrentTransaction withdraw(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    CurrentTransaction holdAmount(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
+    CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    CurrentTransaction releaseAmount(CurrentAccount account, CurrentTransaction command, Map<String, Object> changes);
+    CurrentTransaction release(CurrentAccount account, CurrentTransaction command, Map<String, Object> changes);
 }

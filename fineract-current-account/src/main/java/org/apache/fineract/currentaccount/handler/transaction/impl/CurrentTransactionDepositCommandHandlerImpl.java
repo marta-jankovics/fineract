@@ -34,7 +34,7 @@ public class CurrentTransactionDepositCommandHandlerImpl implements CurrentTrans
 
     private final CurrentTransactionWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
         return this.writePlatformService.deposit(command.getResourceUUID(), command);

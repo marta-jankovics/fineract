@@ -33,11 +33,11 @@ import org.apache.fineract.portfolio.TransactionEntryType;
  */
 public enum CurrentTransactionType {
 
-    INVALID(0, "currentAccountTransactionType.invalid"), //
-    DEPOSIT(1, "currentAccountTransactionType.deposit", TransactionEntryType.CREDIT), //
-    WITHDRAWAL(2, "currentAccountTransactionType.withdrawal", TransactionEntryType.DEBIT), //
-    AMOUNT_HOLD(3, "currentAccountTransactionType.onHold", TransactionEntryType.DEBIT), //
-    AMOUNT_RELEASE(4, "currentAccountTransactionType.release", TransactionEntryType.CREDIT); //
+    INVALID(0, "currentTransactionType.invalid"), //
+    DEPOSIT(1, "currentTransactionType.deposit", TransactionEntryType.CREDIT), //
+    WITHDRAWAL(2, "currentTransactionType.withdrawal", TransactionEntryType.DEBIT), //
+    AMOUNT_HOLD(3, "currentTransactionType.onHold", TransactionEntryType.DEBIT), //
+    AMOUNT_RELEASE(4, "currentTransactionType.release", TransactionEntryType.CREDIT); //
 
     private static final CurrentTransactionType[] VALUES = values();
 

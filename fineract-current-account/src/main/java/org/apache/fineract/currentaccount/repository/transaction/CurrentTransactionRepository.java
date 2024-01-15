@@ -39,9 +39,15 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, curr.code, curr.name, curr.nameCode, curr.displaySymbol, curr.decimalPlaces, curr.inMultiplesOf, pd.id, pd.accountNumber, pd.checkNumber, pd.routingCode, pd.receiptNumber, pd.bankNumber, pt.id, pt.name, pt.description, pt.isCashPayment, pt.position, pt.codeName, pt.isSystemDefined) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, PaymentDetail pd, PaymentType pt WHERE t.accountId = :accountId AND ca.id = t.accountId and curr.code = ca.currency.code and t.paymentDetailId = pd.id and pd.paymentType.id = pt.id")
     Page<CurrentTransactionData> findByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :from")
-    List<CurrentTransactionData> getTransactionsFrom(@Param("accountId") UUID accountId, @Param("from") OffsetDateTime from);
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime")
+    List<CurrentTransactionData> getTransactionsFrom(@Param("accountId") UUID accountId, @Param("fromDateTime") OffsetDateTime fromDateTime);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId")
     List<CurrentTransactionData> getTransactions(@Param("accountId") UUID accountId);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate <= :tillDateTime")
+    List<CurrentTransactionData> getTransactions(@Param("accountId")UUID accountId, @Param("tillDateTime")OffsetDateTime tillDateTime);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime")
+    List<CurrentTransactionData> getTransactionsFromAndTill(@Param("accountId")UUID accountId, @Param("fromDateTime")OffsetDateTime fromDateTime, @Param("tillDateTime")OffsetDateTime tillDateTime);
 }

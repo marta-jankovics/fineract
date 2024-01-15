@@ -34,7 +34,7 @@ public class CurrentAccountSubmitApplicationCommandHandlerImpl implements Curren
 
     private final CurrentAccountWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
         return this.writePlatformService.submitApplication(command);

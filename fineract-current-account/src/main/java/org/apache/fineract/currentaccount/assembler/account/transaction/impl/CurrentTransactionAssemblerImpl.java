@@ -27,7 +27,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentAccountTransactionAssembler;
+import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enums.transaction.CurrentTransactionType;
@@ -40,7 +40,7 @@ import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePla
 
 @RequiredArgsConstructor
 @Slf4j
-public class CurrentAccountTransactionAssemblerImpl implements CurrentAccountTransactionAssembler {
+public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssembler {
 
     private final ExternalIdFactory externalIdFactory;
     private final PaymentDetailWritePlatformService paymentDetailWritePlatformService;
@@ -50,7 +50,10 @@ public class CurrentAccountTransactionAssemblerImpl implements CurrentAccountTra
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
         final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
 
-        final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        if (transactionDate == null) {
+            transactionDate = DateUtils.getBusinessLocalDate();
+        }
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
@@ -63,7 +66,10 @@ public class CurrentAccountTransactionAssemblerImpl implements CurrentAccountTra
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
         final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
 
-        final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        if (transactionDate == null) {
+            transactionDate = DateUtils.getBusinessLocalDate();
+        }
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
@@ -72,11 +78,14 @@ public class CurrentAccountTransactionAssemblerImpl implements CurrentAccountTra
     }
 
     @Override
-    public CurrentTransaction holdAmount(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
+    public CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
         final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
 
-        final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        if (transactionDate == null) {
+            transactionDate = DateUtils.getBusinessLocalDate();
+        }
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
@@ -85,7 +94,7 @@ public class CurrentAccountTransactionAssemblerImpl implements CurrentAccountTra
     }
 
     @Override
-    public CurrentTransaction releaseAmount(CurrentAccount account, CurrentTransaction holdTransaction, Map<String, Object> changes) {
+    public CurrentTransaction release(CurrentAccount account, CurrentTransaction holdTransaction, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.create();
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 

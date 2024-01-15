@@ -27,6 +27,8 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -67,4 +69,6 @@ public class CurrentAccountBalanceSnapshot extends AbstractAuditableWithUTCDateT
     @Column(name = "calculated_till_transaction_id", nullable = false)
     private UUID calculatedTillTransactionId;
 
+    @Version
+    private int version;
 }

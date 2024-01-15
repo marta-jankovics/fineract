@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
-import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentAccountTransactionAssembler;
+import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
@@ -49,22 +49,22 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWriteService {
 
-    private final CurrentTransactionDataValidator currentAccountTransactionDataValidator;
-    private final CurrentAccountTransactionAssembler currentAccountTransactionAssembler;
+    private final CurrentTransactionDataValidator currentTransactionDataValidator;
+    private final CurrentTransactionAssembler currentTransactionAssembler;
     private final CurrentAccountRepository currentAccountRepository;
-    private final CurrentTransactionRepository currentAccountTransactionRepository;
+    private final CurrentTransactionRepository currentTransactionRepository;
     // TODO: use service eventually
     private final ClientRepository clientRepository;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult deposit(UUID accountId, JsonCommand command) {
-        this.currentAccountTransactionDataValidator.validateDeposit(command);
+        this.currentTransactionDataValidator.validateDeposit(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction depositTransaction = this.currentAccountTransactionAssembler.deposit(account, command, changes);
+        final CurrentTransaction depositTransaction = this.currentTransactionAssembler.deposit(account, command, changes);
         persistTransaction(command, depositTransaction);
 
         // TODO: accounting and external event emitting
@@ -84,12 +84,12 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult withdraw(UUID accountId, JsonCommand command) {
-        this.currentAccountTransactionDataValidator.validateWithdraw(command);
+        this.currentTransactionDataValidator.validateWithdraw(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction withdrawTransaction = this.currentAccountTransactionAssembler.withdraw(account, command, changes);
+        final CurrentTransaction withdrawTransaction = this.currentTransactionAssembler.withdraw(account, command, changes);
         persistTransaction(command, withdrawTransaction);
 
         // TODO: accounting and external event emitting
@@ -109,12 +109,12 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult hold(UUID accountId, JsonCommand command) {
-        this.currentAccountTransactionDataValidator.validateHold(command);
+        this.currentTransactionDataValidator.validateHold(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction holdTransaction = this.currentAccountTransactionAssembler.holdAmount(account, command, changes);
+        final CurrentTransaction holdTransaction = this.currentTransactionAssembler.hold(account, command, changes);
         persistTransaction(command, holdTransaction);
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -133,15 +133,15 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult release(UUID accountId, JsonCommand command) {
-        this.currentAccountTransactionDataValidator.validateRelease(command);
+        this.currentTransactionDataValidator.validateRelease(command);
         final UUID transactionId = command.getTransactionUUID();
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
-        final CurrentTransaction holdTransaction = currentAccountTransactionRepository.findById(transactionId)
+        final CurrentTransaction holdTransaction = currentTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction releaseTransaction = this.currentAccountTransactionAssembler.releaseAmount(account, holdTransaction,
+        final CurrentTransaction releaseTransaction = this.currentTransactionAssembler.release(account, holdTransaction,
                 changes);
         persistTransaction(command, releaseTransaction);
         // TODO: accounting and external event emitting
@@ -160,7 +160,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     private void persistTransaction(JsonCommand command, CurrentTransaction transaction) {
         try {
-            currentAccountTransactionRepository.saveAndFlush(transaction);
+            currentTransactionRepository.saveAndFlush(transaction);
         } catch (final DataAccessException dve) {
             handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
         } catch (final Exception dve) {

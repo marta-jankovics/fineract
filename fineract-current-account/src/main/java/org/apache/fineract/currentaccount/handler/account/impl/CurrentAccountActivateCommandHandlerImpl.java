@@ -34,7 +34,7 @@ public class CurrentAccountActivateCommandHandlerImpl implements CurrentAccountA
 
     private final CurrentAccountWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
         return this.writePlatformService.activate(command.getResourceUUID(), command);

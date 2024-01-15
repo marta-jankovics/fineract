@@ -44,8 +44,8 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
 
     private final CurrentAccountRepository currentAccountRepository;
     private final PaymentTypeReadPlatformService paymentTypeReadPlatformService;
-    private final CurrentTransactionRepository currentAccountTransactionRepository;
-    private final CurrentTransactionResponseDataMapper currentAccountTransactionResponseDataMapper;
+    private final CurrentTransactionRepository currentTransactionRepository;
+    private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
 
     @Override
     public CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId) {
@@ -66,18 +66,18 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
 
     @Override
     public CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId) {
-        CurrentTransactionData currentAccountTransactionData = currentAccountTransactionRepository.findByIdAndAccountId(accountId,
+        CurrentTransactionData currentTransactionData = currentTransactionRepository.findByIdAndAccountId(accountId,
                 transactionId);
-        if (currentAccountTransactionData == null) {
+        if (currentTransactionData == null) {
             throw new CurrentTransactionNotFoundException(accountId, transactionId);
         }
-        return currentAccountTransactionResponseDataMapper.map(currentAccountTransactionData);
+        return currentTransactionResponseDataMapper.map(currentTransactionData);
     }
 
     @Override
     public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable) {
-        Page<CurrentTransactionData> currentAccountTransactionData = currentAccountTransactionRepository.findByAccountId(accountId,
+        Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId,
                 pageable);
-        return currentAccountTransactionResponseDataMapper.map(currentAccountTransactionData);
+        return currentTransactionResponseDataMapper.map(currentTransactionData);
     }
 }

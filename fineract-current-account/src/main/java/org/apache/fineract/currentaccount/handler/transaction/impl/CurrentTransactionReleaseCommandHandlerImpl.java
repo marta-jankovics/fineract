@@ -29,12 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "RELEASEAMOUNT")
+@CommandType(entity = "CURRENTTRANSACTION", action = "RELEASE")
 public class CurrentTransactionReleaseCommandHandlerImpl implements CurrentTransactionReleaseCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(JsonCommand command) {
         return this.writePlatformService.release(command.getResourceUUID(), command);

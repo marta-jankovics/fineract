@@ -16,20 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.account.read;
+package org.apache.fineract.currentaccount.service.account.write;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 
-public interface CurrentAccountBalanceReadService {
-
-    CurrentAccountBalanceData getBalance(UUID accountId);
-
-    CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime);
-
-    List<UUID> getLoanIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime);
-
-    List<UUID> getLoanIdsWhereBalanceSnapshotNotCalculated();
+public interface CurrentAccountBalanceWriteService {
+    void updateBalance(UUID accountId, OffsetDateTime tillDateTime);
 }

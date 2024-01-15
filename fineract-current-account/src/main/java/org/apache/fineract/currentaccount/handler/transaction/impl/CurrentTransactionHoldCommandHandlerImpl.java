@@ -29,12 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "HOLDAMOUNT")
+@CommandType(entity = "CURRENTTRANSACTION", action = "HOLD")
 public class CurrentTransactionHoldCommandHandlerImpl implements CurrentTransactionHoldCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(JsonCommand command) {
         return this.writePlatformService.hold(command.getResourceUUID(), command);

@@ -84,4 +84,63 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
         return new CurrentAccountBalanceData(null, accountId, availableBalance, totalOnHoldBalance, calculatedTillDate,
                 calculatedTillTxnId);
     }
+
+    @Override
+    public CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime) {
+        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceSnapshotRepository.getBalance(accountId);
+        List<CurrentTransactionData> currentTransactionDataList;
+        BigDecimal availableBalance;
+        BigDecimal totalOnHoldBalance;
+        OffsetDateTime calculatedTillDate;
+        UUID calculatedTillTxnId;
+        if (currentAccountBalanceSnapshotData == null) {
+            availableBalance = BigDecimal.ZERO;
+            totalOnHoldBalance = BigDecimal.ZERO;
+            currentTransactionDataList = currentTransactionRepository.getTransactions(accountId, tillDateTime);
+            if (currentTransactionDataList.isEmpty()) {
+                calculatedTillDate = null;
+                calculatedTillTxnId = null;
+            } else {
+                calculatedTillDate = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getCreatedDateTime();
+                calculatedTillTxnId = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getId();
+            }
+        } else {
+            availableBalance = currentAccountBalanceSnapshotData.getAvailableBalance();
+            totalOnHoldBalance = currentAccountBalanceSnapshotData.getTotalOnHoldBalance();
+            OffsetDateTime fromDateTime = currentAccountBalanceSnapshotData.getCalculatedTill();
+            currentTransactionDataList = currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime, tillDateTime);
+            calculatedTillDate = tillDateTime;
+            calculatedTillTxnId = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getId();
+        }
+
+        for (CurrentTransactionData currentTransactionData : currentTransactionDataList) {
+            switch (currentTransactionData.getTransactionType()) {
+                case DEPOSIT -> availableBalance = availableBalance.add(currentTransactionData.getTransactionAmount());
+                case WITHDRAWAL -> availableBalance = availableBalance.subtract(currentTransactionData.getTransactionAmount());
+                case AMOUNT_HOLD -> {
+
+                    totalOnHoldBalance = totalOnHoldBalance.add(currentTransactionData.getTransactionAmount());
+                    availableBalance = availableBalance.subtract(currentTransactionData.getTransactionAmount());
+                }
+                case AMOUNT_RELEASE -> {
+                    totalOnHoldBalance = totalOnHoldBalance.subtract(currentTransactionData.getTransactionAmount());
+                    availableBalance = availableBalance.add(currentTransactionData.getTransactionAmount());
+                }
+                default -> throw new UnsupportedOperationException(currentTransactionData.getTransactionType().toString());
+            }
+        }
+
+        return new CurrentAccountBalanceData(null, accountId, availableBalance, totalOnHoldBalance, calculatedTillDate,
+                calculatedTillTxnId);
+    }
+
+    @Override
+    public List<UUID> getLoanIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
+        return currentAccountBalanceSnapshotRepository.getLoanIdsWhereBalanceRecalculationRequired(tillDateTime);
+    }
+
+    @Override
+    public List<UUID> getLoanIdsWhereBalanceSnapshotNotCalculated() {
+        return currentAccountBalanceSnapshotRepository.getLoanIdsWhereBalanceSnapshotNotCalculated();
+    }
 }

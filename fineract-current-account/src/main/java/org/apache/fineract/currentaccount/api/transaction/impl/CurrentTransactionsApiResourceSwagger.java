@@ -25,10 +25,10 @@ public final class CurrentTransactionsApiResourceSwagger {
 
     private CurrentTransactionsApiResourceSwagger() {}
 
-    @Schema(description = "PostCurrentAccountTransactionsRequest")
-    public static final class PostCurrentAccountTransactionsRequest {
+    @Schema(description = "PostCurrentTransactionsRequest")
+    public static final class PostCurrentTransactionsRequest {
 
-        private PostCurrentAccountTransactionsRequest() {}
+        private PostCurrentTransactionsRequest() {}
 
         @Schema(example = "27 March 2022")
         public String transactionDate;
@@ -38,10 +38,6 @@ public final class CurrentTransactionsApiResourceSwagger {
         public String locale;
         @Schema(example = "dd MMMM yyyy")
         public String dateFormat;
-        @Schema(example = "true")
-        public String lienAllowed;
-        @Schema(example = "String")
-        public String reasonForBlock;
         @Schema(example = "1")
         public Integer paymentTypeId;
     }

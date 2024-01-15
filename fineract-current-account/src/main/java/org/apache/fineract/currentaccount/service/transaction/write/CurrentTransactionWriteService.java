@@ -25,15 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface CurrentTransactionWriteService {
 
-    @Transactional
+
     CommandProcessingResult deposit(UUID accountId, JsonCommand command);
 
-    @Transactional
+
     CommandProcessingResult withdraw(UUID accountId, JsonCommand command);
 
-    @Transactional
+
     CommandProcessingResult hold(UUID accountId, JsonCommand command);
 
-    @Transactional
+
     CommandProcessingResult release(UUID accountId, JsonCommand command);
 }

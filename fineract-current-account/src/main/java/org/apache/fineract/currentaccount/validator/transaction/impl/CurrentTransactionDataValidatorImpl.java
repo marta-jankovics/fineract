@@ -40,6 +40,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
@@ -48,6 +50,7 @@ import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 
 @RequiredArgsConstructor
 public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDataValidator {
@@ -77,8 +80,8 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
 
-        final String transactionId = command.getTransactionId();
-        baseDataValidator.reset().parameter("transactionId").value(transactionId).notNull().notBlank();
+        final UUID holdTransactionId = command.getTransactionUUID();
+        baseDataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
@@ -95,8 +98,10 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
 
-        final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
-        baseDataValidator.reset().parameter(transactionDateParamName).value(transactionDate).notNull();
+        if (command.hasParameter(transactionDateParamName)) {
+            final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+            baseDataValidator.reset().parameter(transactionDateParamName).value(transactionDate).notNull().validateDateForEqual(DateUtils.getBusinessLocalDate());
+        }
 
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         baseDataValidator.reset().parameter(transactionAmountParamName).value(transactionAmount).notNull().positiveAmount();

@@ -34,7 +34,7 @@ public class CurrentAccountCancelledApplicationCommandHandlerImpl implements Cur
 
     private final CurrentAccountWriteService writePlatformService;
 
-    @Transactional
+    @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
 

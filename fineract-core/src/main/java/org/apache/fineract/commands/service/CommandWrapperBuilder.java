@@ -38,7 +38,7 @@ public class CommandWrapperBuilder {
     private String actionName;
     private String entityName;
     private Long entityId;
-    private Long subEntityId;
+    private Long subentityId;
     private String href;
     private String json = "{}";
     private String transactionId;
@@ -53,7 +53,7 @@ public class CommandWrapperBuilder {
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "TODO: fix this!")
     public CommandWrapper build() {
         return new CommandWrapper(null, this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId, this.actionName,
-                this.entityName, this.entityId, this.subEntityId, this.href, this.json, this.transactionId, this.productId,
+                this.entityName, this.entityId, this.subentityId, this.href, this.json, this.transactionId, this.productId,
                 this.creditBureauId, this.organisationCreditBureauId, this.jobName, this.idempotencyKey, entityUUID, transactionUUID);
     }
 
@@ -199,7 +199,7 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder withSubEntityId(final Long withSubEntityId) {
-        this.subEntityId = withSubEntityId;
+        this.subentityId = withSubEntityId;
         return this;
     }
 
@@ -355,7 +355,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETE";
         this.entityName = "GUARANTOR";
         this.entityId = guarantorId;
-        this.subEntityId = guarantorFundingId;
+        this.subentityId = guarantorFundingId;
         this.loanId = loanId;
         this.href = "/loans/" + loanId + "/guarantors/" + guarantorId;
         return this;
@@ -737,7 +737,7 @@ public class CommandWrapperBuilder {
     private void commonDatatableSettings(final String datatable, final Long apptableId, final Long datatableId) {
         this.entityName = datatable;
         this.entityId = apptableId;
-        this.subEntityId = datatableId;
+        this.subentityId = datatableId;
         if (datatableId == null) {
             this.href = "/datatables/" + datatable + "/" + apptableId;
         } else {
@@ -1207,7 +1207,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder updateCodeValue(final Long codeId, final Long codeValueId) {
         this.actionName = "UPDATE";
         this.entityName = "CODEVALUE";
-        this.subEntityId = codeValueId;
+        this.subentityId = codeValueId;
         this.entityId = codeId;
         this.href = "/codes/" + codeId + "/codevalues/" + codeValueId;
         return this;
@@ -1216,7 +1216,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder deleteCodeValue(final Long codeId, final Long codeValueId) {
         this.actionName = "DELETE";
         this.entityName = "CODEVALUE";
-        this.subEntityId = codeValueId;
+        this.subentityId = codeValueId;
         this.entityId = codeId;
         this.href = "/codes/" + codeId + "/codevalues/" + codeValueId;
         return this;
@@ -1546,7 +1546,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subEntityId = transactionId;
+        this.subentityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=undo";
         return this;
@@ -1557,7 +1557,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subEntityId = transactionId;
+        this.subentityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=reverse";
         return this;
@@ -1568,7 +1568,7 @@ public class CommandWrapperBuilder {
         this.entityName = "SAVINGSACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subEntityId = transactionId;
+        this.subentityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/savingsaccounts/" + accountId + "/transactions/" + transactionId + "?command=modify";
         return this;
@@ -1733,7 +1733,7 @@ public class CommandWrapperBuilder {
         this.actionName = "CREATE";
         this.entityName = "CHARTSLAB";
         this.entityId = null;
-        this.subEntityId = chartId; // refer to chart id
+        this.subentityId = chartId; // refer to chart id
         this.href = "/interestratechart/" + chartId + "/chartdetails/template";
         return this;
     }
@@ -1742,7 +1742,7 @@ public class CommandWrapperBuilder {
         this.actionName = "UPDATE";
         this.entityName = "CHARTSLAB";
         this.entityId = chartSlabId;
-        this.subEntityId = chartId;// refers parent chart
+        this.subentityId = chartId;// refers parent chart
         this.href = "/interestratechart/" + chartId + "/chartdetails/" + chartSlabId;
         return this;
     }
@@ -1751,7 +1751,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETE";
         this.entityName = "CHARTSLAB";
         this.entityId = chartSlabId;
-        this.subEntityId = chartId;// refers parent chart
+        this.subentityId = chartId;// refers parent chart
         this.href = "/interestratechart/" + chartId + "/chartdetails/" + chartSlabId;
         return this;
     }
@@ -1794,7 +1794,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subEntityId = resourceDetails.subresourceId();
+        this.subentityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/notes/template";
         return this;
     }
@@ -1811,7 +1811,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subEntityId = resourceDetails.subresourceId();
+        this.subentityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/notes";
         return this;
     }
@@ -1828,7 +1828,7 @@ public class CommandWrapperBuilder {
         this.loanId = resourceDetails.getLoanId();
         this.savingsId = resourceDetails.getSavingsId();
         this.groupId = resourceDetails.getGroupId();
-        this.subEntityId = resourceDetails.subresourceId();
+        this.subentityId = resourceDetails.subresourceId();
         this.href = "/" + resourceType + "/" + resourceId + "/calendars/" + noteId;
         return this;
     }
@@ -2482,7 +2482,7 @@ public class CommandWrapperBuilder {
         this.entityName = "RECURRINGDEPOSITACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subEntityId = transactionId;
+        this.subentityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/recurringdepositaccounts/" + accountId + "/transactions/" + transactionId + "?command=modify";
         return this;
@@ -2493,7 +2493,7 @@ public class CommandWrapperBuilder {
         this.entityName = "RECURRINGDEPOSITACCOUNT";
         this.savingsId = accountId;
         this.entityId = accountId;
-        this.subEntityId = transactionId;
+        this.subentityId = transactionId;
         this.transactionId = transactionId.toString();
         this.href = "/recurringdepositaccounts/" + accountId + "/transactions/" + transactionId + "?command=undo";
         return this;
@@ -2770,7 +2770,7 @@ public class CommandWrapperBuilder {
         this.actionName = "UPDATECASHIERALLOCATION";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subEntityId = cashierId;
+        this.subentityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId;
         return this;
     }
@@ -2779,7 +2779,7 @@ public class CommandWrapperBuilder {
         this.actionName = "DELETECASHIERALLOCATION";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subEntityId = cashierId;
+        this.subentityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId;
         return this;
     }
@@ -2788,7 +2788,7 @@ public class CommandWrapperBuilder {
         this.actionName = "ALLOCATECASHTOCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subEntityId = cashierId;
+        this.subentityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/allocate";
         return this;
     }
@@ -2797,7 +2797,7 @@ public class CommandWrapperBuilder {
         this.actionName = "SETTLECASHFROMCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
-        this.subEntityId = cashierId;
+        this.subentityId = cashierId;
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/settle";
         return this;
     }
@@ -3780,11 +3780,11 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder currentTransactionRelease(final UUID accountId, final UUID transactionUUID) {
-        this.actionName = "RELEASEAMOUNT";
+        this.actionName = "RELEASE";
         this.entityName = "CURRENTTRANSACTION";
         this.entityUUID = accountId;
         this.transactionUUID = transactionUUID;
-        this.href = "/currentaccounts/" + accountId + "/transactions/" + transactionId + "?command=release";
+        this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 }
