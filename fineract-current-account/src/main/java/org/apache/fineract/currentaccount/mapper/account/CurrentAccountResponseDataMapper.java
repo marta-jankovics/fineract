@@ -52,8 +52,8 @@ public interface CurrentAccountResponseDataMapper {
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {
         return new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
-                currentAccountData.getDigitsAfterDecimal(), currentAccountData.getInMultiplesOf(),
-                currentAccountData.getCurrencyDisplaySymbol(), currentAccountData.getCurrencyNameCode());
+                currentAccountData.getDigitsAfterDecimal(), null,
+                currentAccountData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("status")

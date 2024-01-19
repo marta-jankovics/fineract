@@ -33,12 +33,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CurrentProductRepository extends JpaRepository<CurrentProduct, UUID> {
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ")
     Page<CurrentProductData> findAllCurrentProductData(Pageable pageable);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.id = :productId")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.id = :productId")
     CurrentProductData findCurrentProductData(@Param("productId") UUID productId);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.nameCode, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.enforceMinRequiredBalance, cp.minRequiredBalance, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ")
     List<CurrentProductData> findAllSorted(Sort sort);
 }

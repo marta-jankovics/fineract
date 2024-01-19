@@ -43,6 +43,5 @@ public class CurrentProductData implements Serializable {
 
     // Currency data
     private final String currencyName;
-    private final String currencyNameCode;
     private final String currencyDisplaySymbol;
 }

@@ -41,13 +41,13 @@ public interface CurrentTransactionResponseDataMapper {
     @Mapping(target = "currency", source = "data", qualifiedByName = "currency")
     @Mapping(target = "transactionType", source = "data", qualifiedByName = "transactionType")
     @Mapping(target = "transactionEntryType", source = "data", qualifiedByName = "transactionEntryType")
-    @Mapping(target = "paymentDetailData", source = "data", qualifiedByName = "paymentDetailData")
+    @Mapping(target = "paymentTypeData", source = "data", qualifiedByName = "mapPaymentTypeData")
     CurrentTransactionResponseData map(CurrentTransactionData data);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentTransactionData data) {
-        return new CurrencyData(data.getCurrencyCode(), data.getCurrencyName(), data.getCurrencyDigitsAfterDecimal(),
-                data.getCurrencyInMultiplesOf(), data.getCurrencyDisplaySymbol(), data.getCurrencyNameCode());
+        return new CurrencyData(data.getCurrencyCode(), data.getCurrencyName(), data.getCurrencyDigitsAfterDecimal(), null,
+                 data.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("transactionType")
@@ -60,14 +60,9 @@ public interface CurrentTransactionResponseDataMapper {
         return data.getTransactionType().getEntryType().toEnumOptionData();
     }
 
-    @Named("paymentDetailData")
-    default PaymentDetailData mapPaymentDetailData(CurrentTransactionData data) {
-        return new PaymentDetailData(data.getPaymentDetailId(),
-                new PaymentTypeData(data.getPaymentTypeId(), data.getPaymentTypeName(), data.getPaymentTypeDescription(),
-                        data.getPaymentTypeIsCashPayment(), data.getPaymentTypePosition().intValue(), data.getPaymentTypeCodeName(),
-                        data.getPaymentTypeIsSystemDefined()),
-                data.getPaymentDetailAccountNumber(), data.getPaymentDetailCheckNumber(), data.getPaymentDetailRoutingCode(),
-                data.getPaymentDetailReceiptNumber(), data.getPaymentDetailsBankNumber());
+    @Named("mapPaymentTypeData")
+    default PaymentTypeData mapPaymentTypeData(CurrentTransactionData data) {
+        return PaymentTypeData.instance(data.getPaymentTypeId(), data.getPaymentTypeName());
     }
 
     List<CurrentTransactionResponseData> map(List<CurrentTransactionData> data);

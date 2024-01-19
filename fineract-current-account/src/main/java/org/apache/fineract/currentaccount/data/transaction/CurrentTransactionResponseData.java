@@ -28,6 +28,7 @@ import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymentdetail.data.PaymentDetailData;
+import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
 /**
  * Immutable data object representing a current account transaction.
@@ -39,7 +40,7 @@ public final class CurrentTransactionResponseData implements Serializable {
     private final UUID id;
     private final UUID accountId;
     private final ExternalId externalId;
-    private final PaymentDetailData paymentDetailData;
+    private final PaymentTypeData paymentTypeData;
     private final EnumOptionData transactionType;
     private final EnumOptionData transactionEntryType;
     private final LocalDate transactionDate;

@@ -43,27 +43,16 @@ public class CurrentTransactionData implements Serializable {
     // Currency data
     private final String currencyCode;
     private final String currencyName;
-    private final String currencyNameCode;
     private final String currencyDisplaySymbol;
     private final Integer currencyDigitsAfterDecimal;
     private final Integer currencyInMultiplesOf;
-
-    // Payment detail data
-    private final Long paymentDetailId;
-    private final String paymentDetailAccountNumber;
-    private final String paymentDetailCheckNumber;
-    private final String paymentDetailRoutingCode;
-    private final String paymentDetailReceiptNumber;
-    private final String paymentDetailsBankNumber;
 
     // Payment type data
     private final Long paymentTypeId;
     private final String paymentTypeName;
     private final String paymentTypeDescription;
     private final Boolean paymentTypeIsCashPayment;
-    private final Long paymentTypePosition;
     private final String paymentTypeCodeName;
-    private final Boolean paymentTypeIsSystemDefined;
 
     public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
             LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime) {
@@ -77,32 +66,21 @@ public class CurrentTransactionData implements Serializable {
         this.createdDateTime = createdDateTime;
         currencyCode = null;
         currencyName = null;
-        currencyNameCode = null;
         currencyDisplaySymbol = null;
         currencyDigitsAfterDecimal = null;
         currencyInMultiplesOf = null;
-        paymentDetailId = null;
-        paymentDetailAccountNumber = null;
-        paymentDetailCheckNumber = null;
-        paymentDetailRoutingCode = null;
-        paymentDetailReceiptNumber = null;
-        paymentDetailsBankNumber = null;
         paymentTypeId = null;
         paymentTypeName = null;
         paymentTypeDescription = null;
         paymentTypeIsCashPayment = null;
-        paymentTypePosition = null;
         paymentTypeCodeName = null;
-        paymentTypeIsSystemDefined = null;
     }
 
     public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
             LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
-            String currencyCode, String currencyName, String currencyNameCode, String currencyDisplaySymbol,
-            Integer currencyDigitsAfterDecimal, Integer currencyInMultiplesOf, Long paymentDetailId, String paymentDetailAccountNumber,
-            String paymentDetailCheckNumber, String paymentDetailRoutingCode, String paymentDetailReceiptNumber,
-            String paymentDetailsBankNumber, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
-            Boolean paymentTypeIsCashPayment, Long paymentTypePosition, String paymentTypeCodeName, Boolean paymentTypeIsSystemDefined) {
+            String currencyCode, String currencyName, String currencyDisplaySymbol,
+            Integer currencyDigitsAfterDecimal, Integer currencyInMultiplesOf, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
+            Boolean paymentTypeIsCashPayment, String paymentTypeCodeName) {
         this.id = id;
         this.accountId = accountId;
         this.externalId = externalId;
@@ -113,22 +91,13 @@ public class CurrentTransactionData implements Serializable {
         this.createdDateTime = createdDateTime;
         this.currencyCode = currencyCode;
         this.currencyName = currencyName;
-        this.currencyNameCode = currencyNameCode;
         this.currencyDisplaySymbol = currencyDisplaySymbol;
         this.currencyDigitsAfterDecimal = currencyDigitsAfterDecimal;
         this.currencyInMultiplesOf = currencyInMultiplesOf;
-        this.paymentDetailId = paymentDetailId;
-        this.paymentDetailAccountNumber = paymentDetailAccountNumber;
-        this.paymentDetailCheckNumber = paymentDetailCheckNumber;
-        this.paymentDetailRoutingCode = paymentDetailRoutingCode;
-        this.paymentDetailReceiptNumber = paymentDetailReceiptNumber;
-        this.paymentDetailsBankNumber = paymentDetailsBankNumber;
         this.paymentTypeId = paymentTypeId;
         this.paymentTypeName = paymentTypeName;
         this.paymentTypeDescription = paymentTypeDescription;
         this.paymentTypeIsCashPayment = paymentTypeIsCashPayment;
-        this.paymentTypePosition = paymentTypePosition;
         this.paymentTypeCodeName = paymentTypeCodeName;
-        this.paymentTypeIsSystemDefined = paymentTypeIsSystemDefined;
     }
 }
