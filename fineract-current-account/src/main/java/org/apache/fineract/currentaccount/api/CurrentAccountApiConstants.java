@@ -37,7 +37,7 @@ public class CurrentAccountApiConstants {
     // command
     public static final String COMMAND = "command";
     public static final String COMMAND_DEPOSIT = "deposit";
-    public static final String COMMAND_WITHDRAW = "withdraw";
+    public static final String COMMAND_WITHDRAWAL = "withdrawal";
     public static final String COMMAND_HOLD = "hold";
     public static final String COMMAND_RELEASE = "release";
 
@@ -103,15 +103,17 @@ public class CurrentAccountApiConstants {
     public static final String bankNumberParamName = "bankNumber";
     public static final String enforceParamName = "enforce";
     public static final String allowOverdraftParamName = "allowOverdraft";
+    public static final String allowForceTransactionParamName = "allowForceTransaction";
+    public static final String balanceCalculationTypeParamName = "balanceCalculationType";
     public static final String overdraftLimitParamName = "overdraftLimit";
     public static final String nominalAnnualInterestRateOverdraftParamName = "nominalAnnualInterestRateOverdraft";
     public static final String minOverdraftForInterestCalculationParamName = "minOverdraftForInterestCalculation";
     public static final String minRequiredBalanceParamName = "minRequiredBalance";
-    public static final String enforceMinRequiredBalanceParamName = "enforceMinRequiredBalance";
+
     public static final String maxAllowedLienLimitParamName = "maxAllowedLienLimit";
     public static final String lienAllowedParamName = "lienAllowed";
     public static final String minBalanceForInterestCalculationParamName = "minBalanceForInterestCalculation";
-    public static final String withdrawBalanceParamName = "withdrawBalance";
+    public static final String withdrawalBalanceParamName = "withdrawalBalance";
     public static final String onHoldFundsParamName = "onHoldFunds";
     public static final String currentAmountOnHold = "currentAmountOnHold";
     public static final String withHoldTaxParamName = "withHoldTax";

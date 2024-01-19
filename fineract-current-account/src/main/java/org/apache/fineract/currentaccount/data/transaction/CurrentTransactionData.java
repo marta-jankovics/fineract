@@ -24,7 +24,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Data;
-import org.apache.fineract.currentaccount.enums.transaction.CurrentTransactionType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
@@ -78,8 +78,8 @@ public class CurrentTransactionData implements Serializable {
 
     public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
             LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
-            String currencyCode, String currencyName, String currencyDisplaySymbol,
-            Integer currencyDigitsAfterDecimal, Integer currencyInMultiplesOf, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
+            String currencyCode, String currencyName, String currencyDisplaySymbol, Integer currencyDigitsAfterDecimal,
+            Integer currencyInMultiplesOf, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
             Boolean paymentTypeIsCashPayment, String paymentTypeCodeName) {
         this.id = id;
         this.accountId = accountId;

@@ -3763,8 +3763,8 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionWithdraw(final UUID accountId) {
-        this.actionName = "WITHDRAW";
+    public CommandWrapperBuilder currentTransactionWithdrawal(final UUID accountId) {
+        this.actionName = "WITHDRAWAL";
         this.entityName = "CURRENTTRANSACTION";
         this.entityUUID = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";

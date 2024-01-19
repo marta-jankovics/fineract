@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.enums.account;
+package org.apache.fineract.currentaccount.enumeration.account;
 
 import lombok.Getter;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
@@ -28,18 +28,17 @@ import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 @Getter
 public enum CurrentAccountStatus {
 
-    INVALID(0, "currentAccountStatusType.invalid"), //
-    SUBMITTED(100, "currentAccountStatusType.submitted"), //
-    ACTIVE(300, "currentAccountStatusType.active"), //
-    CANCELLED(400, "currentAccountStatusType.cancelled"), //
-    CLOSED(600, "currentAccountStatusType.closed"); //
+    SUBMITTED(100, "Current account is submitted"), //
+    ACTIVE(300, "Current account is active"), //
+    CANCELLED(400, "Current account is cancelled"), //
+    CLOSED(600, "Current account is closed"); //
 
-    private final Integer value;
-    private final String code;
+    private final long id;
+    private final String value;
 
-    CurrentAccountStatus(final Integer value, final String code) {
+    CurrentAccountStatus(final Integer id, final String value) {
+        this.id = id;
         this.value = value;
-        this.code = code;
     }
 
     public static CurrentAccountStatus fromInt(final Integer type) {
@@ -47,7 +46,7 @@ public enum CurrentAccountStatus {
             case 100 -> CurrentAccountStatus.SUBMITTED;
             case 300 -> CurrentAccountStatus.ACTIVE;
             case 600 -> CurrentAccountStatus.CLOSED;
-            default -> CurrentAccountStatus.INVALID;
+            default -> throw new UnsupportedOperationException(String.format("Unsupported current account status: %s", type));
         };
     }
 
@@ -75,7 +74,7 @@ public enum CurrentAccountStatus {
         return this == CurrentAccountStatus.CLOSED || isCancelled();
     }
 
-    public Object toEnumOptionData() {
-        return new EnumOptionData((long) getValue(), getCode(), name());
+    public EnumOptionData toEnumOptionData() {
+        return new EnumOptionData(getId(), name(), getValue());
     }
 }

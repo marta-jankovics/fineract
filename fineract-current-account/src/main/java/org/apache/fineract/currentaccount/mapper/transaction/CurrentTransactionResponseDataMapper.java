@@ -24,7 +24,6 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionRes
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
-import org.apache.fineract.portfolio.paymentdetail.data.PaymentDetailData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -47,7 +46,7 @@ public interface CurrentTransactionResponseDataMapper {
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentTransactionData data) {
         return new CurrencyData(data.getCurrencyCode(), data.getCurrencyName(), data.getCurrencyDigitsAfterDecimal(), null,
-                 data.getCurrencyDisplaySymbol(), null);
+                data.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("transactionType")

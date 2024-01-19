@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.handler.transaction.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import org.apache.fineract.currentaccount.handler.transaction.CurrentTransactionWithdrawCommandHandler;
+import org.apache.fineract.currentaccount.handler.transaction.CurrentTransactionWithdrawalCommandHandler;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -29,14 +29,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "WITHDRAW")
-public class CurrentTransactionWithdrawCommandHandlerImpl implements CurrentTransactionWithdrawCommandHandler {
+@CommandType(entity = "CURRENTTRANSACTION", action = "WITHDRAWAL")
+public class CurrentTransactionWithdrawalCommandHandlerImpl implements CurrentTransactionWithdrawalCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.withdraw(command.getResourceUUID(), command);
+        return this.writePlatformService.withdrawal(command.getResourceUUID(), command);
     }
 }

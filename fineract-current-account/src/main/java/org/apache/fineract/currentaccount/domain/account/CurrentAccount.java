@@ -28,6 +28,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -36,7 +37,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.fineract.currentaccount.enums.account.CurrentAccountStatus;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
@@ -119,8 +120,8 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     @Column(name = "min_required_balance", precision = 6)
     private BigDecimal minRequiredBalance;
 
-    @Column(name = "version", nullable = false)
-    private int version;
+    @Version
+    private Long version;
 
     public static CurrentAccount newInstanceForSubmit(Long clientId, UUID productId, String accountNo, MonetaryCurrency currency,
             ExternalId externalId, AccountType accountType, LocalDate submittedOnDate, Long submittedById, boolean allowOverdraft,

@@ -23,10 +23,11 @@ import org.apache.fineract.currentaccount.data.product.CurrentProductResponseDat
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CurrentProductApi {
 
-    Page<CurrentProductResponseData> retrieveAll(Integer page, Integer size, String orderBy, String sortOrder);
+    Page<CurrentProductResponseData> retrieveAll(Pageable pageable);
 
     CurrentProductResponseData retrieveOne(UUID productId);
 

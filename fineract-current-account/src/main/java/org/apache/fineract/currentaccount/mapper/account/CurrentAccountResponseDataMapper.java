@@ -52,14 +52,12 @@ public interface CurrentAccountResponseDataMapper {
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {
         return new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
-                currentAccountData.getDigitsAfterDecimal(), null,
-                currentAccountData.getCurrencyDisplaySymbol(), null);
+                currentAccountData.getDigitsAfterDecimal(), null, currentAccountData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("status")
     default EnumOptionData mapStatus(CurrentAccountData currentAccountData) {
-        return new EnumOptionData((long) currentAccountData.getStatus().getValue(), currentAccountData.getStatus().getCode(),
-                currentAccountData.getStatus().name());
+        return currentAccountData.getStatus().toEnumOptionData();
     }
 
     @Named("accountType")

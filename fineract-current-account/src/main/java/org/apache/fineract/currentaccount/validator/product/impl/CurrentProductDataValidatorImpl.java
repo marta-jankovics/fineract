@@ -20,11 +20,12 @@ package org.apache.fineract.currentaccount.validator.product.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountingTypeParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyCodeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.digitsAfterDecimalParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceMinRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.inMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
@@ -46,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.currentaccount.validator.product.CurrentProductDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
@@ -59,7 +61,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
     private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(localeParamName, nameParamName, shortNameParamName, descriptionParamName, currencyCodeParamName,
                     digitsAfterDecimalParamName, inMultiplesOfParamName, accountingTypeParamName, allowOverdraftParamName,
-                    overdraftLimitParamName, enforceMinRequiredBalanceParamName, minRequiredBalanceParamName));
+                    overdraftLimitParamName, allowForceTransactionParamName, minRequiredBalanceParamName, balanceCalculationTypeParamName));
 
     public void validateForCreate(final JsonCommand command) {
 
@@ -97,12 +99,26 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         }
 
         // accounting related data validation
-        final String accountingRuleType = command.stringValueOfParameterNamed("accountingType");
-        baseDataValidator.reset().parameter("accountingType").value(accountingRuleType).notNull()
+        final String accountingRuleType = command.stringValueOfParameterNamed(accountingTypeParamName);
+        baseDataValidator.reset().parameter(accountingTypeParamName).value(accountingRuleType).notNull()
                 .isOneOfEnumValues(AccountingRuleType.class);
 
-        validateMinRequiredBalanceParams(baseDataValidator, command);
-        validateOverdraftParams(baseDataValidator, command);
+        if (command.parameterExists(minRequiredBalanceParamName)) {
+            final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamed(minRequiredBalanceParamName);
+            baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance).zeroOrPositiveAmount();
+        }
+
+        final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
+        baseDataValidator.reset().parameter(allowOverdraftParamName).value(allowOverdraft).notNull().validateForBooleanValue();
+
+        if (allowOverdraft) {
+            final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
+            baseDataValidator.reset().parameter(overdraftLimitParamName).value(overdraftLimit).notNull().positiveAmount();
+        }
+
+        final String balanceCalculationType = command.stringValueOfParameterNamed(balanceCalculationTypeParamName);
+        baseDataValidator.reset().parameter(balanceCalculationTypeParamName).value(balanceCalculationType).notNull()
+                .isOneOfEnumValues(BalanceCalculationType.class);
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
@@ -150,35 +166,38 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             baseDataValidator.reset().parameter(inMultiplesOfParamName).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
 
-        validateMinRequiredBalanceParams(baseDataValidator, command);
-        validateOverdraftParams(baseDataValidator, command);
+        if (command.parameterExists(minRequiredBalanceParamName)) {
+            final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
+            baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance);
+        }
+
+        if (command.parameterExists(allowOverdraftParamName)) {
+            final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
+            baseDataValidator.reset().parameter(allowOverdraftParamName).value(allowOverdraft).notNull().validateForBooleanValue();
+
+            if (allowOverdraft) {
+                final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
+                baseDataValidator.reset().parameter(overdraftLimitParamName).value(overdraftLimit).notNull().positiveAmount();
+            }
+        }
+
+        if (!command.parameterExists(allowOverdraftParamName) && command.parameterExists(overdraftLimitParamName)) {
+            final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
+            baseDataValidator.reset().parameter(overdraftLimitParamName).value(overdraftLimit).notNull().positiveAmount();
+        }
+
+        if (command.parameterExists(balanceCalculationTypeParamName)) {
+            final String balanceCalculationType = command.stringValueOfParameterNamed(balanceCalculationTypeParamName);
+            baseDataValidator.reset().parameter(balanceCalculationTypeParamName).value(balanceCalculationType).notNull()
+                    .isOneOfEnumValues(BalanceCalculationType.class);
+        }
+
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
     private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {
         if (!dataValidationErrors.isEmpty()) {
             throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
-    }
-
-    private void validateOverdraftParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
-        final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
-        baseDataValidator.reset().parameter(allowOverdraftParamName).value(allowOverdraft).notNull().validateForBooleanValue();
-
-        if (allowOverdraft) {
-            final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
-            baseDataValidator.reset().parameter(overdraftLimitParamName).value(overdraftLimit).notNull().positiveAmount();
-        }
-    }
-
-    private void validateMinRequiredBalanceParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
-        final Boolean enforceMinRequiredBalance = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-        baseDataValidator.reset().parameter(enforceMinRequiredBalanceParamName).value(enforceMinRequiredBalance).notNull()
-                .validateForBooleanValue();
-
-        if (enforceMinRequiredBalance) {
-            final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
-            baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance).notNull().positiveAmount();
         }
     }
 }

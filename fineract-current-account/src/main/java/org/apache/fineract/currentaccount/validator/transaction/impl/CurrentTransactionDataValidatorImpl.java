@@ -66,7 +66,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
     }
 
     @Override
-    public void validateWithdraw(JsonCommand command) {
+    public void validateWithdrawal(JsonCommand command) {
         validateTransaction(command);
     }
 

@@ -20,6 +20,7 @@ package org.apache.fineract.accounting.common;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
 public enum AccountingRuleType {
 
@@ -60,5 +61,9 @@ public enum AccountingRuleType {
 
     public String getCode() {
         return this.code;
+    }
+
+    public EnumOptionData toEnumOptionData() {
+        return new EnumOptionData((long) getValue(), name(), toString());
     }
 }

@@ -24,7 +24,7 @@ public interface CurrentTransactionDataValidator {
 
     void validateDeposit(JsonCommand command);
 
-    void validateWithdraw(JsonCommand command);
+    void validateWithdrawal(JsonCommand command);
 
     void validateHold(JsonCommand command);
 

@@ -26,7 +26,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closedOnDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceMinRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
@@ -60,7 +59,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
             dateFormatParamName, accountNoParamName, externalIdParamName, clientIdParamName, productIdParamName, submittedOnDateParamName,
-            allowOverdraftParamName, overdraftLimitParamName, enforceMinRequiredBalanceParamName, minRequiredBalanceParamName));
+            allowOverdraftParamName, overdraftLimitParamName, minRequiredBalanceParamName));
 
     @Override
     public void validateForSubmit(final JsonCommand command) {
@@ -228,16 +227,8 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
     }
 
     private void validateMinRequiredBalanceParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
-        if (command.parameterExists(enforceMinRequiredBalanceParamName)) {
-            final Boolean enforceMinRequiredBalance = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-            baseDataValidator.reset().parameter(enforceMinRequiredBalanceParamName).value(enforceMinRequiredBalance).notNull()
-                    .validateForBooleanValue();
-
-            if (enforceMinRequiredBalance) {
-                final BigDecimal minRequiredBalance = command
-                        .bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
-                baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance).notNull().positiveAmount();
-            }
-        }
+        final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
+        baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance).notNull().positiveAmount();
     }
+
 }

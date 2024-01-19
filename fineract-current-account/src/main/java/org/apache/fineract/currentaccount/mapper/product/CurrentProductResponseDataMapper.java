@@ -38,19 +38,23 @@ public interface CurrentProductResponseDataMapper {
 
     @Mapping(target = "currency", source = "currentProductData", qualifiedByName = "currency")
     @Mapping(target = "accountingType", source = "currentProductData", qualifiedByName = "accountingType")
+    @Mapping(target = "balanceCalculationType", source = "currentProductData", qualifiedByName = "balanceCalculationType")
     CurrentProductResponseData map(CurrentProductData currentProductData);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentProductData currentProductData) {
         return new CurrencyData(currentProductData.getCurrencyCode(), currentProductData.getCurrencyName(),
-                currentProductData.getDigitsAfterDecimal(), null,
-                currentProductData.getCurrencyDisplaySymbol(), null);
+                currentProductData.getCurrencyDigitsAfterDecimal(), null, currentProductData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("accountingType")
     default EnumOptionData mapAccountingType(CurrentProductData currentProductData) {
-        return new EnumOptionData((long) currentProductData.getAccountingType().getValue(),
-                currentProductData.getAccountingType().getCode(), currentProductData.getAccountingType().toString());
+        return currentProductData.getAccountingType().toEnumOptionData();
+    }
+
+    @Named("balanceCalculationType")
+    default EnumOptionData mapBalanceCalculationType(CurrentProductData currentProductData) {
+        return currentProductData.getBalanceCalculationType().toEnumOptionData();
     }
 
     List<CurrentProductResponseData> map(List<CurrentProductData> data);

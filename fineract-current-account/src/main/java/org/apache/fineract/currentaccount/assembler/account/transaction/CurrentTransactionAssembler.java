@@ -27,7 +27,7 @@ public interface CurrentTransactionAssembler {
 
     CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    CurrentTransaction withdraw(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
+    CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
     CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 

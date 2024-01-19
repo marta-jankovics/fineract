@@ -19,11 +19,12 @@
 package org.apache.fineract.currentaccount.assembler.product.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountingTypeParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyCodeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.digitsAfterDecimalParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceMinRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.inMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
@@ -38,6 +39,7 @@ import java.util.Map;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
@@ -54,14 +56,16 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         final Integer inMultiplesOf = command.integerValueOfParameterNamed(inMultiplesOfParamName);
         final MonetaryCurrency currency = new MonetaryCurrency(currencyCode, digitsAfterDecimal, inMultiplesOf);
         final AccountingRuleType accountingRuleType = AccountingRuleType
-                .valueOf(command.stringValueOfParameterNamed("accountingType").toUpperCase(locale));
-        boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
-        BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
-        boolean enforceMinRequiredBalance = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-        BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamed(minRequiredBalanceParamName);
+                .valueOf(command.stringValueOfParameterNamed(accountingTypeParamName).toUpperCase(locale));
+        final boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
+        final BigDecimal overdraftLimit = allowOverdraft ? command.bigDecimalValueOfParameterNamed(overdraftLimitParamName) : null;
+        final boolean allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
+        final BalanceCalculationType balanceCalculationType = BalanceCalculationType
+                .valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
+        final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamed(minRequiredBalanceParamName);
 
         return new CurrentProduct(null, name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
-                enforceMinRequiredBalance, minRequiredBalance);
+                allowForceTransaction, minRequiredBalance, balanceCalculationType, null);
     }
 
     public Map<String, Object> update(CurrentProduct product, JsonCommand command) {
@@ -117,6 +121,9 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
             actualChanges.put(allowOverdraftParamName, newValue);
             product.setAllowOverdraft(newValue);
+            if (!newValue) {
+                product.setOverdraftLimit(null);
+            }
         }
 
         if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(overdraftLimitParamName, product.getOverdraftLimit())) {
@@ -126,15 +133,10 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             product.setOverdraftLimit(newValue);
         }
 
-        if (command.isChangeInBooleanParameterNamed(enforceMinRequiredBalanceParamName, product.isEnforceMinRequiredBalance())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-            actualChanges.put(minRequiredBalanceParamName, newValue);
-            actualChanges.put(localeParamName, localeAsInput);
-            product.setEnforceMinRequiredBalance(newValue);
-
-            if (!newValue) {
-                product.setMinRequiredBalance(null);
-            }
+        if (command.isChangeInBooleanParameterNamed(allowForceTransactionParamName, product.isAllowForceTransaction())) {
+            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
+            actualChanges.put(allowForceTransactionParamName, newValue);
+            product.setAllowForceTransaction(newValue);
         }
 
         if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(minRequiredBalanceParamName, product.getMinRequiredBalance())) {
@@ -142,6 +144,12 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             actualChanges.put(minRequiredBalanceParamName, newValue);
             actualChanges.put(localeParamName, localeAsInput);
             product.setMinRequiredBalance(newValue);
+        }
+
+        if (command.isChangeInStringParameterNamed(balanceCalculationTypeParamName, product.getBalanceCalculationType().name())) {
+            final String newValue = command.stringValueOfParameterNamed(balanceCalculationTypeParamName);
+            actualChanges.put(balanceCalculationTypeParamName, newValue);
+            product.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
         return actualChanges;

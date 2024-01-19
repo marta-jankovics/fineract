@@ -16,28 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.product;
+package org.apache.fineract.currentaccount.enumeration.product;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.UUID;
-import lombok.Data;
+import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
-import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
-@Data
-public class CurrentProductResponseData implements Serializable {
+@Getter
+public enum BalanceCalculationType {
 
-    // Current product data
-    private final UUID id;
-    private final String name;
-    private final String shortName;
-    private final String description;
-    private final CurrencyData currency;
-    private final EnumOptionData accountingType;
-    private final Boolean allowOverdraft;
-    private final BigDecimal overdraftLimit;
-    private final BigDecimal minimumRequiredBalance;
-    private final Boolean allowForceTransaction;
-    private final EnumOptionData balanceCalculationType;
+    LAZY(1, "Lazy balance calculation for debit/credit transactions"), //
+    STRICT_DEBIT(2, "Strict balance calculation for debit transactions"), //
+    STRICT(3, "Strict balance calculation for debit/credit transactions"); //
+
+    private final long id;
+    private final String value;
+
+    BalanceCalculationType(long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    public EnumOptionData toEnumOptionData() {
+        return new EnumOptionData(getId(), name(), getValue());
+    }
 }

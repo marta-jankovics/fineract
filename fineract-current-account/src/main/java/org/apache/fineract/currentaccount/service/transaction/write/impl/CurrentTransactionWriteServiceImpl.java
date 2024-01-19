@@ -90,16 +90,16 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult withdraw(UUID accountId, JsonCommand command) {
-        currentTransactionDataValidator.validateWithdraw(command);
+    public CommandProcessingResult withdrawal(UUID accountId, JsonCommand command) {
+        currentTransactionDataValidator.validateWithdrawal(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
                 .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction withdrawTransaction = currentTransactionAssembler.withdraw(account, command, changes);
+        final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
         boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
-        testBalance(account, withdrawTransaction, enforce);
-        persistTransaction(command, withdrawTransaction);
+        testBalance(account, withdrawalTransaction, enforce);
+        persistTransaction(command, withdrawalTransaction);
 
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -108,8 +108,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(withdrawTransaction.getId()) //
-                .withEntityExternalId(withdrawTransaction.getExternalId()) //
+                .withEntityUUID(withdrawalTransaction.getId()) //
+                .withEntityExternalId(withdrawalTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
                 .build();

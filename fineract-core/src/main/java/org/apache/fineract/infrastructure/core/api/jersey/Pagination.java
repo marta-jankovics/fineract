@@ -16,8 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.handler.transaction;
+package org.apache.fineract.infrastructure.core.api.jersey;
 
-import org.apache.fineract.commands.handler.NewCommandSourceHandler;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface CurrentTransactionWithdrawCommandHandler extends NewCommandSourceHandler {}
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Pagination {}

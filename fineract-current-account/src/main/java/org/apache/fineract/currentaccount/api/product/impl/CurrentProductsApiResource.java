@@ -32,7 +32,6 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +43,17 @@ import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
+import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentproducts")
+@Consumes({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON })
 @Component
 @Tag(name = "Current Product", description = "An MFIs current product offerings are modeled using this API." + "\n"
         + "When creating current accounts, the details from the current product are used to auto fill details of the current account application process.")
@@ -63,23 +66,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @Override
     @GET
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
             + "currentproducts")
-    public Page<CurrentProductResponseData> retrieveAll(@QueryParam("page") @Parameter(description = "page") final Integer page,
-            @QueryParam("size") @Parameter(description = "size") final Integer size,
-            @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
-            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
+    public Page<CurrentProductResponseData> retrieveAll(@Pagination Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(page, size, sortOrder, orderBy));
+        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
     }
 
     @Override
     @GET
     @Path("{productId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
             + "currentproducts/1")
     public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final UUID productId) {
@@ -90,8 +86,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Override
     @GET
     @Path("template")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Request:\n \n" + "currentproducts/template \n \n")
     public CurrentProductTemplateResponseData retrieveTemplate() {
@@ -101,8 +95,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @Override
     @POST
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Create a Current Product", description = "Creates a Current Product\n\n"
             + "Mandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal, accountingType, allowOverdraft, enforceMinRequiredBalance\n\n"
             + "Optional Fields: inMultiplesOf, overdraftLimit, minRequiredBalance")
@@ -115,8 +107,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Override
     @PUT
     @Path("{productId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
     public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final UUID productId,
@@ -128,8 +118,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Override
     @DELETE
     @Path("{productId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
     public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final UUID productId) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(productId).build();

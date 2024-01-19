@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.Data;
 import org.apache.fineract.accounting.common.AccountingRuleType;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 
 @Data
 public class CurrentProductData implements Serializable {
@@ -32,16 +33,17 @@ public class CurrentProductData implements Serializable {
     private final String name;
     private final String shortName;
     private final String description;
-    private final String currencyCode;
-    private final Integer digitsAfterDecimal;
-    private final Integer inMultiplesOf;
     private final AccountingRuleType accountingType;
     private final boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
-    private final boolean enforceMinRequiredBalance;
-    private final BigDecimal minRequiredBalance;
+    private final BigDecimal minimumRequiredBalance;
+    private final boolean allowForceTransaction;
+    private final BalanceCalculationType balanceCalculationType;
 
     // Currency data
+    private final String currencyCode;
+    private final Integer currencyDigitsAfterDecimal;
+    private final Integer currencyInMultiplesOf;
     private final String currencyName;
     private final String currencyDisplaySymbol;
 }

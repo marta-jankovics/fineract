@@ -28,6 +28,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -36,6 +37,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingRuleType;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
@@ -61,7 +63,7 @@ public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     @Column(name = "name", nullable = false, length = 100, unique = true)
     private String name;
 
-    @Column(name = "short_name", nullable = false, length = 4, unique = true)
+    @Column(name = "short_name", nullable = false, length = 8, unique = true)
     private String shortName;
 
     @Column(name = "description", length = 500)
@@ -80,9 +82,16 @@ public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     @Column(name = "overdraft_limit", precision = 6)
     private BigDecimal overdraftLimit;
 
-    @Column(name = "enforce_min_required_balance")
-    private boolean enforceMinRequiredBalance;
+    @Column(name = "allow_force_transaction", nullable = false)
+    private boolean allowForceTransaction;
 
     @Column(name = "min_required_balance", precision = 6)
     private BigDecimal minRequiredBalance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "balance_calculation_type", nullable = false)
+    private BalanceCalculationType balanceCalculationType;
+
+    @Version
+    private Long version;
 }

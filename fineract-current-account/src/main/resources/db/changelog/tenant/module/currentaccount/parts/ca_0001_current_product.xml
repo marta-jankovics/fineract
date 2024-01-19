@@ -30,7 +30,7 @@
             <column name="name" type="VARCHAR(100)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="short_name" type="VARCHAR(4)">
+            <column name="short_name" type="VARCHAR(8)">
                 <constraints unique="true" nullable="false"/>
             </column>
             <column name="description" type="VARCHAR(500)"/>
@@ -48,10 +48,16 @@
                 <constraints nullable="false"/>
             </column>
             <column name="overdraft_limit" type="DECIMAL(19, 6)"/>
-            <column defaultValueBoolean="false" name="enforce_min_required_balance" type="boolean">
+            <column defaultValueBoolean="false" name="allow_force_transaction" type="boolean">
                 <constraints nullable="false"/>
             </column>
             <column name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column name="balance_calculation_type" type="VARCHAR(50)">
+                    <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="1" name="version" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="fineract" id="2" context="mysql">

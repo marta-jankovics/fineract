@@ -16,14 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.enums.transaction;
+package org.apache.fineract.currentaccount.enumeration.transaction;
 
-import jakarta.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.portfolio.TransactionEntryType;
 
@@ -31,57 +26,24 @@ import org.apache.fineract.portfolio.TransactionEntryType;
  * An enumeration of different transactions that can occur on a
  * {@link org.apache.fineract.currentaccount.domain.account.CurrentAccount}.
  */
+@Getter
 public enum CurrentTransactionType {
 
-    INVALID(0, "currentTransactionType.invalid"), //
-    DEPOSIT(1, "currentTransactionType.deposit", TransactionEntryType.CREDIT), //
-    WITHDRAWAL(2, "currentTransactionType.withdrawal", TransactionEntryType.DEBIT), //
-    AMOUNT_HOLD(3, "currentTransactionType.onHold", TransactionEntryType.DEBIT), //
-    AMOUNT_RELEASE(4, "currentTransactionType.release", TransactionEntryType.CREDIT); //
+    DEPOSIT(1, "Deposit transaction", TransactionEntryType.CREDIT), //
+    WITHDRAWAL(2, "Withdrawal transaction", TransactionEntryType.DEBIT), //
+    AMOUNT_HOLD(3, "Hold amount transaction", TransactionEntryType.DEBIT), //
+    AMOUNT_RELEASE(4, "Release amount transaction", TransactionEntryType.CREDIT); //
 
     private static final CurrentTransactionType[] VALUES = values();
 
-    private static final Map<Integer, CurrentTransactionType> BY_ID = Arrays.stream(VALUES)
-            .collect(Collectors.toMap(CurrentTransactionType::getValue, v -> v));
-
-    private final int value;
-    private final String code;
+    private final long id;
+    private final String value;
     private final TransactionEntryType entryType;
 
-    CurrentTransactionType(final Integer value, final String code, TransactionEntryType entryType) {
+    CurrentTransactionType(final long id, final String value, TransactionEntryType entryType) {
+        this.id = id;
         this.value = value;
-        this.code = code;
         this.entryType = entryType;
-    }
-
-    CurrentTransactionType(final Integer value, final String code) {
-        this(value, code, null);
-    }
-
-    public static CurrentTransactionType fromInt(final Integer value) {
-        CurrentTransactionType transactionType = BY_ID.get(value);
-        return transactionType == null ? INVALID : transactionType;
-    }
-
-    @NotNull
-    public static List<CurrentTransactionType> getFiltered(Predicate<CurrentTransactionType> filter) {
-        return Arrays.stream(VALUES).filter(filter).toList();
-    }
-
-    public int getId() {
-        return this.value;
-    }
-
-    public Integer getValue() {
-        return this.value;
-    }
-
-    public String getCode() {
-        return this.code;
-    }
-
-    public TransactionEntryType getEntryType() {
-        return entryType;
     }
 
     public boolean isCreditEntryType() {
@@ -90,10 +52,6 @@ public enum CurrentTransactionType {
 
     public boolean isDebitEntryType() {
         return entryType != null && entryType.isDebit();
-    }
-
-    public boolean isValid() {
-        return this != INVALID;
     }
 
     public boolean isDeposit() {
@@ -123,6 +81,6 @@ public enum CurrentTransactionType {
     }
 
     public EnumOptionData toEnumOptionData() {
-        return new EnumOptionData(getValue().longValue(), getCode(), name());
+        return new EnumOptionData(getId(), name(), getValue());
     }
 }

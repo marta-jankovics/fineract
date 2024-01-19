@@ -22,7 +22,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNoParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceMinRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
@@ -46,7 +45,7 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
-import org.apache.fineract.currentaccount.enums.account.CurrentAccountStatus;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.exception.product.CurrentProductNotFoundException;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
@@ -126,13 +125,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             overdraftLimit = product.getOverdraftLimit();
         }
 
-        boolean enforceMinRequiredBalance;
-        if (command.parameterExists(enforceMinRequiredBalanceParamName)) {
-            enforceMinRequiredBalance = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-        } else {
-            enforceMinRequiredBalance = product.isEnforceMinRequiredBalance();
-        }
-
         BigDecimal minRequiredBalance;
         if (command.parameterExists(minRequiredBalanceParamName)) {
             minRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
@@ -142,7 +134,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final CurrentAccount account = CurrentAccount.newInstanceForSubmit(client.getId(), product.getId(), accountNo,
                 product.getCurrency(), externalIdFactory.create(externalId), accountType, submittedOnDate,
-                context.authenticatedUser().getId(), allowOverdraft, overdraftLimit, enforceMinRequiredBalance, minRequiredBalance);
+                context.authenticatedUser().getId(), allowOverdraft, overdraftLimit, false, minRequiredBalance);
 
         validateDates(client, account);
         validateAccountValuesWithProduct(product, account);
@@ -194,11 +186,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             account.setOverdraftLimit(newValue);
         }
 
-        if (command.isChangeInBooleanParameterNamed(enforceMinRequiredBalanceParamName, account.isEnforceMinRequiredBalance())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(enforceMinRequiredBalanceParamName);
-            actualChanges.put(enforceMinRequiredBalanceParamName, newValue);
-            account.setEnforceMinRequiredBalance(newValue);
-        }
         if (account.isEnforceMinRequiredBalance() && command
                 .isChangeInBigDecimalParameterNamedDefaultingZeroToNull(minRequiredBalanceParamName, account.getMinRequiredBalance())) {
             final BigDecimal newValue = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);

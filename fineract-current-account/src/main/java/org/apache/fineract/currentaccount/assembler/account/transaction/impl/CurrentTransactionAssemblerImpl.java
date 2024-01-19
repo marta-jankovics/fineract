@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.enums.transaction.CurrentTransactionType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
@@ -62,7 +62,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     }
 
     @Override
-    public CurrentTransaction withdraw(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
+    public CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
         final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
 

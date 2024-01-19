@@ -84,8 +84,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
             @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
-        return this.currentTransactionReadService.retrieveTransactionByAccountId(accountId,
-                PagedRequest.createFrom(page, size, sortOrder, orderBy));
+        return this.currentTransactionReadService.retrieveTransactionByAccountId(accountId, PagedRequest.createFrom(null));
     }
 
     @Override
@@ -103,9 +102,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @POST
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Deposit/Withdraw/Hold Amount transaction API", description = "Deposit/Withdraw/Hold Amount transaction API\n\n"
+    @Operation(summary = "Deposit/Withdrawal/Hold Amount transaction API", description = "Deposit/Withdrawal/Hold Amount transaction API\n\n"
             + "Example Requests:\n" + "\n" + "\n" + "currentaccounts/{accountId}/transactions/?command=deposit\n" + "\n"
-            + "Accepted command = deposit, withdraw, hold")
+            + "Accepted command = deposit, withdrawal, hold")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
@@ -115,8 +114,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         if (is(commandParam, CurrentAccountApiConstants.COMMAND_DEPOSIT)) {
             final CommandWrapper commandRequest = builder.currentTransactionDeposit(accountId).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.COMMAND_WITHDRAW)) {
-            final CommandWrapper commandRequest = builder.currentTransactionWithdraw(accountId).build();
+        } else if (is(commandParam, CurrentAccountApiConstants.COMMAND_WITHDRAWAL)) {
+            final CommandWrapper commandRequest = builder.currentTransactionWithdrawal(accountId).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
         } else if (is(commandParam, CurrentAccountApiConstants.COMMAND_HOLD)) {
             final CommandWrapper commandRequest = builder.currentTransactionHold(accountId).build();
@@ -125,7 +124,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
         if (result == null) {
             throw new UnrecognizedQueryParamException(CurrentAccountApiConstants.COMMAND, commandParam,
-                    CurrentAccountApiConstants.COMMAND_DEPOSIT, CurrentAccountApiConstants.COMMAND_WITHDRAW,
+                    CurrentAccountApiConstants.COMMAND_DEPOSIT, CurrentAccountApiConstants.COMMAND_WITHDRAWAL,
                     CurrentAccountApiConstants.COMMAND_HOLD);
         }
         return result;

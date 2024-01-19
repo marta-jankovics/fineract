@@ -16,19 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.write;
+package org.apache.fineract.currentaccount.handler.transaction;
 
-import java.util.UUID;
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.commands.handler.NewCommandSourceHandler;
 
-public interface CurrentTransactionWriteService {
-
-    CommandProcessingResult deposit(UUID accountId, JsonCommand command);
-
-    CommandProcessingResult withdrawal(UUID accountId, JsonCommand command);
-
-    CommandProcessingResult hold(UUID accountId, JsonCommand command);
-
-    CommandProcessingResult release(UUID accountId, JsonCommand command);
-}
+public interface CurrentTransactionWithdrawalCommandHandler extends NewCommandSourceHandler {}

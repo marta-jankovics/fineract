@@ -90,7 +90,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
             @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
-        return currentAccountReadService.retrieveAll(PagedRequest.createFrom(page, size, sortOrder, orderBy));
+        return currentAccountReadService.retrieveAll(PagedRequest.createFrom(null));
     }
 
     @Override
