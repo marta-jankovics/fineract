@@ -39,39 +39,21 @@
             <column name="product_id" type="UUID">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="VARCHAR(50)">
+            <column name="status_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="account_type" type="VARCHAR(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="submitted_on_date" type="date">
-                <constraints nullable="false"/>
-            </column>
-            <column name="submitted_by_user_id" type="BIGINT">
-                    <constraints nullable="false"/>
-            </column>
-            <column name="cancelled_on_date" type="date"/>
-            <column name="cancelled_by_user_id" type="BIGINT"/>
             <column name="activated_on_date" type="date"/>
-            <column name="activated_by_user_id" type="BIGINT"/>
-            <column name="closed_on_date" type="date"/>
-            <column name="closed_by_user_id" type="BIGINT"/>
-            <column name="currency_code" type="VARCHAR(3)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="currency_digits" type="SMALLINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="currency_multiplesof" type="SMALLINT"/>
             <column defaultValueBoolean="false" name="allow_overdraft" type="boolean">
                 <constraints nullable="false"/>
             </column>
             <column name="overdraft_limit" type="DECIMAL(19, 6)"/>
-            <column defaultValueBoolean="false" name="enforce_min_required_balance" type="boolean">
+            <column name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column defaultValueBoolean="false" name="allow_force_transaction" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="min_required_balance" type="DECIMAL(19, 6)"/>
+            <column name="balance_calculation_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
             <column defaultValueNumeric="1" name="version" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -116,18 +98,6 @@
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_account"
                                  constraintName="FK_m_current_account_last_modified_by" deferrable="false" initiallyDeferred="false"
-                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
-                                 referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="cancelled_by_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_cancelled_by_user_id" deferrable="false" initiallyDeferred="false"
-                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
-                                 referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="activated_by_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_activated_by_user_id" deferrable="false" initiallyDeferred="false"
-                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
-                                 referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="closed_by_user_id" baseTableName="m_current_account"
-                                 constraintName="FK_m_current_account_closed_by_user_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="client_id" baseTableName="m_current_account"

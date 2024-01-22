@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
-import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
+import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
@@ -180,7 +180,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 } else {
                     throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
                 }
-            } else if (account.isEnforceMinRequiredBalance() && account.getMinRequiredBalance().compareTo(newAvailableBalance) > 0) {
+            } else if (account.getMinimumRequiredBalance() != null
+                    && account.getMinimumRequiredBalance().compareTo(newAvailableBalance) > 0) {
                 throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated",
                         "Violated minimum required balance!");
             }

@@ -69,23 +69,20 @@ public class CurrentAccountApiConstants {
     public static final String fieldOfficerIdParamName = "fieldOfficerId";
 
     public static final String submittedOnDateParamName = "submittedOnDate";
-    public static final String cancelledOnDateParamName = "cancelledOnDate";
-    public static final String activatedOnDateParamName = "activatedOnDate";
-    public static final String closedOnDateParamName = "closedOnDate";
+    public static final String actionDateParamName = "actionDate";
 
     public static final String activeParamName = "active";
     public static final String nameParamName = "name";
     public static final String shortNameParamName = "shortName";
     public static final String descriptionParamName = "description";
     public static final String currencyCodeParamName = "currencyCode";
-    public static final String digitsAfterDecimalParamName = "digitsAfterDecimal";
-    public static final String inMultiplesOfParamName = "inMultiplesOf";
+    public static final String currencyDigitsAfterDecimalParamName = "currencyDigitsAfterDecimal";
+    public static final String currencyInMultiplesOfParamName = "currencyInMultiplesOf";
     public static final String nominalAnnualInterestRateParamName = "nominalAnnualInterestRate";
     public static final String interestCompoundingPeriodTypeParamName = "interestCompoundingPeriodType";
     public static final String interestPostingPeriodTypeParamName = "interestPostingPeriodType";
     public static final String interestCalculationTypeParamName = "interestCalculationType";
     public static final String interestCalculationDaysInYearTypeParamName = "interestCalculationDaysInYearType";
-    public static final String minRequiredOpeningBalanceParamName = "minRequiredOpeningBalance";
     public static final String lockinPeriodFrequencyParamName = "lockinPeriodFrequency";
     public static final String lockinPeriodFrequencyTypeParamName = "lockinPeriodFrequencyType";
     public static final String withdrawalFeeAmountParamName = "withdrawalFeeAmount";
@@ -108,7 +105,7 @@ public class CurrentAccountApiConstants {
     public static final String overdraftLimitParamName = "overdraftLimit";
     public static final String nominalAnnualInterestRateOverdraftParamName = "nominalAnnualInterestRateOverdraft";
     public static final String minOverdraftForInterestCalculationParamName = "minOverdraftForInterestCalculation";
-    public static final String minRequiredBalanceParamName = "minRequiredBalance";
+    public static final String minimumRequiredBalanceParamName = "minimumRequiredBalance";
 
     public static final String maxAllowedLienLimitParamName = "maxAllowedLienLimit";
     public static final String lienAllowedParamName = "lienAllowed";

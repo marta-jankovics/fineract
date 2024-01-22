@@ -44,9 +44,9 @@ public class CalculateSnapshotBalanceTasklet implements Tasklet {
         try {
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
             List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
-                    .getLoanIdsWhereBalanceRecalculationRequired(tillDateTime);
+                    .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
             List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService
-                    .getLoanIdsWhereBalanceSnapshotNotCalculated();
+                    .getAccountIdsWhereBalanceSnapshotNotCalculated();
             currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
             for (UUID id : currentAccountBalanceIsBehindIds) {
                 currentAccountBalanceWriteService.updateBalance(id, tillDateTime);

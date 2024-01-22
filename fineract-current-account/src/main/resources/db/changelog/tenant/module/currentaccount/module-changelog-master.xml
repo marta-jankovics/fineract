@@ -29,4 +29,5 @@
   <include relativeToChangelogFile="true" file="parts/ca_0004_command_source.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0005_current_account_balance_snapshot.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0006_current_account_balance_calculation_job.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0007_entity_action.xml"/>
 </databaseChangeLog>

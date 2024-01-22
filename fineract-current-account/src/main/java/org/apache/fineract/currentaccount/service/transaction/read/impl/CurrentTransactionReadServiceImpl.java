@@ -52,7 +52,8 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
         CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountData(accountId);
         final List<PaymentTypeData> paymentTypeOptions = this.paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         CurrencyData currencyData = new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
-                currentAccountData.getDigitsAfterDecimal(), null, currentAccountData.getCurrencyDisplaySymbol(), null);
+                currentAccountData.getCurrencyDigitsAfterDecimal(), currentAccountData.getCurrencyInMultiplesOf(),
+                currentAccountData.getCurrencyDisplaySymbol(), null);
         return CurrentTransactionTemplateResponseData.builder() //
                 .accountNo(currentAccountData.getAccountNo()) //
                 .accountId(currentAccountData.getId()) //

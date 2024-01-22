@@ -42,10 +42,10 @@ public class CurrentTransactionData implements Serializable {
 
     // Currency data
     private final String currencyCode;
-    private final String currencyName;
-    private final String currencyDisplaySymbol;
     private final Integer currencyDigitsAfterDecimal;
     private final Integer currencyInMultiplesOf;
+    private final String currencyName;
+    private final String currencyDisplaySymbol;
 
     // Payment type data
     private final Long paymentTypeId;
@@ -53,51 +53,4 @@ public class CurrentTransactionData implements Serializable {
     private final String paymentTypeDescription;
     private final Boolean paymentTypeIsCashPayment;
     private final String paymentTypeCodeName;
-
-    public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
-            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime) {
-        this.id = id;
-        this.accountId = accountId;
-        this.externalId = externalId;
-        this.transactionType = transactionType;
-        this.transactionDate = transactionDate;
-        this.submittedOnDate = submittedOnDate;
-        this.transactionAmount = transactionAmount;
-        this.createdDateTime = createdDateTime;
-        currencyCode = null;
-        currencyName = null;
-        currencyDisplaySymbol = null;
-        currencyDigitsAfterDecimal = null;
-        currencyInMultiplesOf = null;
-        paymentTypeId = null;
-        paymentTypeName = null;
-        paymentTypeDescription = null;
-        paymentTypeIsCashPayment = null;
-        paymentTypeCodeName = null;
-    }
-
-    public CurrentTransactionData(UUID id, UUID accountId, ExternalId externalId, CurrentTransactionType transactionType,
-            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
-            String currencyCode, String currencyName, String currencyDisplaySymbol, Integer currencyDigitsAfterDecimal,
-            Integer currencyInMultiplesOf, Long paymentTypeId, String paymentTypeName, String paymentTypeDescription,
-            Boolean paymentTypeIsCashPayment, String paymentTypeCodeName) {
-        this.id = id;
-        this.accountId = accountId;
-        this.externalId = externalId;
-        this.transactionType = transactionType;
-        this.transactionDate = transactionDate;
-        this.submittedOnDate = submittedOnDate;
-        this.transactionAmount = transactionAmount;
-        this.createdDateTime = createdDateTime;
-        this.currencyCode = currencyCode;
-        this.currencyName = currencyName;
-        this.currencyDisplaySymbol = currencyDisplaySymbol;
-        this.currencyDigitsAfterDecimal = currencyDigitsAfterDecimal;
-        this.currencyInMultiplesOf = currencyInMultiplesOf;
-        this.paymentTypeId = paymentTypeId;
-        this.paymentTypeName = paymentTypeName;
-        this.paymentTypeDescription = paymentTypeDescription;
-        this.paymentTypeIsCashPayment = paymentTypeIsCashPayment;
-        this.paymentTypeCodeName = paymentTypeCodeName;
-    }
 }

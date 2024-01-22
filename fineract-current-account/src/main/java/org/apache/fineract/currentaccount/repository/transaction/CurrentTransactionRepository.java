@@ -33,23 +33,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, UUID> {
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, curr.code, curr.name, curr.displaySymbol, curr.decimalPlaces, curr.inMultiplesOf, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, PaymentType pt WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId and curr.code = ca.currency.code")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId AND ca.productId = ca.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
     CurrentTransactionData findByIdAndAccountId(@Param("accountId") UUID accountId, @Param("transactionId") UUID transactionId);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, curr.code, curr.name, curr.displaySymbol, curr.decimalPlaces, curr.inMultiplesOf, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, PaymentType pt WHERE t.accountId = :accountId AND ca.id = t.accountId and curr.code = ca.currency.code")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt WHERE t.accountId = :accountId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
     Page<CurrentTransactionData> findByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime")
-    List<CurrentTransactionData> getTransactionsFrom(@Param("accountId") UUID accountId,
-            @Param("fromDateTime") OffsetDateTime fromDateTime);
+    @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime")
+    List<CurrentTransaction> getTransactionsFrom(@Param("accountId") UUID accountId, @Param("fromDateTime") OffsetDateTime fromDateTime);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId")
-    List<CurrentTransactionData> getTransactions(@Param("accountId") UUID accountId);
+    @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId")
+    List<CurrentTransaction> getTransactions(@Param("accountId") UUID accountId);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate <= :tillDateTime")
-    List<CurrentTransactionData> getTransactions(@Param("accountId") UUID accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
+    @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate <= :tillDateTime")
+    List<CurrentTransaction> getTransactions(@Param("accountId") UUID accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate) FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime")
-    List<CurrentTransactionData> getTransactionsFromAndTill(@Param("accountId") UUID accountId,
+    @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime")
+    List<CurrentTransaction> getTransactionsFromAndTill(@Param("accountId") UUID accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 }

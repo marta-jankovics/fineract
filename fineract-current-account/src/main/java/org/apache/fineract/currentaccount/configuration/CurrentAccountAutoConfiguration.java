@@ -21,15 +21,16 @@ package org.apache.fineract.currentaccount.configuration;
 import org.apache.fineract.accounting.common.AccountingDropdownReadPlatformService;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.assembler.account.impl.CurrentAccountAssemblerImpl;
-import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
-import org.apache.fineract.currentaccount.assembler.account.transaction.impl.CurrentTransactionAssemblerImpl;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.assembler.product.impl.CurrentProductAssemblerImpl;
+import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
+import org.apache.fineract.currentaccount.assembler.transaction.impl.CurrentTransactionAssemblerImpl;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceSnapshotRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -54,9 +55,7 @@ import org.apache.fineract.currentaccount.validator.product.CurrentProductDataVa
 import org.apache.fineract.currentaccount.validator.product.impl.CurrentProductDataValidatorImpl;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.currentaccount.validator.transaction.impl.CurrentTransactionDataValidatorImpl;
-import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
-import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePlatformService;
@@ -114,9 +113,12 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentAccountAssembler.class)
-    public CurrentAccountAssembler currentAccountAssembler(PlatformSecurityContext context, FromJsonHelper fromApiJsonHelper,
-            ClientRepository clientRepository, CurrentProductRepository currentProductRepository, ExternalIdFactory externalIdFactory) {
-        return new CurrentAccountAssemblerImpl(context, fromApiJsonHelper, clientRepository, currentProductRepository, externalIdFactory);
+    public CurrentAccountAssembler currentAccountAssembler(ClientRepository clientRepository,
+            CurrentProductRepository currentProductRepository, ExternalIdFactory externalIdFactory,
+            CurrentAccountRepository currentAccountRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
+            EntityActionRepository entityActionRepository) {
+        return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, entityActionRepository,
+                currentAccountBalanceReadService, externalIdFactory);
     }
 
     @Bean

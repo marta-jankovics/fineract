@@ -24,11 +24,11 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyCodeParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyDigitsAfterDecimalParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyInMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.digitsAfterDecimalParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.inMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minRequiredBalanceParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.nameParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.shortNameParamName;
@@ -58,10 +58,10 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 @RequiredArgsConstructor
 public class CurrentProductDataValidatorImpl implements CurrentProductDataValidator {
 
-    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, nameParamName, shortNameParamName, descriptionParamName, currencyCodeParamName,
-                    digitsAfterDecimalParamName, inMultiplesOfParamName, accountingTypeParamName, allowOverdraftParamName,
-                    overdraftLimitParamName, allowForceTransactionParamName, minRequiredBalanceParamName, balanceCalculationTypeParamName));
+    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, nameParamName,
+            shortNameParamName, descriptionParamName, currencyCodeParamName, currencyDigitsAfterDecimalParamName,
+            currencyInMultiplesOfParamName, accountingTypeParamName, allowOverdraftParamName, overdraftLimitParamName,
+            allowForceTransactionParamName, minimumRequiredBalanceParamName, balanceCalculationTypeParamName));
 
     public void validateForCreate(final JsonCommand command) {
 
@@ -85,12 +85,12 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         final String currencyCode = command.stringValueOfParameterNamed(currencyCodeParamName);
         baseDataValidator.reset().parameter(currencyCodeParamName).value(currencyCode).notBlank();
 
-        final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(digitsAfterDecimalParamName);
-        baseDataValidator.reset().parameter(digitsAfterDecimalParamName).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
+        final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(currencyDigitsAfterDecimalParamName);
+        baseDataValidator.reset().parameter(currencyDigitsAfterDecimalParamName).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
 
-        if (command.parameterExists(inMultiplesOfParamName)) {
-            final Integer inMultiplesOf = command.integerValueOfParameterNamed(inMultiplesOfParamName, Locale.getDefault());
-            baseDataValidator.reset().parameter(inMultiplesOfParamName).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
+        if (command.parameterExists(currencyInMultiplesOfParamName)) {
+            final Integer inMultiplesOf = command.integerValueOfParameterNamed(currencyInMultiplesOfParamName, Locale.getDefault());
+            baseDataValidator.reset().parameter(currencyInMultiplesOfParamName).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
 
         if (command.parameterExists(descriptionParamName)) {
@@ -103,9 +103,9 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         baseDataValidator.reset().parameter(accountingTypeParamName).value(accountingRuleType).notNull()
                 .isOneOfEnumValues(AccountingRuleType.class);
 
-        if (command.parameterExists(minRequiredBalanceParamName)) {
-            final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamed(minRequiredBalanceParamName);
-            baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance).zeroOrPositiveAmount();
+        if (command.parameterExists(minimumRequiredBalanceParamName)) {
+            final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
+            baseDataValidator.reset().parameter(minimumRequiredBalanceParamName).value(minimumRequiredBalance).zeroOrPositiveAmount();
         }
 
         final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
@@ -156,19 +156,21 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             baseDataValidator.reset().parameter(currencyCodeParamName).value(currencyCode).notBlank();
         }
 
-        if (command.parameterExists(digitsAfterDecimalParamName)) {
-            final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(digitsAfterDecimalParamName);
-            baseDataValidator.reset().parameter(digitsAfterDecimalParamName).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
+        if (command.parameterExists(currencyDigitsAfterDecimalParamName)) {
+            final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(currencyDigitsAfterDecimalParamName);
+            baseDataValidator.reset().parameter(currencyDigitsAfterDecimalParamName).value(digitsAfterDecimal).notNull().inMinMaxRange(0,
+                    6);
         }
 
-        if (command.parameterExists(inMultiplesOfParamName)) {
-            final Integer inMultiplesOf = command.integerValueOfParameterNamed(inMultiplesOfParamName, Locale.getDefault());
-            baseDataValidator.reset().parameter(inMultiplesOfParamName).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
+        if (command.parameterExists(currencyInMultiplesOfParamName)) {
+            final Integer inMultiplesOf = command.integerValueOfParameterNamed(currencyInMultiplesOfParamName, Locale.getDefault());
+            baseDataValidator.reset().parameter(currencyInMultiplesOfParamName).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
 
-        if (command.parameterExists(minRequiredBalanceParamName)) {
-            final BigDecimal minRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minRequiredBalanceParamName);
-            baseDataValidator.reset().parameter(minRequiredBalanceParamName).value(minRequiredBalance);
+        if (command.parameterExists(minimumRequiredBalanceParamName)) {
+            final BigDecimal minimumRequiredBalance = command
+                    .bigDecimalValueOfParameterNamedDefaultToNullIfZero(minimumRequiredBalanceParamName);
+            baseDataValidator.reset().parameter(minimumRequiredBalanceParamName).value(minimumRequiredBalance);
         }
 
         if (command.parameterExists(allowOverdraftParamName)) {

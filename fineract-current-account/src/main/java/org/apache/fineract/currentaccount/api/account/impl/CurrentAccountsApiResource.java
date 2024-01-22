@@ -48,13 +48,14 @@ import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
+import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
-import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts")
@@ -85,12 +86,9 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n" + "\n" + "currentaccounts\n" + "\n" + "\n" + "currentaccounts")
-    public Page<CurrentAccountResponseData> retrieveAll(@QueryParam("page") @Parameter(description = "page") final Integer page,
-            @QueryParam("size") @Parameter(description = "size") final Integer size,
-            @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
-            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
+    public Page<CurrentAccountResponseData> retrieveAll(@Pagination Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
-        return currentAccountReadService.retrieveAll(PagedRequest.createFrom(null));
+        return currentAccountReadService.retrieveAll(pageable);
     }
 
     @Override
@@ -123,7 +121,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Submit new current application", description = "Submits new current application\n\n"
             + "Mandatory Fields: clientId, productId, accountNo, submittedOnDate\n\n" + "Optional Fields: externalId, submittedOnDate\n\n"
-            + "Inherited from Product (if not provided): enforceMinRequiredBalance, minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
+            + "Inherited from Product (if not provided): enforceminimumRequiredBalance, minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
     public CommandProcessingResult submitApplication(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentAccount().withJson(requestJson).build();
@@ -161,7 +159,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Close a current account:\n\n"
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
     public CommandProcessingResult handleCommands(@PathParam("externalId") @Parameter(description = "externalId") final String externalId,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {

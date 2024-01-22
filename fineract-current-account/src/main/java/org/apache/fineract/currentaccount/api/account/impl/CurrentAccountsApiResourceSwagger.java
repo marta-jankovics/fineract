@@ -33,7 +33,7 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "1")
         public Long clientId;
         @Schema(example = "1")
-        public Long productId;
+        public String productId;
         @Schema(example = "asdasd12")
         public String accountNo;
         @Schema(example = "en")
@@ -45,13 +45,15 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "11436b17-c690-4a30-8505-42a2c4eafb9d")
         public String externalId;
         @Schema(example = "false")
-        public Boolean enforceMinRequiredBalance;
+        public Boolean allowForceTransaction;
         @Schema(example = "10")
         public BigDecimal minimumRequiredBalance;
         @Schema(example = "false")
         public Boolean allowOverdraft;
         @Schema(example = "1000")
         public BigDecimal overdraftLimit;
+        @Schema(example = "LAZY")
+        public String balanceCalculationType;
     }
 
     @Schema(description = "PutCurrentAccountActionRequest")
@@ -61,8 +63,20 @@ public final class CurrentAccountsApiResourceSwagger {
 
         @Schema(example = "en")
         public String locale;
-        @Schema(example = "5.9999999999")
-        public Double nominalAnnualInterestRate;
+        @Schema(example = "asdasd12")
+        public String accountNo;
+        @Schema(example = "11436b17-c690-4a30-8505-42a2c4eafb9d")
+        public String externalId;
+        @Schema(example = "false")
+        public Boolean allowForceTransaction;
+        @Schema(example = "10")
+        public BigDecimal minimumRequiredBalance;
+        @Schema(example = "false")
+        public Boolean allowOverdraft;
+        @Schema(example = "1000")
+        public BigDecimal overdraftLimit;
+        @Schema(example = "LAZY")
+        public String balanceCalculationType;
     }
 
     @Schema(description = "PostCurrentAccountActionRequest")
@@ -75,6 +89,6 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "en")
         public String locale;
         @Schema(example = "05 September 2014")
-        public String activatedOnDate;
+        public String actionDate;
     }
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.assembler.account.transaction.impl;
+package org.apache.fineract.currentaccount.assembler.transaction.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionAmountParamName;
@@ -27,7 +27,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.fineract.currentaccount.assembler.account.transaction.CurrentTransactionAssembler;
+import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
@@ -35,7 +35,7 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
-import org.apache.fineract.portfolio.paymentdetail.domain.PaymentDetail;
+import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePlatformService;
 
 @RequiredArgsConstructor
@@ -48,7 +48,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     @Override
     public CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
-        final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
+        final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
         LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
         if (transactionDate == null) {
@@ -57,14 +57,14 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentDetail.getId(), CurrentTransactionType.DEPOSIT,
-                transactionDate, submittedOnDate, transactionAmount);
+        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.DEPOSIT, transactionDate,
+                submittedOnDate, transactionAmount);
     }
 
     @Override
     public CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
-        final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
+        final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
         LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
         if (transactionDate == null) {
@@ -73,14 +73,14 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentDetail.getId(), CurrentTransactionType.WITHDRAWAL,
+        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.WITHDRAWAL,
                 transactionDate, submittedOnDate, transactionAmount);
     }
 
     @Override
     public CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
-        final PaymentDetail paymentDetail = this.paymentDetailWritePlatformService.createAndPersistPaymentDetail(command, changes);
+        final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
         LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
         if (transactionDate == null) {
@@ -89,7 +89,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentDetail.getId(), CurrentTransactionType.AMOUNT_HOLD,
+        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.AMOUNT_HOLD,
                 transactionDate, submittedOnDate, transactionAmount);
     }
 
@@ -98,7 +98,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         ExternalId externalId = externalIdFactory.create();
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, holdTransaction.getPaymentDetailId(),
+        return CurrentTransaction.newInstance(account.getId(), externalId, holdTransaction.getPaymentTypeId(),
                 CurrentTransactionType.AMOUNT_RELEASE, actualDate, actualDate, holdTransaction.getTransactionAmount());
     }
 }

@@ -23,33 +23,26 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="fineract" id="1">
-            <createTable tableName="m_current_account_transaction">
-                <column name="id" type="UUID">
-                    <constraints nullable="false" primaryKey="true"/>
-                </column>
-                <column name="account_id" type="UUID">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="external_id" type="VARCHAR(100)">
-                    <constraints unique="true"/>
-                </column>
-                <column defaultValueComputed="NULL" name="payment_type_id" type="BIGINT"/>
-                <column name="transaction_type_enum" type="VARCHAR(50)">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="transaction_date" type="date">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="submitted_on_date" type="date">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="amount" type="DECIMAL(19, 6)">
-                    <constraints nullable="false"/>
-                </column>
-            </createTable>
+        <createTable tableName="m_entity_action">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
     </changeSet>
     <changeSet author="fineract" id="2" context="mysql">
-        <addColumn tableName="m_current_account_transaction">
+        <addColumn tableName="m_entity_action">
             <column name="created_on_utc" type="DATETIME">
                 <constraints nullable="false"/>
             </column>
@@ -65,7 +58,7 @@
         </addColumn>
     </changeSet>
     <changeSet author="fineract" id="2" context="postgresql">
-        <addColumn tableName="m_current_account_transaction">
+        <addColumn tableName="m_entity_action">
             <column name="created_on_utc" type="TIMESTAMP WITH TIME ZONE">
                 <constraints nullable="false"/>
             </column>
@@ -81,21 +74,13 @@
         </addColumn>
     </changeSet>
     <changeSet author="fineract" id="3">
-        <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_created_by" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_entity_action"
+                                 constraintName="FK_m_entity_action_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_product"
+                                 constraintName="FK_m_entity_action_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_account_id" deferrable="false" initiallyDeferred="false"
-                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
-                                 referencedTableName="m_current_account" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="payment_type_id" baseTableName="m_current_account_transaction"
-                                 constraintName="FK_m_current_account_transaction_payment_type_id" deferrable="false" initiallyDeferred="false"
-                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
-                                 referencedTableName="m_payment_type" validate="true"/>
     </changeSet>
 </databaseChangeLog>

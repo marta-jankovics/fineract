@@ -25,7 +25,6 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseDat
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
-import org.apache.fineract.portfolio.accountdetails.service.AccountEnumerations;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -44,15 +43,15 @@ public interface CurrentAccountResponseDataMapper {
 
     @Mapping(target = "currency", source = "currentAccountData", qualifiedByName = "currency")
     @Mapping(target = "status", source = "currentAccountData", qualifiedByName = "status")
-    @Mapping(target = "accountType", source = "currentAccountData", qualifiedByName = "accountType")
     @Mapping(target = "availableBalance", source = "availableBalance")
     @Mapping(target = "totalOnHoldBalance", source = "totalOnHoldBalance")
+    @Mapping(target = "balanceCalculationType", source = "currentAccountData", qualifiedByName = "balanceCalculationType")
     CurrentAccountResponseData map(CurrentAccountData currentAccountData, BigDecimal availableBalance, BigDecimal totalOnHoldBalance);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {
         return new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
-                currentAccountData.getDigitsAfterDecimal(), null, currentAccountData.getCurrencyDisplaySymbol(), null);
+                currentAccountData.getCurrencyDigitsAfterDecimal(), null, currentAccountData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("status")
@@ -60,9 +59,9 @@ public interface CurrentAccountResponseDataMapper {
         return currentAccountData.getStatus().toEnumOptionData();
     }
 
-    @Named("accountType")
-    default EnumOptionData mapAccountType(CurrentAccountData currentProductData) {
-        return AccountEnumerations.loanType(currentProductData.getAccountType());
+    @Named("balanceCalculationType")
+    default EnumOptionData mapBalanceCalculationType(CurrentAccountData currentAccountData) {
+        return currentAccountData.getBalanceCalculationType().toEnumOptionData();
     }
 
     List<CurrentAccountResponseData> map(List<CurrentAccountData> data);

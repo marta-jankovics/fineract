@@ -36,10 +36,10 @@ public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<C
     CurrentAccountBalanceData getBalance(@Param("accountId") UUID accountId);
 
     @Query("SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalanceSnapshot cabs, (SELECT ct.accountId, MAX(ct.createdDate) as createdDate FROM CurrentTransaction ct WHERE ct.createdDate <= :tillDateTime GROUP BY ct.accountId) lct WHERE ca.id = cabs.accountId AND lct.accountId = ca.id AND lct.createdDate > cabs.calculatedTill")
-    List<UUID> getLoanIdsWhereBalanceRecalculationRequired(@Param("tillDateTime") OffsetDateTime tillDateTime);
+    List<UUID> getAccountIdsWhereBalanceRecalculationRequired(@Param("tillDateTime") OffsetDateTime tillDateTime);
 
     Optional<CurrentAccountBalanceSnapshot> findByAccountId(UUID accountId);
 
     @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.id NOT IN (SELECT cabs.accountId FROM CurrentAccountBalanceSnapshot cabs)")
-    List<UUID> getLoanIdsWhereBalanceSnapshotNotCalculated();
+    List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated();
 }

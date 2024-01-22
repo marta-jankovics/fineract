@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.account.read;
+package org.apache.fineract.currentaccount.assembler.transaction;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import java.util.Map;
+import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
+import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
 
-public interface CurrentAccountBalanceReadService {
+public interface CurrentTransactionAssembler {
 
-    CurrentAccountBalanceData getBalance(UUID accountId);
+    CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime);
+    CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime);
+    CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated();
+    CurrentTransaction release(CurrentAccount account, CurrentTransaction command, Map<String, Object> changes);
 }

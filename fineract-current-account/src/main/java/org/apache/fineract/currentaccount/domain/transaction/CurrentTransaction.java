@@ -61,8 +61,8 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
 
-    @Column(name = "payment_detail_id")
-    private Long paymentDetailId;
+    @Column(name = "payment_type_id")
+    private Long paymentTypeId;
 
     @Enumerated
     @Column(name = "transaction_type_enum", nullable = false)

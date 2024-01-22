@@ -23,12 +23,13 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionRes
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionApi {
 
     CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
 
-    Page<CurrentTransactionResponseData> retrieveAll(UUID accountId, Integer page, Integer size, String orderBy, String sortOrder);
+    Page<CurrentTransactionResponseData> retrieveAll(UUID accountId, Pageable pageable);
 
     CurrentTransactionResponseData retrieveOne(UUID accountId, UUID transactionId);
 

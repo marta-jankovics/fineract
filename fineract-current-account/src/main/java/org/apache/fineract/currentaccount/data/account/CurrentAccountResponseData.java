@@ -37,21 +37,13 @@ public class CurrentAccountResponseData implements Serializable {
     private final Long clientId;
     private final UUID productId;
     private final EnumOptionData status;
-    private final EnumOptionData accountType;
-    private final LocalDate submittedOnDate;
-    private final Long submittedOnUserId;
-    private final LocalDate cancelledOnDate;
-    private final Long cancelledOnUserId;
     private final LocalDate activatedOnDate;
-    private final Long activatedOnUserId;
-    private final LocalDate closedOnDate;
-    private final Long closedOnUserId;
     private final CurrencyData currency;
     private final Boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
-    private final Boolean enforceMinRequiredBalance;
-    private final BigDecimal minRequiredBalance;
-    // Optional only filled when a particular account is selected
+    private final Boolean allowForceTransaction;
+    private final BigDecimal minimumRequiredBalance;
+    private final EnumOptionData balanceCalculationType;
     private final BigDecimal availableBalance;
     private final BigDecimal totalOnHoldBalance;
 }

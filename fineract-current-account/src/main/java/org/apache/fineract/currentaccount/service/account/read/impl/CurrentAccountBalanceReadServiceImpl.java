@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
-import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
+import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceSnapshotRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -52,10 +52,10 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
                         tillDateTime));
     }
 
-    private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransactionData>> fetchTransactions,
-            Function<OffsetDateTime, List<CurrentTransactionData>> fetchTransactionsFrom) {
+    private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
+            Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
         CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceSnapshotRepository.getBalance(accountId);
-        List<CurrentTransactionData> currentTransactionDataList;
+        List<CurrentTransaction> currentTransactionDataList;
         BigDecimal availableBalance;
         BigDecimal totalOnHoldBalance;
         OffsetDateTime calculatedTillDate;
@@ -80,7 +80,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
             currentTransactionDataList = fetchTransactionsFrom.apply(fromDateTime);
         }
 
-        for (CurrentTransactionData currentTransactionData : currentTransactionDataList) {
+        for (CurrentTransaction currentTransactionData : currentTransactionDataList) {
             switch (currentTransactionData.getTransactionType()) {
                 case DEPOSIT -> availableBalance = availableBalance.add(currentTransactionData.getTransactionAmount());
                 case WITHDRAWAL -> availableBalance = availableBalance.subtract(currentTransactionData.getTransactionAmount());
@@ -104,12 +104,12 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
     }
 
     @Override
-    public List<UUID> getLoanIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
-        return currentAccountBalanceSnapshotRepository.getLoanIdsWhereBalanceRecalculationRequired(tillDateTime);
+    public List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
+        return currentAccountBalanceSnapshotRepository.getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
     }
 
     @Override
-    public List<UUID> getLoanIdsWhereBalanceSnapshotNotCalculated() {
-        return currentAccountBalanceSnapshotRepository.getLoanIdsWhereBalanceSnapshotNotCalculated();
+    public List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated() {
+        return currentAccountBalanceSnapshotRepository.getAccountIdsWhereBalanceSnapshotNotCalculated();
     }
 }

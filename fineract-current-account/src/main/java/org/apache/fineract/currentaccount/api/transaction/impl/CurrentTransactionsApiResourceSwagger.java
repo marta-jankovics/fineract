@@ -40,7 +40,6 @@ public final class CurrentTransactionsApiResourceSwagger {
         public String dateFormat;
         @Schema(example = "1")
         public Integer paymentTypeId;
-        @Schema(example = "false", description = "Enforce execution by bypassing some restrictions")
-        public Boolean enforce;
+
     }
 }

@@ -16,20 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.assembler.account.transaction;
+package org.apache.fineract.currentaccount.enumeration.account;
 
-import java.util.Map;
-import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
-import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-
-public interface CurrentTransactionAssembler {
-
-    CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
-
-    CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
-
-    CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
-
-    CurrentTransaction release(CurrentAccount account, CurrentTransaction command, Map<String, Object> changes);
+public enum EntityActionType {
+    SUBMIT, ACTIVATE, CANCEL, CLOSE
 }

@@ -43,11 +43,12 @@ import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
+import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
-import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts/{accountId}/transactions")
@@ -78,13 +79,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @GET
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final UUID accountId,
-            @QueryParam("page") @Parameter(description = "page") final Integer page,
-            @QueryParam("size") @Parameter(description = "size") final Integer size,
-            @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
-            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final UUID accountId, @Pagination Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
-        return this.currentTransactionReadService.retrieveTransactionByAccountId(accountId, PagedRequest.createFrom(null));
+        return this.currentTransactionReadService.retrieveTransactionByAccountId(accountId, pageable);
     }
 
     @Override

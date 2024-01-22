@@ -49,9 +49,11 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(example = "1000")
         public BigDecimal overdraftLimit;
         @Schema(example = "true")
-        public Boolean enforceMinRequiredBalance;
+        public Boolean allowForceTransaction;
         @Schema(example = "100")
-        public BigDecimal minRequiredBalance;
+        public BigDecimal minimumRequiredBalance;
+        @Schema(example = "LAZY")
+        public String balanceCalculationType;
 
         private PostCurrentProductRequest() {}
     }
@@ -80,9 +82,11 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(example = "1000")
         public BigDecimal overdraftLimit;
         @Schema(example = "true")
-        public Boolean enforceMinRequiredBalance;
+        public Boolean allowForceTransaction;
         @Schema(example = "100")
-        public BigDecimal minRequiredBalance;
+        public BigDecimal minimumRequiredBalance;
+        @Schema(example = "LAZY")
+        public String balanceCalculationType;
 
         private PutCurrentProductRequest() {}
     }

@@ -86,7 +86,7 @@ public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     private boolean allowForceTransaction;
 
     @Column(name = "min_required_balance", precision = 6)
-    private BigDecimal minRequiredBalance;
+    private BigDecimal minimumRequiredBalance;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "balance_calculation_type", nullable = false)

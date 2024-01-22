@@ -58,7 +58,6 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         try {
             currentAccountDataValidator.validateForSubmit(command);
             final CurrentAccount account = currentAccountAssembler.assemble(command);
-            currentAccountRepository.saveAndFlush(account);
 
             // TODO: Business event handling
             // businessEventNotifierService.notifyPostBusinessEvent(new CurrentAccountCreateBusinessEvent(account));
@@ -88,9 +87,6 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
             currentAccountDataValidator.validateForUpdate(command, account);
             checkClientActive(account);
             Map<String, Object> changes = currentAccountAssembler.update(account, command);
-            if (!changes.isEmpty()) {
-                currentAccountRepository.saveAndFlush(account);
-            }
 
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //
@@ -184,13 +180,14 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         String param = null;
         Object[] msgArgs;
         Throwable checkEx = realCause == null ? dve : realCause;
-        if (checkEx.getMessage().contains("m_current_account_account_no_key")) {
+        String message = checkEx.getMessage();
+        if (message != null && message.contains("m_current_account_account_no_key")) {
             final String accountNo = command.stringValueOfParameterNamed("accountNo");
             msgCode += ".duplicate.accountNo";
             msg = "Current account with accountNo " + accountNo + " already exists";
             param = "accountNo";
             msgArgs = new Object[] { accountNo, dve };
-        } else if (checkEx.getMessage().contains("m_current_account_external_id_key")) {
+        } else if (message != null && message.contains("m_current_account_external_id_key")) {
             final String externalId = command.stringValueOfParameterNamed("externalId");
             msgCode += ".duplicate.externalId";
             msg = "Current account with externalId " + externalId + " already exists";

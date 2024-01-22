@@ -24,36 +24,30 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Data;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.portfolio.accountdetails.domain.AccountType;
 
 @Data
 public class CurrentAccountData implements Serializable {
 
-    // Current product data
+    // Current account data
     private final UUID id;
     private final String accountNo;
     private final ExternalId externalId;
     private final Long clientId;
     private final UUID productId;
     private final CurrentAccountStatus status;
-    private final AccountType accountType;
-    private final LocalDate submittedOnDate;
-    private final Long submittedOnUserId;
-    private final LocalDate cancelledOnDate;
-    private final Long cancelledOnUserId;
     private final LocalDate activatedOnDate;
-    private final Long activatedOnUserId;
-    private final LocalDate closedOnDate;
-    private final Long closedOnUserId;
-    private final String currencyCode;
-    private final Integer digitsAfterDecimal;
-    private final Integer inMultiplesOf;
     private final Boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
-    private final Boolean enforceMinRequiredBalance;
-    private final BigDecimal minRequiredBalance;
+    private final Boolean allowForceTransaction;
+    private final BigDecimal minimumRequiredBalance;
+    private final BalanceCalculationType balanceCalculationType;
 
+    // Current product data
+    private final String currencyCode;
+    private final Integer currencyDigitsAfterDecimal;
+    private final Integer currencyInMultiplesOf;
     // Currency data
     private final String currencyName;
     private final String currencyDisplaySymbol;
