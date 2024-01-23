@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
 
     @Override
     public Page<CurrentAccountResponseData> retrieveAll(Pageable pageable) {
-        return currentAccountResponseDataMapper.map(currentAccountRepository.findAllCurrentAccountData(pageable));
+        return currentAccountResponseDataMapper.map(currentAccountRepository.findAllCurrentAccountData(pageable),
+                currentAccountBalanceReadService::getBalance);
     }
 
     @Override
@@ -60,8 +62,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         }
         CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService.getBalance(accountId);
 
-        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData.getAvailableBalance(),
-                currentAccountBalanceSnapshotData.getTotalOnHoldBalance());
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData);
     }
 
     @Override
@@ -82,8 +83,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         }
         CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService
                 .getBalance(currentAccountData.getId());
-        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData.getAvailableBalance(),
-                currentAccountBalanceSnapshotData.getTotalOnHoldBalance());
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData);
     }
 
     @Override

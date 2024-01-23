@@ -23,23 +23,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
-import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalanceSnapshot;
+import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<CurrentAccountBalanceSnapshot, UUID> {
+public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<CurrentAccountBalance, UUID> {
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cabs.id, cabs.accountId, cabs.availableBalance, cabs.totalOnHoldBalance, cabs.calculatedTill, cabs.calculatedTillTransactionId) FROM CurrentAccountBalanceSnapshot cabs WHERE cabs.accountId = :accountId")
+    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cabs.id, cabs.accountId, cabs.accountBalance, cabs.holdAmount, ct.createdDate, cabs.calculatedTillTransactionId) FROM CurrentAccountBalance cabs, CurrentTransaction ct WHERE cabs.calculatedTillTransactionId = ct.id AND cabs.accountId = :accountId")
     CurrentAccountBalanceData getBalance(@Param("accountId") UUID accountId);
 
-    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalanceSnapshot cabs, (SELECT ct.accountId, MAX(ct.createdDate) as createdDate FROM CurrentTransaction ct WHERE ct.createdDate <= :tillDateTime GROUP BY ct.accountId) lct WHERE ca.id = cabs.accountId AND lct.accountId = ca.id AND lct.createdDate > cabs.calculatedTill")
+    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalance cabs, (SELECT ct.accountId, MAX(ct.createdDate) as createdDate FROM CurrentTransaction ct WHERE ct.createdDate <= :tillDateTime GROUP BY ct.accountId) lct, CurrentTransaction fct WHERE fct.id = cabs.calculatedTillTransactionId AND ca.id = cabs.accountId AND lct.accountId = ca.id AND lct.createdDate > fct.createdDate")
     List<UUID> getAccountIdsWhereBalanceRecalculationRequired(@Param("tillDateTime") OffsetDateTime tillDateTime);
 
-    Optional<CurrentAccountBalanceSnapshot> findByAccountId(UUID accountId);
+    Optional<CurrentAccountBalance> findByAccountId(UUID accountId);
 
-    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.id NOT IN (SELECT cabs.accountId FROM CurrentAccountBalanceSnapshot cabs)")
+    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.id NOT IN (SELECT cabs.accountId FROM CurrentAccountBalance cabs)")
     List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated();
 }

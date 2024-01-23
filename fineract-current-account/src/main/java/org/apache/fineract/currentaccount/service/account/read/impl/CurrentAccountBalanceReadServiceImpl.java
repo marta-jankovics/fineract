@@ -56,13 +56,13 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
             Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
         CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceSnapshotRepository.getBalance(accountId);
         List<CurrentTransaction> currentTransactionDataList;
-        BigDecimal availableBalance;
-        BigDecimal totalOnHoldBalance;
+        BigDecimal accountBalance;
+        BigDecimal holdAmount;
         OffsetDateTime calculatedTillDate;
         UUID calculatedTillTxnId;
         if (currentAccountBalanceSnapshotData == null) {
-            availableBalance = BigDecimal.ZERO;
-            totalOnHoldBalance = BigDecimal.ZERO;
+            accountBalance = BigDecimal.ZERO;
+            holdAmount = BigDecimal.ZERO;
             currentTransactionDataList = fetchTransactions.get();
             if (currentTransactionDataList.isEmpty()) {
                 calculatedTillDate = null;
@@ -72,8 +72,8 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
                 calculatedTillTxnId = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getId();
             }
         } else {
-            availableBalance = currentAccountBalanceSnapshotData.getAvailableBalance();
-            totalOnHoldBalance = currentAccountBalanceSnapshotData.getTotalOnHoldBalance();
+            accountBalance = currentAccountBalanceSnapshotData.getAccountBalance();
+            holdAmount = currentAccountBalanceSnapshotData.getHoldAmount();
             OffsetDateTime fromDateTime = currentAccountBalanceSnapshotData.getCalculatedTill();
             calculatedTillDate = currentAccountBalanceSnapshotData.getCalculatedTill();
             calculatedTillTxnId = currentAccountBalanceSnapshotData.getCalculatedTillTransactionId();
@@ -82,24 +82,16 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
         for (CurrentTransaction currentTransactionData : currentTransactionDataList) {
             switch (currentTransactionData.getTransactionType()) {
-                case DEPOSIT -> availableBalance = availableBalance.add(currentTransactionData.getTransactionAmount());
-                case WITHDRAWAL -> availableBalance = availableBalance.subtract(currentTransactionData.getTransactionAmount());
-                case AMOUNT_HOLD -> {
-
-                    totalOnHoldBalance = totalOnHoldBalance.add(currentTransactionData.getTransactionAmount());
-                    availableBalance = availableBalance.subtract(currentTransactionData.getTransactionAmount());
-                }
-                case AMOUNT_RELEASE -> {
-                    totalOnHoldBalance = totalOnHoldBalance.subtract(currentTransactionData.getTransactionAmount());
-                    availableBalance = availableBalance.add(currentTransactionData.getTransactionAmount());
-                }
+                case DEPOSIT -> accountBalance = accountBalance.add(currentTransactionData.getTransactionAmount());
+                case WITHDRAWAL -> accountBalance = accountBalance.subtract(currentTransactionData.getTransactionAmount());
+                case AMOUNT_HOLD -> holdAmount = holdAmount.add(currentTransactionData.getTransactionAmount());
+                case AMOUNT_RELEASE -> holdAmount = holdAmount.subtract(currentTransactionData.getTransactionAmount());
                 default -> throw new UnsupportedOperationException(currentTransactionData.getTransactionType().toString());
             }
             calculatedTillDate = currentTransactionData.getCreatedDateTime();
             calculatedTillTxnId = currentTransactionData.getId();
         }
-
-        return new CurrentAccountBalanceData(null, accountId, availableBalance, totalOnHoldBalance, calculatedTillDate,
+        return new CurrentAccountBalanceData(null, accountId, accountBalance, holdAmount, calculatedTillDate,
                 calculatedTillTxnId);
     }
 

@@ -44,8 +44,8 @@ import org.eclipse.persistence.annotations.Converter;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_current_account_transaction", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_transaction_external_id_key") })
+@Table(name = "m_current_transaction", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_transaction_external_id_key") })
 @Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
 public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
@@ -60,6 +60,12 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
 
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
+
+    @Column(name = "correlation_id")
+    private String correlationId;
+
+    @Column(name = "reference_id")
+    private String referenceId;
 
     @Column(name = "payment_type_id")
     private Long paymentTypeId;
@@ -77,9 +83,9 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     @Column(name = "amount", nullable = false, precision = 6)
     private BigDecimal transactionAmount;
 
-    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, Long paymentDetailId,
-            CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount) {
-        return new CurrentTransaction(null, accountId, externalId, paymentDetailId, transactionType, transactionDate, submittedOnDate,
+    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, String correlationId, UUID referenceId, Long paymentDetailId,
+                                                 CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount) {
+        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId!=null ? referenceId.toString() : null, paymentDetailId, transactionType, transactionDate, submittedOnDate,
                 amount);
     }
 }

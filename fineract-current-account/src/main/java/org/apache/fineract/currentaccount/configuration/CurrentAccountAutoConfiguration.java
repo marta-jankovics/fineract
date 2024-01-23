@@ -58,7 +58,6 @@ import org.apache.fineract.currentaccount.validator.transaction.impl.CurrentTran
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
-import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePlatformService;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -170,9 +169,8 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionAssembler.class)
-    public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
-            PaymentDetailWritePlatformService paymentDetailWritePlatformService) {
-        return new CurrentTransactionAssemblerImpl(externalIdFactory, paymentDetailWritePlatformService);
+    public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory) {
+        return new CurrentTransactionAssemblerImpl(externalIdFactory);
     }
 
     @Bean

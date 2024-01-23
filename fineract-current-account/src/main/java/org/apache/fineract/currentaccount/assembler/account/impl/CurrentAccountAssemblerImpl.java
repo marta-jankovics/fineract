@@ -397,8 +397,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
 
-        if (currentAccountBalanceData.getAvailableBalance().compareTo(BigDecimal.ZERO) != 0
-                || currentAccountBalanceData.getTotalOnHoldBalance().compareTo(BigDecimal.ZERO) != 0) {
+        if (currentAccountBalanceData.getAccountBalance().compareTo(BigDecimal.ZERO) != 0
+                || currentAccountBalanceData.getHoldAmount().compareTo(BigDecimal.ZERO) != 0) {
             throw new GeneralPlatformDomainRuleException("error.msg.account.close.with.balance",
                     "Account cannot be closed. Balance is not 0.", account.getId());
         }

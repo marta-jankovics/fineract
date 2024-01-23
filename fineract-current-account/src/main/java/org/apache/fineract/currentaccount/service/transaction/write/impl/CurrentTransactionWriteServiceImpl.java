@@ -172,7 +172,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     private void testBalance(CurrentAccount account, CurrentTransaction debitTransaction, boolean enforce) {
         if (!enforce) {
             final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
-            BigDecimal newAvailableBalance = currentAccountBalanceData.getAvailableBalance()
+            BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance().subtract(currentAccountBalanceData.getHoldAmount())
                     .subtract(debitTransaction.getTransactionAmount());
             if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
                 if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
@@ -208,7 +208,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         String param = null;
         Object[] msgArgs;
         Throwable checkEx = realCause == null ? dve : realCause;
-        if (checkEx.getMessage().contains("m_current_account_transaction_external_id_key")) {
+        if (checkEx.getMessage().contains("m_current_transaction_external_id_key")) {
             final String externalId = command.stringValueOfParameterNamed("externalId");
             msgCode += ".duplicate.externalId";
             msg = "Current account transaction with externalId " + externalId + " already exists";

@@ -44,6 +44,6 @@ public class CurrentAccountResponseData implements Serializable {
     private final Boolean allowForceTransaction;
     private final BigDecimal minimumRequiredBalance;
     private final EnumOptionData balanceCalculationType;
-    private final BigDecimal availableBalance;
-    private final BigDecimal totalOnHoldBalance;
+    private final BigDecimal accountBalance;
+    private final BigDecimal holdAmount;
 }

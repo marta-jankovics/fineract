@@ -20,13 +20,9 @@ package org.apache.fineract.currentaccount.domain.account;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,7 +31,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
-import org.eclipse.persistence.annotations.Convert;
 import org.eclipse.persistence.annotations.Converter;
 
 @Entity
@@ -43,31 +38,22 @@ import org.eclipse.persistence.annotations.Converter;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_current_account_balance_snapshot")
+@Table(name = "m_current_account_balance")
 @Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
-public class CurrentAccountBalanceSnapshot extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Getter(onMethod = @__(@Override))
-    @Convert(value = "uuidConverter")
-    private UUID id;
+public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Column(name = "account_id", nullable = false)
     private UUID accountId;
 
-    @Column(name = "available_balance", nullable = false, precision = 6)
-    private BigDecimal availableBalance;
+    @Column(name = "account_balance", nullable = false, precision = 6)
+    private BigDecimal accountBalance;
 
-    @Column(name = "total_on_hold_balance", nullable = false, precision = 6)
-    private BigDecimal totalOnHoldBalance;
-
-    @Column(name = "calculated_till_utc", nullable = false)
-    private OffsetDateTime calculatedTill;
+    @Column(name = "hold_amount", precision = 6)
+    private BigDecimal holdAmount;
 
     @Column(name = "calculated_till_transaction_id", nullable = false)
     private UUID calculatedTillTransactionId;
 
     @Version
-    private int version;
+    private Long version;
 }

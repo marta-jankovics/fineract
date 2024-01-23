@@ -30,8 +30,8 @@ public class CurrentAccountBalanceData implements Serializable {
     // Current account balance data
     private final UUID id;
     private final UUID accountId;
-    private final BigDecimal availableBalance;
-    private final BigDecimal totalOnHoldBalance;
+    private final BigDecimal accountBalance;
+    private final BigDecimal holdAmount;
     private final OffsetDateTime calculatedTill;
     private final UUID calculatedTillTransactionId;
 }

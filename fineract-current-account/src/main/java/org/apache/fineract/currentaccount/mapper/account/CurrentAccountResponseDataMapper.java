@@ -18,8 +18,7 @@
  */
 package org.apache.fineract.currentaccount.mapper.account;
 
-import java.math.BigDecimal;
-import java.util.List;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
@@ -30,23 +29,28 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentAccountResponseDataMapper {
 
-    default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data) {
-        return data.map(currentAccountData -> map(currentAccountData, null, null));
+    default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data, Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+        return data.map(currentAccountData -> map(currentAccountData, balanceDataFunction));
     }
 
-    default CurrentAccountResponseData map(CurrentAccountData currentAccountData) {
-        return map(currentAccountData, null, null);
+    default CurrentAccountResponseData map(CurrentAccountData currentAccountData, Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+        return map(currentAccountData, balanceDataFunction.apply(currentAccountData.getId()));
     }
 
+    @Mapping(target = "id", source = "currentAccountData.id")
     @Mapping(target = "currency", source = "currentAccountData", qualifiedByName = "currency")
     @Mapping(target = "status", source = "currentAccountData", qualifiedByName = "status")
-    @Mapping(target = "availableBalance", source = "availableBalance")
-    @Mapping(target = "totalOnHoldBalance", source = "totalOnHoldBalance")
     @Mapping(target = "balanceCalculationType", source = "currentAccountData", qualifiedByName = "balanceCalculationType")
-    CurrentAccountResponseData map(CurrentAccountData currentAccountData, BigDecimal availableBalance, BigDecimal totalOnHoldBalance);
+    @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
+    @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
+    CurrentAccountResponseData map(CurrentAccountData currentAccountData, CurrentAccountBalanceData balanceData);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {
@@ -63,6 +67,4 @@ public interface CurrentAccountResponseDataMapper {
     default EnumOptionData mapBalanceCalculationType(CurrentAccountData currentAccountData) {
         return currentAccountData.getBalanceCalculationType().toEnumOptionData();
     }
-
-    List<CurrentAccountResponseData> map(List<CurrentAccountData> data);
 }

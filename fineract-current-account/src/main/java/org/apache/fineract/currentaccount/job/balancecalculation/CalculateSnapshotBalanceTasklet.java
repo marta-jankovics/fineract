@@ -42,6 +42,7 @@ public class CalculateSnapshotBalanceTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
+            //TODO: make it configurable
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
             List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
                     .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);

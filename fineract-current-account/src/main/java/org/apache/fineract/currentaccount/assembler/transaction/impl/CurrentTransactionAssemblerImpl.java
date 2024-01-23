@@ -18,32 +18,33 @@
  */
 package org.apache.fineract.currentaccount.assembler.transaction.impl;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionAmountParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionDateParamName;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import static org.apache.fineract.infrastructure.core.filters.CorrelationHeaderFilter.CORRELATION_ID_KEY;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.apache.fineract.portfolio.paymentdetail.service.PaymentDetailWritePlatformService;
+import org.slf4j.MDC;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
 public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssembler {
 
     private final ExternalIdFactory externalIdFactory;
-    private final PaymentDetailWritePlatformService paymentDetailWritePlatformService;
 
     @Override
     public CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
@@ -57,7 +58,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.DEPOSIT, transactionDate,
+        return CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null, paymentTypeId, CurrentTransactionType.DEPOSIT, transactionDate,
                 submittedOnDate, transactionAmount);
     }
 
@@ -73,7 +74,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.WITHDRAWAL,
+        return CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null, paymentTypeId, CurrentTransactionType.WITHDRAWAL,
                 transactionDate, submittedOnDate, transactionAmount);
     }
 
@@ -89,7 +90,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, paymentTypeId, CurrentTransactionType.AMOUNT_HOLD,
+        return CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null, paymentTypeId, CurrentTransactionType.AMOUNT_HOLD,
                 transactionDate, submittedOnDate, transactionAmount);
     }
 
@@ -98,7 +99,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         ExternalId externalId = externalIdFactory.create();
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 
-        return CurrentTransaction.newInstance(account.getId(), externalId, holdTransaction.getPaymentTypeId(),
+        return CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), holdTransaction.getId(), holdTransaction.getPaymentTypeId(),
                 CurrentTransactionType.AMOUNT_RELEASE, actualDate, actualDate, holdTransaction.getTransactionAmount());
     }
 }
