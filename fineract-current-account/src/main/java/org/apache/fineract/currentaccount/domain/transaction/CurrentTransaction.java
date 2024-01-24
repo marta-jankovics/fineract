@@ -26,9 +26,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,23 +33,22 @@ import lombok.NoArgsConstructor;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
-import org.eclipse.persistence.annotations.Convert;
-import org.eclipse.persistence.annotations.Converter;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_transaction", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_transaction_external_id_key") })
-@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_transaction_external_id_key")})
 public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Getter(onMethod = @__(@Override))
-    @Convert(value = "uuidConverter")
     private UUID id;
 
     @Column(name = "account_id", nullable = false)
@@ -84,8 +80,8 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     private BigDecimal transactionAmount;
 
     public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, String correlationId, UUID referenceId,
-            Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
-            BigDecimal amount) {
+                                                 Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
+                                                 BigDecimal amount) {
         return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId != null ? referenceId.toString() : null,
                 paymentDetailId, transactionType, transactionDate, submittedOnDate, amount);
     }

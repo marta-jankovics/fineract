@@ -29,8 +29,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import java.math.BigDecimal;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,25 +37,23 @@ import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
-import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
-import org.eclipse.persistence.annotations.Convert;
-import org.eclipse.persistence.annotations.Converter;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
-        @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key") })
-@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+@Table(name = "m_current_product", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"}, name = "m_current_product_name_key"),
+        @UniqueConstraint(columnNames = {"short_name"}, name = "m_current_product_short_name_key")})
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Getter(onMethod = @__(@Override))
-    @Convert(value = "uuidConverter")
     private UUID id;
 
     @Column(name = "name", nullable = false, length = 100, unique = true)

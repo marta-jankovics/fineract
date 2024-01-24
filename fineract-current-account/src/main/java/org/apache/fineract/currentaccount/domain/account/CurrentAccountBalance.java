@@ -22,16 +22,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import java.math.BigDecimal;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
-import org.apache.fineract.infrastructure.eclipselink.converter.UUIDConverter;
-import org.eclipse.persistence.annotations.Converter;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -39,7 +38,6 @@ import org.eclipse.persistence.annotations.Converter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "m_current_account_balance")
-@Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
 public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Column(name = "account_id", nullable = false)
