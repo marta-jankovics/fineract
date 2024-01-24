@@ -31,6 +31,7 @@ import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
+import org.springframework.data.domain.Sort;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,13 +42,13 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
     @Override
     public CurrentAccountBalanceData getBalance(UUID accountId) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId),
+        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId, Sort.by(Sort.Direction.ASC, "createdDate","id")),
                 (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
     }
 
     @Override
     public CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId, tillDateTime),
+        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactionsTill(accountId, tillDateTime),
                 (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime,
                         tillDateTime));
     }

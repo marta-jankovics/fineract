@@ -48,13 +48,21 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
                     .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
             List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
             currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
-            for (UUID id : currentAccountBalanceIsBehindIds) {
-                currentAccountBalanceWriteService.updateBalance(id, tillDateTime);
-            }
+            updateBalances(currentAccountBalanceIsBehindIds, tillDateTime);
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
     }
 
+    private void updateBalances(List<UUID> currentAccountBalanceIsBehindIds, OffsetDateTime tillDateTime) {
+        for (UUID id : currentAccountBalanceIsBehindIds) {
+            try {
+                currentAccountBalanceWriteService.updateBalance(id, tillDateTime);
+            } catch (Exception e) {
+                //We don't care if it failed, the job can continue
+                log.warn("Updating account snapshot balance for account: {} is failed", id);
+            }
+        }
+    }
 }

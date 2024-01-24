@@ -18,8 +18,6 @@
  */
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -29,6 +27,9 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBal
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
