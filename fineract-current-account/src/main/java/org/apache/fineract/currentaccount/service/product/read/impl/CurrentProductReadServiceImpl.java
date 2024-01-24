@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.service.product.read.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingDropdownReadPlatformService;
+import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
@@ -38,6 +39,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,7 +50,6 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     private final CurrentProductRepository currentProductRepository;
     private final CurrentProductResponseDataMapper currentProductResponseDataMapper;
     private final CurrencyReadPlatformService currencyReadPlatformService;
-    private final AccountingDropdownReadPlatformService accountingDropdownReadPlatformService;
 
     @Override
     public List<CurrentProductResponseData> retrieveAll(Sort sort) {
@@ -72,7 +73,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     @Override
     public CurrentProductTemplateResponseData retrieveTemplate() {
         final List<CurrencyData> currencyOptions = this.currencyReadPlatformService.retrieveAllowedCurrencies();
-        final List<EnumOptionData> accountingRuleOptions = this.accountingDropdownReadPlatformService.retrieveAccountingRuleTypeOptions();
+        final List<EnumOptionData> accountingRuleOptions = Arrays.stream(AccountingRuleType.values()).map(art -> new EnumOptionData((long) art.getValue(), art.name(), art.toString())).toList();
 
         return new CurrentProductTemplateResponseData(currencyOptions, accountingRuleOptions);
     }

@@ -105,8 +105,8 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @POST
     @Operation(summary = "Create a Current Product", description = "Creates a Current Product\n\n"
-            + "Mandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal, accountingType, allowOverdraft, enforceminimumRequiredBalance\n\n"
-            + "Optional Fields: inMultiplesOf, overdraftLimit, minimumRequiredBalance")
+            + "Mandatory Fields: name, shortName, currencyCode, currencyDigitsAfterDecimal, accountingType, allowOverdraft, allowForceTransaction, balanceCalculationType, locale\n\n"
+            + "Optional Fields: externalId, currencyInMultiplesOf, overdraftLimit, minimumRequiredBalance, description")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PostCurrentProductRequest.class)))
     public CommandProcessingResult create(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentProduct().withJson(requestJson).build();
