@@ -108,7 +108,7 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     @Override
     public HashMap<String, Object> retrieveClientDetails(@NotNull Long clientId) {
         String dataTableName = "dt_client_details";
-        GenericResultsetData clientDetails = nonCoreDataService.retrieveDataTableGenericResultSet(dataTableName, clientId, null, null);
+        GenericResultsetData clientDetails = nonCoreDataService.retrieveDatatableGenericResultSet(dataTableName, clientId, null, null);
         if (clientDetails == null || clientDetails.getData().isEmpty()) {
             return null;
         }

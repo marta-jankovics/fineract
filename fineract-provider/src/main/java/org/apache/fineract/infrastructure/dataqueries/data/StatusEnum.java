@@ -19,78 +19,53 @@
 package org.apache.fineract.infrastructure.dataqueries.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
 public enum StatusEnum {
 
-    CREATE("create", 100), APPROVE("approve", 200), ACTIVATE("activate", 300), WITHDRAWN("withdraw", 400), REJECTED("reject", 500), CLOSE(
-            "close", 600), WRITE_OFF("write off", 601), RESCHEDULE("reschedule", 602), OVERPAY("overpay", 700), DISBURSE("disburse", 800);
+    CREATE("create", 100), //
+    APPROVE("approve", 200), //
+    ACTIVATE("activate", 300), //
+    WITHDRAWN("withdraw", 400), //
+    REJECTED("reject", 500), //
+    CLOSE("close", 600), //
+    WRITE_OFF("write off", 601), //
+    RESCHEDULE("reschedule", 602), //
+    OVERPAY("overpay", 700), //
+    DISBURSE("disburse", 800), //
+    ;
+
+    private static final StatusEnum[] VALUES = values();
+
+    private static final Map<Integer, StatusEnum> BY_ID = Arrays.stream(VALUES).collect(Collectors.toMap(StatusEnum::getValue, v -> v));
 
     private final String name;
 
-    private final Integer code;
+    private final Integer value;
 
-    public Integer getCode() {
-        return code;
+    public Integer getValue() {
+        return value;
     }
 
     StatusEnum(String name, Integer code) {
-
         this.name = name;
-        this.code = code;
-
+        this.value = code;
     }
 
     public static List<DatatableCheckStatusData> getStatusList() {
-
-        List<DatatableCheckStatusData> data = new ArrayList<DatatableCheckStatusData>();
-
-        for (StatusEnum status : StatusEnum.values()) {
-            data.add(new DatatableCheckStatusData(status.name, status.code));
+        List<DatatableCheckStatusData> data = new ArrayList<>();
+        for (StatusEnum status : VALUES) {
+            data.add(new DatatableCheckStatusData(status.name, status.value));
         }
-
         return data;
-
     }
 
-    public static StatusEnum fromInt(final Integer code) {
-        StatusEnum ret = null;
-        switch (code) {
-            case 100:
-                ret = StatusEnum.CREATE;
-            break;
-            case 200:
-                ret = StatusEnum.APPROVE;
-            break;
-            case 300:
-                ret = StatusEnum.ACTIVATE;
-            break;
-            case 400:
-                ret = StatusEnum.WITHDRAWN;
-            break;
-            case 500:
-                ret = StatusEnum.REJECTED;
-            break;
-            case 600:
-                ret = StatusEnum.CLOSE;
-            break;
-            case 601:
-                ret = StatusEnum.WRITE_OFF;
-            break;
-            case 602:
-                ret = StatusEnum.RESCHEDULE;
-            break;
-            case 700:
-                ret = StatusEnum.OVERPAY;
-            break;
-            case 800:
-                ret = StatusEnum.DISBURSE;
-            break;
-            default:
-            break;
-        }
-        return ret;
+    public static StatusEnum fromInt(final Integer value) {
+        return BY_ID.get(value);
     }
 
     public static EnumOptionData statusTypeEnum(final Integer id) {
@@ -98,8 +73,6 @@ public enum StatusEnum {
     }
 
     public static EnumOptionData statusType(final StatusEnum statusType) {
-        final EnumOptionData optionData = new EnumOptionData(statusType.getCode().longValue(), statusType.name(), statusType.name());
-        return optionData;
+        return statusType == null ? null : new EnumOptionData(statusType.getValue().longValue(), statusType.name(), statusType.name());
     }
-
 }

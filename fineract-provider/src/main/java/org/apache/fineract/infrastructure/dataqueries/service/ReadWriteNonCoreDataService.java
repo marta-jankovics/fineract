@@ -20,6 +20,7 @@ package org.apache.fineract.infrastructure.dataqueries.service;
 
 import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
@@ -34,7 +35,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface ReadWriteNonCoreDataService {
 
-    List<DatatableData> retrieveDatatableNames(String appTable);
+    List<DatatableData> retrieveDatatables(String appTable);
 
     DatatableData retrieveDatatable(String datatable);
 
@@ -42,7 +43,7 @@ public interface ReadWriteNonCoreDataService {
     void registerDatatable(JsonCommand command);
 
     @PreAuthorize(value = "hasAnyAuthority('ALL_FUNCTIONS', 'REGISTER_DATATABLE')")
-    void registerDatatable(String dataTableName, String applicationTableName, String entitySubType);
+    void registerDatatable(String datatable, EntityTables entity, String entitySubType);
 
     @PreAuthorize(value = "hasAnyAuthority('ALL_FUNCTIONS', 'REGISTER_DATATABLE')")
     void registerDatatable(JsonCommand command, String permissionTable);
@@ -50,33 +51,33 @@ public interface ReadWriteNonCoreDataService {
     @PreAuthorize(value = "hasAnyAuthority('ALL_FUNCTIONS', 'DEREGISTER_DATATABLE')")
     void deregisterDatatable(String datatable);
 
-    GenericResultsetData retrieveDataTableGenericResultSet(String datatable, Long appTableId, String order, Long id);
+    GenericResultsetData retrieveDatatableGenericResultSet(String datatable, Serializable appTableId, String order, Long datatableId);
 
     CommandProcessingResult createDatatable(JsonCommand command);
 
-    void updateDatatable(String datatableName, JsonCommand command);
+    void updateDatatable(String datatable, JsonCommand command);
 
-    void deleteDatatable(String datatableName);
+    void deleteDatatable(String datatable);
 
-    CommandProcessingResult createNewDatatableEntry(String datatable, Long appTableId, JsonCommand command);
+    CommandProcessingResult createNewDatatableEntry(String datatable, Serializable appTableId, JsonCommand command);
 
-    CommandProcessingResult createNewDatatableEntry(String datatable, Long appTableId, String json);
+    CommandProcessingResult createNewDatatableEntry(String datatable, Serializable appTableId, String json);
 
-    CommandProcessingResult createPPIEntry(String datatable, Long appTableId, JsonCommand command);
+    CommandProcessingResult createPPIEntry(String datatable, Serializable appTableId, JsonCommand command);
 
-    CommandProcessingResult updateDatatableEntryOneToOne(String datatable, Long appTableId, JsonCommand command);
+    CommandProcessingResult updateDatatableEntryOneToOne(String datatable, Serializable appTableId, JsonCommand command);
 
-    CommandProcessingResult updateDatatableEntryOneToMany(String datatable, Long appTableId, Long datatableId, JsonCommand command);
+    CommandProcessingResult updateDatatableEntryOneToMany(String datatable, Serializable appTableId, Long datatableId, JsonCommand command);
 
-    CommandProcessingResult deleteDatatableEntries(String datatable, Long appTableId, JsonCommand command);
+    CommandProcessingResult deleteDatatableEntries(String datatable, Serializable appTableId, JsonCommand command);
 
-    CommandProcessingResult deleteDatatableEntry(String datatable, Long appTableId, Long datatableId, JsonCommand command);
+    CommandProcessingResult deleteDatatableEntry(String datatable, Serializable appTableId, Long datatableId, JsonCommand command);
 
-    String getTableName(String Url);
+    String parseTableName(String url);
 
-    String getDataTableName(String Url);
+    String parseDatatableName(String url);
 
-    Long countDatatableEntries(String datatableName, Long appTableId, String foreignKeyColumn);
+    Long countDatatableEntries(String datatable, Serializable appTableId, EntityTables entity);
 
     List<JsonObject> queryDataTable(@NotNull String datatable, @NotNull String columnName, String columnValue,
             @NotNull String resultColumns);

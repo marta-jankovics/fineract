@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -60,9 +59,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         if (currentAccountData == null) {
             throw new CurrentAccountNotFoundException(accountId);
         }
-        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService.getBalance(accountId);
-
-        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData);
+        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountId);
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceData);
     }
 
     @Override
@@ -81,9 +79,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         if (currentAccountData == null) {
             throw new CurrentAccountNotFoundException(externalId);
         }
-        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceReadService
-                .getBalance(currentAccountData.getId());
-        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceSnapshotData);
+        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(currentAccountData.getId());
+        return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceData);
     }
 
     @Override

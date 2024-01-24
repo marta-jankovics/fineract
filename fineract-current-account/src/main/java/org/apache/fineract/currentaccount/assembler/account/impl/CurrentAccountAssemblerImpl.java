@@ -149,7 +149,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
-        //TODO: Would be better to not flush
+        // TODO: Would be better to not flush
         currentAccountRepository.saveAndFlush(account);
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
@@ -230,7 +230,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         validateAccountValuesWithProduct(product, account);
 
         if (!actualChanges.isEmpty()) {
-            //TODO: Would be better to not flush
+            // TODO: Would be better to not flush
             currentAccountRepository.saveAndFlush(account);
         }
 

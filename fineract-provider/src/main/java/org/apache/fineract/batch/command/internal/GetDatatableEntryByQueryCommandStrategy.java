@@ -88,11 +88,11 @@ public class GetDatatableEntryByQueryCommandStrategy implements CommandStrategy 
             }
         }
 
-        String dataTableName = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
+        String datatable = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
 
         // Calls 'queryValues' function from 'DatatablesApiResource' to
         // get the datatable details based on the filters
-        responseBody = dataTablesApiResource.queryValues(dataTableName, columnFilter, valueFilter, resultColumns, parameterizedUriInfo);
+        responseBody = dataTablesApiResource.queryValues(datatable, columnFilter, valueFilter, resultColumns, parameterizedUriInfo);
 
         response.setStatusCode(HttpStatus.SC_OK);
 

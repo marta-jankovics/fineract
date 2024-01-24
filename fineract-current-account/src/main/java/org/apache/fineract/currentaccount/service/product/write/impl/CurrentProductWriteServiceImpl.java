@@ -57,7 +57,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             currentProductRepository.saveAndFlush(product);
 
             return new CommandProcessingResultBuilder() //
-                    .withEntityUUID(product.getId()) //
+                    .withResourceIdentifier(product.getId()) //
                     .build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
@@ -79,7 +79,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             final Map<String, Object> changes = currentProductAssembler.update(product, command);
 
             return new CommandProcessingResultBuilder() //
-                    .withEntityUUID(product.getId()) //
+                    .withResourceIdentifier(product.getId()) //
                     .with(changes).build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
@@ -99,7 +99,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             }
             this.currentProductRepository.deleteById(productId);
             return new CommandProcessingResultBuilder() //
-                    .withEntityUUID(productId) //
+                    .withResourceIdentifier(productId) //
                     .build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(null, e.getMostSpecificCause(), e);

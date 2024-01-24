@@ -24,8 +24,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="fineract" id="1">
         <addColumn tableName="m_portfolio_command_source">
-            <column name="entityUUID" type="varchar(36)"/>
-            <column name="transactionUUID" type="varchar(36)"/>
+            <column name="resource_identifier" type="varchar(100)"/>
         </addColumn>
     </changeSet>
 </databaseChangeLog>

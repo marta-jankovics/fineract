@@ -124,8 +124,8 @@ public class DatatableCommandFromApiJsonDeserializer {
 
         final JsonElement element = this.fromApiJsonHelper.parse(json);
 
-        final String datatableName = this.fromApiJsonHelper.extractStringNamed(API_PARAM_DATATABLE_NAME, element);
-        baseDataValidator.reset().parameter(API_PARAM_DATATABLE_NAME).value(datatableName).notBlank().notExceedingLengthOf(50)
+        final String datatable = this.fromApiJsonHelper.extractStringNamed(API_PARAM_DATATABLE_NAME, element);
+        baseDataValidator.reset().parameter(API_PARAM_DATATABLE_NAME).value(datatable).notBlank().notExceedingLengthOf(50)
                 .matchesRegularExpression(DATATABLE_NAME_REGEX_PATTERN);
 
         final String apptableName = this.fromApiJsonHelper.extractStringNamed(API_PARAM_APPTABLE_NAME, element);

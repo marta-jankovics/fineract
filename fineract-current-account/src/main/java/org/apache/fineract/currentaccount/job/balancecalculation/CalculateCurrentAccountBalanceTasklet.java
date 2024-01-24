@@ -34,7 +34,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CalculateSnapshotBalanceTasklet implements Tasklet {
+public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
@@ -42,12 +42,11 @@ public class CalculateSnapshotBalanceTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            //TODO: make it configurable
+            // TODO: make it configurable
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
             List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
                     .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
-            List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService
-                    .getAccountIdsWhereBalanceSnapshotNotCalculated();
+            List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
             currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
             for (UUID id : currentAccountBalanceIsBehindIds) {
                 currentAccountBalanceWriteService.updateBalance(id, tillDateTime);

@@ -24,7 +24,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -37,7 +37,7 @@ import org.eclipse.persistence.annotations.Converter;
 
 @Entity
 @Table(name = "m_portfolio_command_source")
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
 public class CommandSource extends AbstractPersistableCustom<Long> {
 
@@ -129,27 +129,21 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
     @Column(name = "result_status_code")
     private Integer resultStatusCode;
 
-    @Column(name = "entityUUID")
-    private String entityUUID;
+    @Column(name = "resource_identifier")
+    private String resourceIdentifier;
 
-    @Column(name = "transactionUUID")
-    private String transactionUUID;
+    protected CommandSource() {
+        //
+    }
 
     public static CommandSource fullEntryFrom(final CommandWrapper wrapper, final JsonCommand command, final AppUser maker,
             String idempotencyKey, Integer status) {
         OffsetDateTime madeOnDate = DateUtils.getAuditOffsetDateTime();
-        // TODO: workaround till https://github.com/eclipse-ee4j/eclipselink/issues/2031 got fixed
-        String entityUUID = command.getResourceUUID() != null ? command.getResourceUUID().toString() : null;
-        String transactionUUID = command.getTransactionUUID() != null ? command.getTransactionUUID().toString() : null;
         return new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getOfficeId(), command.getGroupId(),
                 command.getClientId(), command.getLoanId(), command.getSavingsId(), wrapper.getHref(), command.entityId(),
                 command.subentityId(), command.json(), maker, madeOnDate, null, null, status, command.getProductId(),
                 command.getTransactionId(), command.getCreditBureauId(), command.getOrganisationCreditBureauId(), command.getJobName(),
-                idempotencyKey, null, null, null, null, entityUUID, transactionUUID);
-    }
-
-    protected CommandSource() {
-        //
+                idempotencyKey, null, null, null, null, command.getResourceIdentifier());
     }
 
     public Long getCreditBureauId() {
@@ -306,6 +300,14 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         this.resultStatusCode = resultStatusCode;
     }
 
+    public String getResourceIdentifier() {
+        return resourceIdentifier;
+    }
+
+    public void setResourceIdentifier(String resourceIdentifier) {
+        this.resourceIdentifier = resourceIdentifier;
+    }
+
     public void markAsAwaitingApproval() {
         this.status = CommandProcessingResultType.AWAITING_APPROVAL.getValue();
     }
@@ -338,17 +340,6 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         this.resourceExternalId = result.getResourceExternalId();
         this.subResourceId = result.getSubResourceId();
         this.subResourceExternalId = result.getSubResourceExternalId();
-        this.entityUUID = result.getResourceUUID() != null ? result.getResourceUUID().toString() : null;
-        this.transactionUUID = result.getTransactionUUID() != null ? result.getTransactionUUID().toString() : null;
-    }
-
-    public UUID getEntityUUID() {
-        // TODO: workaround till https://github.com/eclipse-ee4j/eclipselink/issues/2031 got fixed
-        return entityUUID != null ? UUID.fromString(entityUUID) : null;
-    }
-
-    public UUID getTransactionUUID() {
-        // TODO: workaround till https://github.com/eclipse-ee4j/eclipselink/issues/2031 got fixed
-        return transactionUUID != null ? UUID.fromString(transactionUUID) : null;
+        this.resourceIdentifier = result.getResourceIdentifier();
     }
 }

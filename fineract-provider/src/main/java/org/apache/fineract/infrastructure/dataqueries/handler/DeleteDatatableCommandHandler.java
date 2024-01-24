@@ -40,8 +40,8 @@ public class DeleteDatatableCommandHandler implements NewCommandSourceHandler {
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        final String datatableName = command.getUrl().replaceAll("/datatables/", "");
-        this.writePlatformService.deleteDatatable(datatableName);
-        return new CommandProcessingResultBuilder().withCommandId(command.commandId()).withResourceIdAsString(datatableName).build();
+        final String datatable = command.getUrl().replaceAll("/datatables/", "");
+        this.writePlatformService.deleteDatatable(datatable);
+        return new CommandProcessingResultBuilder().withCommandId(command.commandId()).withResourceIdentifier(datatable).build();
     }
 }

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 
 public enum EntityTables {
 
@@ -47,6 +48,9 @@ public enum EntityTables {
     SAVINGS("m_savings_account", "savings_account_id", "id", CREATE, APPROVE, ACTIVATE, WITHDRAWN, REJECTED, CLOSE), //
     SAVINGS_TRANSACTION("m_savings_account_transaction", "savings_transaction_id", "id"), //
     SHARE_PRODUCT("m_share_product", "share_product_id", "id"), //
+    CURRENT_PRODUCT("m_current_product", "current_product_id", "id", JdbcJavaType.VARCHAR), //
+    CURRENT("m_current_account", "current_account_id", "id", JdbcJavaType.VARCHAR), //
+    CURRENT_TRANSACTION("m_current_transaction", "current_transaction_id", "id", JdbcJavaType.VARCHAR), //
     ;
 
     public static final EntityTables[] VALUES = values();
@@ -65,16 +69,29 @@ public enum EntityTables {
     private final String foreignKeyColumnNameOnDatatable;
     @NotNull
     private final String refColumn; // referenced column name on apptable
+    @NotNull
+    private final JdbcJavaType refColumnType; // referenced column type on apptable
 
     private final ImmutableList<StatusEnum> checkStatuses;
 
     EntityTables(@NotNull String name, @NotNull String apptableName, @NotNull String foreignKeyColumnNameOnDatatable,
-            @NotNull String refColumn, StatusEnum... statuses) {
+            @NotNull String refColumn, @NotNull JdbcJavaType refColumnType, StatusEnum... statuses) {
         this.name = name;
         this.apptableName = apptableName;
         this.foreignKeyColumnNameOnDatatable = foreignKeyColumnNameOnDatatable;
         this.refColumn = refColumn;
+        this.refColumnType = refColumnType;
         this.checkStatuses = statuses == null ? ImmutableList.of() : ImmutableList.copyOf(statuses);
+    }
+
+    EntityTables(@NotNull String name, @NotNull String foreignKeyColumnNameOnDatatable, @NotNull String refColumn,
+            @NotNull JdbcJavaType refColumnType, StatusEnum... statuses) {
+        this(name, name, foreignKeyColumnNameOnDatatable, refColumn, refColumnType, statuses);
+    }
+
+    EntityTables(@NotNull String name, @NotNull String apptableName, @NotNull String foreignKeyColumnNameOnDatatable,
+            @NotNull String refColumn, StatusEnum... statuses) {
+        this(name, apptableName, foreignKeyColumnNameOnDatatable, refColumn, JdbcJavaType.BIGINT, statuses);
     }
 
     EntityTables(@NotNull String name, @NotNull String foreignKeyColumnNameOnDatatable, @NotNull String refColumn, StatusEnum... statuses) {
@@ -99,6 +116,11 @@ public enum EntityTables {
     @NotNull
     public String getRefColumn() {
         return refColumn;
+    }
+
+    @NotNull
+    public JdbcJavaType getRefColumnType() {
+        return refColumnType;
     }
 
     public List<StatusEnum> getCheckStatuses() {
@@ -130,7 +152,7 @@ public enum EntityTables {
 
     @NotNull
     public static List<Integer> getCheckStatusCodes(String name) {
-        return getCheckStatuses(name).stream().map(StatusEnum::getCode).toList();
+        return getCheckStatuses(name).stream().map(StatusEnum::getValue).toList();
     }
 
     @NotNull

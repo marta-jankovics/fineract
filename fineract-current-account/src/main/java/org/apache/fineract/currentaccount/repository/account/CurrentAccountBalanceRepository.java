@@ -30,7 +30,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<CurrentAccountBalance, UUID> {
+public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAccountBalance, UUID> {
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cabs.id, cabs.accountId, cabs.accountBalance, cabs.holdAmount, ct.createdDate, cabs.calculatedTillTransactionId) FROM CurrentAccountBalance cabs, CurrentTransaction ct WHERE cabs.calculatedTillTransactionId = ct.id AND cabs.accountId = :accountId")
     CurrentAccountBalanceData getBalance(@Param("accountId") UUID accountId);
@@ -41,5 +41,5 @@ public interface CurrentAccountBalanceSnapshotRepository extends JpaRepository<C
     Optional<CurrentAccountBalance> findByAccountId(UUID accountId);
 
     @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.id NOT IN (SELECT cabs.accountId FROM CurrentAccountBalance cabs)")
-    List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated();
+    List<UUID> getAccountIdsWhereBalanceNotCalculated();
 }

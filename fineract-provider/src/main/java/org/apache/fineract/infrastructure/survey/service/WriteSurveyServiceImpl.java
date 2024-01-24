@@ -41,13 +41,11 @@ public class WriteSurveyServiceImpl implements WriteSurveyService {
     @Override
     @Transactional
     public CommandProcessingResult registerSurvey(JsonCommand command) {
-
-        final String dataTableName = this.readWriteNonCoreDataService.getDataTableName(command.getUrl());
+        final String dataTableName = this.readWriteNonCoreDataService.parseDatatableName(command.getUrl());
         final String permissionSql = this.getPermissionSql(dataTableName);
         this.readWriteNonCoreDataService.registerDatatable(command, permissionSql);
 
         return CommandProcessingResult.commandOnlyResult(command.commandId());
-
     }
 
     private String getPermissionSql(final String dataTableName) {
@@ -73,8 +71,6 @@ public class WriteSurveyServiceImpl implements WriteSurveyService {
     @Transactional
     @Override
     public CommandProcessingResult fullFillSurvey(final String dataTableName, final Long appTableId, final JsonCommand command) {
-
         return readWriteNonCoreDataService.createPPIEntry(dataTableName, appTableId, command);
     }
-
 }

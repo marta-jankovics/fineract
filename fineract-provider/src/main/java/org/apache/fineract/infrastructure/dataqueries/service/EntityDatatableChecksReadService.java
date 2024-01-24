@@ -18,19 +18,23 @@
  */
 package org.apache.fineract.infrastructure.dataqueries.service;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.apache.fineract.infrastructure.core.service.Page;
 import org.apache.fineract.infrastructure.core.service.SearchParameters;
 import org.apache.fineract.infrastructure.dataqueries.data.DatatableData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityDataTableChecksData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityDataTableChecksTemplateData;
+import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
+import org.apache.fineract.infrastructure.dataqueries.data.StatusEnum;
 
 public interface EntityDatatableChecksReadService {
 
     EntityDataTableChecksTemplateData retrieveTemplate();
 
-    List<DatatableData> retrieveTemplates(Long status, String entity, Long productId);
+    List<DatatableData> retrieveTemplates(@NotNull StatusEnum status, @NotNull EntityTables entity, Long productId);
 
-    Page<EntityDataTableChecksData> retrieveAll(SearchParameters searchParameters, Long status, String entity, Long productLoanId);
+    Page<EntityDataTableChecksData> retrieveAll(@NotNull SearchParameters searchParameters, StatusEnum status, EntityTables entity,
+            Long productId);
 
 }

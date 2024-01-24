@@ -47,14 +47,13 @@ public class CommandWrapperBuilder {
     private Long organisationCreditBureauId;
     private String jobName;
     private String idempotencyKey;
-    private UUID entityUUID;
-    private UUID transactionUUID;
+    private String entityIdentifier;
 
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "TODO: fix this!")
     public CommandWrapper build() {
         return new CommandWrapper(null, this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId, this.actionName,
                 this.entityName, this.entityId, this.subentityId, this.href, this.json, this.transactionId, this.productId,
-                this.creditBureauId, this.organisationCreditBureauId, this.jobName, this.idempotencyKey, entityUUID, transactionUUID);
+                this.creditBureauId, this.organisationCreditBureauId, this.jobName, this.idempotencyKey, entityIdentifier);
     }
 
     public CommandWrapperBuilder updateCreditBureau() {
@@ -3671,7 +3670,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder updateCurrentProduct(final UUID productId) {
         this.actionName = "UPDATE";
         this.entityName = "CURRENTPRODUCT";
-        this.entityUUID = productId;
+        this.entityIdentifier = productId == null ? null : productId.toString();
         this.href = "/currentproducts/" + productId;
         return this;
     }
@@ -3679,7 +3678,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder deleteCurrentProduct(final UUID productId) {
         this.actionName = "DELETE";
         this.entityName = "CURRENTPRODUCT";
-        this.entityUUID = productId;
+        this.entityIdentifier = productId == null ? null : productId.toString();
         this.href = "/currentproducts/" + productId;
         return this;
     }
@@ -3694,7 +3693,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder updateCurrentAccount(final UUID accountId) {
         this.actionName = "UPDATE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId;
         return this;
     }
@@ -3702,7 +3701,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder deleteCurrentAccount(final UUID accountId) {
         this.actionName = "DELETE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId;
         return this;
     }
@@ -3710,7 +3709,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder rejectCurrentAccountApplication(final UUID accountId) {
         this.actionName = "REJECT";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=reject";
         return this;
     }
@@ -3718,7 +3717,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder cancelCurrentAccountApplication(final UUID accountId) {
         this.actionName = "CANCEL";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=cancel";
         return this;
     }
@@ -3726,7 +3725,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder approveCurrentAccountApplication(final UUID accountId) {
         this.actionName = "APPROVE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=approve";
         return this;
     }
@@ -3734,7 +3733,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder undoCurrentAccountApplication(final UUID accountId) {
         this.actionName = "APPROVALUNDO";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=undoApproval";
         return this;
     }
@@ -3742,7 +3741,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder currentAccountActivation(final UUID accountId) {
         this.actionName = "ACTIVATE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=activate";
         return this;
     }
@@ -3750,7 +3749,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder closeCurrentAccountApplication(final UUID accountId) {
         this.actionName = "CLOSE";
         this.entityName = "CURRENTACCOUNT";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "?command=close";
         return this;
     }
@@ -3758,7 +3757,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder currentTransactionDeposit(final UUID accountId) {
         this.actionName = "DEPOSIT";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
@@ -3766,7 +3765,7 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder currentTransactionWithdrawal(final UUID accountId) {
         this.actionName = "WITHDRAWAL";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
@@ -3774,17 +3773,17 @@ public class CommandWrapperBuilder {
     public CommandWrapperBuilder currentTransactionHold(final UUID accountId) {
         this.actionName = "HOLD";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityUUID = accountId;
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionRelease(final UUID accountId, final UUID transactionUUID) {
+    public CommandWrapperBuilder currentTransactionRelease(final UUID accountId, final UUID transactionId) {
         this.actionName = "RELEASE";
         this.entityName = "CURRENTTRANSACTION";
-        this.entityUUID = accountId;
-        this.transactionUUID = transactionUUID;
-        this.href = "/currentaccounts/" + accountId + "/transactions";
+        this.entityIdentifier = accountId == null ? null : accountId.toString();
+        this.transactionId = transactionId == null ? null : transactionId.toString();
+        this.href = "/currentaccounts/" + accountId + "/transactions/" + transactionId;
         return this;
     }
 }

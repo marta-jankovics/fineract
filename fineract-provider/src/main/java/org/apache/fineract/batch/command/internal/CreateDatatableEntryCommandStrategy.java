@@ -50,12 +50,12 @@ public class CreateDatatableEntryCommandStrategy implements CommandStrategy {
     public BatchResponse execute(BatchRequest request, @SuppressWarnings("unused") UriInfo uriInfo) {
         final List<String> pathParameters = Splitter.on('/').splitToList(relativeUrlWithoutVersion(request));
         // Pluck out the datatable name & loanId out of the relative path
-        final String datatableName = pathParameters.get(1);
+        final String datatable = pathParameters.get(1);
         final Long loanId = Long.parseLong(pathParameters.get(2));
 
         // Calls 'createDatatableEntry' function from 'DatatablesApiResource' to create a datatable entry on an existing
         // loan
-        final String responseBody = datatablesApiResource.createDatatableEntry(datatableName, loanId, request.getBody());
+        final String responseBody = datatablesApiResource.createDatatableEntry(datatable, loanId, request.getBody());
 
         // Create the response after datatable entry is successfully created
         return new BatchResponse().setRequestId(request.getRequestId()).setStatusCode(HttpStatus.SC_OK).setBody(responseBody)

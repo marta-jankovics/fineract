@@ -157,8 +157,8 @@ public class GroupsApiResource {
                     GroupingTypesApiConstants.GROUP_RESPONSE_DATA_PARAMETERS);
         }
 
-        final List<DatatableData> datatableTemplates = entityDatatableChecksReadService
-                .retrieveTemplates(StatusEnum.CREATE.getCode().longValue(), EntityTables.GROUP.getName(), null);
+        final List<DatatableData> datatableTemplates = entityDatatableChecksReadService.retrieveTemplates(StatusEnum.CREATE,
+                EntityTables.GROUP, null);
         if (centerId != null) {
             final GroupGeneralData centerGroupTemplate = centerReadPlatformService.retrieveCenterGroupTemplate(centerId);
             centerGroupTemplate.setDatatables(datatableTemplates);

@@ -64,14 +64,14 @@ public class ReadSurveyServiceImpl implements ReadSurveyService {
         final List<SurveyDataTableData> surveyDataTables = new ArrayList<>();
         while (rs.next()) {
             final String appTableName = rs.getString("application_table_name");
-            final String registeredDatatableName = rs.getString("registered_table_name");
+            final String registeredDatatable = rs.getString("registered_table_name");
             final String entitySubType = rs.getString("entity_subtype");
             final boolean enabled = rs.getBoolean("enabled");
             final List<ResultsetColumnHeaderData> columnHeaderData = this.genericDataService
-                    .fillResultsetColumnHeaders(registeredDatatableName);
+                    .fillResultsetColumnHeaders(registeredDatatable);
 
             surveyDataTables.add(SurveyDataTableData
-                    .create(DatatableData.create(appTableName, registeredDatatableName, entitySubType, columnHeaderData), enabled));
+                    .create(DatatableData.create(appTableName, registeredDatatable, entitySubType, columnHeaderData), enabled));
         }
 
         return surveyDataTables;
@@ -105,13 +105,13 @@ public class ReadSurveyServiceImpl implements ReadSurveyService {
         final SqlRowSet rs = this.jdbcTemplate.queryForRowSet(sql, new Object[] { this.context.authenticatedUser().getId(), surveyName }); // NOSONAR
         if (rs.next()) {
             final String appTableName = rs.getString("application_table_name");
-            final String registeredDatatableName = rs.getString("registered_table_name");
+            final String registeredDatatable = rs.getString("registered_table_name");
             final String entitySubType = rs.getString("entity_subtype");
             final boolean enabled = rs.getBoolean("enabled");
             final List<ResultsetColumnHeaderData> columnHeaderData = this.genericDataService
-                    .fillResultsetColumnHeaders(registeredDatatableName);
+                    .fillResultsetColumnHeaders(registeredDatatable);
             datatableData = SurveyDataTableData
-                    .create(DatatableData.create(appTableName, registeredDatatableName, entitySubType, columnHeaderData), enabled);
+                    .create(DatatableData.create(appTableName, registeredDatatable, entitySubType, columnHeaderData), enabled);
 
         }
 
@@ -188,8 +188,6 @@ public class ReadSurveyServiceImpl implements ReadSurveyService {
 
     @Override
     public GenericResultsetData retrieveSurveyEntry(String surveyName, Long clientId, Long entryId) {
-
-        return readWriteNonCoreDataService.retrieveDataTableGenericResultSet(surveyName, clientId, null, entryId);
-
+        return readWriteNonCoreDataService.retrieveDatatableGenericResultSet(surveyName, clientId, null, entryId);
     }
 }

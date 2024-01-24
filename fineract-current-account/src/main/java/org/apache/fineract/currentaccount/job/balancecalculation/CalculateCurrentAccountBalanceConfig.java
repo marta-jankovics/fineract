@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-public class CalculateSnapshotBalanceConfig {
+public class CalculateCurrentAccountBalanceConfig {
 
     @Autowired
     private JobRepository jobRepository;
@@ -46,18 +46,18 @@ public class CalculateSnapshotBalanceConfig {
 
     @Bean
     protected Step calculateSnapshotBalanceStep() {
-        return new StepBuilder(JobName.UPDATE_CURRENT_ACCOUNT_SNAPSHOT_BALANCE.name(), jobRepository)
-                .tasklet(calculateSnapshotBalanceTasklet(), transactionManager).build();
+        return new StepBuilder(JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE.name(), jobRepository)
+                .tasklet(calculateCurrentAccountBalanceTasklet(), transactionManager).build();
     }
 
     @Bean
-    public Job calculateSnapshotBalanceJob() {
-        return new JobBuilder(JobName.UPDATE_CURRENT_ACCOUNT_SNAPSHOT_BALANCE.name(), jobRepository).start(calculateSnapshotBalanceStep())
+    public Job calculateCurrentAccountBalanceJob() {
+        return new JobBuilder(JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE.name(), jobRepository).start(calculateSnapshotBalanceStep())
                 .incrementer(new RunIdIncrementer()).build();
     }
 
     @Bean
-    public CalculateSnapshotBalanceTasklet calculateSnapshotBalanceTasklet() {
-        return new CalculateSnapshotBalanceTasklet(currentAccountBalanceReadService, currentAccountBalanceWriteService);
+    public CalculateCurrentAccountBalanceTasklet calculateCurrentAccountBalanceTasklet() {
+        return new CalculateCurrentAccountBalanceTasklet(currentAccountBalanceReadService, currentAccountBalanceWriteService);
     }
 }

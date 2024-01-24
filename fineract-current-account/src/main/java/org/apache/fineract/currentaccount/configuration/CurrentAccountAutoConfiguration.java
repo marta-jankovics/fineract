@@ -28,7 +28,7 @@ import org.apache.fineract.currentaccount.assembler.transaction.impl.CurrentTran
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
-import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceSnapshotRepository;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
@@ -73,9 +73,9 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountBalanceWriteService.class)
     public CurrentAccountBalanceWriteService currentAccountBalanceWriteService(
-            CurrentAccountBalanceSnapshotRepository currentAccountBalanceSnapshotRepository,
+            CurrentAccountBalanceRepository currentAccountBalanceRepository,
             CurrentAccountBalanceReadService currentAccountBalanceReadService) {
-        return new CurrentAccountBalanceWriteServiceImpl(currentAccountBalanceSnapshotRepository, currentAccountBalanceReadService);
+        return new CurrentAccountBalanceWriteServiceImpl(currentAccountBalanceRepository, currentAccountBalanceReadService);
     }
 
     @Bean
@@ -90,9 +90,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountBalanceReadService.class)
     public CurrentAccountBalanceReadService currentAccountBalanceReadService(
-            CurrentAccountBalanceSnapshotRepository currentAccountBalanceSnapshotRepository,
-            CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentAccountBalanceReadServiceImpl(currentAccountBalanceSnapshotRepository, currentTransactionRepository);
+            CurrentAccountBalanceRepository currentAccountBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentAccountBalanceReadServiceImpl(currentAccountBalanceRepository, currentTransactionRepository);
     }
 
     @Bean

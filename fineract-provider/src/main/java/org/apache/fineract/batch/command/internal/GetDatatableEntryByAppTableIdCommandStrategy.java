@@ -79,11 +79,11 @@ public class GetDatatableEntryByAppTableIdCommandStrategy implements CommandStra
             appTableId = Long.parseLong(StringUtils.substringAfter(relativeUrlSubString, "/"));
         }
 
-        String dataTableName = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
+        String datatable = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
 
         // Calls 'getDatatable' function from 'DatatablesApiResource' to
         // get the datatable details based on the appTableId
-        responseBody = dataTablesApiResource.getDatatable(dataTableName, appTableId, null, parameterizedUriInfo);
+        responseBody = dataTablesApiResource.getDatatable(datatable, appTableId, null, parameterizedUriInfo);
 
         response.setStatusCode(HttpStatus.SC_OK);
 

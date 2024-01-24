@@ -83,9 +83,10 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     @Column(name = "amount", nullable = false, precision = 6)
     private BigDecimal transactionAmount;
 
-    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, String correlationId, UUID referenceId, Long paymentDetailId,
-                                                 CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount) {
-        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId!=null ? referenceId.toString() : null, paymentDetailId, transactionType, transactionDate, submittedOnDate,
-                amount);
+    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, String correlationId, UUID referenceId,
+            Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
+            BigDecimal amount) {
+        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId != null ? referenceId.toString() : null,
+                paymentDetailId, transactionType, transactionDate, submittedOnDate, amount);
     }
 }

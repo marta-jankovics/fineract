@@ -65,7 +65,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //
                     .withClientId(account.getClientId()) //
-                    .withEntityUUID(account.getId()) //
+                    .withResourceIdentifier(account.getId()) //
                     .withEntityExternalId(account.getExternalId()).withClientId(account.getClientId()) //
                     .build();
         } catch (final DataAccessException dve) {
@@ -90,7 +90,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //
-                    .withEntityUUID(account.getId()) //
+                    .withResourceIdentifier(account.getId()) //
                     .withEntityExternalId(account.getExternalId()) //
                     .withClientId(account.getClientId()) //
                     .with(changes) //
@@ -120,7 +120,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(account.getId()) //
+                .withResourceIdentifier(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -142,7 +142,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(account.getId()) //
+                .withResourceIdentifier(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -164,7 +164,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(account.getId()) //
+                .withResourceIdentifier(account.getId()) //
                 .withEntityExternalId(account.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //

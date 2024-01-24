@@ -43,7 +43,7 @@ public class RegisterDatatableCommandHandler implements NewCommandSourceHandler 
 
         this.writePlatformService.registerDatatable(command);
 
-        return new CommandProcessingResultBuilder().withResourceIdAsString(this.writePlatformService.getDataTableName(command.getUrl()))
+        return new CommandProcessingResultBuilder().withResourceIdentifier(this.writePlatformService.parseDatatableName(command.getUrl()))
                 .build();
     }
 }

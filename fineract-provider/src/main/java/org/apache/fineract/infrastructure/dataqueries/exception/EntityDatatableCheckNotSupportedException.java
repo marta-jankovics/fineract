@@ -25,10 +25,9 @@ import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourc
  */
 public class EntityDatatableCheckNotSupportedException extends AbstractPlatformResourceNotFoundException {
 
-    public EntityDatatableCheckNotSupportedException(final String datatableName, final String entityName) {
+    public EntityDatatableCheckNotSupportedException(final String datatable, final String entityName) {
         super("error.msg.entity.datatable.check.combination.not.supported",
-                "Entity Datatable check on table " + datatableName + " is not supported for entity " + entityName, datatableName,
-                entityName);
+                "Entity Datatable check on table " + datatable + " is not supported for entity " + entityName, datatable, entityName);
     }
 
     public EntityDatatableCheckNotSupportedException(final String entityName, final Long productId) {

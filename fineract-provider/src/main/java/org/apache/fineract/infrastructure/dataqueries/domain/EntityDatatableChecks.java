@@ -41,7 +41,7 @@ public class EntityDatatableChecks extends AbstractPersistableCustom<Long> {
     private String datatableName;
 
     @Column(name = "status_enum", nullable = false)
-    private Long status;
+    private Integer status;
 
     @Column(name = "system_defined")
     private boolean systemDefined = false;
@@ -52,7 +52,7 @@ public class EntityDatatableChecks extends AbstractPersistableCustom<Long> {
     public static EntityDatatableChecks fromJson(final JsonCommand command) {
 
         final String entity = command.stringValueOfParameterNamed("entity");
-        final Long status = command.longValueOfParameterNamed("status");
+        final Integer status = command.integerValueOfParameterNamed("status");
         final String datatableName = command.stringValueOfParameterNamed("datatableName");
 
         boolean systemDefined = false;

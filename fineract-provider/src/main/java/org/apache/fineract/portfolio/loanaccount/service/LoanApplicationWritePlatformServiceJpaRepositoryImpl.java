@@ -507,16 +507,15 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
                 }
             }
             if (command.parameterExists(LoanApiConstants.datatables)) {
-                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE.getCode().longValue(),
-                        EntityTables.LOAN.getName(), newLoanApplication.getId(), newLoanApplication.productId(),
+                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE, EntityTables.LOAN,
+                        newLoanApplication.getId(), newLoanApplication.productId(),
                         command.arrayOfParameterNamed(LoanApiConstants.datatables));
             }
 
             loanRepositoryWrapper.flush();
 
-            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(newLoanApplication.getId(), EntityTables.LOAN.getName(),
-                    StatusEnum.CREATE.getCode().longValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(),
-                    newLoanApplication.productId());
+            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CREATE, EntityTables.LOAN,
+                    newLoanApplication.getId(), newLoanApplication.productId());
 
             businessEventNotifierService.notifyPostBusinessEvent(new LoanCreatedBusinessEvent(newLoanApplication));
 
@@ -1359,8 +1358,7 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
         final Map<String, Object> changes = loan.loanApplicationApproval(currentUser, command, disbursementDataArray,
                 defaultLoanLifecycleStateMachine);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(),
-                StatusEnum.APPROVE.getCode().longValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.APPROVE, EntityTables.LOAN, loanId, loan.productId());
 
         if (!changes.isEmpty()) {
 
@@ -1543,8 +1541,7 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
 
         checkClientOrGroupActive(loan);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(),
-                StatusEnum.REJECTED.getCode().longValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.REJECTED, EntityTables.LOAN, loanId, loan.productId());
 
         final Map<String, Object> changes = loan.loanApplicationRejection(currentUser, command, defaultLoanLifecycleStateMachine);
         if (!changes.isEmpty()) {
@@ -1580,8 +1577,7 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
         final Loan loan = retrieveLoanBy(loanId);
         checkClientOrGroupActive(loan);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(),
-                StatusEnum.WITHDRAWN.getCode().longValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.WITHDRAWN, EntityTables.LOAN, loanId, loan.productId());
 
         final Map<String, Object> changes = loan.loanApplicationWithdrawnByApplicant(currentUser, command,
                 defaultLoanLifecycleStateMachine);

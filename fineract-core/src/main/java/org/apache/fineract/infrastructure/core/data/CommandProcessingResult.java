@@ -20,8 +20,8 @@ package org.apache.fineract.infrastructure.core.data;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
@@ -30,6 +30,7 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
  */
 @ToString
 @Getter
+@Setter
 public class CommandProcessingResult implements Serializable {
 
     private final Long commandId;
@@ -38,27 +39,24 @@ public class CommandProcessingResult implements Serializable {
     private final Long clientId;
     private final Long loanId;
     private final Long savingsId;
-    private final Long resourceId;
+    private Long resourceId;
     private final Long subResourceId;
     private final String transactionId;
     private final Map<String, Object> changes;
     private final Map<String, Object> creditBureauReportData;
-    private final String resourceIdentifier;
+    private String resourceIdentifier;
     private final Long productId;
     private final Long gsimId;
     private final Long glimId;
     private Boolean rollbackTransaction;
     private final ExternalId resourceExternalId;
     private final ExternalId subResourceExternalId;
-    private final UUID resourceUUID;
-    private final UUID transactionUUID;
 
     private CommandProcessingResult(final Long commandId, final Long officeId, final Long groupId, final Long clientId, final Long loanId,
             final Long savingsId, final String resourceIdentifier, final Long resourceId, final String transactionId,
             final Map<String, Object> changes, final Long productId, final Long gsimId, final Long glimId,
             final Map<String, Object> creditBureauReportData, Boolean rollbackTransaction, final Long subResourceId,
-            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID resourceUUID,
-            final UUID transactionUUID) {
+            final ExternalId resourceExternalId, final ExternalId subResourceExternalId) {
         this.commandId = commandId;
         this.officeId = officeId;
         this.groupId = groupId;
@@ -77,14 +75,12 @@ public class CommandProcessingResult implements Serializable {
         this.subResourceId = subResourceId;
         this.resourceExternalId = resourceExternalId;
         this.subResourceExternalId = subResourceExternalId;
-        this.resourceUUID = resourceUUID;
-        this.transactionUUID = transactionUUID;
     }
 
     protected CommandProcessingResult(final Long resourceId, final Long officeId, final Long commandId, final Map<String, Object> changes,
             Long clientId) {
         this(commandId, officeId, null, clientId, null, null, resourceId == null ? null : resourceId.toString(), resourceId, null, changes,
-                null, null, null, null, null, null, ExternalId.empty(), ExternalId.empty(), null, null);
+                null, null, null, null, null, null, ExternalId.empty(), ExternalId.empty());
     }
 
     protected CommandProcessingResult(final Long resourceId, final Long officeId, final Long commandId, final Map<String, Object> changes) {
@@ -95,28 +91,22 @@ public class CommandProcessingResult implements Serializable {
         this(resourceId, null, null, null);
     }
 
-    public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult, final Long resourceId) {
-        return new CommandProcessingResult(commandResult.commandId, commandResult.officeId, commandResult.groupId, commandResult.clientId,
-                commandResult.loanId, commandResult.savingsId, commandResult.resourceIdentifier, resourceId, commandResult.transactionId,
-                commandResult.changes, commandResult.productId, commandResult.gsimId, commandResult.glimId,
-                commandResult.creditBureauReportData, commandResult.rollbackTransaction, commandResult.subResourceId,
-                commandResult.resourceExternalId, commandResult.subResourceExternalId, commandResult.resourceUUID,
-                commandResult.transactionUUID);
-    }
-
     public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult) {
-        return fromCommandProcessingResult(commandResult, commandResult.getResourceId());
+        return new CommandProcessingResult(commandResult.commandId, commandResult.officeId, commandResult.groupId, commandResult.clientId,
+                commandResult.loanId, commandResult.savingsId, commandResult.resourceIdentifier, commandResult.resourceId,
+                commandResult.transactionId, commandResult.changes, commandResult.productId, commandResult.gsimId, commandResult.glimId,
+                commandResult.creditBureauReportData, commandResult.rollbackTransaction, commandResult.subResourceId,
+                commandResult.resourceExternalId, commandResult.subResourceExternalId);
     }
 
     public static CommandProcessingResult fromDetails(final Long commandId, final Long officeId, final Long groupId, final Long clientId,
             final Long loanId, final Long savingsId, final String resourceIdentifier, final Long entityId, final Long gsimId,
             final Long glimId, final Map<String, Object> creditBureauReportData, final String transactionId,
             final Map<String, Object> changes, final Long productId, final Boolean rollbackTransaction, final Long subResourceId,
-            final ExternalId resourceExternalId, final ExternalId subResourceExternalId, final UUID entityUUID,
-            final UUID transactionUUID) {
+            final ExternalId resourceExternalId, final ExternalId subResourceExternalId) {
         return new CommandProcessingResult(commandId, officeId, groupId, clientId, loanId, savingsId, resourceIdentifier, entityId,
                 transactionId, changes, productId, gsimId, glimId, creditBureauReportData, rollbackTransaction, subResourceId,
-                resourceExternalId, subResourceExternalId, entityUUID, transactionUUID);
+                resourceExternalId, subResourceExternalId);
     }
 
     public static CommandProcessingResult commandOnlyResult(final Long commandId) {
@@ -131,8 +121,13 @@ public class CommandProcessingResult implements Serializable {
         return new CommandProcessingResult(null, null, null, null);
     }
 
-    public void setOfficeId(final Long officeId) {
-        this.officeId = officeId;
+    public CommandProcessingResult withResource(final Object resource) {
+        if (resource instanceof Long) {
+            this.resourceId = (Long) resource;
+        } else if (resource != null) {
+            this.resourceIdentifier = String.valueOf(resource);
+        }
+        return this;
     }
 
     public Map<String, Object> getChanges() {
@@ -150,9 +145,5 @@ public class CommandProcessingResult implements Serializable {
 
     public boolean isRollbackTransaction() {
         return this.rollbackTransaction != null && this.rollbackTransaction;
-    }
-
-    public void setRollbackTransaction(Boolean rollbackTransaction) {
-        this.rollbackTransaction = rollbackTransaction;
     }
 }

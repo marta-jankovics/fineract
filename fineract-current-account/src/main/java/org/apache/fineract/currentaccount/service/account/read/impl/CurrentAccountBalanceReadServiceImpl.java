@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceSnapshotRepository;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 
@@ -36,7 +36,7 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBal
 @RequiredArgsConstructor
 public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalanceReadService {
 
-    private final CurrentAccountBalanceSnapshotRepository currentAccountBalanceSnapshotRepository;
+    private final CurrentAccountBalanceRepository currentAccountBalanceRepository;
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
@@ -54,13 +54,13 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
     private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
             Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
-        CurrentAccountBalanceData currentAccountBalanceSnapshotData = currentAccountBalanceSnapshotRepository.getBalance(accountId);
+        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceRepository.getBalance(accountId);
         List<CurrentTransaction> currentTransactionDataList;
         BigDecimal accountBalance;
         BigDecimal holdAmount;
         OffsetDateTime calculatedTillDate;
         UUID calculatedTillTxnId;
-        if (currentAccountBalanceSnapshotData == null) {
+        if (currentAccountBalanceData == null) {
             accountBalance = BigDecimal.ZERO;
             holdAmount = BigDecimal.ZERO;
             currentTransactionDataList = fetchTransactions.get();
@@ -72,11 +72,11 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
                 calculatedTillTxnId = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getId();
             }
         } else {
-            accountBalance = currentAccountBalanceSnapshotData.getAccountBalance();
-            holdAmount = currentAccountBalanceSnapshotData.getHoldAmount();
-            OffsetDateTime fromDateTime = currentAccountBalanceSnapshotData.getCalculatedTill();
-            calculatedTillDate = currentAccountBalanceSnapshotData.getCalculatedTill();
-            calculatedTillTxnId = currentAccountBalanceSnapshotData.getCalculatedTillTransactionId();
+            accountBalance = currentAccountBalanceData.getAccountBalance();
+            holdAmount = currentAccountBalanceData.getHoldAmount();
+            OffsetDateTime fromDateTime = currentAccountBalanceData.getCalculatedTill();
+            calculatedTillDate = currentAccountBalanceData.getCalculatedTill();
+            calculatedTillTxnId = currentAccountBalanceData.getCalculatedTillTransactionId();
             currentTransactionDataList = fetchTransactionsFrom.apply(fromDateTime);
         }
 
@@ -91,17 +91,16 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
             calculatedTillDate = currentTransactionData.getCreatedDateTime();
             calculatedTillTxnId = currentTransactionData.getId();
         }
-        return new CurrentAccountBalanceData(null, accountId, accountBalance, holdAmount, calculatedTillDate,
-                calculatedTillTxnId);
+        return new CurrentAccountBalanceData(null, accountId, accountBalance, holdAmount, calculatedTillDate, calculatedTillTxnId);
     }
 
     @Override
     public List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
-        return currentAccountBalanceSnapshotRepository.getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
+        return currentAccountBalanceRepository.getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
     }
 
     @Override
-    public List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated() {
-        return currentAccountBalanceSnapshotRepository.getAccountIdsWhereBalanceSnapshotNotCalculated();
+    public List<UUID> getAccountIdsWhereBalanceNotCalculated() {
+        return currentAccountBalanceRepository.getAccountIdsWhereBalanceNotCalculated();
     }
 }

@@ -19,8 +19,12 @@
 package org.apache.fineract.infrastructure.dataqueries.service;
 
 import com.google.gson.JsonArray;
+import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
+import org.apache.fineract.infrastructure.dataqueries.data.StatusEnum;
 
 public interface EntityDatatableChecksWritePlatformService {
 
@@ -28,10 +32,12 @@ public interface EntityDatatableChecksWritePlatformService {
 
     CommandProcessingResult deleteCheck(Long entityDatatableCheckId);
 
-    void runTheCheck(Long entityId, String entityName, Integer statusCode, String foreignKeyColumn, String entitySubtype);
+    void runTheCheck(@NotNull StatusEnum status, @NotNull EntityTables entity, @NotNull Serializable entityId, String entitySubtype);
 
-    void runTheCheckForProduct(Long entityId, String entityName, Long statusCode, String foreignKeyColumn, long productLoanId);
+    void runTheCheckForProduct(@NotNull StatusEnum status, @NotNull EntityTables entity, @NotNull Serializable entityId,
+            @NotNull Long productId);
 
-    boolean saveDatatables(Long status, String entity, Long entityId, Long productId, JsonArray data);
+    boolean saveDatatables(@NotNull StatusEnum status, @NotNull EntityTables entity, @NotNull Serializable entityId, Long productId,
+            JsonArray elements);
 
 }

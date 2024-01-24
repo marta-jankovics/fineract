@@ -400,8 +400,7 @@ class DelinquencyActionParseAndValidatorTest {
     private JsonCommand createJsonCommand(Map<String, Object> jsonMap) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap);
-        return new JsonCommand(null, null, JsonParser.parseString(json), null, null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null);
+        return JsonCommand.fromJsonElement(null, JsonParser.parseString(json));
     }
 
     private void assertPlatformValidationException(String message, String code, Executable executable) {

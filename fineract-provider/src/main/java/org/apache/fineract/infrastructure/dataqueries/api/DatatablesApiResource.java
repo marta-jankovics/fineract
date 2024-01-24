@@ -87,7 +87,7 @@ public class DatatablesApiResource {
     public String getDatatables(@QueryParam("apptable") @Parameter(description = "apptable") final String apptable,
             @Context final UriInfo uriInfo) {
 
-        final List<DatatableData> result = this.readWriteNonCoreDataService.retrieveDatatableNames(apptable);
+        final List<DatatableData> result = this.readWriteNonCoreDataService.retrieveDatatables(apptable);
 
         final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
         return this.toApiJsonSerializer.serializePretty(prettyPrint, result);
@@ -186,7 +186,7 @@ public class DatatablesApiResource {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.PutDataTablesResponse.class))) })
     public String deregisterDatatable(@PathParam("datatable") @Parameter(description = "datatable") final String datatable) {
         this.readWriteNonCoreDataService.deregisterDatatable(datatable);
-        final CommandProcessingResult result = new CommandProcessingResultBuilder().withResourceIdAsString(datatable).build();
+        final CommandProcessingResult result = new CommandProcessingResultBuilder().withResourceIdentifier(datatable).build();
         return this.toApiJsonSerializer.serialize(result);
     }
 
@@ -257,7 +257,7 @@ public class DatatablesApiResource {
 
         this.context.authenticatedUser().validateHasDatatableReadPermission(datatable);
 
-        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDataTableGenericResultSet(datatable, apptableId,
+        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDatatableGenericResultSet(datatable, apptableId,
                 order, null);
 
         String json = "";
@@ -283,7 +283,7 @@ public class DatatablesApiResource {
 
         this.context.authenticatedUser().validateHasDatatableReadPermission(datatable);
 
-        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDataTableGenericResultSet(datatable, apptableId,
+        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDatatableGenericResultSet(datatable, apptableId,
                 order, datatableId);
 
         String json = "";

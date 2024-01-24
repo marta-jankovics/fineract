@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.mapper.account;
 
+import java.util.UUID;
+import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
@@ -29,18 +31,16 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
-
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentAccountResponseDataMapper {
 
-    default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data, Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+    default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data,
+            Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
         return data.map(currentAccountData -> map(currentAccountData, balanceDataFunction));
     }
 
-    default CurrentAccountResponseData map(CurrentAccountData currentAccountData, Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+    default CurrentAccountResponseData map(CurrentAccountData currentAccountData,
+            Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
         return map(currentAccountData, balanceDataFunction.apply(currentAccountData.getId()));
     }
 

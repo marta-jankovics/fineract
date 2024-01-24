@@ -70,7 +70,7 @@ public class GetDatatableEntryByAppTableIdAndDataTableIdCommandStrategy implemen
         // - Call datatablesApiResource.getDatatableManyEntry(dataTable, appTableId, dataTableId, null, false, generic
         // resultSet, uriInfo)
         final String[] resources = StringUtils.split(relativeUrlSubString, "/");
-        final String dataTableName = resources[0];
+        final String datatable = resources[0];
         final Long appTableId = Long.parseLong(resources[1]);
         final Long dataTableId = Long.parseLong(StringUtils.substringBefore(resources[2], "?"));
         boolean genericResultSet = false;
@@ -84,7 +84,7 @@ public class GetDatatableEntryByAppTableIdAndDataTableIdCommandStrategy implemen
         }
         // Calls 'getDatatableManyEntry' function from 'DatatablesApiResource' to
         // get the datatable details based on the appTableId
-        responseBody = dataTablesApiResource.getDatatableManyEntry(dataTableName, appTableId, dataTableId, null, genericResultSet,
+        responseBody = dataTablesApiResource.getDatatableManyEntry(datatable, appTableId, dataTableId, null, genericResultSet,
                 parameterizedUriInfo);
 
         response.setStatusCode(HttpStatus.SC_OK);

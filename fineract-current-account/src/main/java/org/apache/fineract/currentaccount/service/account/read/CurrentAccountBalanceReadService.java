@@ -31,5 +31,5 @@ public interface CurrentAccountBalanceReadService {
 
     List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime);
 
-    List<UUID> getAccountIdsWhereBalanceSnapshotNotCalculated();
+    List<UUID> getAccountIdsWhereBalanceNotCalculated();
 }

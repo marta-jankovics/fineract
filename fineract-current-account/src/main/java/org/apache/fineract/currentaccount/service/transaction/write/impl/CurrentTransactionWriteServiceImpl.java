@@ -81,7 +81,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(depositTransaction.getId()) //
+                .withResourceIdentifier(depositTransaction.getId()) //
                 .withEntityExternalId(depositTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -108,7 +108,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(withdrawalTransaction.getId()) //
+                .withResourceIdentifier(withdrawalTransaction.getId()) //
                 .withEntityExternalId(withdrawalTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -135,7 +135,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(holdTransaction.getId()) //
+                .withResourceIdentifier(holdTransaction.getId()) //
                 .withEntityExternalId(holdTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -162,7 +162,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityUUID(releaseTransaction.getId()) //
+                .withResourceIdentifier(releaseTransaction.getId()) //
                 .withEntityExternalId(releaseTransaction.getExternalId()) //
                 .withClientId(account.getClientId()) //
                 .with(changes) //
@@ -172,8 +172,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     private void testBalance(CurrentAccount account, CurrentTransaction debitTransaction, boolean enforce) {
         if (!enforce) {
             final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
-            BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance().subtract(currentAccountBalanceData.getHoldAmount())
-                    .subtract(debitTransaction.getTransactionAmount());
+            BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance()
+                    .subtract(currentAccountBalanceData.getHoldAmount()).subtract(debitTransaction.getTransactionAmount());
             if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
                 if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
                     throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");

@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.infrastructure.dataqueries.exception;
 
+import java.io.Serializable;
 import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 
@@ -26,7 +27,7 @@ import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
  */
 public class DatatableNotFoundException extends AbstractPlatformResourceNotFoundException {
 
-    public DatatableNotFoundException(final String datatable, final Long id) {
+    public DatatableNotFoundException(final String datatable, final Serializable id) {
         super("error.msg.datatable.data.not.found", "Data not found for datatable: ", datatable + "  Id:" + id);
     }
 
@@ -34,7 +35,7 @@ public class DatatableNotFoundException extends AbstractPlatformResourceNotFound
         super("error.msg.datatable.not.found", "Datatable not found.", datatable);
     }
 
-    public DatatableNotFoundException(final EntityTables entityTable, final Long id) {
+    public DatatableNotFoundException(final EntityTables entityTable, final Serializable id) {
         this(entityTable.getName(), id);
     }
 

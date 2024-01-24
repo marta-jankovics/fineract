@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.commands.domain;
 
-import java.util.UUID;
 import org.apache.fineract.useradministration.api.PasswordPreferencesApiConstants;
 
 public class CommandWrapper {
@@ -44,15 +43,12 @@ public class CommandWrapper {
     private final String jobName;
 
     private final String idempotencyKey;
-    private final UUID entityUUID;
-    private final UUID transactionUUID;
+    private final String entityIdentifier;
 
     public CommandWrapper(final Long commandId, final Long officeId, final Long groupId, final Long clientId, final Long loanId,
             final Long savingsId, final String actionName, final String entityName, final Long entityId, final Long subentityId,
             final String href, final String json, final String transactionId, final Long productId, final Long creditBureauId,
-            final Long organisationCreditBureauId, final String jobName, final String idempotencyKey, final UUID entityUUID,
-            final UUID transactionUUID) {
-
+            final Long organisationCreditBureauId, final String jobName, final String idempotencyKey, final String entityIdentifier) {
         this.commandId = commandId;
         this.officeId = officeId;
         this.groupId = groupId;
@@ -72,23 +68,22 @@ public class CommandWrapper {
         this.organisationCreditBureauId = organisationCreditBureauId;
         this.jobName = jobName;
         this.idempotencyKey = idempotencyKey;
-        this.entityUUID = entityUUID;
-        this.transactionUUID = transactionUUID;
+        this.entityIdentifier = entityIdentifier;
     }
 
     public static CommandWrapper wrap(final String actionName, final String entityName) {
         return new CommandWrapper(null, null, null, null, null, null, actionName, entityName, null, null, null, null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null);
     }
 
     public static CommandWrapper fromExistingCommand(final Long commandId, final String actionName, final String entityName,
             final Long resourceId, final Long subresourceId, final String resourceGetUrl, final String json, final Long productId,
             final Long officeId, final Long groupId, final Long clientId, final Long loanId, final Long savingsId,
             final String transactionId, final Long creditBureauId, final Long organisationCreditBureauId, final String jobName,
-            final String idempotencyKey, final UUID entityUUID, final UUID transactionUUID) {
+            final String idempotencyKey, final String entityIdentifier) {
         return new CommandWrapper(commandId, officeId, groupId, clientId, loanId, savingsId, actionName, entityName, resourceId,
                 subresourceId, resourceGetUrl, json, transactionId, productId, creditBureauId, organisationCreditBureauId, jobName,
-                idempotencyKey, entityUUID, transactionUUID);
+                idempotencyKey, entityIdentifier);
     }
 
     public Long getCreditBureauId() {
@@ -311,11 +306,7 @@ public class CommandWrapper {
         return jobName;
     }
 
-    public UUID getEntityUUID() {
-        return entityUUID;
-    }
-
-    public UUID getTransactionUUID() {
-        return transactionUUID;
+    public String getEntityIdentifier() {
+        return entityIdentifier;
     }
 }
