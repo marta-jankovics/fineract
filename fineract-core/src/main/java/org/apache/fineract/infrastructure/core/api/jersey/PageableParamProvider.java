@@ -20,6 +20,7 @@ package org.apache.fineract.infrastructure.core.api.jersey;
 
 import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,6 +31,7 @@ import org.glassfish.jersey.server.spi.internal.ValueParamProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 
 public class PageableParamProvider implements ValueParamProvider {
 
@@ -75,6 +77,24 @@ public class PageableParamProvider implements ValueParamProvider {
                     } else {
                         Sort.Direction direction = Sort.Direction.fromString(propOrderSplit[1]);
                         sortingOrders.add(new Sort.Order(direction, property));
+                    }
+                }
+            }
+
+            if(sortingOrders.isEmpty()) {
+                if (param.isAnnotationPresent(SortDefault.class)) {
+                    SortDefault sortDefault = param.getAnnotation(SortDefault.class);
+
+                    for (String sortStr : sortDefault.sort()) {
+                        sortingOrders.add(new Sort.Order(sortDefault.direction(), sortStr));
+                    }
+                } else if (param.isAnnotationPresent(SortDefault.SortDefaults.class)) {
+                    SortDefault.SortDefaults sortDefaults = param.getAnnotation(SortDefault.SortDefaults.class);
+
+                    for (SortDefault sortDefault : sortDefaults.value()) {
+                        for (String sortStr : sortDefault.sort()) {
+                            sortingOrders.add(new Sort.Order(sortDefault.direction(), sortStr));
+                        }
                     }
                 }
             }

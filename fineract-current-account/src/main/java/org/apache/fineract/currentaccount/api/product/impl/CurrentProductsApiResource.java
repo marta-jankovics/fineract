@@ -49,6 +49,7 @@ import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentproducts")
@@ -68,7 +69,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @GET
     @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
             + "currentproducts")
-    public Page<CurrentProductResponseData> retrieveAll(@Pagination Pageable pageable) {
+    public Page<CurrentProductResponseData> retrieveAll(@Pagination @SortDefault(sort = "createdDate") Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
         return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
     }
