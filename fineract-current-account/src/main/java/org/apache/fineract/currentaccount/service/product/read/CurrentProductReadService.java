@@ -38,4 +38,6 @@ public interface CurrentProductReadService {
     CurrentProductTemplateResponseData retrieveTemplate();
 
     CurrentProductResponseData retrieveByIdTypeAndId(String idType, String id);
+
+    UUID retrieveIdByIdType(String idType, String id);
 }

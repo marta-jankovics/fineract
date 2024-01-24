@@ -72,7 +72,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
 
     @Override
     public CurrentProductTemplateResponseData retrieveTemplate() {
-        final List<CurrencyData> currencyOptions = this.currencyReadPlatformService.retrieveAllowedCurrencies();
+        final List<CurrencyData> currencyOptions = currencyReadPlatformService.retrieveAllowedCurrencies();
         final List<EnumOptionData> accountingRuleOptions = Arrays.stream(AccountingRuleType.values()).map(art -> new EnumOptionData((long) art.getValue(), art.name(), art.toString())).toList();
 
         return new CurrentProductTemplateResponseData(currencyOptions, accountingRuleOptions);
@@ -93,6 +93,22 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
             case SHORT_NAME -> retrieveByShortName(id);
         };
 
+    }
+
+    @Override
+    public UUID retrieveIdByIdType(String idType, String id) {
+        String reformatIdType = reformatIdType(idType);
+        CurrentProductIdType currentProductIdType;
+        try {
+            currentProductIdType = CurrentProductIdType.valueOf(reformatIdType);
+        } catch (IllegalArgumentException e) {
+            throw new PlatformApiDataValidationException("error.msg.id.type.not.found", "Provided id type is not supported", "idType", e, idType);
+        }
+        return switch (currentProductIdType) {
+            case ID -> UUID.fromString(id);
+            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(id));
+            case SHORT_NAME -> currentProductRepository.findIdByShortName(id);
+        };
     }
 
     private String reformatIdType(String idType) {

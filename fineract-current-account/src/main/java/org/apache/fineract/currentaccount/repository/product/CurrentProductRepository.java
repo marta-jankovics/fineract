@@ -48,4 +48,9 @@ public interface CurrentProductRepository extends JpaRepository<CurrentProduct, 
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit,  cp.minimumRequiredBalance, cp.allowForceTransaction, cp.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.shortName = :shortName")
     CurrentProductData findCurrentProductDataByShortName(@Param("shortName") String shortName);
+
+    @Query("SELECT cp.id FROM CurrentProduct cp WHERE cp.externalId = :externalId")
+    UUID findIdByExternalId(@Param("externalId") ExternalId externalId);
+    @Query("SELECT cp.id FROM CurrentProduct cp WHERE cp.shortName = :shortName")
+    UUID findIdByShortName(@Param("shortName") String id);
 }
