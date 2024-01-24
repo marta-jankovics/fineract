@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.assembler.product.impl;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountingTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
@@ -26,6 +28,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyDigitsAfterDecimalParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyInMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.nameParamName;
@@ -36,19 +39,28 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
+@Slf4j
+@RequiredArgsConstructor
 public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
+
+    private final ExternalIdFactory externalIdFactory;
 
     public CurrentProduct assemble(final JsonCommand command) {
 
         final Locale locale = command.extractLocale();
         final String name = command.stringValueOfParameterNamed(nameParamName);
+        final ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
         final String shortName = command.stringValueOfParameterNamed(shortNameParamName);
         final String description = command.stringValueOfParameterNamedAllowingNull(descriptionParamName);
         final String currencyCode = command.stringValueOfParameterNamed(currencyCodeParamName);
@@ -64,7 +76,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
                 .valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
         final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
 
-        return new CurrentProduct(null, name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
+        return new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
                 allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
     }
 

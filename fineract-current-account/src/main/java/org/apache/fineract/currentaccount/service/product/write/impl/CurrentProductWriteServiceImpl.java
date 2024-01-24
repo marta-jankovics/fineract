@@ -18,16 +18,12 @@
  */
 package org.apache.fineract.currentaccount.service.product.write.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
-
-import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
-import org.apache.fineract.currentaccount.exception.product.CurrentProductNotFoundException;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.product.write.CurrentProductWriteService;
 import org.apache.fineract.currentaccount.validator.product.CurrentProductDataValidator;
@@ -35,8 +31,12 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,6 +58,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
             return new CommandProcessingResultBuilder() //
                     .withResourceIdentifier(product.getId()) //
+                    .withEntityExternalId(product.getExternalId()) //
                     .build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
@@ -73,13 +74,14 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     public CommandProcessingResult update(final UUID productId, final JsonCommand command) {
         try {
             final CurrentProduct product = this.currentProductRepository.findById(productId)
-                    .orElseThrow(() -> new CurrentProductNotFoundException(productId));
+                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId));
 
             this.currentProductDataValidator.validateForUpdate(command, product);
             final Map<String, Object> changes = currentProductAssembler.update(product, command);
 
             return new CommandProcessingResultBuilder() //
                     .withResourceIdentifier(product.getId()) //
+                    .withEntityExternalId(product.getExternalId()) //
                     .with(changes).build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);
@@ -95,7 +97,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     public CommandProcessingResult delete(final UUID productId) {
         try {
             if (!this.currentProductRepository.existsById(productId)) {
-                throw new CurrentProductNotFoundException(productId);
+                throw new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId);
             }
             this.currentProductRepository.deleteById(productId);
             return new CommandProcessingResultBuilder() //
@@ -125,16 +127,16 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
             msgCode += ".duplicate.name";
             msg = "Current product with name `" + name + "` already exists";
             param = "name";
-            msgArgs = new Object[] { name, dae };
+            msgArgs = new Object[]{name, dae};
         } else if (message != null && checkEx.getMessage().contains("m_current_product_short_name_key")) {
             final String shortName = command.stringValueOfParameterNamed("shortName");
             msgCode += ".duplicate.short.name";
             msg = "Current product with short name `" + shortName + "` already exists";
             param = "shortName";
-            msgArgs = new Object[] { shortName, dae };
+            msgArgs = new Object[]{shortName, dae};
         } else {
             msgCode += ".unknown.data.integrity.issue";
-            msgArgs = new Object[] { dae };
+            msgArgs = new Object[]{dae};
         }
         log.error("Error occurred.", dae);
         throw ErrorHandler.getMappable(dae, msgCode, msg, param, msgArgs);

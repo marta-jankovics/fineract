@@ -55,6 +55,7 @@ import org.apache.fineract.currentaccount.validator.product.CurrentProductDataVa
 import org.apache.fineract.currentaccount.validator.product.impl.CurrentProductDataValidatorImpl;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.currentaccount.validator.transaction.impl.CurrentTransactionDataValidatorImpl;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
@@ -136,8 +137,8 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentProductAssembler.class)
-    public CurrentProductAssembler currentProductAssembler() {
-        return new CurrentProductAssemblerImpl();
+    public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory) {
+        return new CurrentProductAssemblerImpl(externalIdFactory);
     }
 
     @Bean

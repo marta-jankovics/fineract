@@ -37,6 +37,7 @@ import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
 import java.math.BigDecimal;
@@ -47,14 +48,19 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_current_product", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"}, name = "m_current_product_name_key"),
-        @UniqueConstraint(columnNames = {"short_name"}, name = "m_current_product_short_name_key")})
+@Table(name = "m_current_product", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name"}, name = "m_current_product_name_key"),
+        @UniqueConstraint(columnNames = {"short_name"}, name = "m_current_product_short_name_key"),
+        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_product_external_id_key")})
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Getter(onMethod = @__(@Override))
     private UUID id;
+
+    @Column(name = "external_id", length = 100, unique = true)
+    private ExternalId externalId;
 
     @Column(name = "name", nullable = false, length = 100, unique = true)
     private String name;

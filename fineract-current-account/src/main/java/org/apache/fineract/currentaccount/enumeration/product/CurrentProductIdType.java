@@ -16,19 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.exception.product;
+package org.apache.fineract.currentaccount.enumeration.product;
 
-import java.util.UUID;
-import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
-import org.springframework.dao.EmptyResultDataAccessException;
-
-public class CurrentProductNotFoundException extends AbstractPlatformResourceNotFoundException {
-
-    public CurrentProductNotFoundException(final UUID id) {
-        super("error.msg.currentproduct.id.invalid", "Current product with identifier " + id + " does not exist", id);
-    }
-
-    public CurrentProductNotFoundException(UUID id, EmptyResultDataAccessException e) {
-        super("error.msg.currentproduct.id.invalid", "Current product with identifier " + id + " does not exist", id, e);
-    }
+public enum CurrentProductIdType {
+    ID,
+    EXTERNAL_ID,
+    SHORT_NAME;
 }

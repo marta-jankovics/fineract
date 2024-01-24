@@ -33,6 +33,9 @@
             <column name="short_name" type="VARCHAR(8)">
                 <constraints unique="true" nullable="false"/>
             </column>
+            <column name="external_id" type="VARCHAR(100)">
+                <constraints unique="true"/>
+            </column>
             <column name="description" type="VARCHAR(500)"/>
             <column name="currency_code" type="VARCHAR(3)">
                 <constraints nullable="false"/>

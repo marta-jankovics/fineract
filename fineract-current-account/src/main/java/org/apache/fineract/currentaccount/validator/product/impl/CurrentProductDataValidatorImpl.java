@@ -27,6 +27,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyDigitsAfterDecimalParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyInMultiplesOfParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.nameParamName;
@@ -58,7 +59,7 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 @RequiredArgsConstructor
 public class CurrentProductDataValidatorImpl implements CurrentProductDataValidator {
 
-    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, nameParamName,
+    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, nameParamName, externalIdParamName,
             shortNameParamName, descriptionParamName, currencyCodeParamName, currencyDigitsAfterDecimalParamName,
             currencyInMultiplesOfParamName, accountingTypeParamName, allowOverdraftParamName, overdraftLimitParamName,
             allowForceTransactionParamName, minimumRequiredBalanceParamName, balanceCalculationTypeParamName));

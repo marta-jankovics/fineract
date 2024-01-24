@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,8 +38,14 @@ public interface CurrentProductRepository extends JpaRepository<CurrentProduct, 
     Page<CurrentProductData> findAllCurrentProductData(Pageable pageable);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit,  cp.minimumRequiredBalance, cp.allowForceTransaction, cp.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.id = :productId")
-    CurrentProductData findCurrentProductData(@Param("productId") UUID productId);
+    CurrentProductData findCurrentProductDataById(@Param("productId") UUID productId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit, cp.minimumRequiredBalance, cp.allowForceTransaction, cp.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code ")
     List<CurrentProductData> findAllSorted(Sort sort);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit,  cp.minimumRequiredBalance, cp.allowForceTransaction, cp.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.externalId = :externalId")
+    CurrentProductData findCurrentProductDataByExternalId(@Param("externalId") ExternalId externalId);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.product.CurrentProductData(cp.id, cp.name, cp.shortName, cp.description, cp.accountingType, cp.allowOverdraft, cp.overdraftLimit,  cp.minimumRequiredBalance, cp.allowForceTransaction, cp.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentProduct cp, ApplicationCurrency curr WHERE curr.code = cp.currency.code  AND cp.shortName = :shortName")
+    CurrentProductData findCurrentProductDataByShortName(@Param("shortName") String shortName);
 }

@@ -52,7 +52,6 @@ import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStat
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.currentaccount.enumeration.account.EntityType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
-import org.apache.fineract.currentaccount.exception.product.CurrentProductNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
@@ -62,6 +61,7 @@ import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.portfolio.client.domain.Client;
@@ -91,7 +91,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final UUID productId = UUID.fromString(command.stringValueOfParameterNamed(productIdParamName));
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
-                .orElseThrow(() -> new CurrentProductNotFoundException(productId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId));
 
         Client client;
         final Long clientId = command.longValueOfParameterNamed(clientIdParamName);
@@ -226,7 +226,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         final CurrentProduct product = currentProductRepository.findById(account.getProductId())
-                .orElseThrow(() -> new CurrentProductNotFoundException(account.getProductId()));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", account.getProductId()));
         validateAccountValuesWithProduct(product, account);
 
         if (!actualChanges.isEmpty()) {

@@ -42,9 +42,11 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.PagedRequest;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
@@ -65,7 +67,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     private final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService;
     private final CurrentProductReadService currentProductReadService;
 
-    @Override
     @GET
     @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
             + "currentproducts")
@@ -74,7 +75,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
     }
 
-    @Override
     @GET
     @Path("{productId}")
     @Operation(summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
@@ -84,7 +84,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return this.currentProductReadService.retrieveById(productId);
     }
 
-    @Override
+    @GET
+    @Path("{idType}/{id}")
+    @Operation(summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
+            + "currentproducts/1")
+    public CurrentProductResponseData retrieveOne(@PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
+                                                  @PathParam("id") @Parameter(description = "id", required = true) final String id) {
+        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
+        return this.currentProductReadService.retrieveByIdTypeAndId(idType, id);
+    }
+
     @GET
     @Path("template")
     @Operation(summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
@@ -94,7 +103,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return this.currentProductReadService.retrieveTemplate();
     }
 
-    @Override
     @POST
     @Operation(summary = "Create a Current Product", description = "Creates a Current Product\n\n"
             + "Mandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal, accountingType, allowOverdraft, enforceminimumRequiredBalance\n\n"
@@ -105,7 +113,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
-    @Override
     @PUT
     @Path("{productId}")
     @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
@@ -116,7 +123,6 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
-    @Override
     @DELETE
     @Path("{productId}")
     @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
