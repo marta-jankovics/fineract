@@ -56,6 +56,7 @@ import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts")
@@ -86,7 +87,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n" + "\n" + "currentaccounts\n" + "\n" + "\n" + "currentaccounts")
-    public Page<CurrentAccountResponseData> retrieveAll(@Pagination Pageable pageable) {
+    public Page<CurrentAccountResponseData> retrieveAll(@Pagination @SortDefault("createdDate") Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveAll(pageable);
     }

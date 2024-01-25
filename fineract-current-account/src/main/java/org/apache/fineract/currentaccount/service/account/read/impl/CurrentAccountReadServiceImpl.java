@@ -34,6 +34,7 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBal
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -90,5 +91,11 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
             throw new CurrentAccountNotFoundException(accountExternalId);
         }
         return id;
+    }
+
+    @Override
+    public List<CurrentAccountResponseData> retrieveAllByClientId(Long clientId, Sort sort) {
+        return currentAccountResponseDataMapper.map(currentAccountRepository.findAllByClientId(clientId, sort),
+                currentAccountBalanceReadService::getBalance);
     }
 }

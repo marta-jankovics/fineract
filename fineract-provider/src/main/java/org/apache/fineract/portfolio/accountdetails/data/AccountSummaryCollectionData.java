@@ -18,7 +18,9 @@
  */
 package org.apache.fineract.portfolio.accountdetails.data;
 
-import java.util.Collection;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
+
+import java.util.List;
 
 /**
  * Immutable data object representing a summary of various accounts.
@@ -26,81 +28,59 @@ import java.util.Collection;
 @SuppressWarnings("unused")
 public class AccountSummaryCollectionData {
 
-    private final Collection<LoanAccountSummaryData> loanAccounts;
-    private final Collection<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts;
-    private final Collection<SavingsAccountSummaryData> savingsAccounts;
-    private final Collection<ShareAccountSummaryData> shareAccounts;
-    private final Collection<GuarantorAccountSummaryData> guarantorAccounts;
+    private final List<LoanAccountSummaryData> loanAccounts;
+    private final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts;
+    private final List<SavingsAccountSummaryData> savingsAccounts;
+    private final List<ShareAccountSummaryData> shareAccounts;
+    private final List<GuarantorAccountSummaryData> guarantorAccounts;
+    private final List<CurrentAccountResponseData> currentAccounts;
 
-    private final Collection<LoanAccountSummaryData> memberLoanAccounts;
-    private final Collection<SavingsAccountSummaryData> memberSavingsAccounts;
-    private final Collection<GuarantorAccountSummaryData> memberGuarantorAccounts;
+    private final List<LoanAccountSummaryData> memberLoanAccounts;
+    private final List<SavingsAccountSummaryData> memberSavingsAccounts;
+    private final List<GuarantorAccountSummaryData> memberGuarantorAccounts;
 
     /*
      * METHOD SIGNATURE CHANGE NOTICE: Method's signature was changed for GLIM & GSIM implementation
      */
-    public AccountSummaryCollectionData(final Collection<LoanAccountSummaryData> loanAccounts,
-            final Collection<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
-            final Collection<SavingsAccountSummaryData> savingsAccounts, final Collection<ShareAccountSummaryData> shareAccounts,
-            final Collection<GuarantorAccountSummaryData> guarantorAccounts) {
+    public AccountSummaryCollectionData(final List<LoanAccountSummaryData> loanAccounts,
+            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
+            final List<SavingsAccountSummaryData> savingsAccounts, final List<ShareAccountSummaryData> shareAccounts,
+            final List<GuarantorAccountSummaryData> guarantorAccounts, final List<CurrentAccountResponseData> currentAccounts) {
 
-        this.loanAccounts = defaultLoanAccountsIfEmpty(loanAccounts);
-        this.groupLoanIndividualMonitoringAccounts = groupLoanIndividualMonitoringAccounts;
-        this.savingsAccounts = defaultSavingsAccountsIfEmpty(savingsAccounts);
-        this.shareAccounts = defaultShareAccountsIfEmpty(shareAccounts);
-        this.guarantorAccounts = guarantorAccounts;
+        this.loanAccounts = defaultIfEmpty(loanAccounts);
+        this.groupLoanIndividualMonitoringAccounts = defaultIfEmpty(groupLoanIndividualMonitoringAccounts);
+        this.savingsAccounts = defaultIfEmpty(savingsAccounts);
+        this.shareAccounts = defaultIfEmpty(shareAccounts);
+        this.guarantorAccounts = defaultIfEmpty(guarantorAccounts);
+        this.currentAccounts = defaultIfEmpty(currentAccounts);
         this.memberLoanAccounts = null;
         this.memberSavingsAccounts = null;
         this.memberGuarantorAccounts = null;
     }
 
-    public AccountSummaryCollectionData(final Collection<LoanAccountSummaryData> loanAccounts,
-            final Collection<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
-            final Collection<SavingsAccountSummaryData> savingsAccounts, final Collection<GuarantorAccountSummaryData> guarantorAccounts,
-            final Collection<LoanAccountSummaryData> memberLoanAccounts, final Collection<SavingsAccountSummaryData> memberSavingsAccounts,
-            final Collection<GuarantorAccountSummaryData> memberGuarantorAccounts) {
+    public AccountSummaryCollectionData(final List<LoanAccountSummaryData> loanAccounts,
+            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
+            final List<SavingsAccountSummaryData> savingsAccounts, final List<GuarantorAccountSummaryData> guarantorAccounts,
+            final List<LoanAccountSummaryData> memberLoanAccounts, final List<SavingsAccountSummaryData> memberSavingsAccounts,
+            final List<GuarantorAccountSummaryData> memberGuarantorAccounts) {
         /* Note to Self: GSIM not passed in */
 
-        this.loanAccounts = defaultLoanAccountsIfEmpty(loanAccounts);
-        this.groupLoanIndividualMonitoringAccounts = groupLoanIndividualMonitoringAccounts;
-        this.savingsAccounts = defaultSavingsAccountsIfEmpty(savingsAccounts);
-        this.guarantorAccounts = guarantorAccounts;
+        this.loanAccounts = defaultIfEmpty(loanAccounts);
+        this.groupLoanIndividualMonitoringAccounts = defaultIfEmpty(groupLoanIndividualMonitoringAccounts);
+        this.savingsAccounts = defaultIfEmpty(savingsAccounts);
+        this.guarantorAccounts = defaultIfEmpty(guarantorAccounts);
         this.shareAccounts = null;
-        this.memberLoanAccounts = defaultLoanAccountsIfEmpty(memberLoanAccounts);
-        this.memberSavingsAccounts = defaultSavingsAccountsIfEmpty(memberSavingsAccounts);
-        this.memberGuarantorAccounts = defaultGuarantorAccountsIfEmpty(memberGuarantorAccounts);
+        this.currentAccounts = null;
+        this.memberLoanAccounts = defaultIfEmpty(memberLoanAccounts);
+        this.memberSavingsAccounts = defaultIfEmpty(memberSavingsAccounts);
+        this.memberGuarantorAccounts = defaultIfEmpty(memberGuarantorAccounts);
     }
 
-    private Collection<LoanAccountSummaryData> defaultLoanAccountsIfEmpty(final Collection<LoanAccountSummaryData> collection) {
-        Collection<LoanAccountSummaryData> returnCollection = null;
-        if (collection != null && !collection.isEmpty()) {
-            returnCollection = collection;
+    private <T> List<T> defaultIfEmpty(final List<T> List) {
+        List<T> returnList = null;
+        if (List != null && !List.isEmpty()) {
+            returnList = List;
         }
-        return returnCollection;
-    }
-
-    private Collection<SavingsAccountSummaryData> defaultSavingsAccountsIfEmpty(final Collection<SavingsAccountSummaryData> collection) {
-        Collection<SavingsAccountSummaryData> returnCollection = null;
-        if (collection != null && !collection.isEmpty()) {
-            returnCollection = collection;
-        }
-        return returnCollection;
-    }
-
-    private Collection<ShareAccountSummaryData> defaultShareAccountsIfEmpty(final Collection<ShareAccountSummaryData> collection) {
-        Collection<ShareAccountSummaryData> returnCollection = null;
-        if (collection != null && !collection.isEmpty()) {
-            returnCollection = collection;
-        }
-        return returnCollection;
-    }
-
-    private Collection<GuarantorAccountSummaryData> defaultGuarantorAccountsIfEmpty(
-            final Collection<GuarantorAccountSummaryData> collection) {
-        Collection<GuarantorAccountSummaryData> returnCollection = null;
-        if (collection != null && !collection.isEmpty()) {
-            returnCollection = collection;
-        }
-        return returnCollection;
+        return returnList;
     }
 }

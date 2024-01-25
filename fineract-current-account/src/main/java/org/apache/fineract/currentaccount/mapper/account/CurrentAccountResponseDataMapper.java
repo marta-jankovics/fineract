@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.mapper.account;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -37,6 +38,11 @@ public interface CurrentAccountResponseDataMapper {
     default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data,
             Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
         return data.map(currentAccountData -> map(currentAccountData, balanceDataFunction));
+    }
+
+    default List<CurrentAccountResponseData> map(List<CurrentAccountData> data,
+                                                 Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+        return data.stream().map(currentAccountData -> map(currentAccountData, balanceDataFunction)).toList();
     }
 
     default CurrentAccountResponseData map(CurrentAccountData currentAccountData,
