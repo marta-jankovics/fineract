@@ -211,7 +211,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         if (checkEx.getMessage().contains("m_current_transaction_external_id_key")) {
             final String externalId = command.stringValueOfParameterNamed("externalId");
             msgCode += ".duplicate.externalId";
-            msg = "Current account transaction with externalId " + externalId + " already exists";
+            msg = "Current transaction with externalId " + externalId + " already exists";
             param = "externalId";
             msgArgs = new Object[] { externalId, dve };
         } else {

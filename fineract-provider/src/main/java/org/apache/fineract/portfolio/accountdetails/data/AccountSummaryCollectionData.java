@@ -18,9 +18,8 @@
  */
 package org.apache.fineract.portfolio.accountdetails.data;
 
-import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
-
 import java.util.List;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 
 /**
  * Immutable data object representing a summary of various accounts.
@@ -43,9 +42,9 @@ public class AccountSummaryCollectionData {
      * METHOD SIGNATURE CHANGE NOTICE: Method's signature was changed for GLIM & GSIM implementation
      */
     public AccountSummaryCollectionData(final List<LoanAccountSummaryData> loanAccounts,
-            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
-            final List<SavingsAccountSummaryData> savingsAccounts, final List<ShareAccountSummaryData> shareAccounts,
-            final List<GuarantorAccountSummaryData> guarantorAccounts, final List<CurrentAccountResponseData> currentAccounts) {
+            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts, final List<SavingsAccountSummaryData> savingsAccounts,
+            final List<ShareAccountSummaryData> shareAccounts, final List<GuarantorAccountSummaryData> guarantorAccounts,
+            final List<CurrentAccountResponseData> currentAccounts) {
 
         this.loanAccounts = defaultIfEmpty(loanAccounts);
         this.groupLoanIndividualMonitoringAccounts = defaultIfEmpty(groupLoanIndividualMonitoringAccounts);
@@ -59,10 +58,9 @@ public class AccountSummaryCollectionData {
     }
 
     public AccountSummaryCollectionData(final List<LoanAccountSummaryData> loanAccounts,
-            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts,
-            final List<SavingsAccountSummaryData> savingsAccounts, final List<GuarantorAccountSummaryData> guarantorAccounts,
-            final List<LoanAccountSummaryData> memberLoanAccounts, final List<SavingsAccountSummaryData> memberSavingsAccounts,
-            final List<GuarantorAccountSummaryData> memberGuarantorAccounts) {
+            final List<LoanAccountSummaryData> groupLoanIndividualMonitoringAccounts, final List<SavingsAccountSummaryData> savingsAccounts,
+            final List<GuarantorAccountSummaryData> guarantorAccounts, final List<LoanAccountSummaryData> memberLoanAccounts,
+            final List<SavingsAccountSummaryData> memberSavingsAccounts, final List<GuarantorAccountSummaryData> memberGuarantorAccounts) {
         /* Note to Self: GSIM not passed in */
 
         this.loanAccounts = defaultIfEmpty(loanAccounts);
@@ -76,10 +74,10 @@ public class AccountSummaryCollectionData {
         this.memberGuarantorAccounts = defaultIfEmpty(memberGuarantorAccounts);
     }
 
-    private <T> List<T> defaultIfEmpty(final List<T> List) {
+    private <T> List<T> defaultIfEmpty(final List<T> list) {
         List<T> returnList = null;
-        if (List != null && !List.isEmpty()) {
-            returnList = List;
+        if (list != null && !list.isEmpty()) {
+            returnList = list;
         }
         return returnList;
     }

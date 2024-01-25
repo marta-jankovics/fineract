@@ -50,7 +50,6 @@ import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
-import org.apache.fineract.currentaccount.enumeration.account.EntityType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
@@ -64,6 +63,7 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -91,7 +91,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final UUID productId = UUID.fromString(command.stringValueOfParameterNamed(productIdParamName));
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
+                        "Current product with provided id: %s cannot be found", productId));
 
         Client client;
         final Long clientId = command.longValueOfParameterNamed(clientIdParamName);
@@ -226,7 +227,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         final CurrentProduct product = currentProductRepository.findById(account.getProductId())
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", account.getProductId()));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
+                        "Current product with provided id: %s cannot be found", account.getProductId()));
         validateAccountValuesWithProduct(product, account);
 
         if (!actualChanges.isEmpty()) {
@@ -415,7 +417,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     private void persistEntityAction(CurrentAccount account, EntityActionType actionType, LocalDate actionDate) {
-        EntityAction entityAction = new EntityAction(EntityType.CURRENT, account.getId(), actionType, actionDate);
+        EntityAction entityAction = new EntityAction(PortfolioProductType.CURRENT, account.getId(), actionType, actionDate);
         entityActionRepository.save(entityAction);
     }
 
@@ -455,7 +457,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
     private LocalDate fetchSubmittedOnDate(CurrentAccount account) {
         return entityActionRepository
-                .getActionDateByEntityTypeAndEntityIdAndActionType(EntityType.CURRENT, account.getId(), EntityActionType.SUBMIT)
+                .getActionDateByEntityTypeAndEntityIdAndActionType(PortfolioProductType.CURRENT, account.getId(), EntityActionType.SUBMIT)
                 .orElseThrow(() -> new GeneralPlatformDomainRuleException("error.msg.submit.date.is.missing",
                         "Current account submit date is missing"));
     }

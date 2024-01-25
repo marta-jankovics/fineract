@@ -42,7 +42,8 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
     @Override
     public CurrentAccountBalanceData getBalance(UUID accountId) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactions(accountId, Sort.by(Sort.Direction.ASC, "createdDate","id")),
+        return calculateBalance(accountId,
+                () -> currentTransactionRepository.getTransactions(accountId, Sort.by(Sort.Direction.ASC, "createdDate", "id")),
                 (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
     }
 

@@ -51,6 +51,7 @@ public interface CurrentProductRepository extends JpaRepository<CurrentProduct, 
 
     @Query("SELECT cp.id FROM CurrentProduct cp WHERE cp.externalId = :externalId")
     UUID findIdByExternalId(@Param("externalId") ExternalId externalId);
+
     @Query("SELECT cp.id FROM CurrentProduct cp WHERE cp.shortName = :shortName")
     UUID findIdByShortName(@Param("shortName") String id);
 }

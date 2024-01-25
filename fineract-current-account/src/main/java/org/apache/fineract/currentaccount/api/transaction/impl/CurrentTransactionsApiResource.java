@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts/{accountId}/transactions")
 @Component
-@Tag(name = "Current Account Transactions")
+@Tag(name = "Current Transactions")
 @RequiredArgsConstructor
 public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 

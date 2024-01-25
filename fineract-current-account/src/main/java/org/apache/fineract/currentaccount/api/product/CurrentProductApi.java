@@ -31,11 +31,17 @@ public interface CurrentProductApi {
 
     CurrentProductResponseData retrieveOne(UUID productId);
 
+    CurrentProductResponseData retrieveOne(String idType, String id);
+
     CurrentProductTemplateResponseData retrieveTemplate();
 
     CommandProcessingResult create(String requestJson);
 
     CommandProcessingResult update(UUID productId, String requestJson);
 
+    CommandProcessingResult update(String idType, String id, String requestJson);
+
     CommandProcessingResult delete(UUID productId);
+
+    CommandProcessingResult delete(String idType, String id);
 }

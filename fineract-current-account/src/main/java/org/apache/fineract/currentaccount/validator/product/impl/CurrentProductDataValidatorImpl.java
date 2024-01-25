@@ -59,11 +59,12 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 @RequiredArgsConstructor
 public class CurrentProductDataValidatorImpl implements CurrentProductDataValidator {
 
-    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, nameParamName, externalIdParamName,
-            shortNameParamName, descriptionParamName, currencyCodeParamName, currencyDigitsAfterDecimalParamName,
+    private static final Set<String> CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, nameParamName,
+            externalIdParamName, shortNameParamName, descriptionParamName, currencyCodeParamName, currencyDigitsAfterDecimalParamName,
             currencyInMultiplesOfParamName, accountingTypeParamName, allowOverdraftParamName, overdraftLimitParamName,
             allowForceTransactionParamName, minimumRequiredBalanceParamName, balanceCalculationTypeParamName));
 
+    @Override
     public void validateForCreate(final JsonCommand command) {
 
         if (StringUtils.isBlank(command.json())) {
@@ -124,6 +125,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
+    @Override
     public void validateForUpdate(final JsonCommand command, final CurrentProduct product) {
 
         if (StringUtils.isBlank(command.json())) {

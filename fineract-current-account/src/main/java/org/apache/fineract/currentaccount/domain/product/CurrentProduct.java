@@ -29,6 +29,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,18 +42,14 @@ import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDa
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_current_product", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name"}, name = "m_current_product_name_key"),
-        @UniqueConstraint(columnNames = {"short_name"}, name = "m_current_product_short_name_key"),
-        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_product_external_id_key")})
+@Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
+        @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key"),
+        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_product_external_id_key") })
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Id

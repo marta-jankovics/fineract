@@ -28,6 +28,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,18 +41,14 @@ import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculation
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "m_current_account", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"account_no"}, name = "m_current_account_account_no_key"),
-        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_account_external_id_key")})
+        @UniqueConstraint(columnNames = { "account_no" }, name = "m_current_account_account_no_key"),
+        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_external_id_key") })
 public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
 
     @Id
@@ -96,8 +95,8 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     private Long version;
 
     public static CurrentAccount newInstanceForSubmit(Long clientId, UUID productId, String accountNo, ExternalId externalId,
-                                                      boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction, BigDecimal minimumRequiredBalance,
-                                                      BalanceCalculationType balanceCalculationType) {
+            boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction, BigDecimal minimumRequiredBalance,
+            BalanceCalculationType balanceCalculationType) {
 
         CurrentAccount currentAccount = new CurrentAccount();
         currentAccount.setClientId(clientId);

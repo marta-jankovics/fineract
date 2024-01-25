@@ -61,7 +61,7 @@ import org.springframework.stereotype.Component;
 
 @Path("/v1/currentaccounts")
 @Component
-@Tag(name = "Current Account", description = "Current accounts are instances of a particular current product created for an individual. An application process around the creation of accounts is also supported.")
+@Tag(name = "Current Accounts", description = "Current accounts are instances of a particular current product created for an individual. An application process around the creation of accounts is also supported.")
 @RequiredArgsConstructor
 public class CurrentAccountsApiResource implements CurrentAccountsApi {
 

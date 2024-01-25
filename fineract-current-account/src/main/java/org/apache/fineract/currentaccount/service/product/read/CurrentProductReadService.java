@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
-import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

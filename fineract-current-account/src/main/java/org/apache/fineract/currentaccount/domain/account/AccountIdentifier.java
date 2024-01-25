@@ -23,15 +23,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import jakarta.persistence.Version;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
+import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.PortfolioProductType;
 
 //TODO: Move to core when it goes to support other entities as well
@@ -40,20 +40,26 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_entity_action")
-public class EntityAction extends AbstractAuditableWithUTCDateTimeCustom<Long> {
+@Table(name = "m_account_identifier")
+public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "entity_type", nullable = false)
-    private PortfolioProductType entityType;
+    @Column(name = "account_type", nullable = false)
+    private PortfolioProductType accountType;
 
-    @Column(name = "entity_id", nullable = false)
-    private UUID entityId;
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "action_type", nullable = false)
-    private EntityActionType actionType;
+    @Column(name = "identifier_type", nullable = false)
+    private InteropIdentifierType identifierType;
 
-    @Column(name = "action_date", nullable = false)
-    private LocalDate actionDate;
+    @Column(name = "value", nullable = false)
+    private String value;
+
+    @Column(name = "sub_value")
+    private String subValue;
+
+    @Version
+    private Long version;
 }

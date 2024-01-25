@@ -59,7 +59,9 @@ import org.apache.fineract.client.services.ClientsAddressApi;
 import org.apache.fineract.client.services.CodeValuesApi;
 import org.apache.fineract.client.services.CodesApi;
 import org.apache.fineract.client.services.CurrencyApi;
-import org.apache.fineract.client.services.CurrentProductApi;
+import org.apache.fineract.client.services.CurrentAccountsApi;
+import org.apache.fineract.client.services.CurrentProductsApi;
+import org.apache.fineract.client.services.CurrentTransactionsApi;
 import org.apache.fineract.client.services.DataTablesApi;
 import org.apache.fineract.client.services.DefaultApi;
 import org.apache.fineract.client.services.DelinquencyRangeAndBucketsManagementApi;
@@ -293,7 +295,9 @@ public final class FineractClient {
 
     public final ExternalAssetOwnersApi externalAssetOwners;
     public final LoanAccountLockApi loanAccountLockApi;
-    public final CurrentProductApi currentProductApi;
+    public final CurrentProductsApi currentProductsApi;
+    public final CurrentAccountsApi currentAccountsApi;
+    public final CurrentTransactionsApi currentTransactionsApi;
 
     private FineractClient(OkHttpClient okHttpClient, Retrofit retrofit) {
         this.okHttpClient = okHttpClient;
@@ -414,7 +418,9 @@ public final class FineractClient {
         templates = retrofit.create(UserGeneratedDocumentsApi.class);
         users = retrofit.create(UsersApi.class);
         workingDays = retrofit.create(WorkingDaysApi.class);
-        currentProductApi = retrofit.create(CurrentProductApi.class);
+        currentProductsApi = retrofit.create(CurrentProductsApi.class);
+        currentAccountsApi = retrofit.create(CurrentAccountsApi.class);
+        currentTransactionsApi = retrofit.create(CurrentTransactionsApi.class);
     }
 
     public static Builder builder() {

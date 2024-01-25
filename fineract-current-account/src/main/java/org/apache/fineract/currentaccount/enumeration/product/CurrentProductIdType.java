@@ -19,7 +19,5 @@
 package org.apache.fineract.currentaccount.enumeration.product;
 
 public enum CurrentProductIdType {
-    ID,
-    EXTERNAL_ID,
-    SHORT_NAME;
+    ID, EXTERNAL_ID, SHORT_NAME;
 }

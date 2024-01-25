@@ -23,6 +23,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -32,8 +33,6 @@ import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.useradministration.domain.AppUser;
-
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "m_portfolio_command_source")
@@ -133,7 +132,7 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
     private String resourceIdentifier;
 
     public static CommandSource fullEntryFrom(final CommandWrapper wrapper, final JsonCommand command, final AppUser maker,
-                                              String idempotencyKey, Integer status) {
+            String idempotencyKey, Integer status) {
         OffsetDateTime madeOnDate = DateUtils.getAuditOffsetDateTime();
         return new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getOfficeId(), command.getGroupId(),
                 command.getClientId(), command.getLoanId(), command.getSavingsId(), wrapper.getHref(), command.entityId(),

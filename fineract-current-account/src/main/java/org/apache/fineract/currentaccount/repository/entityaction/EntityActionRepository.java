@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
-import org.apache.fineract.currentaccount.enumeration.account.EntityType;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,6 +33,6 @@ import org.springframework.stereotype.Repository;
 public interface EntityActionRepository extends JpaRepository<EntityAction, Long> {
 
     @Query("SELECT ea.actionDate FROM EntityAction ea WHERE ea.entityType = :entityType AND ea.entityId = :entityId AND ea.actionType = :actionType")
-    Optional<LocalDate> getActionDateByEntityTypeAndEntityIdAndActionType(@Param("entityType") EntityType entityType,
+    Optional<LocalDate> getActionDateByEntityTypeAndEntityIdAndActionType(@Param("entityType") PortfolioProductType entityType,
             @Param("entityId") UUID entityId, @Param("actionType") EntityActionType actionType);
 }

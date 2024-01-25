@@ -41,7 +41,7 @@ public interface CurrentAccountResponseDataMapper {
     }
 
     default List<CurrentAccountResponseData> map(List<CurrentAccountData> data,
-                                                 Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
+            Function<UUID, CurrentAccountBalanceData> balanceDataFunction) {
         return data.stream().map(currentAccountData -> map(currentAccountData, balanceDataFunction)).toList();
     }
 

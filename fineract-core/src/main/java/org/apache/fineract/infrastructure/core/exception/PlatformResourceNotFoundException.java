@@ -24,6 +24,7 @@ package org.apache.fineract.infrastructure.core.exception;
 public class PlatformResourceNotFoundException extends AbstractPlatformResourceNotFoundException {
 
     public PlatformResourceNotFoundException(String groupId, String defaultUserMessage, Object... defaultUserMessageArgs) {
-        super(String.format("error.msg.%s.not.found",groupId), String.format(defaultUserMessage, defaultUserMessageArgs), defaultUserMessageArgs);
+        super(String.format("error.msg.%s.not.found", groupId), String.format(defaultUserMessage, defaultUserMessageArgs),
+                defaultUserMessageArgs);
     }
 }

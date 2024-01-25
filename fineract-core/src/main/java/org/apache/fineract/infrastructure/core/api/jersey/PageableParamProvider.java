@@ -18,9 +18,9 @@
  */
 package org.apache.fineract.infrastructure.core.api.jersey;
 
+import com.google.common.base.Splitter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -70,18 +70,18 @@ public class PageableParamProvider implements ValueParamProvider {
             });
             if (sort.get() != null) {
                 for (String propOrder : sort.get()) {
-                    String[] propOrderSplit = propOrder.split(",");
-                    String property = propOrderSplit[0];
-                    if (propOrderSplit.length == 1) {
+                    List<String> propOrderSplit = Splitter.on(',').splitToList(propOrder);
+                    String property = propOrderSplit.get(0);
+                    if (propOrderSplit.size() == 1) {
                         sortingOrders.add(Sort.Order.by(property));
                     } else {
-                        Sort.Direction direction = Sort.Direction.fromString(propOrderSplit[1]);
+                        Sort.Direction direction = Sort.Direction.fromString(propOrderSplit.get(1));
                         sortingOrders.add(new Sort.Order(direction, property));
                     }
                 }
             }
 
-            if(sortingOrders.isEmpty()) {
+            if (sortingOrders.isEmpty()) {
                 if (param.isAnnotationPresent(SortDefault.class)) {
                     SortDefault sortDefault = param.getAnnotation(SortDefault.class);
 

@@ -30,7 +30,7 @@ import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
 /**
- * Immutable data object representing a current account transaction.
+ * Immutable data object representing a current transaction.
  */
 @Getter
 @AllArgsConstructor

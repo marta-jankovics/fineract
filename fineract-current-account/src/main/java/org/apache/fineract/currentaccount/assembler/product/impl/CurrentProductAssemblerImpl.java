@@ -18,8 +18,6 @@
  */
 package org.apache.fineract.currentaccount.assembler.product.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountingTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
@@ -39,8 +37,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
@@ -56,6 +54,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
 
     private final ExternalIdFactory externalIdFactory;
 
+    @Override
     public CurrentProduct assemble(final JsonCommand command) {
 
         final Locale locale = command.extractLocale();
@@ -76,10 +75,11 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
                 .valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
         final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
 
-        return new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft, overdraftLimit,
-                allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
+        return new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft,
+                overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
     }
 
+    @Override
     public Map<String, Object> update(CurrentProduct product, JsonCommand command) {
         final Map<String, Object> actualChanges = new HashMap<>();
 

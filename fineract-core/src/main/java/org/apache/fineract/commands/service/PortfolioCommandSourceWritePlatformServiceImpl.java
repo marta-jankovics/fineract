@@ -88,8 +88,8 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
                 commandSourceInput.getResourceGetUrl(), commandSourceInput.getCommandJson(), commandSourceInput.getProductId(),
                 commandSourceInput.getOfficeId(), commandSourceInput.getGroupId(), commandSourceInput.getClientId(),
                 commandSourceInput.getLoanId(), commandSourceInput.getSavingsId(), commandSourceInput.getTransactionId(),
-                commandSourceInput.getCreditBureauId(), commandSourceInput.getOrganisationCreditBureauId(),
-                commandSourceInput.getIdempotencyKey(), commandSourceInput.getJobName(), commandSourceInput.getResourceIdentifier());
+                commandSourceInput.getCreditBureauId(), commandSourceInput.getOrganisationCreditBureauId(), commandSourceInput.getJobName(),
+                commandSourceInput.getIdempotencyKey(), commandSourceInput.getResourceIdentifier());
         final JsonElement parsedCommand = this.fromApiJsonHelper.parse(commandSourceInput.getCommandJson());
         final JsonCommand command = JsonCommand.fromExistingCommand(makerCheckerId, commandSourceInput.getCommandJson(), parsedCommand,
                 this.fromApiJsonHelper, commandSourceInput.getEntityName(), commandSourceInput.getResourceId(),
