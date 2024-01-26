@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.api.account;
 
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -36,9 +37,23 @@ public interface CurrentAccountsApi {
 
     CurrentAccountResponseData retrieveOne(String idType, String id, String subId);
 
+    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String accountId);
+
+    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String idType, String identifier);
+
+    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String idType, String identifier, String subIdentifier);
+
     CommandProcessingResult submitApplication(String requestJson);
 
-    CommandProcessingResult handleCommands(String accountId, String commandParam, String requestJson);
+    CommandProcessingResult action(String accountId, String commandParam, String requestJson);
+
+    CommandProcessingResult action(String idType, String id, String commandParam, String requestJson);
+
+    CommandProcessingResult action(String idType, String id, String subId, String commandParam, String requestJson);
 
     CommandProcessingResult update(String accountId, String requestJson);
+
+    CommandProcessingResult update(String idType, String identifier, String requestJson);
+
+    CommandProcessingResult update(String idType, String identifier, String subIdentifier, String requestJson);
 }

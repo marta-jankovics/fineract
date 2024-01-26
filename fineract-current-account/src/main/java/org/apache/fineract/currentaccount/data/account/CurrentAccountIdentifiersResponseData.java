@@ -16,17 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.repository.account;
+package org.apache.fineract.currentaccount.data.account;
 
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
-import org.apache.fineract.portfolio.account.PortfolioAccountType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import java.io.Serializable;
+import lombok.Builder;
+import lombok.Data;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
-@Repository
-public interface AccountIdentifierRepository extends JpaRepository<AccountIdentifier, Long> {
+@Data
+@Builder
+public class CurrentAccountIdentifiersResponseData implements Serializable {
 
-    @Query("SELECT ai.accountId FROM AccountIdentifier ai WHERE ai.accountType = :accountType AND ai.identifierType = :idType AND ai.value = :id AND ai.subValue = :subId")
-    String fetchAccountIdByIdTypeAndId(PortfolioAccountType accountType, String idType, String id, String subId);
+    private final String id;
+    private final String accountNumber;
+    private final ExternalId externalId;
+    private final ValueSubValueData msisdn;
+    private final ValueSubValueData email;
+    private final ValueSubValueData personalId;
+    private final ValueSubValueData business;
+    private final ValueSubValueData device;
+    private final ValueSubValueData accountId;
+    private final ValueSubValueData iban;
+    private final ValueSubValueData alias;
 }

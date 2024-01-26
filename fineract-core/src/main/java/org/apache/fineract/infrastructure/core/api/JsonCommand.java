@@ -20,6 +20,7 @@ package org.apache.fineract.infrastructure.core.api;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -560,5 +561,10 @@ public final class JsonCommand {
 
     public void checkForUnsupportedParameters(final Type typeOfMap, final String json, final Set<String> requestDataParameters) {
         this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, requestDataParameters);
+    }
+
+    public <T> T fromJson(String parameterName, final Class<T> classOfT) {
+        JsonObject paramObject = parsedCommand.getAsJsonObject().getAsJsonObject(parameterName);
+        return this.fromApiJsonHelper.fromJson(paramObject, classOfT);
     }
 }

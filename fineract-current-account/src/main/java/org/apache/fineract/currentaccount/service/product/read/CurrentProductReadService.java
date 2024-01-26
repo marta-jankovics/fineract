@@ -35,7 +35,7 @@ public interface CurrentProductReadService {
 
     CurrentProductTemplateResponseData retrieveTemplate();
 
-    CurrentProductResponseData retrieveByIdTypeAndId(String idType, String id);
+    CurrentProductResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier);
 
-    String retrieveIdByIdType(String idType, String id);
+    String retrieveIdByIdTypeAndIdentifier(String idType, String identifier);
 }

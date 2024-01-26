@@ -84,15 +84,15 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Path("{idType}/{id}")
+    @Path("{idType}/{identifier}")
     @Operation(summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
     public CurrentProductResponseData retrieveOne(
             @PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
-            @PathParam("id") @Parameter(description = "id", required = true) final String id) {
+            @PathParam("identifier") @Parameter(description = "identifier", required = true) final String identifier) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveByIdTypeAndId(idType, id);
+        return this.currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
     }
 
     @GET
@@ -128,13 +128,14 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @PUT
-    @Path("{idType}/{id}")
+    @Path("{idType}/{identifier}")
     @Operation(summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
     @Override
     public CommandProcessingResult update(@PathParam("idType") @Parameter(description = "idType") final String idType,
-            @PathParam("id") @Parameter(description = "id") final String id, @Parameter(hidden = true) final String requestJson) {
-        final String productId = resolveByIdType(idType, id);
+            @PathParam("identifier") @Parameter(description = "identifier") final String identifier,
+            @Parameter(hidden = true) final String requestJson) {
+        final String productId = resolveByIdType(idType, identifier);
         return update(productId, requestJson);
     }
 
@@ -148,16 +149,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @DELETE
-    @Path("{idType}/{id}")
+    @Path("{idType}/{identifier}")
     @Operation(summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @Override
     public CommandProcessingResult delete(@PathParam("idType") @Parameter(description = "idType") final String idType,
-            @PathParam("id") @Parameter(description = "id") final String id) {
-        final String productId = resolveByIdType(idType, id);
+            @PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+        final String productId = resolveByIdType(idType, identifier);
         return delete(productId);
     }
 
     private String resolveByIdType(String idType, String id) {
-        return this.currentProductReadService.retrieveIdByIdType(idType, id);
+        return this.currentProductReadService.retrieveIdByIdTypeAndIdentifier(idType, id);
     }
 }

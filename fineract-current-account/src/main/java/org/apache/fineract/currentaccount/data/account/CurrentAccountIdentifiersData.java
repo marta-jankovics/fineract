@@ -16,26 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.interoperation.domain;
+package org.apache.fineract.currentaccount.data.account;
 
-import lombok.Getter;
+import java.io.Serializable;
+import lombok.Data;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
-@Getter
-public enum InteropIdentifierType {
+@Data
+public class CurrentAccountIdentifiersData implements Serializable {
 
-    MSISDN(""), //
-    EMAIL(""), //
-    PERSONAL_ID("PERSONALID"), //
-    BUSINESS(""), //
-    DEVICE(""), //
-    ACCOUNT_ID("ACCOUNTID"), //
-    IBAN(""), //
-    ALIAS(""), //
-    ; //
-
-    private final String alias;
-
-    InteropIdentifierType(String alias) {
-        this.alias = alias;
-    }
+    private final String id;
+    private final String accountNumber;
+    private final ExternalId externalId;
 }

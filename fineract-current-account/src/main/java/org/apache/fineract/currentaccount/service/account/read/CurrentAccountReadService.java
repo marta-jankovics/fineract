@@ -19,9 +19,9 @@
 package org.apache.fineract.currentaccount.service.account.read;
 
 import java.util.List;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
-import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,9 +34,13 @@ public interface CurrentAccountReadService {
 
     CurrentAccountTemplateResponseData retrieveTemplate();
 
-    String retrieveAccountIdByExternalId(ExternalId externalId);
-
     List<CurrentAccountResponseData> retrieveAllByClientId(Long clientId, Sort sort);
 
-    CurrentAccountResponseData retrieveByIdTypeAndId(String idType, String id, String subId);
+    CurrentAccountResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
+
+    String retrieveIdByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
+
+    CurrentAccountIdentifiersResponseData retrieveIdentifiersById(String accountId);
+
+    CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
 }

@@ -32,7 +32,7 @@ import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.eclipselink.EmptyStringIfNullConverter;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
-import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.eclipse.persistence.annotations.Convert;
 import org.eclipse.persistence.annotations.Converter;
 
@@ -48,7 +48,7 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
 
     @Enumerated(EnumType.STRING)
     @Column(name = "account_type", nullable = false)
-    private PortfolioProductType accountType;
+    private PortfolioAccountType accountType;
 
     @Column(name = "account_id", nullable = false)
     private String accountId;

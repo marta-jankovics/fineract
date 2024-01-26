@@ -73,6 +73,10 @@ public class FromJsonHelper {
         return this.gsonConverter.fromJson(json, classOfT);
     }
 
+    public <T> T fromJson(final JsonElement element, final Class<T> classOfT) {
+        return this.gsonConverter.fromJson(element, classOfT);
+    }
+
     public String toJson(final JsonElement jsonElement) {
         return this.gsonConverter.toJson(jsonElement);
     }

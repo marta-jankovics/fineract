@@ -25,11 +25,14 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.identifiersParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.productIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.submittedOnDateParamName;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
@@ -51,6 +55,7 @@ import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStat
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -62,7 +67,9 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -76,6 +83,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final CurrentProductRepository currentProductRepository;
     private final CurrentAccountRepository currentAccountRepository;
     private final EntityActionRepository entityActionRepository;
+    private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final ExternalIdFactory externalIdFactory;
 
@@ -149,10 +157,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
-        // TODO: Would be better to not flush
+        // TODO: Would be better to not flush, but then the exception handlign should be moved to the transaction
+        // boundary
         currentAccountRepository.saveAndFlush(account);
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
+        persistAccountIdentifiers(account, command);
 
         return account;
     }
@@ -459,5 +469,49 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .getActionDateByEntityTypeAndEntityIdAndActionType(PortfolioProductType.CURRENT, account.getId(), EntityActionType.SUBMIT)
                 .orElseThrow(() -> new GeneralPlatformDomainRuleException("error.msg.submit.date.is.missing",
                         "Current account submit date is missing"));
+    }
+
+    private void persistAccountIdentifiers(CurrentAccount account, JsonCommand command) {
+        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
+        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        try {
+            if (command.hasParameter(identifiersParamName)) {
+                JsonObject identifiers = command.jsonElement(identifiersParamName).getAsJsonObject();
+
+                if (identifiers != null) {
+                    for (Map.Entry<String, JsonElement> itemElement : identifiers.entrySet()) {
+                        boolean saved = false;
+                        String reformattedKey = itemElement.getKey().toUpperCase().replace("-", "_");
+                        for (InteropIdentifierType interopIdentifierType : InteropIdentifierType.values()) {
+                            if (reformattedKey.equals(interopIdentifierType.name())
+                                    || reformattedKey.equals(interopIdentifierType.getAlias())) {
+                                String value = itemElement.getValue().getAsJsonObject().get("value").getAsString();
+                                String subValue = itemElement.getValue().getAsJsonObject().get("subValue") != null
+                                        ? itemElement.getValue().getAsJsonObject().get("subValue").getAsString()
+                                        : null;
+                                AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(),
+                                        interopIdentifierType, value, subValue, 1L);
+                                // TODO: would be better to not flush, but then the error handling should be moved to
+                                // the transaction boundary
+                                accountIdentifierRepository.saveAndFlush(entityAction);
+                                saved = true;
+                                break;
+                            }
+                        }
+                        if (!saved) {
+                            baseDataValidator.reset().parameter(itemElement.getKey())
+                                    .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
+                        }
+                    }
+                }
+            }
+        } catch (IllegalStateException e) {
+            baseDataValidator.reset().parameter(identifiersParamName)
+                    .failWithCodeNoParameterAddedToErrorCode("error.during.processing.identifiers");
+        }
+        if (!dataValidationErrors.isEmpty()) {
+            throw new PlatformApiDataValidationException(dataValidationErrors);
+        }
     }
 }

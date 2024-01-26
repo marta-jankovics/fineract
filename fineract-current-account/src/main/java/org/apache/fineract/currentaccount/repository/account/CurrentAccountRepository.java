@@ -19,7 +19,9 @@
 package org.apache.fineract.currentaccount.repository.account;
 
 import java.util.List;
+import java.util.Optional;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.springframework.data.domain.Page;
@@ -43,11 +45,17 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     Page<CurrentAccountData> findAllCurrentAccountData(Pageable pageable);
 
     @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.externalId = :externalId")
-    String findIdByExternalId(@Param("externalId") ExternalId externalId);
+    Optional<String> findIdByExternalId(@Param("externalId") ExternalId externalId);
+
+    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.accountNumber = :accountNumber")
+    Optional<String> findIdByAccountNumber(@Param("accountNumber") String accountNumber);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNumber, ca.externalId, ca.clientId, ca.productId, ca.status, ca.activatedOnDate, ca.allowOverdraft, ca.overdraftLimit, ca.allowForceTransaction, ca.minimumRequiredBalance, ca.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentAccount ca, CurrentProduct cp, ApplicationCurrency curr, Client c WHERE ca.productId = cp.id AND curr.code = cp.currency.code AND c.id = ca.clientId AND c.id = :clientId")
     List<CurrentAccountData> findAllByClientId(@Param("clientId") Long clientId, Sort sort);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNumber, ca.externalId, ca.clientId, ca.productId, ca.status, ca.activatedOnDate, ca.allowOverdraft, ca.overdraftLimit, ca.allowForceTransaction, ca.minimumRequiredBalance, ca.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentAccount ca, CurrentProduct cp, ApplicationCurrency curr WHERE ca.productId = cp.id AND curr.code = cp.currency.code  AND ca.accountNumber = :accountNumber")
     CurrentAccountData findCurrentAccountDataByAccountNumber(@Param("accountNumber") String accountNumber);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData(ca.id, ca.accountNumber, ca.externalId) FROM CurrentAccount ca WHERE ca.id = :accountId")
+    Optional<CurrentAccountIdentifiersData> retrieveIdentifiers(@Param("accountId") String accountId);
 }

@@ -23,18 +23,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
+import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountIdType;
+import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
-import org.apache.fineract.currentaccount.repository.account.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +54,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentProductReadService currentProductReadPlatformService;
     private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
+    private final CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper;
 
     @Override
     public Page<CurrentAccountResponseData> retrieveAll(Pageable pageable) {
@@ -77,44 +83,89 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
-    public String retrieveAccountIdByExternalId(ExternalId accountExternalId) {
-        String id = currentAccountRepository.findIdByExternalId(accountExternalId);
-        if (id == null) {
-            throw new PlatformResourceNotFoundException("current.account", "Current account with external id: %s cannot be found",
-                    accountExternalId);
-        }
-        return id;
-    }
-
-    @Override
     public List<CurrentAccountResponseData> retrieveAllByClientId(Long clientId, Sort sort) {
         return currentAccountResponseDataMapper.map(currentAccountRepository.findAllByClientId(clientId, sort),
                 currentAccountBalanceReadService::getBalance);
     }
 
     @Override
-    public CurrentAccountResponseData retrieveByIdTypeAndId(String idType, String id, String subId) {
+    public CurrentAccountResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier) {
         String reformatIdType = reformatIdType(idType);
-        CurrentAccountIdType currentAccountIdType = null;
-        try {
-            currentAccountIdType = CurrentAccountIdType.valueOf(reformatIdType);
-        } catch (IllegalArgumentException e) {
-            // No need to throw error, we are going to check in the secondary identifiers
-        }
-
+        CurrentAccountIdType currentAccountIdType = resolveCurrentAccountIdType(reformatIdType);
         if (currentAccountIdType == null) {
-            String accountId = accountIdentifierRepository.fetchAccountIdByIdTypeAndId(PortfolioAccountType.CURRENT, idType, id, subId);
-            if (accountId == null) {
-                throw new PlatformResourceNotFoundException("current.account",
-                        "Current account with secondary identifier: %s and value: %s cannot be found", idType, id);
-            }
+            String accountId = resolveIdByIdTypeAndIdentifier(reformatIdType, idType, identifier, subIdentifier);
             return retrieveById(accountId);
         }
         return switch (currentAccountIdType) {
-            case ID -> retrieveById(id);
-            case EXTERNAL_ID -> retrieveByExternalId(new ExternalId(id));
-            case ACCOUNT_NUMBER -> retrieveByAccountNumber(id);
+            case ID -> retrieveById(identifier);
+            case EXTERNAL_ID -> retrieveByExternalId(new ExternalId(identifier));
+            case ACCOUNT_NUMBER -> retrieveByAccountNumber(identifier);
         };
+    }
+
+    @Override
+    public String retrieveIdByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier) {
+        return getAccountIdByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+    }
+
+    @Override
+    public CurrentAccountIdentifiersResponseData retrieveIdentifiersById(String accountId) {
+        CurrentAccountIdentifiersData currentAccountIdentifiersData = currentAccountRepository.retrieveIdentifiers(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+        List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository
+                .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, accountId);
+        return currentAccountIdentifiersResponseDataMapper.map(currentAccountIdentifiersData, extraSecondaryIdentifiers);
+    }
+
+    @Override
+    public CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(String idType, String identifier,
+            String subIdentifier) {
+        String accountId = getAccountIdByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        return retrieveIdentifiersById(accountId);
+    }
+
+    private String resolveIdByIdTypeAndIdentifier(String reformatIdType, String idType, String identifier, String subIdentifier) {
+        InteropIdentifierType interopIdentifierType = null;
+        String accountId = null;
+        try {
+            interopIdentifierType = InteropIdentifierType.valueOf(reformatIdType);
+        } catch (IllegalArgumentException e) {
+            // No need to throw error we handle it later
+        }
+        if (interopIdentifierType != null) {
+            accountId = accountIdentifierRepository.fetchAccountIdByIdTypeAndId(PortfolioAccountType.CURRENT, interopIdentifierType,
+                    identifier, subIdentifier);
+        }
+        if (accountId == null) {
+            if (subIdentifier == null) {
+                throw new PlatformResourceNotFoundException("current.account",
+                        "Current account with secondary identifier: %s and value: %s cannot be found", idType, identifier);
+            } else {
+                throw new PlatformResourceNotFoundException("current.account",
+                        "Current account with secondary identifier: %s and value: %s and sub value: %s cannot be found", idType, identifier,
+                        subIdentifier);
+            }
+        }
+        return accountId;
+    }
+
+    private String getAccountIdByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier) {
+        String reformatIdType = reformatIdType(idType);
+        CurrentAccountIdType currentAccountIdType = resolveCurrentAccountIdType(reformatIdType);
+
+        if (currentAccountIdType == null) {
+            return resolveIdByIdTypeAndIdentifier(reformatIdType, idType, identifier, subIdentifier);
+        } else {
+            return switch (currentAccountIdType) {
+                case ID -> identifier;
+                case EXTERNAL_ID -> currentAccountRepository.findIdByExternalId(new ExternalId(identifier))
+                        .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
+                                "Current account with external id: %s cannot be found", identifier));
+                case ACCOUNT_NUMBER -> currentAccountRepository.findIdByAccountNumber(identifier)
+                        .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
+                                "Current account with account number: %s cannot be found", identifier));
+            };
+        }
     }
 
     private CurrentAccountResponseData retrieveByAccountNumber(String accountNumber) {
@@ -139,5 +190,14 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
 
     private String reformatIdType(String idType) {
         return idType != null ? idType.replaceAll("-", "_").toUpperCase() : null;
+    }
+
+    private CurrentAccountIdType resolveCurrentAccountIdType(String reformatIdType) {
+        try {
+            return CurrentAccountIdType.valueOf(reformatIdType);
+        } catch (IllegalArgumentException e) {
+            // No need to throw error, we are going to check in the secondary identifiers
+        }
+        return null;
     }
 }

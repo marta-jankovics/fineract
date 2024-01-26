@@ -77,7 +77,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public CurrentProductResponseData retrieveByIdTypeAndId(String idType, String id) {
+    public CurrentProductResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier) {
         String reformatIdType = reformatIdType(idType);
         CurrentProductIdType currentProductIdType;
         try {
@@ -87,14 +87,14 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
                     idType);
         }
         return switch (currentProductIdType) {
-            case ID -> retrieveById(id);
-            case EXTERNAL_ID -> retrieveByExternalId(new ExternalId(id));
-            case SHORT_NAME -> retrieveByShortName(id);
+            case ID -> retrieveById(identifier);
+            case EXTERNAL_ID -> retrieveByExternalId(new ExternalId(identifier));
+            case SHORT_NAME -> retrieveByShortName(identifier);
         };
     }
 
     @Override
-    public String retrieveIdByIdType(String idType, String id) {
+    public String retrieveIdByIdTypeAndIdentifier(String idType, String identifier) {
         String reformatIdType = reformatIdType(idType);
         CurrentProductIdType currentProductIdType;
         try {
@@ -104,9 +104,9 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
                     idType);
         }
         return switch (currentProductIdType) {
-            case ID -> id;
-            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(id));
-            case SHORT_NAME -> currentProductRepository.findIdByShortName(id);
+            case ID -> identifier;
+            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(identifier));
+            case SHORT_NAME -> currentProductRepository.findIdByShortName(identifier);
         };
     }
 

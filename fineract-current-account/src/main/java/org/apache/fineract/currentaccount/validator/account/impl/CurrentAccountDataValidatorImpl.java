@@ -27,6 +27,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.identifiersParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
@@ -57,10 +58,10 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 @RequiredArgsConstructor
 public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValidator {
 
-    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, dateFormatParamName, accountNumberParamName, externalIdParamName, clientIdParamName,
-                    productIdParamName, submittedOnDateParamName, allowOverdraftParamName, overdraftLimitParamName,
-                    minimumRequiredBalanceParamName, allowForceTransactionParamName, balanceCalculationTypeParamName));
+    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
+            dateFormatParamName, accountNumberParamName, externalIdParamName, clientIdParamName, productIdParamName,
+            submittedOnDateParamName, allowOverdraftParamName, overdraftLimitParamName, minimumRequiredBalanceParamName,
+            allowForceTransactionParamName, balanceCalculationTypeParamName, identifiersParamName));
 
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(localeParamName, accountNumberParamName, externalIdParamName, allowOverdraftParamName, overdraftLimitParamName,

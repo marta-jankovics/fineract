@@ -70,6 +70,7 @@ public class CurrentAccountApiConstants {
 
     public static final String submittedOnDateParamName = "submittedOnDate";
     public static final String actionDateParamName = "actionDate";
+    public static final String identifiersParamName = "identifiers";
 
     public static final String activeParamName = "active";
     public static final String nameParamName = "name";
