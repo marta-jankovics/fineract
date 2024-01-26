@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.repository.transaction;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.springframework.data.domain.Page;

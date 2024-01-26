@@ -37,7 +37,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
@@ -111,8 +110,9 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/external-id/ExternalId1")
     @Override
-    public CurrentAccountResponseData retrieveOne(@PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
-                                                  @PathParam("id") @Parameter(description = "id", required = true) final String id) {
+    public CurrentAccountResponseData retrieveOne(
+            @PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
+            @PathParam("id") @Parameter(description = "id", required = true) final String id) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveByIdTypeAndId(idType, id, null);
     }
@@ -124,9 +124,10 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/external-id/ExternalId1")
     @Override
-    public CurrentAccountResponseData retrieveOne(@PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
-                                                  @PathParam("id") @Parameter(description = "id", required = true) final String id,
-                                                  @PathParam("subId") @Parameter(description = "subId", required = true) final String subId) {
+    public CurrentAccountResponseData retrieveOne(
+            @PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
+            @PathParam("id") @Parameter(description = "id", required = true) final String id,
+            @PathParam("subId") @Parameter(description = "subId", required = true) final String subId) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveByIdTypeAndId(idType, id, subId);
     }
@@ -135,7 +136,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Submit new current application", description = "Submits new current application\n\n"
-            + "Mandatory Fields: clientId, productId, accountNumber, submittedOnDate\n\n" + "Optional Fields: externalId, submittedOnDate\n\n"
+            + "Mandatory Fields: clientId, productId, accountNumber, submittedOnDate\n\n"
+            + "Optional Fields: externalId, submittedOnDate\n\n"
             + "Inherited from Product (if not provided): enforceminimumRequiredBalance, minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
     @Override

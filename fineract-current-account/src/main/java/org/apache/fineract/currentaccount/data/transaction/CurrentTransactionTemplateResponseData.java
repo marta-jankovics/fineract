@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
-
 import lombok.Builder;
 import lombok.Data;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;

@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.service.account.write;
 
 import java.time.OffsetDateTime;
 
-
 public interface CurrentAccountBalanceWriteService {
 
     void updateBalance(String accountId, OffsetDateTime tillDateTime);

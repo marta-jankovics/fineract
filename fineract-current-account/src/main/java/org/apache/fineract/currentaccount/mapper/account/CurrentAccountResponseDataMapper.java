@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.mapper.account;
 
 import java.util.List;
-
 import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;

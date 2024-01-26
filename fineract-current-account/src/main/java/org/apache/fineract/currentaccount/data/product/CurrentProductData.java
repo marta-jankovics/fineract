@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-
 import lombok.Data;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;

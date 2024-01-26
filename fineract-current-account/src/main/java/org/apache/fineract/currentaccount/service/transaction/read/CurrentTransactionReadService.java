@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read;
 
-
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.springframework.data.domain.Page;

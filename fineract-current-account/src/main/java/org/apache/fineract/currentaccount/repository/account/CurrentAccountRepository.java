@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.repository.account;
 
 import java.util.List;
-
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;

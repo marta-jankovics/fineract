@@ -32,7 +32,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
@@ -136,8 +135,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     public CommandProcessingResult transaction(@PathParam("accountId") final String accountId,
-            @PathParam("transactionId") final String transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
-            @Parameter(hidden = true) final String requestJson) {
+            @PathParam("transactionId") final String transactionId,
+            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
 
         CommandProcessingResult result = null;

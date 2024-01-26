@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
 import lombok.Data;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;

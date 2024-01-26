@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;

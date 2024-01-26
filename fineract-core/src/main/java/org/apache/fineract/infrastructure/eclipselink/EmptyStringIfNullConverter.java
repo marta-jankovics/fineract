@@ -14,12 +14,11 @@
 //     Oracle - initial API and implementation
 package org.apache.fineract.infrastructure.eclipselink;
 
+import java.util.UUID;
 import org.eclipse.persistence.mappings.DatabaseMapping;
 import org.eclipse.persistence.mappings.converters.Converter;
 import org.eclipse.persistence.mappings.foundation.AbstractDirectMapping;
 import org.eclipse.persistence.sessions.Session;
-
-import java.util.UUID;
 
 /**
  * Default String field value to JDBC data type converter.
@@ -29,14 +28,15 @@ public class EmptyStringIfNullConverter implements Converter {
     /**
      * Creates an instance of default UUID field value to JDBC data type converter.
      */
-    public EmptyStringIfNullConverter() {
-    }
+    public EmptyStringIfNullConverter() {}
 
     /**
      * Converts String field value to non-null String.
      *
-     * @param value source Object field value
-     * @param session current database session
+     * @param value
+     *            source Object field value
+     * @param session
+     *            current database session
      * @return target String to be stored as JDBC VARCHAR
      */
     @Override
@@ -47,13 +47,15 @@ public class EmptyStringIfNullConverter implements Converter {
     /**
      * Converts String from JDBC VARCHAR parameter to String field value.
      *
-     * @param jdbcValue source String from JDBC VARCHAR
-     * @param session current database session
+     * @param jdbcValue
+     *            source String from JDBC VARCHAR
+     * @param session
+     *            current database session
      * @return target UUID field value
      */
     @Override
     public Object convertDataValueToObjectValue(Object jdbcValue, Session session) {
-        return ((String)jdbcValue).isEmpty() ? null : jdbcValue;
+        return ((String) jdbcValue).isEmpty() ? null : jdbcValue;
     }
 
     /**
@@ -69,13 +71,15 @@ public class EmptyStringIfNullConverter implements Converter {
     /**
      * Initialize mapping for JDBC data type.
      *
-     * @param mapping field database mapping
-     * @param session current database session
+     * @param mapping
+     *            field database mapping
+     * @param session
+     *            current database session
      */
     @Override
     public void initialize(DatabaseMapping mapping, Session session) {
         if (mapping.isDirectToFieldMapping()) {
-            if (((AbstractDirectMapping)mapping).getFieldClassification() == null) {
+            if (((AbstractDirectMapping) mapping).getFieldClassification() == null) {
                 final AbstractDirectMapping directMapping = AbstractDirectMapping.class.cast(mapping);
                 final Class<?> attributeClassification = mapping.getAttributeClassification();
                 if (attributeClassification.isInstance(UUID.class)) {

@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.exception.transaction;
 
-
 import org.apache.fineract.infrastructure.core.exception.AbstractPlatformResourceNotFoundException;
 
 public class CurrentTransactionNotFoundException extends AbstractPlatformResourceNotFoundException {

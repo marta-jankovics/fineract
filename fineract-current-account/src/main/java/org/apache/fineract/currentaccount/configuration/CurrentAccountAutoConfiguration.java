@@ -81,8 +81,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountReadService.class)
     public CurrentAccountReadService currentAccountReadService(CurrentAccountRepository currentAccountRepository,
-            AccountIdentifierRepository accountIdentifierRepository,
-            CurrentProductReadService currentProductReadPlatformService, CurrentAccountBalanceReadService currentAccountBalanceReadService,
+            AccountIdentifierRepository accountIdentifierRepository, CurrentProductReadService currentProductReadPlatformService,
+            CurrentAccountBalanceReadService currentAccountBalanceReadService,
             CurrentAccountResponseDataMapper currentAccountResponseDataMapper) {
         return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentAccountBalanceReadService,
                 currentProductReadPlatformService, currentAccountResponseDataMapper);

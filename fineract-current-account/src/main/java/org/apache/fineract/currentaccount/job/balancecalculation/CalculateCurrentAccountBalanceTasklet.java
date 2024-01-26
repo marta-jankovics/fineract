@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;

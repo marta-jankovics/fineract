@@ -26,6 +26,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,16 +36,12 @@ import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransac
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_transaction", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_transaction_external_id_key")})
+        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_transaction_external_id_key") })
 public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
     @Id
@@ -80,9 +78,9 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<S
     private BigDecimal transactionAmount;
 
     public static CurrentTransaction newInstance(String accountId, ExternalId externalId, String correlationId, String referenceId,
-                                                 Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
-                                                 BigDecimal amount) {
-        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId,
-                paymentDetailId, transactionType, transactionDate, submittedOnDate, amount);
+            Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
+            BigDecimal amount) {
+        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId, paymentDetailId, transactionType,
+                transactionDate, submittedOnDate, amount);
     }
 }

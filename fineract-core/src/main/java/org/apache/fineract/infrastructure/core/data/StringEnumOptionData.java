@@ -18,9 +18,8 @@
  */
 package org.apache.fineract.infrastructure.core.data;
 
-import lombok.Getter;
-
 import java.io.Serializable;
+import lombok.Getter;
 
 /**
  * <p>

@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.service.account.write.impl;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
 
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -83,8 +82,8 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     public CommandProcessingResult modifyApplication(final String accountId, final JsonCommand command) {
         try {
             final CurrentAccount account = currentAccountRepository.findById(accountId)
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                            accountId));
+                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
+                            "Current account with id: %s cannot be found", accountId));
             currentAccountDataValidator.validateForUpdate(command, account);
             checkClientActive(account);
             Map<String, Object> changes = currentAccountAssembler.update(account, command);
@@ -110,9 +109,8 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Override
     public CommandProcessingResult cancelApplication(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateCancellation(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.cancelApplication(account, command);
 
@@ -133,9 +131,8 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Override
     public CommandProcessingResult activate(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateActivation(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.activate(account, command);
 
@@ -156,9 +153,8 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Override
     public CommandProcessingResult close(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateClosing(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.close(account, command);
 

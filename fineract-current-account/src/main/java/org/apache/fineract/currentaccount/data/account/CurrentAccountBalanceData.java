@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-
 import lombok.Data;
 
 @Data

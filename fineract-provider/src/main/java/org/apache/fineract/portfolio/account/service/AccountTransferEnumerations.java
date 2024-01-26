@@ -52,6 +52,10 @@ public final class AccountTransferEnumerations {
                     optionData = new EnumOptionData(PortfolioAccountType.SAVINGS.getValue().longValue(),
                             PortfolioAccountType.SAVINGS.getCode(), "Savings Account");
                 break;
+                case CURRENT:
+                    optionData = new EnumOptionData(PortfolioAccountType.CURRENT.getValue().longValue(),
+                            PortfolioAccountType.CURRENT.getCode(), "Current Account");
+                break;
             }
         }
 

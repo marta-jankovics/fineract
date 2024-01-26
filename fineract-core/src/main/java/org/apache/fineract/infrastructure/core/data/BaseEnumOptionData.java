@@ -18,11 +18,10 @@
  */
 package org.apache.fineract.infrastructure.core.data;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-import java.io.Serializable;
 
 /**
  * <p>

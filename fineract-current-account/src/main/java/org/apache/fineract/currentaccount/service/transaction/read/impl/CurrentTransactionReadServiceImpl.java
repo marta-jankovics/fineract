@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.service.transaction.read.impl;
 
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;

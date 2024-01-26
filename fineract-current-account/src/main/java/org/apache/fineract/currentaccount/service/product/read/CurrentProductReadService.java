@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.service.product.read;
 
 import java.util.List;
-
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.springframework.data.domain.Page;

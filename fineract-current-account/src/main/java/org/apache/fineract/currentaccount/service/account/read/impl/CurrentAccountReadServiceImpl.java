@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -39,9 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.List;
-
-
 @Slf4j
 @RequiredArgsConstructor
 public class CurrentAccountReadServiceImpl implements CurrentAccountReadService {
@@ -62,8 +60,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     public CurrentAccountResponseData retrieveById(final String accountId) {
         CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataByExternalId(accountId);
         if (currentAccountData == null) {
-            throw new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                    accountId);
+            throw new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId);
         }
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountId);
         return currentAccountResponseDataMapper.map(currentAccountData, currentAccountBalanceData);
@@ -108,8 +105,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         if (currentAccountIdType == null) {
             String accountId = accountIdentifierRepository.fetchAccountIdByIdTypeAndId(PortfolioAccountType.CURRENT, idType, id, subId);
             if (accountId == null) {
-                throw new PlatformResourceNotFoundException("current.account", "Current account with secondary identifier: %s and value: %s cannot be found",
-                        idType, id);
+                throw new PlatformResourceNotFoundException("current.account",
+                        "Current account with secondary identifier: %s and value: %s cannot be found", idType, id);
             }
             return retrieveById(accountId);
         }

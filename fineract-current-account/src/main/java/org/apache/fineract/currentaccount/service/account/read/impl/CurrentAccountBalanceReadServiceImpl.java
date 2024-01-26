@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.service.account.read.impl;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;

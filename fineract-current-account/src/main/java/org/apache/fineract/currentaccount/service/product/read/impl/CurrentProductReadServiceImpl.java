@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.service.product.read.impl;
 
 import java.util.Arrays;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingRuleType;
@@ -63,8 +62,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     public CurrentProductResponseData retrieveById(String productId) {
         CurrentProductData currentProductData = currentProductRepository.findCurrentProductDataById(productId);
         if (currentProductData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with id: %s cannot be found",
-                    productId);
+            throw new PlatformResourceNotFoundException("current.product", "Current product with id: %s cannot be found", productId);
         }
         return currentProductResponseDataMapper.map(currentProductData);
     }

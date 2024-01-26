@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.repository.entityaction;
 
 import java.time.LocalDate;
 import java.util.Optional;
-
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.portfolio.PortfolioProductType;

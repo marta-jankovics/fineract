@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.service.account.read;
 
 import java.util.List;
-
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;

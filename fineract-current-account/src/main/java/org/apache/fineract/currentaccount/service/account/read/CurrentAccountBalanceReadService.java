@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.service.account.read;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 
 public interface CurrentAccountBalanceReadService {

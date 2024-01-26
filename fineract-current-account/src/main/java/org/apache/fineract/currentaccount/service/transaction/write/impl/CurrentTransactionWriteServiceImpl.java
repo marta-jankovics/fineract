@@ -23,7 +23,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -67,9 +66,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Override
     public CommandProcessingResult deposit(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateDeposit(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction depositTransaction = currentTransactionAssembler.deposit(account, command, changes);
@@ -93,9 +91,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Override
     public CommandProcessingResult withdrawal(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateWithdrawal(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
@@ -121,9 +118,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     @Override
     public CommandProcessingResult hold(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateHold(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction holdTransaction = currentTransactionAssembler.hold(account, command, changes);
@@ -150,9 +146,8 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     public CommandProcessingResult release(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateRelease(command);
         final String transactionId = command.getTransactionId();
-        final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         final CurrentTransaction holdTransaction = currentTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
         checkClientActive(account);

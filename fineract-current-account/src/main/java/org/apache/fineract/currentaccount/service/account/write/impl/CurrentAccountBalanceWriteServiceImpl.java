@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
 import java.time.OffsetDateTime;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;

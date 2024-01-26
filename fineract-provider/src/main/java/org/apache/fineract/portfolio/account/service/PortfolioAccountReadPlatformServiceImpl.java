@@ -64,28 +64,22 @@ public class PortfolioAccountReadPlatformServiceImpl implements PortfolioAccount
         try {
             String sql = null;
             final PortfolioAccountType accountType = PortfolioAccountType.fromInt(accountTypeId);
-            switch (accountType) {
-                case INVALID:
-                break;
-                case LOAN:
+            if (accountType.isLoanAccount()) {
+                sql = "select " + this.loanAccountMapper.schema() + " where la.id = ?";
+                if (currencyCode != null) {
+                    sql += " and la.currency_code = ?";
+                    sqlParams = new Object[] { accountId, currencyCode };
+                }
 
-                    sql = "select " + this.loanAccountMapper.schema() + " where la.id = ?";
-                    if (currencyCode != null) {
-                        sql += " and la.currency_code = ?";
-                        sqlParams = new Object[] { accountId, currencyCode };
-                    }
+                accountData = this.jdbcTemplate.queryForObject(sql, this.loanAccountMapper, sqlParams);
+            } else if (accountType.isSavingsAccount()) {
+                sql = "select " + this.savingsAccountMapper.schema() + " where sa.id = ?";
+                if (currencyCode != null) {
+                    sql += " and sa.currency_code = ?";
+                    sqlParams = new Object[] { accountId, currencyCode };
+                }
 
-                    accountData = this.jdbcTemplate.queryForObject(sql, this.loanAccountMapper, sqlParams);
-                break;
-                case SAVINGS:
-                    sql = "select " + this.savingsAccountMapper.schema() + " where sa.id = ?";
-                    if (currencyCode != null) {
-                        sql += " and sa.currency_code = ?";
-                        sqlParams = new Object[] { accountId, currencyCode };
-                    }
-
-                    accountData = this.jdbcTemplate.queryForObject(sql, this.savingsAccountMapper, sqlParams);
-                break;
+                accountData = this.jdbcTemplate.queryForObject(sql, this.savingsAccountMapper, sqlParams);
             }
         } catch (final EmptyResultDataAccessException e) {
             throw new AccountTransferNotFoundException(accountId, e);
@@ -106,57 +100,53 @@ public class PortfolioAccountReadPlatformServiceImpl implements PortfolioAccount
             defaultAccountStatus = portfolioAccountDTO.getFirstAccountStatus();
         }
         final PortfolioAccountType accountType = PortfolioAccountType.fromInt(portfolioAccountDTO.getAccountTypeId());
-        switch (accountType) {
-            case INVALID:
-            break;
-            case LOAN:
-                sql = "select " + this.loanAccountMapper.schema() + " where ";
-                if (portfolioAccountDTO.getClientId() != null) {
-                    sql += " la.client_id = ? and la.loan_status_id in (?) ";
-                    sqlParams.add(portfolioAccountDTO.getClientId());
-                    sqlParams.add(defaultAccountStatus);
-                } else {
-                    sql += " la.loan_status_id in (?) ";
-                    sqlParams.add(defaultAccountStatus);
-                }
-                if (portfolioAccountDTO.getCurrencyCode() != null) {
-                    sql += " and la.currency_code = ?";
-                    sqlParams.add(portfolioAccountDTO.getCurrencyCode());
-                }
+        if (accountType.isLoanAccount()) {
 
-                accounts = this.jdbcTemplate.query(sql, this.loanAccountMapper, sqlParams.toArray()); // NOSONAR
-            break;
-            case SAVINGS:
-                sql = "select " + this.savingsAccountMapper.schema() + " where ";
-                if (portfolioAccountDTO.getClientId() != null) {
-                    sql += " sa.client_id = ? and sa.status_enum in (?) ";
-                    sqlParams.add(portfolioAccountDTO.getClientId());
-                    sqlParams.add(defaultAccountStatus);
-                } else {
-                    sql += " sa.status_enum in (?) ";
-                    sqlParams.add(defaultAccountStatus);
-                }
-                if (portfolioAccountDTO.getCurrencyCode() != null) {
-                    sql += " and sa.currency_code = ?";
-                    sqlParams.add(portfolioAccountDTO.getCurrencyCode());
-                }
+            sql = "select " + this.loanAccountMapper.schema() + " where ";
+            if (portfolioAccountDTO.getClientId() != null) {
+                sql += " la.client_id = ? and la.loan_status_id in (?) ";
+                sqlParams.add(portfolioAccountDTO.getClientId());
+                sqlParams.add(defaultAccountStatus);
+            } else {
+                sql += " la.loan_status_id in (?) ";
+                sqlParams.add(defaultAccountStatus);
+            }
+            if (portfolioAccountDTO.getCurrencyCode() != null) {
+                sql += " and la.currency_code = ?";
+                sqlParams.add(portfolioAccountDTO.getCurrencyCode());
+            }
 
-                if (portfolioAccountDTO.getDepositType() != null) {
-                    sql += " and sa.deposit_type_enum = ?";
-                    sqlParams.add(portfolioAccountDTO.getDepositType().shortValue());
-                }
+            accounts = this.jdbcTemplate.query(sql, this.loanAccountMapper, sqlParams.toArray()); // NOSONAR
+        } else if (accountType.isSavingsAccount()) {
+            sql = "select " + this.savingsAccountMapper.schema() + " where ";
+            if (portfolioAccountDTO.getClientId() != null) {
+                sql += " sa.client_id = ? and sa.status_enum in (?) ";
+                sqlParams.add(portfolioAccountDTO.getClientId());
+                sqlParams.add(defaultAccountStatus);
+            } else {
+                sql += " sa.status_enum in (?) ";
+                sqlParams.add(defaultAccountStatus);
+            }
+            if (portfolioAccountDTO.getCurrencyCode() != null) {
+                sql += " and sa.currency_code = ?";
+                sqlParams.add(portfolioAccountDTO.getCurrencyCode());
+            }
 
-                if (portfolioAccountDTO.isExcludeOverDraftAccounts()) {
-                    sql += " and sa.allow_overdraft = false";
-                }
+            if (portfolioAccountDTO.getDepositType() != null) {
+                sql += " and sa.deposit_type_enum = ?";
+                sqlParams.add(portfolioAccountDTO.getDepositType().shortValue());
+            }
 
-                if (portfolioAccountDTO.getClientId() == null && portfolioAccountDTO.getGroupId() != null) {
-                    sql += " and sa.group_id = ? ";
-                    sqlParams.add(portfolioAccountDTO.getGroupId());
-                }
+            if (portfolioAccountDTO.isExcludeOverDraftAccounts()) {
+                sql += " and sa.allow_overdraft = false";
+            }
 
-                accounts = this.jdbcTemplate.query(sql, this.savingsAccountMapper, sqlParams.toArray()); // NOSONAR
-            break;
+            if (portfolioAccountDTO.getClientId() == null && portfolioAccountDTO.getGroupId() != null) {
+                sql += " and sa.group_id = ? ";
+                sqlParams.add(portfolioAccountDTO.getGroupId());
+            }
+
+            accounts = this.jdbcTemplate.query(sql, this.savingsAccountMapper, sqlParams.toArray()); // NOSONAR
         }
 
         return accounts;

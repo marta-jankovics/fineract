@@ -24,8 +24,6 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
-
 public interface CurrentAccountsApi {
 
     CurrentAccountTemplateResponseData template();

@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.api.transaction;
 
-
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
