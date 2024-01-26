@@ -30,7 +30,7 @@
             <column name="entity_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="entity_id" type="UUID">
+            <column name="entity_id" type="VARCHAR(21)">
                 <constraints nullable="false"/>
             </column>
             <column name="action_type" type="VARCHAR(50)">

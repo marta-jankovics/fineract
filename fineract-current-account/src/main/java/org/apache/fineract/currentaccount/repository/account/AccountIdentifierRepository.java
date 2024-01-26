@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.write;
+package org.apache.fineract.currentaccount.repository.account;
+
+import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
-public interface CurrentTransactionWriteService {
+@Repository
+public interface AccountIdentifierRepository extends JpaRepository<AccountIdentifier, Long> {
 
-    CommandProcessingResult deposit(String accountId, JsonCommand command);
-
-    CommandProcessingResult withdrawal(String accountId, JsonCommand command);
-
-    CommandProcessingResult hold(String accountId, JsonCommand command);
-
-    CommandProcessingResult release(String accountId, JsonCommand command);
+    @Query("SELECT ai.accountId FROM AccountIdentifier ai WHERE ai.accountType = :accountType AND ai.identifierType = :idType AND ai.value = :id AND ai.subValue = :subId")
+    String fetchAccountIdByIdTypeAndId(PortfolioAccountType accountType, String idType, String id, String subId);
 }

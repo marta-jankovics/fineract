@@ -38,6 +38,6 @@ public class CurrentAccountCancelledApplicationCommandHandlerImpl implements Cur
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
 
-        return this.writePlatformService.cancelApplication(command.getResourceUUID(), command);
+        return this.writePlatformService.cancelApplication(command.getResourceIdentifier(), command);
     }
 }

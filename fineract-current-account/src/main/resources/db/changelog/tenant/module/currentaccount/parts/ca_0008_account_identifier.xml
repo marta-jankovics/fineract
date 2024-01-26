@@ -30,7 +30,7 @@
             <column name="account_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="account_id" type="VARCHAR(100)">
+            <column name="account_id" type="VARCHAR(21)">
                 <constraints nullable="false"/>
             </column>
             <column name="identifier_type" type="VARCHAR(50)">
@@ -39,7 +39,9 @@
             <column name="value" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="sub_value" type="VARCHAR(128)"/>
+            <column name="sub_value" type="VARCHAR(128)" defaultValue="">
+                <constraints nullable="false" />
+            </column>
             <column name="version" type="BIGINT">
                 <constraints nullable="false"/>
             </column>

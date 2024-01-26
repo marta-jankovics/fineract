@@ -35,7 +35,7 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "1")
         public String productId;
         @Schema(example = "asdasd12")
-        public String accountNo;
+        public String accountNumber;
         @Schema(example = "en")
         public String locale;
         @Schema(example = "dd MMMM yyyy")
@@ -64,7 +64,7 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "en")
         public String locale;
         @Schema(example = "asdasd12")
-        public String accountNo;
+        public String accountNumber;
         @Schema(example = "11436b17-c690-4a30-8505-42a2c4eafb9d")
         public String externalId;
         @Schema(example = "false")

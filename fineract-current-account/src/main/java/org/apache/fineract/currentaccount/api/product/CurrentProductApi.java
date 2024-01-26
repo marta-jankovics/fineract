@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.api.product;
 
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -29,7 +29,7 @@ public interface CurrentProductApi {
 
     Page<CurrentProductResponseData> retrieveAll(Pageable pageable);
 
-    CurrentProductResponseData retrieveOne(UUID productId);
+    CurrentProductResponseData retrieveOne(String productId);
 
     CurrentProductResponseData retrieveOne(String idType, String id);
 
@@ -37,11 +37,11 @@ public interface CurrentProductApi {
 
     CommandProcessingResult create(String requestJson);
 
-    CommandProcessingResult update(UUID productId, String requestJson);
+    CommandProcessingResult update(String productId, String requestJson);
 
     CommandProcessingResult update(String idType, String id, String requestJson);
 
-    CommandProcessingResult delete(UUID productId);
+    CommandProcessingResult delete(String productId);
 
     CommandProcessingResult delete(String idType, String id);
 }

@@ -18,12 +18,13 @@
  */
 package org.apache.fineract.currentaccount.api.account;
 
-import java.util.UUID;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+
 
 public interface CurrentAccountsApi {
 
@@ -31,17 +32,15 @@ public interface CurrentAccountsApi {
 
     Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
 
-    CurrentAccountResponseData retrieveOne(UUID accountId);
+    CurrentAccountResponseData retrieveOne(String accountId);
 
-    CurrentAccountResponseData retrieveOne(String externalId);
+    CurrentAccountResponseData retrieveOne(String idType, String id);
+
+    CurrentAccountResponseData retrieveOne(String idType, String id, String subId);
 
     CommandProcessingResult submitApplication(String requestJson);
 
-    CommandProcessingResult handleCommands(UUID accountId, String commandParam, String requestJson);
+    CommandProcessingResult handleCommands(String accountId, String commandParam, String requestJson);
 
-    CommandProcessingResult handleCommands(String externalId, String commandParam, String requestJson);
-
-    CommandProcessingResult update(UUID accountId, String requestJson);
-
-    CommandProcessingResult update(String externalId, String requestJson);
+    CommandProcessingResult update(String accountId, String requestJson);
 }

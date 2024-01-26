@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.api.transaction;
 
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -27,13 +27,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionApi {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
+    CurrentTransactionTemplateResponseData retrieveTemplate(String accountId);
 
-    Page<CurrentTransactionResponseData> retrieveAll(UUID accountId, Pageable pageable);
+    Page<CurrentTransactionResponseData> retrieveAll(String accountId, Pageable pageable);
 
-    CurrentTransactionResponseData retrieveOne(UUID accountId, UUID transactionId);
+    CurrentTransactionResponseData retrieveOne(String accountId, String transactionId);
 
-    CommandProcessingResult transaction(UUID accountId, String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult transaction(String accountId, String commandParam, String apiRequestBodyAsJson);
 
-    CommandProcessingResult transaction(UUID accountId, UUID transactionId, String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult transaction(String accountId, String transactionId, String commandParam, String apiRequestBodyAsJson);
 }

@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.repository.entityaction;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.portfolio.PortfolioProductType;
@@ -34,5 +34,5 @@ public interface EntityActionRepository extends JpaRepository<EntityAction, Long
 
     @Query("SELECT ea.actionDate FROM EntityAction ea WHERE ea.entityType = :entityType AND ea.entityId = :entityId AND ea.actionType = :actionType")
     Optional<LocalDate> getActionDateByEntityTypeAndEntityIdAndActionType(@Param("entityType") PortfolioProductType entityType,
-            @Param("entityId") UUID entityId, @Param("actionType") EntityActionType actionType);
+            @Param("entityId") String entityId, @Param("actionType") EntityActionType actionType);
 }

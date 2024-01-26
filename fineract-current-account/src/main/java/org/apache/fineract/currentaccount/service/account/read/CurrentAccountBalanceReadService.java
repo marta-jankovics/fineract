@@ -20,16 +20,16 @@ package org.apache.fineract.currentaccount.service.account.read;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 
 public interface CurrentAccountBalanceReadService {
 
-    CurrentAccountBalanceData getBalance(UUID accountId);
+    CurrentAccountBalanceData getBalance(String accountId);
 
-    CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime);
+    CurrentAccountBalanceData getBalance(String accountId, OffsetDateTime tillDateTime);
 
-    List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime);
+    List<String> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime);
 
-    List<UUID> getAccountIdsWhereBalanceNotCalculated();
+    List<String> getAccountIdsWhereBalanceNotCalculated();
 }

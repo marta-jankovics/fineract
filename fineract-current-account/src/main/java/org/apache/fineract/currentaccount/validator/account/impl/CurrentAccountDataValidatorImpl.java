@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.validator.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNoParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNumberParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.actionDateParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
@@ -58,12 +58,12 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValidator {
 
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, dateFormatParamName, accountNoParamName, externalIdParamName, clientIdParamName,
+            Arrays.asList(localeParamName, dateFormatParamName, accountNumberParamName, externalIdParamName, clientIdParamName,
                     productIdParamName, submittedOnDateParamName, allowOverdraftParamName, overdraftLimitParamName,
                     minimumRequiredBalanceParamName, allowForceTransactionParamName, balanceCalculationTypeParamName));
 
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, accountNoParamName, externalIdParamName, allowOverdraftParamName, overdraftLimitParamName,
+            Arrays.asList(localeParamName, accountNumberParamName, externalIdParamName, allowOverdraftParamName, overdraftLimitParamName,
                     minimumRequiredBalanceParamName, allowForceTransactionParamName, balanceCalculationTypeParamName));
 
     @Override
@@ -88,8 +88,8 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final LocalDate submittedOnDate = command.localDateValueOfParameterNamed(submittedOnDateParamName);
         baseDataValidator.reset().parameter(submittedOnDateParamName).value(submittedOnDate).ignoreIfNull();
 
-        final String accountNo = command.stringValueOfParameterNamed(accountNoParamName);
-        baseDataValidator.reset().parameter(accountNoParamName).value(accountNo).notBlank().notExceedingLengthOf(20);
+        final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
+        baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(20);
 
         validateExternalId(command, baseDataValidator);
         validateMinimumRequiredBalanceParams(baseDataValidator, command);
@@ -110,9 +110,9 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
-        if (command.parameterExists(accountNoParamName)) {
-            final String accountNo = command.stringValueOfParameterNamed(accountNoParamName);
-            baseDataValidator.reset().parameter(accountNoParamName).value(accountNo).notBlank().notExceedingLengthOf(20);
+        if (command.parameterExists(accountNumberParamName)) {
+            final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
+            baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(20);
         }
 
         validateExternalId(command, baseDataValidator);

@@ -27,14 +27,14 @@
                 <column name="id" type="BIGINT" autoIncrement="true">
                     <constraints nullable="false" primaryKey="true"/>
                 </column>
-                <column name="account_id" type="UUID">
+                <column name="account_id" type="CHAR(21)">
                     <constraints nullable="false"/>
                 </column>
                 <column name="account_balance" type="DECIMAL(19, 6)">
                     <constraints nullable="false"/>
                 </column>
                 <column name="hold_amount" type="DECIMAL(19, 6)"/>
-                <column name="calculated_till_transaction_id" type="UUID">
+                <column name="calculated_till_transaction_id" type="CHAR(21)">
                     <constraints nullable="false"/>
                 </column>
                 <column defaultValueNumeric="1" name="version" type="BIGINT">

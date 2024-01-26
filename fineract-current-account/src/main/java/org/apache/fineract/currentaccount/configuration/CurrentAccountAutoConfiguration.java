@@ -27,6 +27,7 @@ import org.apache.fineract.currentaccount.assembler.transaction.impl.CurrentTran
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
+import org.apache.fineract.currentaccount.repository.account.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
@@ -80,9 +81,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountReadService.class)
     public CurrentAccountReadService currentAccountReadService(CurrentAccountRepository currentAccountRepository,
+            AccountIdentifierRepository accountIdentifierRepository,
             CurrentProductReadService currentProductReadPlatformService, CurrentAccountBalanceReadService currentAccountBalanceReadService,
             CurrentAccountResponseDataMapper currentAccountResponseDataMapper) {
-        return new CurrentAccountReadServiceImpl(currentAccountRepository, currentAccountBalanceReadService,
+        return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentAccountBalanceReadService,
                 currentProductReadPlatformService, currentAccountResponseDataMapper);
     }
 

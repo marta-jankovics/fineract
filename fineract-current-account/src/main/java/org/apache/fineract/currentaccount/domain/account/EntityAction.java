@@ -24,7 +24,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,7 +48,7 @@ public class EntityAction extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     private PortfolioProductType entityType;
 
     @Column(name = "entity_id", nullable = false)
-    private UUID entityId;
+    private String entityId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action_type", nullable = false)

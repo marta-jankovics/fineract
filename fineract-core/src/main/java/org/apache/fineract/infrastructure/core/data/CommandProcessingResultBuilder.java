@@ -19,7 +19,6 @@
 package org.apache.fineract.infrastructure.core.data;
 
 import java.util.Map;
-import java.util.UUID;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 /**
@@ -157,16 +156,6 @@ public class CommandProcessingResultBuilder {
 
     public CommandProcessingResultBuilder withSubEntityExternalId(final ExternalId subEntityExternalId) {
         this.subEntityExternalId = subEntityExternalId;
-        return this;
-    }
-
-    public CommandProcessingResultBuilder withResourceIdentifier(final UUID entityUUID) {
-        this.resourceIdentifier = entityUUID == null ? null : entityUUID.toString();
-        return this;
-    }
-
-    public CommandProcessingResultBuilder withTransactionId(final UUID transactionUUID) {
-        this.transactionId = transactionUUID == null ? null : transactionUUID.toString();
         return this;
     }
 }

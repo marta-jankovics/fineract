@@ -90,6 +90,7 @@ public class JPAConfig extends JpaBaseConfiguration {
         vendorProperties.put(PersistenceUnitProperties.WEAVING, "static");
         vendorProperties.put(PersistenceUnitProperties.PERSISTENCE_CONTEXT_CLOSE_ON_COMMIT, "true");
         vendorProperties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
+        vendorProperties.put(PersistenceUnitProperties.SESSION_CUSTOMIZER, "org.apache.fineract.infrastructure.eclipselink.NanoIdSequence");
         emFactoryCustomizers.forEach(c -> vendorProperties.putAll(c.additionalVendorProperties()));
         return vendorProperties;
     }

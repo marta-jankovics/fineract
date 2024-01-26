@@ -30,7 +30,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
-import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,12 +50,12 @@ import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 @Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
         @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_product_external_id_key") })
-public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
+public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator = "nanoIdSequence")
     @Getter(onMethod = @__(@Override))
-    private UUID id;
+    private String id;
 
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;

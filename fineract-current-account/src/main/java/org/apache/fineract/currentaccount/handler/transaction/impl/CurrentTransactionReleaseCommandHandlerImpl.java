@@ -37,7 +37,7 @@ public class CurrentTransactionReleaseCommandHandlerImpl implements CurrentTrans
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(JsonCommand command) {
-        return this.writePlatformService.release(command.getResourceUUID(), command);
+        return this.writePlatformService.release(command.getResourceIdentifier(), command);
     }
 
 }

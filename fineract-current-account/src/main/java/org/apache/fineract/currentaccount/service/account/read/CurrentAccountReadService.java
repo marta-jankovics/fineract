@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.service.account.read;
 
 import java.util.List;
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -31,13 +31,13 @@ public interface CurrentAccountReadService {
 
     Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
 
-    CurrentAccountResponseData retrieveById(UUID accountId);
+    CurrentAccountResponseData retrieveById(String accountId);
 
     CurrentAccountTemplateResponseData retrieveTemplate();
 
-    CurrentAccountResponseData retrieveByExternalId(ExternalId externalId);
-
-    UUID retrieveAccountIdByExternalId(ExternalId externalId);
+    String retrieveAccountIdByExternalId(ExternalId externalId);
 
     List<CurrentAccountResponseData> retrieveAllByClientId(Long clientId, Sort sort);
+
+    CurrentAccountResponseData retrieveByIdTypeAndId(String idType, String id, String subId);
 }

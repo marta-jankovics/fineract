@@ -37,6 +37,6 @@ public class CurrentTransactionWithdrawalCommandHandlerImpl implements CurrentTr
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.withdrawal(command.getResourceUUID(), command);
+        return this.writePlatformService.withdrawal(command.getResourceIdentifier(), command);
     }
 }

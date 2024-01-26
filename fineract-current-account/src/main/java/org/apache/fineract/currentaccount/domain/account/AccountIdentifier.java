@@ -24,15 +24,18 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
+import org.apache.fineract.infrastructure.eclipselink.EmptyStringIfNullConverter;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.Converter;
 
 //TODO: Move to core when it goes to support other entities as well
 @Entity
@@ -41,6 +44,7 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "m_account_identifier")
+@Converter(name = "EmptyStringIfNullConverter" ,converterClass = EmptyStringIfNullConverter.class)
 public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Enumerated(EnumType.STRING)
@@ -48,7 +52,7 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
     private PortfolioProductType accountType;
 
     @Column(name = "account_id", nullable = false)
-    private UUID accountId;
+    private String accountId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "identifier_type", nullable = false)
@@ -57,7 +61,8 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
     @Column(name = "value", nullable = false)
     private String value;
 
-    @Column(name = "sub_value")
+    @Convert("EmptyStringIfNullConverter")
+    @Column(name = "sub_value", nullable = false)
     private String subValue;
 
     @Version

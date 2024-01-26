@@ -18,11 +18,16 @@
  */
 package org.apache.fineract.portfolio.account;
 
+import lombok.Getter;
+
+@Getter
 public enum PortfolioAccountType {
 
     INVALID(0, "accountType.invalid"), //
     LOAN(1, "accountType.loan"), //
-    SAVINGS(2, "accountType.savings");
+    SAVINGS(2, "accountType.savings"), //
+    CURRENT(3, "accountType.current"), //
+    ;
 
     private final Integer value;
     private final String code;
@@ -32,28 +37,16 @@ public enum PortfolioAccountType {
         this.code = code;
     }
 
-    public Integer getValue() {
-        return this.value;
-    }
-
-    public String getCode() {
-        return this.code;
-    }
-
     public static PortfolioAccountType fromInt(final Integer type) {
 
         PortfolioAccountType enumType = INVALID;
         if (type != null) {
-            switch (type) {
-                case 1:
-                    enumType = LOAN;
-                break;
-                case 2:
-                    enumType = SAVINGS;
-                break;
-                default:
-                    enumType = INVALID;
-            }
+            enumType = switch (type) {
+                case 1 -> LOAN;
+                case 2 -> SAVINGS;
+                case 3 -> CURRENT;
+                default -> INVALID;
+            };
         }
         return enumType;
     }

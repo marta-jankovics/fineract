@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.service.product.write.impl;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 
 import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -71,7 +71,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult update(final UUID productId, final JsonCommand command) {
+    public CommandProcessingResult update(final String productId, final JsonCommand command) {
         try {
             final CurrentProduct product = this.currentProductRepository.findById(productId)
                     .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
@@ -95,7 +95,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult delete(final UUID productId) {
+    public CommandProcessingResult delete(final String productId) {
         try {
             if (!this.currentProductRepository.existsById(productId)) {
                 throw new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found",

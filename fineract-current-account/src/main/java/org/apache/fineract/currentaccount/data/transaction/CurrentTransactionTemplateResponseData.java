@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -31,8 +31,8 @@ import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 @Builder
 public class CurrentTransactionTemplateResponseData implements Serializable {
 
-    private final UUID accountId;
-    private final String accountNo;
+    private final String accountId;
+    private final String accountNumber;
     private final LocalDate transactionDate;
     private final LocalDate submittedOnDate;
     private final CurrencyData currency;

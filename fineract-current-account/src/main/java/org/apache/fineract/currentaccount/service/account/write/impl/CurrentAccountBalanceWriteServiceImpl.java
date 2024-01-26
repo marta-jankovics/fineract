@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -39,7 +39,7 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateBalance(UUID accountId, OffsetDateTime tillDateTime) {
+    public void updateBalance(String accountId, OffsetDateTime tillDateTime) {
         CurrentAccountBalance currentAccountBalance = currentAccountBalanceRepository.findByAccountId(accountId).orElse(null);
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountId, tillDateTime);
         if (currentAccountBalance == null) {

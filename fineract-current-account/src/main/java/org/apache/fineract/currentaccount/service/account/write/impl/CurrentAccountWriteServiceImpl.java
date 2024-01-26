@@ -21,13 +21,12 @@ package org.apache.fineract.currentaccount.service.account.write.impl;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
 
 import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
-import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataValidator;
@@ -35,6 +34,7 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -80,10 +80,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult modifyApplication(final UUID accountId, final JsonCommand command) {
+    public CommandProcessingResult modifyApplication(final String accountId, final JsonCommand command) {
         try {
             final CurrentAccount account = currentAccountRepository.findById(accountId)
-                    .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                            accountId));
             currentAccountDataValidator.validateForUpdate(command, account);
             checkClientActive(account);
             Map<String, Object> changes = currentAccountAssembler.update(account, command);
@@ -107,10 +108,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult cancelApplication(final UUID accountId, final JsonCommand command) {
+    public CommandProcessingResult cancelApplication(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateCancellation(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.cancelApplication(account, command);
 
@@ -129,10 +131,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult activate(final UUID accountId, final JsonCommand command) {
+    public CommandProcessingResult activate(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateActivation(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.activate(account, command);
 
@@ -151,10 +154,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult close(final UUID accountId, final JsonCommand command) {
+    public CommandProcessingResult close(final String accountId, final JsonCommand command) {
         currentAccountDataValidator.validateClosing(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.close(account, command);
 
@@ -182,11 +186,11 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         Throwable checkEx = realCause == null ? dve : realCause;
         String message = checkEx.getMessage();
         if (message != null && message.contains("m_current_account_account_no_key")) {
-            final String accountNo = command.stringValueOfParameterNamed("accountNo");
-            msgCode += ".duplicate.accountNo";
-            msg = "Current account with accountNo " + accountNo + " already exists";
-            param = "accountNo";
-            msgArgs = new Object[] { accountNo, dve };
+            final String accountNumber = command.stringValueOfParameterNamed("accountNumber");
+            msgCode += ".duplicate.accountNumber";
+            msg = "Current account with account number " + accountNumber + " already exists";
+            param = "accountNumber";
+            msgArgs = new Object[] { accountNumber, dve };
         } else if (message != null && message.contains("m_current_account_external_id_key")) {
             final String externalId = command.stringValueOfParameterNamed("externalId");
             msgCode += ".duplicate.externalId";

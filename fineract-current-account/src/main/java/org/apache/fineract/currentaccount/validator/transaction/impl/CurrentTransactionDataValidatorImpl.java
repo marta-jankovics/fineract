@@ -41,7 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
@@ -81,7 +81,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
 
-        final UUID holdTransactionId = command.getTransactionUUID();
+        final String holdTransactionId = command.getTransactionId();
         baseDataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);

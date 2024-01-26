@@ -29,11 +29,12 @@ import lombok.Getter;
  * </p>
  */
 @Getter
-@EqualsAndHashCode
-@AllArgsConstructor
-public class EnumOptionData implements Serializable {
+public class EnumOptionData extends BaseEnumOptionData implements Serializable {
 
     private final Long id;
-    private final String code;
-    private final String value;
+
+    public EnumOptionData(Long id, String code, String value) {
+        super(code, value);
+        this.id = id;
+    }
 }

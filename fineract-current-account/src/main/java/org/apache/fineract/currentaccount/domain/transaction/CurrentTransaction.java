@@ -20,15 +20,12 @@ package org.apache.fineract.currentaccount.domain.transaction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,21 +34,25 @@ import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransac
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_transaction", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_transaction_external_id_key") })
-public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
+        @UniqueConstraint(columnNames = {"external_id"}, name = "m_current_transaction_external_id_key")})
+public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator = "nanoIdSequence")
     @Getter(onMethod = @__(@Override))
-    private UUID id;
+    private String id;
 
     @Column(name = "account_id", nullable = false)
-    private UUID accountId;
+    private String accountId;
 
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
@@ -65,7 +66,7 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     @Column(name = "payment_type_id")
     private Long paymentTypeId;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type_enum", nullable = false)
     private CurrentTransactionType transactionType;
 
@@ -78,10 +79,10 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<U
     @Column(name = "amount", nullable = false, precision = 6)
     private BigDecimal transactionAmount;
 
-    public static CurrentTransaction newInstance(UUID accountId, ExternalId externalId, String correlationId, UUID referenceId,
-            Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
-            BigDecimal amount) {
-        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId != null ? referenceId.toString() : null,
+    public static CurrentTransaction newInstance(String accountId, ExternalId externalId, String correlationId, String referenceId,
+                                                 Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
+                                                 BigDecimal amount) {
+        return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId,
                 paymentDetailId, transactionType, transactionDate, submittedOnDate, amount);
     }
 }

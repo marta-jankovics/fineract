@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read;
 
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.springframework.data.domain.Page;
@@ -26,9 +26,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionReadService {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId);
+    CurrentTransactionTemplateResponseData retrieveTemplate(String accountId);
 
-    CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId);
+    CurrentTransactionResponseData retrieveTransactionById(String accountId, String transactionId);
 
-    Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable);
+    Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(String accountId, Pageable pageable);
 }

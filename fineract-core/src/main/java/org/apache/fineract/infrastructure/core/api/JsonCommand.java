@@ -21,6 +21,15 @@ package org.apache.fineract.infrastructure.core.api;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
+import org.apache.fineract.infrastructure.security.domain.BasicPasswordEncodablePlatformUser;
+import org.apache.fineract.infrastructure.security.domain.PlatformUser;
+import org.apache.fineract.infrastructure.security.service.PlatformPasswordEncoder;
+
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,15 +43,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
-import org.apache.fineract.infrastructure.core.service.MathUtil;
-import org.apache.fineract.infrastructure.security.domain.BasicPasswordEncodablePlatformUser;
-import org.apache.fineract.infrastructure.security.domain.PlatformUser;
-import org.apache.fineract.infrastructure.security.service.PlatformPasswordEncoder;
 
 /**
  * Immutable representation of a command.
@@ -72,9 +72,9 @@ public final class JsonCommand {
     private final String resourceIdentifier;
 
     JsonCommand(final Long commandId, final String jsonCommand, final JsonElement parsedCommand, final FromJsonHelper fromApiJsonHelper,
-            final String entityName, final Long resourceId, final Long subresourceId, final Long groupId, final Long clientId,
-            final Long loanId, final Long savingsId, final String transactionId, final String url, final Long productId,
-            final Long creditBureauId, final Long organisationCreditBureauId, final String jobName, final String resourceIdentifier) {
+                final String entityName, final Long resourceId, final Long subresourceId, final Long groupId, final Long clientId,
+                final Long loanId, final Long savingsId, final String transactionId, final String url, final Long productId,
+                final Long creditBureauId, final Long organisationCreditBureauId, final String jobName, final String resourceIdentifier) {
         this.commandId = commandId;
         this.jsonCommand = jsonCommand;
         this.parsedCommand = parsedCommand;
@@ -96,19 +96,19 @@ public final class JsonCommand {
     }
 
     public static JsonCommand from(final String jsonCommand, final JsonElement parsedCommand, final FromJsonHelper fromApiJsonHelper,
-            final String entityName, final Long resourceId, final Long subresourceId, final Long groupId, final Long clientId,
-            final Long loanId, final Long savingsId, final String transactionId, final String url, final Long productId,
-            final Long creditBureauId, final Long organisationCreditBureauId, final String jobName, String resourceIdentifier) {
+                                   final String entityName, final Long resourceId, final Long subresourceId, final Long groupId, final Long clientId,
+                                   final Long loanId, final Long savingsId, final String transactionId, final String url, final Long productId,
+                                   final Long creditBureauId, final Long organisationCreditBureauId, final String jobName, String resourceIdentifier) {
         return new JsonCommand(null, jsonCommand, parsedCommand, fromApiJsonHelper, entityName, resourceId, subresourceId, groupId,
                 clientId, loanId, savingsId, transactionId, url, productId, creditBureauId, organisationCreditBureauId, jobName,
                 resourceIdentifier);
     }
 
     public static JsonCommand fromExistingCommand(final Long commandId, final String jsonCommand, final JsonElement parsedCommand,
-            final FromJsonHelper fromApiJsonHelper, final String entityName, final Long resourceId, final Long subresourceId,
-            final Long groupId, final Long clientId, final Long loanId, final Long savingsId, final String transactionId, final String url,
-            final Long productId, Long creditBureauId, final Long organisationCreditBureauId, final String jobName,
-            final String resourceIdentifier) {
+                                                  final FromJsonHelper fromApiJsonHelper, final String entityName, final Long resourceId, final Long subresourceId,
+                                                  final Long groupId, final Long clientId, final Long loanId, final Long savingsId, final String transactionId, final String url,
+                                                  final Long productId, Long creditBureauId, final Long organisationCreditBureauId, final String jobName,
+                                                  final String resourceIdentifier) {
         return new JsonCommand(commandId, jsonCommand, parsedCommand, fromApiJsonHelper, entityName, resourceId, subresourceId, groupId,
                 clientId, loanId, savingsId, transactionId, url, productId, creditBureauId, organisationCreditBureauId, jobName,
                 resourceIdentifier);
@@ -139,6 +139,10 @@ public final class JsonCommand {
     public static JsonCommand from(final String jsonCommand) {
         return new JsonCommand(null, jsonCommand, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null);
+    }
+
+    private static Integer defaultToNullIfZero(final Integer value) {
+        return value != null && value == 0 ? null : value;
     }
 
     public Long getOrganisationCreditBureauId() {
@@ -355,12 +359,14 @@ public final class JsonCommand {
     }
 
     public Map<String, String> mapValueOfParameterNamed(final String json) {
-        final Type typeOfMap = new TypeToken<Map<String, String>>() {}.getType();
+        final Type typeOfMap = new TypeToken<Map<String, String>>() {
+        }.getType();
         return this.fromApiJsonHelper.extractDataMap(typeOfMap, json);
     }
 
     public Map<String, Object> mapObjectValueOfParameterNamed(final String json) {
-        final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
+        final Type typeOfMap = new TypeToken<Map<String, Object>>() {
+        }.getType();
         return this.fromApiJsonHelper.extractObjectMap(typeOfMap, json);
     }
 
@@ -402,10 +408,6 @@ public final class JsonCommand {
             }
         }
         return isChanged;
-    }
-
-    private static Integer defaultToNullIfZero(final Integer value) {
-        return value != null && value == 0 ? null : value;
     }
 
     public BigDecimal bigDecimalValueOfParameterNamed(final String parameterName) {
@@ -527,7 +529,7 @@ public final class JsonCommand {
     }
 
     public boolean isChangeInPasswordParameterNamed(final String parameterName, final String existingValue,
-            final PlatformPasswordEncoder platformPasswordEncoder, final Long saltValue) {
+                                                    final PlatformPasswordEncoder platformPasswordEncoder, final Long saltValue) {
         boolean isChanged = false;
         if (parameterExists(parameterName)) {
             final String workingValue = passwordValueOfParameterNamed(parameterName, platformPasswordEncoder, saltValue);
@@ -547,7 +549,7 @@ public final class JsonCommand {
     }
 
     public String passwordValueOfParameterNamed(final String parameterName, final PlatformPasswordEncoder platformPasswordEncoder,
-            final Long saltValue) {
+                                                final Long saltValue) {
         final String passwordPlainText = stringValueOfParameterNamed(parameterName);
 
         final PlatformUser dummyPlatformUser = new BasicPasswordEncodablePlatformUser().setId(saltValue).setUsername("")
@@ -561,13 +563,5 @@ public final class JsonCommand {
 
     public void checkForUnsupportedParameters(final Type typeOfMap, final String json, final Set<String> requestDataParameters) {
         this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, requestDataParameters);
-    }
-
-    public UUID getResourceUUID() {
-        return resourceIdentifier == null ? null : UUID.fromString(resourceIdentifier);
-    }
-
-    public UUID getTransactionUUID() {
-        return transactionId == null ? null : UUID.fromString(transactionId);
     }
 }

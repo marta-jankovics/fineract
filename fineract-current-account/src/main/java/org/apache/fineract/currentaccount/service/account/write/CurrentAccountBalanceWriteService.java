@@ -19,9 +19,9 @@
 package org.apache.fineract.currentaccount.service.account.write;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
+
 
 public interface CurrentAccountBalanceWriteService {
 
-    void updateBalance(UUID accountId, OffsetDateTime tillDateTime);
+    void updateBalance(String accountId, OffsetDateTime tillDateTime);
 }

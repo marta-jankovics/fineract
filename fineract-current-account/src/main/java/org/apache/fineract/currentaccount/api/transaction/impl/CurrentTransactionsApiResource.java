@@ -32,7 +32,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
@@ -51,7 +51,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-@Path("/v1/currentaccounts/{accountId}/transactions")
+@Path("/v1/current-accounts/{accountId}/transactions")
 @Component
 @Tag(name = "Current Transactions")
 @RequiredArgsConstructor
@@ -70,7 +70,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path("template")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public CurrentTransactionTemplateResponseData retrieveTemplate(@PathParam("accountId") final UUID accountId) {
+    public CurrentTransactionTemplateResponseData retrieveTemplate(@PathParam("accountId") final String accountId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTemplate(accountId);
     }
@@ -79,7 +79,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @GET
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final UUID accountId, @Pagination Pageable pageable) {
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId, @Pagination Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTransactionByAccountId(accountId, pageable);
     }
@@ -89,8 +89,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path("{transactionId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public CurrentTransactionResponseData retrieveOne(@PathParam("accountId") final UUID accountId,
-            @PathParam("transactionId") final UUID transactionId) {
+    public CurrentTransactionResponseData retrieveOne(@PathParam("accountId") final String accountId,
+            @PathParam("transactionId") final String transactionId) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTransactionById(accountId, transactionId);
     }
@@ -103,7 +103,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n" + "\n" + "\n" + "currentaccounts/{accountId}/transactions/?command=deposit\n" + "\n"
             + "Accepted command = deposit, withdrawal, hold")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
-    public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
+    public CommandProcessingResult transaction(@PathParam("accountId") final String accountId,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
 
@@ -135,8 +135,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
-    public CommandProcessingResult transaction(@PathParam("accountId") final UUID accountId,
-            @PathParam("transactionId") final UUID transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
+    public CommandProcessingResult transaction(@PathParam("accountId") final String accountId,
+            @PathParam("transactionId") final String transactionId, @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
 

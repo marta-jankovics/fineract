@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.service.product.read.impl;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingRuleType;
@@ -60,10 +60,10 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public CurrentProductResponseData retrieveById(UUID productId) {
+    public CurrentProductResponseData retrieveById(String productId) {
         CurrentProductData currentProductData = currentProductRepository.findCurrentProductDataById(productId);
         if (currentProductData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found",
+            throw new PlatformResourceNotFoundException("current.product", "Current product with id: %s cannot be found",
                     productId);
         }
         return currentProductResponseDataMapper.map(currentProductData);
@@ -89,15 +89,14 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
                     idType);
         }
         return switch (currentProductIdType) {
-            case ID -> retrieveById(UUID.fromString(id));
+            case ID -> retrieveById(id);
             case EXTERNAL_ID -> retrieveByExternalId(new ExternalId(id));
             case SHORT_NAME -> retrieveByShortName(id);
         };
-
     }
 
     @Override
-    public UUID retrieveIdByIdType(String idType, String id) {
+    public String retrieveIdByIdType(String idType, String id) {
         String reformatIdType = reformatIdType(idType);
         CurrentProductIdType currentProductIdType;
         try {
@@ -107,7 +106,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
                     idType);
         }
         return switch (currentProductIdType) {
-            case ID -> UUID.fromString(id);
+            case ID -> id;
             case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(id));
             case SHORT_NAME -> currentProductRepository.findIdByShortName(id);
         };
@@ -120,7 +119,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     private CurrentProductResponseData retrieveByExternalId(ExternalId externalId) {
         CurrentProductData currentProductData = currentProductRepository.findCurrentProductDataByExternalId(externalId);
         if (currentProductData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with provided external id: %s cannot be found",
+            throw new PlatformResourceNotFoundException("current.product", "Current product with external id: %s cannot be found",
                     externalId);
         }
         return currentProductResponseDataMapper.map(currentProductData);
@@ -129,7 +128,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     private CurrentProductResponseData retrieveByShortName(String shortName) {
         CurrentProductData currentProductData = currentProductRepository.findCurrentProductDataByShortName(shortName);
         if (currentProductData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with provided short name: %s cannot be found",
+            throw new PlatformResourceNotFoundException("current.product", "Current product with short name: %s cannot be found",
                     shortName);
         }
         return currentProductResponseDataMapper.map(currentProductData);

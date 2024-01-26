@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -44,9 +44,9 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
         try {
             // TODO: make it configurable
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
-            List<UUID> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
+            List<String> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
                     .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
-            List<UUID> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
+            List<String> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
             currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
             updateBalances(currentAccountBalanceIsBehindIds, tillDateTime);
         } catch (Exception e) {
@@ -55,8 +55,8 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private void updateBalances(List<UUID> currentAccountBalanceIsBehindIds, OffsetDateTime tillDateTime) {
-        for (UUID id : currentAccountBalanceIsBehindIds) {
+    private void updateBalances(List<String> currentAccountBalanceIsBehindIds, OffsetDateTime tillDateTime) {
+        for (String id : currentAccountBalanceIsBehindIds) {
             try {
                 currentAccountBalanceWriteService.updateBalance(id, tillDateTime);
             } catch (Exception e) {

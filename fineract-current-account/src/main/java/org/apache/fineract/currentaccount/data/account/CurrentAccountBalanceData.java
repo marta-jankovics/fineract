@@ -21,17 +21,17 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
+
 import lombok.Data;
 
 @Data
 public class CurrentAccountBalanceData implements Serializable {
 
     // Current account balance data
-    private final UUID id;
-    private final UUID accountId;
+    private final String id;
+    private final String accountId;
     private final BigDecimal accountBalance;
     private final BigDecimal holdAmount;
     private final OffsetDateTime calculatedTill;
-    private final UUID calculatedTillTransactionId;
+    private final String calculatedTillTransactionId;
 }

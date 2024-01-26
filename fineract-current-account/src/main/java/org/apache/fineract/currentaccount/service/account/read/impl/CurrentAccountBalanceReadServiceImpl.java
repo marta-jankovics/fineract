@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.service.account.read.impl;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.UUID;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
@@ -41,27 +41,27 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
-    public CurrentAccountBalanceData getBalance(UUID accountId) {
+    public CurrentAccountBalanceData getBalance(String accountId) {
         return calculateBalance(accountId,
                 () -> currentTransactionRepository.getTransactions(accountId, Sort.by(Sort.Direction.ASC, "createdDate", "id")),
                 (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
     }
 
     @Override
-    public CurrentAccountBalanceData getBalance(UUID accountId, OffsetDateTime tillDateTime) {
+    public CurrentAccountBalanceData getBalance(String accountId, OffsetDateTime tillDateTime) {
         return calculateBalance(accountId, () -> currentTransactionRepository.getTransactionsTill(accountId, tillDateTime),
                 (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime,
                         tillDateTime));
     }
 
-    private CurrentAccountBalanceData calculateBalance(UUID accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
+    private CurrentAccountBalanceData calculateBalance(String accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
             Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceRepository.getBalance(accountId);
         List<CurrentTransaction> currentTransactionDataList;
         BigDecimal accountBalance;
         BigDecimal holdAmount;
         OffsetDateTime calculatedTillDate;
-        UUID calculatedTillTxnId;
+        String calculatedTillTxnId;
         if (currentAccountBalanceData == null) {
             accountBalance = BigDecimal.ZERO;
             holdAmount = BigDecimal.ZERO;
@@ -97,12 +97,12 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
     }
 
     @Override
-    public List<UUID> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
+    public List<String> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
         return currentAccountBalanceRepository.getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
     }
 
     @Override
-    public List<UUID> getAccountIdsWhereBalanceNotCalculated() {
+    public List<String> getAccountIdsWhereBalanceNotCalculated() {
         return currentAccountBalanceRepository.getAccountIdsWhereBalanceNotCalculated();
     }
 }

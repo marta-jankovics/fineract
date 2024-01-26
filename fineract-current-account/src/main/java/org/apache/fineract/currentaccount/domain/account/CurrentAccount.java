@@ -30,7 +30,7 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,15 +49,15 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 @Table(name = "m_current_account", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "account_no" }, name = "m_current_account_account_no_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_external_id_key") })
-public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
+public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator = "nanoIdSequence")
     @Getter(onMethod = @__(@Override))
-    private UUID id;
+    private String id;
 
     @Column(name = "account_no", nullable = false, length = 50, unique = true)
-    private String accountNo;
+    private String accountNumber;
 
     @Column(name = "external_id", length = 100, unique = true)
     private ExternalId externalId;
@@ -66,7 +66,7 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     private Long clientId;
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private String productId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status_type", nullable = false)
@@ -94,14 +94,14 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<UUID>
     @Version
     private Long version;
 
-    public static CurrentAccount newInstanceForSubmit(Long clientId, UUID productId, String accountNo, ExternalId externalId,
+    public static CurrentAccount newInstanceForSubmit(Long clientId, String productId, String accountNumber, ExternalId externalId,
             boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction, BigDecimal minimumRequiredBalance,
             BalanceCalculationType balanceCalculationType) {
 
         CurrentAccount currentAccount = new CurrentAccount();
         currentAccount.setClientId(clientId);
         currentAccount.setProductId(productId);
-        currentAccount.setAccountNo(accountNo);
+        currentAccount.setAccountNumber(accountNumber);
         currentAccount.setStatus(CurrentAccountStatus.SUBMITTED);
         currentAccount.setExternalId(externalId);
         currentAccount.setAllowOverdraft(allowOverdraft);

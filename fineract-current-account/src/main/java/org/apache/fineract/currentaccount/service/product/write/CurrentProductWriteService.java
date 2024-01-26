@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.product.write;
 
-import java.util.UUID;
+
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
@@ -26,7 +26,7 @@ public interface CurrentProductWriteService {
 
     CommandProcessingResult create(JsonCommand command);
 
-    CommandProcessingResult update(UUID productId, JsonCommand command);
+    CommandProcessingResult update(String productId, JsonCommand command);
 
-    CommandProcessingResult delete(UUID productId);
+    CommandProcessingResult delete(String productId);
 }

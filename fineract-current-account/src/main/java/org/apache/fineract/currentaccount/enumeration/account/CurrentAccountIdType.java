@@ -16,19 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.write;
+package org.apache.fineract.currentaccount.enumeration.account;
 
-
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-
-public interface CurrentTransactionWriteService {
-
-    CommandProcessingResult deposit(String accountId, JsonCommand command);
-
-    CommandProcessingResult withdrawal(String accountId, JsonCommand command);
-
-    CommandProcessingResult hold(String accountId, JsonCommand command);
-
-    CommandProcessingResult release(String accountId, JsonCommand command);
+public enum CurrentAccountIdType {
+    ID, EXTERNAL_ID, ACCOUNT_NUMBER;
 }

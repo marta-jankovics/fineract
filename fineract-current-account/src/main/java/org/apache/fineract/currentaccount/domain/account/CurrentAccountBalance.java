@@ -23,7 +23,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
-import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,10 +37,10 @@ import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDa
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "m_current_account_balance")
-public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<UUID> {
+public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
     @Column(name = "account_id", nullable = false)
-    private UUID accountId;
+    private String accountId;
 
     @Column(name = "account_balance", nullable = false, precision = 6)
     private BigDecimal accountBalance;
@@ -49,7 +49,7 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
     private BigDecimal holdAmount;
 
     @Column(name = "calculated_till_transaction_id", nullable = false)
-    private UUID calculatedTillTransactionId;
+    private String calculatedTillTransactionId;
 
     @Version
     private Long version;

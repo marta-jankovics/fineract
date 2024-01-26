@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import lombok.Data;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
@@ -31,11 +31,11 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 public class CurrentAccountData implements Serializable {
 
     // Current account data
-    private final UUID id;
-    private final String accountNo;
+    private final String id;
+    private final String accountNumber;
     private final ExternalId externalId;
     private final Long clientId;
-    private final UUID productId;
+    private final String productId;
     private final CurrentAccountStatus status;
     private final LocalDate activatedOnDate;
     private final Boolean allowOverdraft;

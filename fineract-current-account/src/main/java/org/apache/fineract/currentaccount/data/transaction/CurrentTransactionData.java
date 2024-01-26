@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.UUID;
+
 import lombok.Data;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -31,8 +31,8 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 public class CurrentTransactionData implements Serializable {
 
     // Current product data
-    private final UUID id;
-    private final UUID accountId;
+    private final String id;
+    private final String accountId;
     private final ExternalId externalId;
     private final CurrentTransactionType transactionType;
     private final LocalDate transactionDate;

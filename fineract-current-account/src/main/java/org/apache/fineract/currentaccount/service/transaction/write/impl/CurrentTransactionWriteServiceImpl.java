@@ -23,7 +23,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -32,7 +32,6 @@ import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransacti
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.exception.account.CurrentAccountNotFoundException;
 import org.apache.fineract.currentaccount.exception.transaction.CurrentTransactionNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
@@ -44,6 +43,7 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -65,10 +65,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult deposit(UUID accountId, JsonCommand command) {
+    public CommandProcessingResult deposit(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateDeposit(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction depositTransaction = currentTransactionAssembler.deposit(account, command, changes);
@@ -90,10 +91,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult withdrawal(UUID accountId, JsonCommand command) {
+    public CommandProcessingResult withdrawal(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateWithdrawal(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
@@ -117,10 +119,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult hold(UUID accountId, JsonCommand command) {
+    public CommandProcessingResult hold(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateHold(command);
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction holdTransaction = currentTransactionAssembler.hold(account, command, changes);
@@ -144,11 +147,12 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult release(UUID accountId, JsonCommand command) {
+    public CommandProcessingResult release(String accountId, JsonCommand command) {
         currentTransactionDataValidator.validateRelease(command);
-        final UUID transactionId = command.getTransactionUUID();
+        final String transactionId = command.getTransactionId();
         final CurrentAccount account = currentAccountRepository.findById(accountId)
-                .orElseThrow(() -> new CurrentAccountNotFoundException(accountId));
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
+                        accountId));
         final CurrentTransaction holdTransaction = currentTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
         checkClientActive(account);

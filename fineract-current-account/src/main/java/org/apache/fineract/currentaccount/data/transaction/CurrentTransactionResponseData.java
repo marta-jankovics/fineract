@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
@@ -36,8 +36,8 @@ import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 @AllArgsConstructor
 public final class CurrentTransactionResponseData implements Serializable {
 
-    private final UUID id;
-    private final UUID accountId;
+    private final String id;
+    private final String accountId;
     private final ExternalId externalId;
     private final PaymentTypeData paymentTypeData;
     private final EnumOptionData transactionType;

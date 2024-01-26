@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.service.transaction.read.impl;
 
 import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
@@ -48,14 +48,14 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
 
     @Override
-    public CurrentTransactionTemplateResponseData retrieveTemplate(UUID accountId) {
-        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountData(accountId);
+    public CurrentTransactionTemplateResponseData retrieveTemplate(String accountId) {
+        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataByExternalId(accountId);
         final List<PaymentTypeData> paymentTypeOptions = this.paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         CurrencyData currencyData = new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
                 currentAccountData.getCurrencyDigitsAfterDecimal(), currentAccountData.getCurrencyInMultiplesOf(),
                 currentAccountData.getCurrencyDisplaySymbol(), null);
         return CurrentTransactionTemplateResponseData.builder() //
-                .accountNo(currentAccountData.getAccountNo()) //
+                .accountNumber(currentAccountData.getAccountNumber()) //
                 .accountId(currentAccountData.getId()) //
                 .currency(currencyData) //
                 .submittedOnDate(DateUtils.getBusinessLocalDate()) //
@@ -65,7 +65,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     }
 
     @Override
-    public CurrentTransactionResponseData retrieveTransactionById(UUID accountId, UUID transactionId) {
+    public CurrentTransactionResponseData retrieveTransactionById(String accountId, String transactionId) {
         CurrentTransactionData currentTransactionData = currentTransactionRepository.findByIdAndAccountId(accountId, transactionId);
         if (currentTransactionData == null) {
             throw new CurrentTransactionNotFoundException(accountId, transactionId);
@@ -74,7 +74,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     }
 
     @Override
-    public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(UUID accountId, Pageable pageable) {
+    public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(String accountId, Pageable pageable) {
         Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId, pageable);
         return currentTransactionResponseDataMapper.map(currentTransactionData);
     }

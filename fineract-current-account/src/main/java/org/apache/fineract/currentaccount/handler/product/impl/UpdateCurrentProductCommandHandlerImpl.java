@@ -35,6 +35,6 @@ public class UpdateCurrentProductCommandHandlerImpl implements UpdateCurrentProd
 
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.update(command.getResourceUUID(), command);
+        return this.writePlatformService.update(command.getResourceIdentifier(), command);
     }
 }

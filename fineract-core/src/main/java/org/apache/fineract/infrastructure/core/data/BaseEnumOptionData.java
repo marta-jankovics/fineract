@@ -16,19 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.write;
+package org.apache.fineract.infrastructure.core.data;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import java.io.Serializable;
 
-public interface CurrentTransactionWriteService {
+/**
+ * <p>
+ * Immutable data object representing generic enumeration value.
+ * </p>
+ */
+@Getter
+@EqualsAndHashCode
+@AllArgsConstructor
+public abstract class BaseEnumOptionData implements Serializable {
 
-    CommandProcessingResult deposit(String accountId, JsonCommand command);
-
-    CommandProcessingResult withdrawal(String accountId, JsonCommand command);
-
-    CommandProcessingResult hold(String accountId, JsonCommand command);
-
-    CommandProcessingResult release(String accountId, JsonCommand command);
+    protected final String code;
+    protected final String value;
 }

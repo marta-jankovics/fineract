@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.assembler.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNoParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNumberParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
@@ -39,7 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
@@ -86,9 +86,9 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
      */
     @Override
     public CurrentAccount assemble(final JsonCommand command) {
-        String accountNo = command.stringValueOfParameterNamed(accountNoParamName);
+        String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
         final String externalId = command.stringValueOfParameterNamed(externalIdParamName);
-        final UUID productId = UUID.fromString(command.stringValueOfParameterNamed(productIdParamName));
+        final String productId = command.stringValueOfParameterNamed(productIdParamName);
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
@@ -144,7 +144,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             balanceCalculationType = product.getBalanceCalculationType();
         }
 
-        final CurrentAccount account = CurrentAccount.newInstanceForSubmit(client.getId(), product.getId(), accountNo,
+        final CurrentAccount account = CurrentAccount.newInstanceForSubmit(client.getId(), product.getId(), accountNumber,
                 externalIdFactory.create(externalId), allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance,
                 balanceCalculationType);
 
@@ -167,10 +167,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final String localeAsInput = command.locale();
 
-        if (command.isChangeInStringParameterNamed(accountNoParamName, account.getAccountNo())) {
-            final String newValue = command.stringValueOfParameterNamed(accountNoParamName);
-            actualChanges.put(accountNoParamName, newValue);
-            account.setAccountNo(newValue);
+        if (command.isChangeInStringParameterNamed(accountNumberParamName, account.getAccountNumber())) {
+            final String newValue = command.stringValueOfParameterNamed(accountNumberParamName);
+            actualChanges.put(accountNumberParamName, newValue);
+            account.setAccountNumber(newValue);
         }
         if (command.isChangeInStringParameterNamed(externalIdParamName, account.getExternalId().getValue())) {
             final String newValue = command.stringValueOfParameterNamed(externalIdParamName);

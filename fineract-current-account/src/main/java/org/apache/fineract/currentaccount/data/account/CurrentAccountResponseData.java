@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.data.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import lombok.Data;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -31,11 +31,11 @@ import org.apache.fineract.organisation.monetary.data.CurrencyData;
 public class CurrentAccountResponseData implements Serializable {
 
     // Current product data
-    private final UUID id;
-    private final String accountNo;
+    private final String id;
+    private final String accountNumber;
     private final ExternalId externalId;
     private final Long clientId;
-    private final UUID productId;
+    private final String productId;
     private final EnumOptionData status;
     private final LocalDate activatedOnDate;
     private final CurrencyData currency;

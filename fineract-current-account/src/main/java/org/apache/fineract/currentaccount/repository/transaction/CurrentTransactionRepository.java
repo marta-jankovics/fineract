@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.repository.transaction;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.UUID;
+
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.springframework.data.domain.Page;
@@ -32,24 +32,24 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, UUID> {
+public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, String> {
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId AND ca.productId = ca.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
-    CurrentTransactionData findByIdAndAccountId(@Param("accountId") UUID accountId, @Param("transactionId") UUID transactionId);
+    CurrentTransactionData findByIdAndAccountId(@Param("accountId") String accountId, @Param("transactionId") String transactionId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.transactionAmount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt WHERE t.accountId = :accountId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
-    Page<CurrentTransactionData> findByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
+    Page<CurrentTransactionData> findByAccountId(@Param("accountId") String accountId, Pageable pageable);
 
     @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId")
-    List<CurrentTransaction> getTransactions(@Param("accountId") UUID accountId, Sort sort);
+    List<CurrentTransaction> getTransactions(@Param("accountId") String accountId, Sort sort);
 
     @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime ORDER BY t.createdDate, t.id")
-    List<CurrentTransaction> getTransactionsFrom(@Param("accountId") UUID accountId, @Param("fromDateTime") OffsetDateTime fromDateTime);
+    List<CurrentTransaction> getTransactionsFrom(@Param("accountId") String accountId, @Param("fromDateTime") OffsetDateTime fromDateTime);
 
     @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate <= :tillDateTime ORDER By t.createdDate, t.id")
-    List<CurrentTransaction> getTransactionsTill(@Param("accountId") UUID accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
+    List<CurrentTransaction> getTransactionsTill(@Param("accountId") String accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
     @Query("SELECT t FROM CurrentTransaction t, CurrentAccount ca WHERE ca.id = t.accountId AND t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
-    List<CurrentTransaction> getTransactionsFromAndTill(@Param("accountId") UUID accountId,
+    List<CurrentTransaction> getTransactionsFromAndTill(@Param("accountId") String accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 }
