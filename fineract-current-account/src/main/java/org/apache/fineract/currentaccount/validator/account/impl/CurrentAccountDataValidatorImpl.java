@@ -90,7 +90,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         baseDataValidator.reset().parameter(submittedOnDateParamName).value(submittedOnDate).ignoreIfNull();
 
         final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
-        baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(20);
+        baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(50);
 
         validateExternalId(command, baseDataValidator);
         validateMinimumRequiredBalanceParams(baseDataValidator, command);
@@ -113,7 +113,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
         if (command.parameterExists(accountNumberParamName)) {
             final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
-            baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(20);
+            baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
         validateExternalId(command, baseDataValidator);
