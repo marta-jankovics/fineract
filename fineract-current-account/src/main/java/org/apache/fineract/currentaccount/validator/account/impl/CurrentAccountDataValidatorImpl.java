@@ -89,8 +89,10 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final LocalDate submittedOnDate = command.localDateValueOfParameterNamed(submittedOnDateParamName);
         baseDataValidator.reset().parameter(submittedOnDateParamName).value(submittedOnDate).ignoreIfNull();
 
-        final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
-        baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(50);
+        if(command.hasParameter(accountNumberParamName)) {
+            final String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
+            baseDataValidator.reset().parameter(accountNumberParamName).value(accountNumber).notBlank().notExceedingLengthOf(50);
+        }
 
         validateExternalId(command, baseDataValidator);
         validateMinimumRequiredBalanceParams(baseDataValidator, command);

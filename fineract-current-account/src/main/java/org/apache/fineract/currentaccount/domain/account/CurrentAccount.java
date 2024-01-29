@@ -54,7 +54,7 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<Strin
     @Getter(onMethod = @__(@Override))
     private String id;
 
-    @Column(name = "account_no", nullable = false, length = 50, unique = true)
+    @Column(name = "account_no", length = 50, unique = true)
     private String accountNumber;
 
     @Column(name = "external_id", length = 100, unique = true)

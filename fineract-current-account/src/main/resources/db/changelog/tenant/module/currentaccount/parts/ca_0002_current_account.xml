@@ -28,7 +28,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="account_no" type="VARCHAR(50)">
-                <constraints nullable="false" unique="true"/>
+                <constraints unique="true"/>
             </column>
             <column name="external_id" type="VARCHAR(100)">
                 <constraints unique="true"/>
