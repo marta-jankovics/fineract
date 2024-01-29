@@ -18,9 +18,9 @@
  */
 package org.apache.fineract.currentaccount.api.account;
 
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
+import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,11 +37,11 @@ public interface CurrentAccountsApi {
 
     CurrentAccountResponseData retrieveOne(String idType, String identifier, String subId);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String accountId);
+    IdentifiersResponseData retrieveIdentifiers(String accountId);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String idType, String identifier);
+    IdentifiersResponseData retrieveIdentifiers(String idType, String identifier);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiers(String idType, String identifier, String subIdentifier);
+    IdentifiersResponseData retrieveIdentifiers(String idType, String identifier, String subIdentifier);
 
     CommandProcessingResult submitApplication(String requestJson);
 

@@ -31,7 +31,7 @@ import org.apache.fineract.infrastructure.core.exception.PlatformInternalServerE
  */
 @Getter
 @EqualsAndHashCode
-public class ExternalId implements Serializable {
+public class ExternalId implements StringValueHolder, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1;

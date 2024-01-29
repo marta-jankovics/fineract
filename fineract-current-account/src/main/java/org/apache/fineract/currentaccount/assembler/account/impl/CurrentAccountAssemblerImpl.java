@@ -31,8 +31,9 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.productIdParamName;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.submittedOnDateParamName;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import org.apache.fineract.currentaccount.data.account.IdTypeValueSubValueData;
 import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
@@ -477,19 +479,18 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
         try {
             if (command.hasParameter(identifiersParamName)) {
-                JsonObject identifiers = command.jsonElement(identifiersParamName).getAsJsonObject();
+                JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
 
                 if (identifiers != null) {
-                    for (Map.Entry<String, JsonElement> itemElement : identifiers.entrySet()) {
+                    for (JsonElement itemElement : identifiers) {
                         boolean saved = false;
-                        String reformattedKey = itemElement.getKey().toUpperCase().replace("-", "_");
+                        IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
+                        String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
                         for (InteropIdentifierType interopIdentifierType : InteropIdentifierType.values()) {
                             if (reformattedKey.equals(interopIdentifierType.name())
                                     || reformattedKey.equals(interopIdentifierType.getAlias())) {
-                                String value = itemElement.getValue().getAsJsonObject().get("value").getAsString();
-                                String subValue = itemElement.getValue().getAsJsonObject().get("subValue") != null
-                                        ? itemElement.getValue().getAsJsonObject().get("subValue").getAsString()
-                                        : null;
+                                String value = itemObject.getValue();
+                                String subValue = itemObject.getSubValue();
                                 AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(),
                                         interopIdentifierType, value, subValue, 1L);
                                 // TODO: would be better to not flush, but then the error handling should be moved to
@@ -500,7 +501,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                             }
                         }
                         if (!saved) {
-                            baseDataValidator.reset().parameter(itemElement.getKey())
+                            baseDataValidator.reset().parameter(itemObject.getIdType())
                                     .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
                         }
                     }

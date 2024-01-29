@@ -18,36 +18,49 @@
  */
 package org.apache.fineract.currentaccount.mapper.account;
 
+import com.google.common.base.CaseFormat;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import lombok.SneakyThrows;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
-import org.apache.fineract.currentaccount.data.account.ValueSubValueData;
+import org.apache.fineract.currentaccount.data.account.IdTypeValueSubValueData;
+import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
+import org.apache.fineract.infrastructure.core.domain.StringValueHolder;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentAccountIdentifiersResponseDataMapper {
 
-    default CurrentAccountIdentifiersResponseData map(CurrentAccountIdentifiersData currentAccountIdentifiersData,
-            List<AccountIdentifier> extraSecondaryIdentifiers) {
-        CurrentAccountIdentifiersResponseData.CurrentAccountIdentifiersResponseDataBuilder builder = CurrentAccountIdentifiersResponseData
-                .builder();
-        builder.id(currentAccountIdentifiersData.getId()).accountNumber(currentAccountIdentifiersData.getAccountNumber())
-                .externalId(currentAccountIdentifiersData.getExternalId());
-        for (AccountIdentifier accountIdentifier : extraSecondaryIdentifiers) {
-            switch (accountIdentifier.getIdentifierType()) {
-                case MSISDN -> builder.msisdn(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case EMAIL -> builder.email(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case PERSONAL_ID ->
-                    builder.personalId(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case BUSINESS -> builder.business(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case DEVICE -> builder.device(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case ACCOUNT_ID -> builder.accountId(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case IBAN -> builder.iban(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
-                case ALIAS -> builder.alias(new ValueSubValueData(accountIdentifier.getValue(), accountIdentifier.getSubValue()));
+    @Mapping(target = "primaryIdentifiers", source = "currentAccountIdentifiersData")
+    @Mapping(target = "secondaryIdentifiers", source = "secondaryIdentifiers")
+    IdentifiersResponseData map(CurrentAccountIdentifiersData currentAccountIdentifiersData, List<AccountIdentifier> secondaryIdentifiers);
+
+    @SneakyThrows
+    default List<IdTypeValueSubValueData> mapPrimaryIdentifiers(CurrentAccountIdentifiersData currentAccountIdentifiersData) {
+        List<IdTypeValueSubValueData> primaryIdentifiers = new ArrayList<>();
+        Field[] fields = currentAccountIdentifiersData.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Object value = field.get(currentAccountIdentifiersData);
+            if (field.get(currentAccountIdentifiersData) != null) {
+                if (value instanceof StringValueHolder) {
+                    value = ((StringValueHolder) value).getValue();
+                }
+                primaryIdentifiers.add(new IdTypeValueSubValueData(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, field.getName()),
+                        (String) value, null));
             }
         }
-        return builder.build();
+        return primaryIdentifiers;
+    }
+
+    default List<IdTypeValueSubValueData> mapSecondaryIdentifiers(List<AccountIdentifier> secondaryIdentifiers) {
+        return secondaryIdentifiers.stream()
+                .map(o -> new IdTypeValueSubValueData(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, o.getIdentifierType().name()),
+                        o.getValue(), o.getSubValue()))
+                .toList();
     }
 }

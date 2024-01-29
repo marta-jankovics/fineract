@@ -25,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
+import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountIdType;
@@ -120,8 +120,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
-    public CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType,
-            String identifier, String subIdentifier) {
+    public IdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
+            String subIdentifier) {
         String accountId = retrieveIdByIdTypeAndIdentifier(idType, identifier, subIdentifier);
         CurrentAccountIdentifiersData currentAccountIdentifiersData = currentAccountRepository.retrieveIdentifiers(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));

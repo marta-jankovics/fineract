@@ -48,9 +48,9 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
+import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
@@ -145,7 +145,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Retrieve a current application/account", description = "Retrieves a current application/account\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/1")
     @Override
-    public CurrentAccountIdentifiersResponseData retrieveIdentifiers(
+    public IdentifiersResponseData retrieveIdentifiers(
             @PathParam("accountId") @Parameter(description = "accountId") final String accountId) {
         return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolveDefault(), accountId, null);
     }
@@ -157,7 +157,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/external-id/ExternalId1")
     @Override
-    public CurrentAccountIdentifiersResponseData retrieveIdentifiers(
+    public IdentifiersResponseData retrieveIdentifiers(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
         return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolve(idType), identifier, null);
@@ -170,17 +170,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "currentaccounts/external-id/ExternalId1")
     @Override
-    public CurrentAccountIdentifiersResponseData retrieveIdentifiers(
+    public IdentifiersResponseData retrieveIdentifiers(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier) {
         return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolve(idType), identifier, subIdentifier);
-    }
-
-    private CurrentAccountIdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
-            String subIdentifier) {
-        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
-        return currentAccountReadService.retrieveIdentifiersByIdTypeAndIdentifier(idType, identifier, subIdentifier);
     }
 
     @POST
@@ -304,6 +298,12 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentAccount(idType, identifier, subIdentifier, requestJson);
+    }
+
+    private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
+            String subIdentifier) {
+        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
+        return currentAccountReadService.retrieveIdentifiersByIdTypeAndIdentifier(idType, identifier, subIdentifier);
     }
 
     private CommandProcessingResult updateCurrentAccount(String idType, String identifier, String subIdentifier, String requestJson) {

@@ -18,24 +18,12 @@
  */
 package org.apache.fineract.currentaccount.data.account;
 
-import java.io.Serializable;
-import lombok.Builder;
+import java.util.List;
 import lombok.Data;
-import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
-@Builder
-public class CurrentAccountIdentifiersResponseData implements Serializable {
+public class IdentifiersResponseData {
 
-    private final String id;
-    private final String accountNumber;
-    private final ExternalId externalId;
-    private final ValueSubValueData msisdn;
-    private final ValueSubValueData email;
-    private final ValueSubValueData personalId;
-    private final ValueSubValueData business;
-    private final ValueSubValueData device;
-    private final ValueSubValueData accountId;
-    private final ValueSubValueData iban;
-    private final ValueSubValueData alias;
+    private final List<IdTypeValueSubValueData> primaryIdentifiers;
+    private final List<IdTypeValueSubValueData> secondaryIdentifiers;
 }

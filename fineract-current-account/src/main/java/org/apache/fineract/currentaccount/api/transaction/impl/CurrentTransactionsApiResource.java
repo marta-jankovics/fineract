@@ -146,11 +146,6 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
                 IdTypeResolver.resolve(CurrentTransactionIdType.class, idType), identifier);
     }
 
-    private CurrentTransactionResponseData retrieveOne(String accountId, @NotNull CurrentTransactionIdType idType, String identifier) {
-        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
-        return currentTransactionReadService.retrieveByIdTypeAndIdentifier(accountId, idType, identifier);
-    }
-
     @Override
     @POST
     @Path("{accountId}/transactions")
@@ -273,6 +268,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(idType, identifier, subIdentifier, queryRequest);
+    }
+
+    private CurrentTransactionResponseData retrieveOne(String accountId, @NotNull CurrentTransactionIdType idType, String identifier) {
+        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
+        return currentTransactionReadService.retrieveByIdTypeAndIdentifier(accountId, idType, identifier);
     }
 
     private Page<JsonObject> query(String idType, String identifier, String subIdentifier,

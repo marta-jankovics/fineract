@@ -16,14 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.infrastructure.core.domain;
 
-import java.io.Serializable;
-import lombok.Data;
+public interface StringValueHolder {
 
-@Data
-public class ValueSubValueData implements Serializable {
-
-    private final String value;
-    private final String subValue;
+    String getValue();
 }

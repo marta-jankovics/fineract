@@ -20,9 +20,9 @@ package org.apache.fineract.currentaccount.service.account.read;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
+import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +41,6 @@ public interface CurrentAccountReadService {
 
     String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType,
-            String identifier, String subIdentifier);
+    IdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
+            String subIdentifier);
 }
