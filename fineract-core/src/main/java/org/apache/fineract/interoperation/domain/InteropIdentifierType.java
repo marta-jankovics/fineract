@@ -29,7 +29,7 @@ public enum InteropIdentifierType {
     MSISDN(), //
     EMAIL(), //
     PERSONAL_ID("PERSONALID"), //
-    BUSINESS(), //
+    BUSINESS("BBAN"), //
     DEVICE(), //
     ACCOUNT_ID("ACCOUNTID"), //
     IBAN(), //
