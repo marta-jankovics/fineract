@@ -18,21 +18,43 @@
  */
 package org.apache.fineract.currentaccount.api.transaction;
 
+import com.google.gson.JsonObject;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionApi {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(String accountId);
+    CurrentTransactionTemplateResponseData template(String accountId);
 
     Page<CurrentTransactionResponseData> retrieveAll(String accountId, Pageable pageable);
 
     CurrentTransactionResponseData retrieveOne(String accountId, String transactionId);
 
+    CurrentTransactionResponseData retrieveOne(String accIdType, String accIdentifier, String idType, String identifier);
+
+    CurrentTransactionResponseData retrieveOne(String accIdType, String accIdentifier, String accSubIdentifier, String idType,
+            String identifier);
+
     CommandProcessingResult transaction(String accountId, String commandParam, String apiRequestBodyAsJson);
 
-    CommandProcessingResult transaction(String accountId, String transactionId, String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult action(String accountId, String transactionId, String commandParam, String apiRequestBodyAsJson);
+
+    CommandProcessingResult action(String accIdType, String accIdentifier, String idType, String identifier, String commandParam,
+            String apiRequestBodyAsJson);
+
+    CommandProcessingResult action(String accIdType, String accIdentifier, String accSubIdentifier, String idType, String identifier,
+            String commandParam, String apiRequestBodyAsJson);
+
+    Page<JsonObject> advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    Page<JsonObject> advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    Page<JsonObject> advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
+            UriInfo uriInfo);
 }

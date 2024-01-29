@@ -49,10 +49,10 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
+import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
+import org.apache.fineract.infrastructure.dataqueries.data.FilterData;
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData;
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
-import org.apache.fineract.portfolio.search.data.ColumnFilterData;
-import org.apache.fineract.portfolio.search.data.FilterData;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 public final class SearchUtil {

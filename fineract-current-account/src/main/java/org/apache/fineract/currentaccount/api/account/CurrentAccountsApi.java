@@ -33,9 +33,9 @@ public interface CurrentAccountsApi {
 
     CurrentAccountResponseData retrieveOne(String accountId);
 
-    CurrentAccountResponseData retrieveOne(String idType, String id);
+    CurrentAccountResponseData retrieveOne(String idType, String identifier);
 
-    CurrentAccountResponseData retrieveOne(String idType, String id, String subId);
+    CurrentAccountResponseData retrieveOne(String idType, String identifier, String subId);
 
     CurrentAccountIdentifiersResponseData retrieveIdentifiers(String accountId);
 
@@ -47,9 +47,9 @@ public interface CurrentAccountsApi {
 
     CommandProcessingResult action(String accountId, String commandParam, String requestJson);
 
-    CommandProcessingResult action(String idType, String id, String commandParam, String requestJson);
+    CommandProcessingResult action(String idType, String identifier, String commandParam, String requestJson);
 
-    CommandProcessingResult action(String idType, String id, String subId, String commandParam, String requestJson);
+    CommandProcessingResult action(String idType, String identifier, String subId, String commandParam, String requestJson);
 
     CommandProcessingResult update(String accountId, String requestJson);
 

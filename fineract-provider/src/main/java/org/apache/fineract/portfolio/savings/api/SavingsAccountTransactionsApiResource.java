@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.portfolio.savings.api;
 
+import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_TRANSACTION_RESOURCE_NAME;
+
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,6 +57,10 @@ import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSeria
 import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.apache.fineract.infrastructure.core.serialization.JsonParserHelper;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
+import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
+import org.apache.fineract.infrastructure.dataqueries.service.AdvancedQueryService;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
@@ -63,7 +69,6 @@ import org.apache.fineract.portfolio.savings.SavingsApiConstants;
 import org.apache.fineract.portfolio.savings.data.SavingsAccountTransactionData;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountReadPlatformService;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionSearchService;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.TransactionSearchRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -82,6 +87,7 @@ public class SavingsAccountTransactionsApiResource {
     private final SavingsAccountReadPlatformService savingsAccountReadPlatformService;
     private final PaymentTypeReadPlatformService paymentTypeReadPlatformService;
     private final SavingsAccountTransactionSearchService transactionsSearchService;
+    private final AdvancedQueryService advancedQueryService;
 
     private boolean is(final String commandParam, final String commandValue) {
         return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
@@ -170,7 +176,9 @@ public class SavingsAccountTransactionsApiResource {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     public String advancedQuery(@PathParam("savingsId") @Parameter(description = "savingsId") final Long savingsId,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
-        final Page<JsonObject> result = transactionsSearchService.queryAdvanced(savingsId, queryRequest);
+        context.authenticatedUser().validateHasReadPermission(SAVINGS_ACCOUNT_TRANSACTION_RESOURCE_NAME);
+        List<ColumnFilterData> addFilters = List.of(ColumnFilterData.eq("savings_account_id", savingsId.toString()));
+        final Page<JsonObject> result = advancedQueryService.query(EntityTables.SAVINGS_TRANSACTION, queryRequest, addFilters);
         return this.toApiJsonSerializer.serializePretty(ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters()), result);
     }
 

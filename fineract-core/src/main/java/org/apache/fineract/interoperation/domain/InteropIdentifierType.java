@@ -18,24 +18,44 @@
  */
 package org.apache.fineract.interoperation.domain;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
 public enum InteropIdentifierType {
 
-    MSISDN(""), //
-    EMAIL(""), //
+    MSISDN(), //
+    EMAIL(), //
     PERSONAL_ID("PERSONALID"), //
-    BUSINESS(""), //
-    DEVICE(""), //
+    BUSINESS(), //
+    DEVICE(), //
     ACCOUNT_ID("ACCOUNTID"), //
-    IBAN(""), //
-    ALIAS(""), //
+    IBAN(), //
+    ALIAS(), //
     ; //
+
+    private static final Map<String, InteropIdentifierType> BY_ALIAS = Arrays.stream(values())
+            .collect(Collectors.toMap(InteropIdentifierType::getAlias, v -> v));
+    private static final Map<String, InteropIdentifierType> BY_NAME = Arrays.stream(values())
+            .collect(Collectors.toMap(InteropIdentifierType::name, v -> v));
 
     private final String alias;
 
     InteropIdentifierType(String alias) {
-        this.alias = alias;
+        this.alias = alias == null ? name() : alias;
+    }
+
+    InteropIdentifierType() {
+        this(null);
+    }
+
+    public static InteropIdentifierType resolveName(String name) {
+        if (name == null) {
+            return null;
+        }
+        InteropIdentifierType idType = BY_ALIAS.get(name);
+        return idType == null ? BY_NAME.get(name) : idType;
     }
 }

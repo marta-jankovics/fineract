@@ -16,39 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.search.data;
-
-import static org.apache.fineract.infrastructure.core.service.database.SqlOperator.BTW;
-import static org.apache.fineract.infrastructure.core.service.database.SqlOperator.EQ;
+package org.apache.fineract.infrastructure.dataqueries.data;
 
 import java.io.Serializable;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
 
 /**
  * Immutable data object representing datatable data.
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public final class FilterData implements Serializable {
+public final class AdvancedQueryRequest implements Serializable {
 
-    private SqlOperator operator;
+    private AdvancedQueryData baseQuery;
 
-    private List<String> values;
+    private List<TableQueryData> datatableQueries;
 
-    static FilterData eq(String value) {
-        return new FilterData(EQ, List.of(value));
+    public boolean hasFilter() {
+        return (baseQuery != null && baseQuery.hasFilter())
+                || (datatableQueries != null && datatableQueries.stream().anyMatch(TableQueryData::hasFilter));
     }
 
-    static FilterData btw(String value1, String value2) {
-        return new FilterData(BTW, List.of(value1, value2));
-    }
-
-    static FilterData create(SqlOperator op, String... values) {
-        return new FilterData(op, List.of(values));
+    public boolean hasResultColumn() {
+        return (baseQuery != null && baseQuery.hasResultColumn())
+                || (datatableQueries != null && datatableQueries.stream().anyMatch(TableQueryData::hasResultColumn));
     }
 }

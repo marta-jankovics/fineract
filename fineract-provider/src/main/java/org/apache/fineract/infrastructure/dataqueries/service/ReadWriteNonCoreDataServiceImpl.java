@@ -19,7 +19,6 @@
 package org.apache.fineract.infrastructure.dataqueries.service;
 
 import static java.util.Arrays.asList;
-import static org.apache.fineract.infrastructure.core.serialization.DatatableCommandFromApiJsonDeserializer.DATATABLE_NAME_REGEX_PATTERN;
 import static org.apache.fineract.infrastructure.core.service.database.JdbcJavaType.BIGINT;
 import static org.apache.fineract.infrastructure.core.service.database.JdbcJavaType.DATETIME;
 import static org.apache.fineract.infrastructure.core.service.database.SqlOperator.EQ;
@@ -95,6 +94,8 @@ import org.apache.fineract.infrastructure.core.service.database.DatabaseType;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseTypeResolver;
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant;
+import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryData;
+import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
 import org.apache.fineract.infrastructure.dataqueries.data.DataTableValidator;
 import org.apache.fineract.infrastructure.dataqueries.data.DatatableData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
@@ -108,8 +109,6 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.infrastructure.security.service.SqlInjectionPreventerService;
 import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
-import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;
@@ -560,15 +559,12 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     sqlBuilder.append(", KEY ").append(sqlGenerator.escape("fk_" + fkColumnName)).append(" (")
                             .append(sqlGenerator.escape(fkColumnName)).append(")");
                 }
-                sqlBuilder.append(", CONSTRAINT ").append(sqlGenerator.escape(fkConstraintName)).append(" FOREIGN KEY (")
-                        .append(sqlGenerator.escape(fkColumnName)).append(") ").append("REFERENCES ")
-                        .append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn()).append(")");
             } else {
-                sqlBuilder.append(", PRIMARY KEY (").append(sqlGenerator.escape(fkColumnName)).append(")").append(", CONSTRAINT ")
-                        .append(sqlGenerator.escape(fkConstraintName)).append(" FOREIGN KEY (").append(sqlGenerator.escape(fkColumnName))
-                        .append(") ").append("REFERENCES ").append(sqlGenerator.escape(entity.getApptableName())).append(" (")
-                        .append(entity.getRefColumn()).append(")");
+                sqlBuilder.append(", PRIMARY KEY (").append(sqlGenerator.escape(fkColumnName)).append(")");
             }
+            sqlBuilder.append(", CONSTRAINT ").append(sqlGenerator.escape(fkConstraintName)).append(" FOREIGN KEY (")
+                    .append(sqlGenerator.escape(fkColumnName)).append(") ").append("REFERENCES ")
+                    .append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn()).append(")");
 
             sqlBuilder.append(constrainBuilder);
             sqlBuilder.append(")");
@@ -621,27 +617,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         return column;
     }
 
-    private void createFkIndex(String datatable, String fkColumnName) {
-        String indexName = datatableKeywordGenerator.generateIndexName(datatable, fkColumnName);
-        createIndex(indexName, datatable, fkColumnName);
-    }
-
-    private void createIndexesForTable(String datatable, JsonArray columns) {
-        for (final JsonElement column : columns) {
-            createIndexForColumn(datatable, column.getAsJsonObject());
-        }
-    }
-
-    private void createIndexForColumn(String datatable, JsonObject column) {
-        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
-        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
-        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
-        if (!unique && indexed) {
-            String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
-            createIndex(indexName, datatable, name);
-        }
-    }
-
     @Transactional
     @Override
     public void updateDatatable(final String datatable, final JsonCommand command) {
@@ -658,8 +633,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
             validateDatatable(datatable);
             int rowCount = getDatatableRowCount(datatable);
-            final List<ResultsetColumnHeaderData> columnHeaderData = this.genericDataService.fillResultsetColumnHeaders(datatable);
-            final Map<String, ResultsetColumnHeaderData> mapColumnNameDefinition = SearchUtil.mapHeadersToName(columnHeaderData);
+            final List<ResultsetColumnHeaderData> columnHeaders = this.genericDataService.fillResultsetColumnHeaders(datatable);
+            boolean multiRow = isMultirowDatatable(columnHeaders);
 
             final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
 
@@ -668,41 +643,50 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                         new Object[] { entitySubType, datatable });
             }
 
+            String sqlDatatable = sqlGenerator.escape(datatable);
             if (!StringUtils.isBlank(entityName)) {
-                EntityTables entity = resolveEntity(entityName);
                 EntityTables oldEntityTable = queryForApplicationEntity(datatable);
+                EntityTables entity = resolveEntity(entityName);
                 if (entity != oldEntityTable) {
-                    // TODO: CURRENT! update fk column type if needed
+                    JdbcJavaType fkColumnType = entity.getRefColumnType();
                     final String oldFkColumnName = oldEntityTable.getForeignKeyColumnNameOnDatatable();
                     final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
-                    StringBuilder sqlBuilder = new StringBuilder();
 
-                    String oldFkName = "fk_" + oldFkColumnName;
-                    String oldFkConstraintName = "fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + oldFkColumnName;
-                    String fkName = "fk_" + fkColumnName;
-                    String fkConstraintName = "fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + fkColumnName;
-                    if (mapColumnNameDefinition.containsKey(TABLE_FIELD_ID)) {
-                        sqlBuilder.append("ALTER TABLE ").append(sqlGenerator.escape(datatable)).append(" DROP KEY ")
-                                .append(sqlGenerator.escape(oldFkName)).append(",").append("DROP FOREIGN KEY ")
-                                .append(sqlGenerator.escape(oldFkConstraintName)).append(",").append("CHANGE COLUMN ")
-                                .append(sqlGenerator.escape(oldFkColumnName)).append(" ").append(sqlGenerator.escape(fkColumnName))
-                                .append(" BIGINT NOT NULL,").append("ADD KEY ").append(sqlGenerator.escape(fkName)).append(" (")
-                                .append(sqlGenerator.escape(fkColumnName)).append("),").append("ADD CONSTRAINT ")
-                                .append(sqlGenerator.escape(fkConstraintName)).append(" FOREIGN KEY (")
-                                .append(sqlGenerator.escape(fkColumnName)).append(") ").append("REFERENCES ")
-                                .append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn())
-                                .append(")");
-                    } else {
-                        sqlBuilder.append("ALTER TABLE ").append(sqlGenerator.escape(datatable)).append(" DROP FOREIGN KEY ")
-                                .append(sqlGenerator.escape(oldFkConstraintName)).append(",").append("CHANGE COLUMN ")
-                                .append(sqlGenerator.escape(oldFkColumnName)).append(" ").append(sqlGenerator.escape(fkColumnName))
-                                .append(" BIGINT NOT NULL,").append("ADD CONSTRAINT ").append(sqlGenerator.escape(fkConstraintName))
-                                .append(" FOREIGN KEY (").append(sqlGenerator.escape(fkColumnName)).append(") ").append("REFERENCES ")
-                                .append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn())
-                                .append(")");
+                    String oldFkName = sqlGenerator.escape("fk_" + oldFkColumnName);
+                    String oldFkConstraintName = sqlGenerator
+                            .escape("fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + oldFkColumnName);
+                    String fkName = sqlGenerator.escape("fk_" + fkColumnName);
+                    String fkConstraintName = sqlGenerator
+                            .escape("fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + fkColumnName);
+                    if (multiRow) {
+                        dropIndex(datatable, datatableKeywordGenerator.generateIndexName(datatable, oldFkColumnName));
                     }
 
+                    DatabaseType dialect = databaseTypeResolver.databaseType();
+                    String sep = dialect.isMySql() ? ", " : " ";
+                    StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE ").append(sqlDatatable);
+                    if (multiRow) {
+                        sqlBuilder.append(" DROP KEY ").append(oldFkName).append(sep);
+                    }
+                    sqlBuilder.append("DROP FOREIGN KEY ").append(oldFkConstraintName).append(sep);
+                    if (dialect.isMySql()) {
+                        sqlBuilder.append("CHANGE ").append(oldFkColumnName).append(" ").append(fkColumnName).append(" ")
+                                .append(fkColumnType.formatSql(dialect)).append(" NOT NULL").append(sep);
+                    } else {
+                        sqlBuilder.append("RENAME COLUMN ").append(oldFkColumnName).append(" TO ").append(fkColumnName).append(" ALTER ")
+                                .append(fkColumnName).append(" type ").append(fkColumnType.formatSql(dialect)).append(sep);
+                    }
+                    if (multiRow) {
+                        sqlBuilder.append("ADD KEY ").append(fkName).append(" (").append(fkColumnName).append("),").append(sep);
+                    }
+                    sqlBuilder.append("ADD CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(fkColumnName).append(") ")
+                            .append("REFERENCES ").append(entity.getApptableName()).append(" (").append(entity.getRefColumn()).append(")");
+
                     this.jdbcTemplate.execute(sqlBuilder.toString());
+
+                    if (multiRow) {
+                        createFkIndex(datatable, datatableKeywordGenerator.generateIndexName(datatable, fkColumnName));
+                    }
 
                     deregisterDatatable(datatable);
                     registerDatatable(datatable, entity, entitySubType);
@@ -718,7 +702,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     throw new GeneralPlatformDomainRuleException("error.msg.non.empty.datatable.column.cannot.be.deleted",
                             "Non-empty datatable columns can not be deleted.");
                 }
-                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlGenerator.escape(datatable));
+                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlDatatable);
                 final StringBuilder constrainBuilder = new StringBuilder();
                 final List<String> codeMappings = new ArrayList<>();
                 for (final JsonElement column : dropColumns) {
@@ -735,7 +719,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 deleteColumnCodeMapping(codeMappings);
             }
             if (addColumns != null) {
-                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlGenerator.escape(datatable));
+                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlDatatable);
                 final StringBuilder constrainBuilder = new StringBuilder();
                 final Map<String, Long> codeMappings = new HashMap<>();
                 for (final JsonElement column : addColumns) {
@@ -764,11 +748,12 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 final StringBuilder constrainBuilder = new StringBuilder();
                 final Map<String, Long> codeMappings = new HashMap<>();
                 final List<String> removeMappings = new ArrayList<>();
+                final Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil.mapHeadersToName(columnHeaders);
                 for (final JsonElement column : changeColumns) {
                     // remove NULL values from column where mandatory is true
-                    removeNullValuesFromStringColumn(datatable, column.getAsJsonObject(), mapColumnNameDefinition);
-                    parseDatatableColumnForUpdate(column.getAsJsonObject(), mapColumnNameDefinition, datatable, renameBuilder,
-                            changeBuilder, constrainBuilder, codeMappings, removeMappings, isConstraintApproach);
+                    removeNullValuesFromStringColumn(datatable, column.getAsJsonObject(), headersByName);
+                    parseDatatableColumnForUpdate(column.getAsJsonObject(), headersByName, datatable, renameBuilder, changeBuilder,
+                            constrainBuilder, codeMappings, removeMappings, isConstraintApproach);
                 }
 
                 // Remove the first comma, right after ALTER TABLE datatable
@@ -780,7 +765,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     } else if ((idx = constrainBuilder.indexOf(",")) > -1) {
                         constrainBuilder.deleteCharAt(idx);
                     }
-                    sqlBuilder.append("ALTER TABLE " + sqlGenerator.escape(datatable)).append(changeBuilder).append(constrainBuilder);
+                    sqlBuilder.append("ALTER TABLE ").append(sqlDatatable).append(changeBuilder).append(constrainBuilder);
                 }
 
                 try {
@@ -790,25 +775,21 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     deleteColumnCodeMapping(removeMappings);
                     registerColumnCodeMapping(codeMappings);
                     // update unique constraint
-                    updateUniqueConstraintsForTable(datatable, changeColumns, mapColumnNameDefinition);
+                    updateUniqueConstraintsForTable(datatable, changeColumns, headersByName);
                     // update indexes
-                    updateIndexesForTable(datatable, changeColumns, mapColumnNameDefinition);
+                    updateIndexesForTable(datatable, changeColumns, headersByName);
                 } catch (final Exception e) {
                     log.error("Exception while modifying a datatable", e);
+                    // throw a 503 HTTP error - PlatformServiceUnavailableException
                     if (e.getMessage().contains("Error on rename")) {
                         throw new PlatformServiceUnavailableException("error.msg.datatable.column.update.not.allowed",
                                 "One of the column name modification not allowed", e);
                     }
-                    // handle all other exceptions in here
-
-                    // check if exception message contains the
-                    // "invalid use of null value" SQL exception message
-                    // throw a 503 HTTP error -
-                    // PlatformServiceUnavailableException
                     if (e.getMessage().toLowerCase().contains("invalid use of null value")) {
                         throw new PlatformServiceUnavailableException("error.msg.datatable.column.update.not.allowed",
                                 "One of the data table columns contains null values", e);
                     }
+                    // handle all other exceptions in here
                 }
             }
         } catch (final JpaSystemException | DataIntegrityViolationException e) {
@@ -844,7 +825,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
     private void parseDatatableColumnForAdd(final JsonObject column, StringBuilder sqlBuilder, final String datatableAlias,
             final StringBuilder constrainBuilder, final Map<String, Long> codeMappings, final boolean isConstraintApproach) {
-
         String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
         final String type = column.has(API_FIELD_TYPE) ? column.get(API_FIELD_TYPE).getAsString().toLowerCase() : null;
         final Integer length = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsInt() : null;
@@ -1137,6 +1117,27 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     private void dropUniqueConstraint(String datatable, String uniqueKeyName) {
         String sql = "ALTER TABLE " + sqlGenerator.escape(datatable) + " DROP CONSTRAINT " + sqlGenerator.escape(uniqueKeyName) + ";";
         this.jdbcTemplate.execute(sql); // NOSONAR
+    }
+
+    private void createFkIndex(String datatable, String fkColumnName) {
+        String indexName = datatableKeywordGenerator.generateIndexName(datatable, fkColumnName);
+        createIndex(indexName, datatable, fkColumnName);
+    }
+
+    private void createIndexesForTable(String datatable, JsonArray columns) {
+        for (final JsonElement column : columns) {
+            createIndexForColumn(datatable, column.getAsJsonObject());
+        }
+    }
+
+    private void createIndexForColumn(String datatable, JsonObject column) {
+        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
+        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
+        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
+        if (!unique && indexed) {
+            String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
+            createIndex(indexName, datatable, name);
+        }
     }
 
     private void updateIndexesForTable(String datatable, JsonArray changeColumns,
@@ -1663,7 +1664,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     private void validateDatatable(final String datatable) {
         if (datatable == null || datatable.isEmpty()) {
             throw new PlatformDataIntegrityException("error.msg.datatables.datatable.null.name", "Data table name must not be blank.");
-        } else if (!datatable.matches(DATATABLE_NAME_REGEX_PATTERN)) {
+        } else if (!datatable.matches(DatatableCommandFromApiJsonDeserializer.DATATABLE_NAME_REGEX_PATTERN)) {
             throw new PlatformDataIntegrityException("error.msg.datatables.datatable.invalid.name.regex", "Invalid data table name.",
                     datatable);
         }

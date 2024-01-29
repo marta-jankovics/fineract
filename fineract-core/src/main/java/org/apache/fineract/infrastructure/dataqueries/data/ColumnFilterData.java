@@ -16,38 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.search.data;
+package org.apache.fineract.infrastructure.dataqueries.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
 
 /**
  * Immutable data object representing datatable data.
  */
 @Data
 @NoArgsConstructor
-public final class AdvancedQueryData implements Serializable {
+@AllArgsConstructor
+public final class ColumnFilterData implements Serializable {
 
-    private List<ColumnFilterData> columnFilters;
+    private String column;
 
-    private List<String> resultColumns;
+    private List<FilterData> filters;
 
-    public List<ColumnFilterData> getNonNullFilters() {
-        return columnFilters == null ? new ArrayList<>() : columnFilters;
+    public static ColumnFilterData eq(String column, String value) {
+        return new ColumnFilterData(column, List.of(FilterData.eq(value)));
     }
 
-    public boolean hasFilter() {
-        return columnFilters != null && !columnFilters.isEmpty();
+    public static ColumnFilterData btw(String column, String value1, String value2) {
+        return new ColumnFilterData(column, List.of(FilterData.btw(value1, value2)));
     }
 
-    public List<String> getNonNullResultColumns() {
-        return resultColumns == null ? new ArrayList<>() : resultColumns;
-    }
-
-    public boolean hasResultColumn() {
-        return resultColumns != null && !resultColumns.isEmpty();
+    public static ColumnFilterData create(String column, SqlOperator op, String... values) {
+        return new ColumnFilterData(column, List.of(FilterData.create(op, values)));
     }
 }

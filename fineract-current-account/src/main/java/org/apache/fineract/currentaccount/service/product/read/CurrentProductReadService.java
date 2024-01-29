@@ -18,24 +18,24 @@
  */
 package org.apache.fineract.currentaccount.service.product.read;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public interface CurrentProductReadService {
 
+    CurrentProductTemplateResponseData retrieveTemplate();
+
     List<CurrentProductResponseData> retrieveAll(Sort sort);
 
     Page<CurrentProductResponseData> retrieveAll(Pageable pageRequest);
 
-    CurrentProductResponseData retrieveById(String productId);
+    CurrentProductResponseData retrieveByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier);
 
-    CurrentProductTemplateResponseData retrieveTemplate();
-
-    CurrentProductResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier);
-
-    String retrieveIdByIdTypeAndIdentifier(String idType, String identifier);
+    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier);
 }

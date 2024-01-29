@@ -47,6 +47,11 @@ public class CurrentAccountApiConstants {
     public static final String monthDayFormatParamName = "monthDayFormat";
     public static final String staffIdParamName = "currentOfficerId";
 
+    // query
+    public static final String ID_TYPE_PARAM = "idType";
+    public static final String IDENTIFIER_PARAM = "identifier";
+    public static final String SUB_IDENTIFIER_PARAM = "subIdentifier";
+
     // current product and account parameters
     public static final String idParamName = "id";
     public static final String isGSIM = "isGSIM";

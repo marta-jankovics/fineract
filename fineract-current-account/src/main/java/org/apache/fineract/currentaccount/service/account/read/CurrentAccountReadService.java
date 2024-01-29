@@ -18,29 +18,29 @@
  */
 package org.apache.fineract.currentaccount.service.account.read;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public interface CurrentAccountReadService {
 
-    Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
-
-    CurrentAccountResponseData retrieveById(String accountId);
-
     CurrentAccountTemplateResponseData retrieveTemplate();
 
-    List<CurrentAccountResponseData> retrieveAllByClientId(Long clientId, Sort sort);
+    Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
 
-    CurrentAccountResponseData retrieveByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
+    List<CurrentAccountResponseData> retrieveAllByClientId(@NotNull Long clientId, Sort sort);
 
-    String retrieveIdByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
+    CurrentAccountResponseData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
+            String subIdentifier);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiersById(String accountId);
+    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
 
-    CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(String idType, String identifier, String subIdentifier);
+    CurrentAccountIdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType,
+            String identifier, String subIdentifier);
 }

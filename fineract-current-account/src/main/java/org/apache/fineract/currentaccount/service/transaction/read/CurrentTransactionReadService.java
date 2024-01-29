@@ -18,8 +18,10 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read;
 
+import jakarta.validation.constraints.NotNull;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentTransactionIdType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -27,7 +29,10 @@ public interface CurrentTransactionReadService {
 
     CurrentTransactionTemplateResponseData retrieveTemplate(String accountId);
 
-    CurrentTransactionResponseData retrieveTransactionById(String accountId, String transactionId);
+    Page<CurrentTransactionResponseData> retrieveTransactionsByAccountId(String accountId, Pageable pageable);
 
-    Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(String accountId, Pageable pageable);
+    CurrentTransactionResponseData retrieveByIdTypeAndIdentifier(String accountId, @NotNull CurrentTransactionIdType idType,
+            String identifier);
+
+    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentTransactionIdType idType, String identifier);
 }

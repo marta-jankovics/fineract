@@ -18,6 +18,31 @@
  */
 package org.apache.fineract.currentaccount.enumeration.account;
 
-public enum CurrentAccountIdType {
-    ID, EXTERNAL_ID, ACCOUNT_NUMBER;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.fineract.infrastructure.core.service.DefaultOption;
+
+public enum CurrentAccountIdType implements DefaultOption {
+
+    ID, //
+    EXTERNAL_ID, //
+    ACCOUNT_NUMBER, //
+    ;
+
+    private static final Map<String, CurrentAccountIdType> BY_NAME = Arrays.stream(values())
+            .collect(Collectors.toMap(CurrentAccountIdType::name, v -> v));
+
+    public static CurrentAccountIdType resolveName(String name) {
+        return name == null ? null : BY_NAME.get(name);
+    }
+
+    @Override
+    public boolean isDefault() {
+        return isId();
+    }
+
+    public boolean isId() {
+        return this == ID;
+    }
 }

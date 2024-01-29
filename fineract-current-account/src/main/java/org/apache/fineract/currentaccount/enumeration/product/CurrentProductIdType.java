@@ -18,6 +18,21 @@
  */
 package org.apache.fineract.currentaccount.enumeration.product;
 
-public enum CurrentProductIdType {
-    ID, EXTERNAL_ID, SHORT_NAME;
+import org.apache.fineract.infrastructure.core.service.DefaultOption;
+
+public enum CurrentProductIdType implements DefaultOption {
+
+    ID, //
+    EXTERNAL_ID, //
+    SHORT_NAME, //
+    ;
+
+    @Override
+    public boolean isDefault() {
+        return isId();
+    }
+
+    public boolean isId() {
+        return this == ID;
+    }
 }

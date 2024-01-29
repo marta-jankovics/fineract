@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read.impl;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,13 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.exception.transaction.CurrentTransactionNotFoundException;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentTransactionIdType;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
@@ -48,7 +51,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
 
     @Override
     public CurrentTransactionTemplateResponseData retrieveTemplate(String accountId) {
-        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataByExternalId(accountId);
+        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(accountId);
         final List<PaymentTypeData> paymentTypeOptions = this.paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         CurrencyData currencyData = new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
                 currentAccountData.getCurrencyDigitsAfterDecimal(), currentAccountData.getCurrencyInMultiplesOf(),
@@ -64,17 +67,30 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     }
 
     @Override
-    public CurrentTransactionResponseData retrieveTransactionById(String accountId, String transactionId) {
-        CurrentTransactionData currentTransactionData = currentTransactionRepository.findByIdAndAccountId(accountId, transactionId);
-        if (currentTransactionData == null) {
-            throw new CurrentTransactionNotFoundException(accountId, transactionId);
-        }
+    public Page<CurrentTransactionResponseData> retrieveTransactionsByAccountId(String accountId, Pageable pageable) {
+        Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId, pageable);
         return currentTransactionResponseDataMapper.map(currentTransactionData);
     }
 
     @Override
-    public Page<CurrentTransactionResponseData> retrieveTransactionByAccountId(String accountId, Pageable pageable) {
-        Page<CurrentTransactionData> currentTransactionData = currentTransactionRepository.findByAccountId(accountId, pageable);
-        return currentTransactionResponseDataMapper.map(currentTransactionData);
+    public CurrentTransactionResponseData retrieveByIdTypeAndIdentifier(String accountId, @NotNull CurrentTransactionIdType idType,
+            String identifier) {
+        CurrentTransactionData transactionData = switch (idType) {
+            case ID -> currentTransactionRepository.findByIdAndAccountId(accountId, identifier);
+            case EXTERNAL_ID -> currentTransactionRepository.findByExternalIdAndAccountId(accountId, new ExternalId(identifier));
+        };
+        if (transactionData == null) {
+            throw new PlatformResourceNotFoundException("current.product", "Current transaction with %s: %s on account %s cannot be found",
+                    idType, identifier, accountId);
+        }
+        return currentTransactionResponseDataMapper.map(transactionData);
+    }
+
+    @Override
+    public String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentTransactionIdType idType, String identifier) {
+        return switch (idType) {
+            case ID -> identifier;
+            case EXTERNAL_ID -> currentTransactionRepository.findIdByExternalId(new ExternalId(identifier));
+        };
     }
 }

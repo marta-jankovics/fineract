@@ -36,7 +36,7 @@ import org.springframework.stereotype.Repository;
 public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, String> {
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNumber, ca.externalId, ca.clientId, ca.productId, ca.status, ca.activatedOnDate, ca.allowOverdraft, ca.overdraftLimit, ca.allowForceTransaction, ca.minimumRequiredBalance, ca.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentAccount ca, CurrentProduct cp, ApplicationCurrency curr WHERE ca.productId = cp.id AND curr.code = cp.currency.code AND ca.id = :id")
-    CurrentAccountData findCurrentAccountDataByExternalId(@Param("id") String id);
+    CurrentAccountData findCurrentAccountDataById(@Param("id") String id);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountData(ca.id, ca.accountNumber, ca.externalId, ca.clientId, ca.productId, ca.status, ca.activatedOnDate, ca.allowOverdraft, ca.overdraftLimit, ca.allowForceTransaction, ca.minimumRequiredBalance, ca.balanceCalculationType, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol) FROM CurrentAccount ca, CurrentProduct cp, ApplicationCurrency curr WHERE ca.productId = cp.id AND curr.code = cp.currency.code  AND ca.externalId = :externalId")
     CurrentAccountData findCurrentAccountDataByExternalId(@Param("externalId") ExternalId externalId);

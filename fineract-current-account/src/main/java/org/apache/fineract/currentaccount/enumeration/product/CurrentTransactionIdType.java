@@ -16,28 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.search.data;
+package org.apache.fineract.currentaccount.enumeration.product;
 
-import java.io.Serializable;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.apache.fineract.infrastructure.core.service.DefaultOption;
 
-/**
- * Immutable data object representing datatable data.
- */
-@Data
-@NoArgsConstructor
-public final class TableQueryData implements Serializable {
+public enum CurrentTransactionIdType implements DefaultOption {
 
-    private String table;
+    ID, //
+    EXTERNAL_ID, //
+    ;
 
-    private AdvancedQueryData query;
-
-    public boolean hasFilter() {
-        return query != null && query.hasFilter();
+    @Override
+    public boolean isDefault() {
+        return isId();
     }
 
-    public boolean hasResultColumn() {
-        return query != null && query.hasResultColumn();
+    public boolean isId() {
+        return this == ID;
     }
 }

@@ -16,36 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.search.data;
+package org.apache.fineract.infrastructure.dataqueries.data;
 
 import java.io.Serializable;
-import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
 
 /**
  * Immutable data object representing datatable data.
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public final class ColumnFilterData implements Serializable {
+public final class TableQueryData implements Serializable {
 
-    private String column;
+    private String table;
 
-    private List<FilterData> filters;
+    private AdvancedQueryData query;
 
-    public static ColumnFilterData eq(String column, String value) {
-        return new ColumnFilterData(column, List.of(FilterData.eq(value)));
+    public boolean hasFilter() {
+        return query != null && query.hasFilter();
     }
 
-    public static ColumnFilterData btw(String column, String value1, String value2) {
-        return new ColumnFilterData(column, List.of(FilterData.btw(value1, value2)));
-    }
-
-    public static ColumnFilterData create(String column, SqlOperator op, String... values) {
-        return new ColumnFilterData(column, List.of(FilterData.create(op, values)));
+    public boolean hasResultColumn() {
+        return query != null && query.hasResultColumn();
     }
 }

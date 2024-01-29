@@ -18,15 +18,6 @@
  */
 package org.apache.fineract.infrastructure.dataqueries.data;
 
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.ACTIVATE;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.APPROVE;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.CLOSE;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.CREATE;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.DISBURSE;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.REJECTED;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.WITHDRAWN;
-import static org.apache.fineract.infrastructure.dataqueries.data.StatusEnum.WRITE_OFF;
-
 import com.google.common.collect.ImmutableList;
 import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -38,14 +29,16 @@ import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 
 public enum EntityTables {
 
-    CLIENT("m_client", "client_id", "id", CREATE, ACTIVATE, CLOSE), //
-    GROUP("m_group", "group_id", "id", CREATE, ACTIVATE, CLOSE), //
+    CLIENT("m_client", "client_id", "id", StatusEnum.CREATE, StatusEnum.ACTIVATE, StatusEnum.CLOSE), //
+    GROUP("m_group", "group_id", "id", StatusEnum.CREATE, StatusEnum.ACTIVATE, StatusEnum.CLOSE), //
     CENTER("m_center", "m_group", "center_id", "id"), //
     OFFICE("m_office", "office_id", "id"), //
     LOAN_PRODUCT("m_product_loan", "product_loan_id", "id"), //
-    LOAN("m_loan", "loan_id", "id", CREATE, APPROVE, DISBURSE, WITHDRAWN, REJECTED, WRITE_OFF), //
+    LOAN("m_loan", "loan_id", "id", StatusEnum.CREATE, StatusEnum.APPROVE, StatusEnum.DISBURSE, StatusEnum.WITHDRAWN, StatusEnum.REJECTED,
+            StatusEnum.WRITE_OFF), //
     SAVINGS_PRODUCT("m_savings_product", "savings_product_id", "id"), //
-    SAVINGS("m_savings_account", "savings_account_id", "id", CREATE, APPROVE, ACTIVATE, WITHDRAWN, REJECTED, CLOSE), //
+    SAVINGS("m_savings_account", "savings_account_id", "id", StatusEnum.CREATE, StatusEnum.APPROVE, StatusEnum.ACTIVATE,
+            StatusEnum.WITHDRAWN, StatusEnum.REJECTED, StatusEnum.CLOSE), //
     SAVINGS_TRANSACTION("m_savings_account_transaction", "savings_transaction_id", "id"), //
     SHARE_PRODUCT("m_share_product", "share_product_id", "id"), //
     CURRENT_PRODUCT("m_current_product", "current_product_id", "id", JdbcJavaType.VARCHAR), //

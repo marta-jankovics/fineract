@@ -26,21 +26,21 @@ import org.springframework.data.domain.Pageable;
 
 public interface CurrentProductApi {
 
+    CurrentProductTemplateResponseData template();
+
     Page<CurrentProductResponseData> retrieveAll(Pageable pageable);
 
     CurrentProductResponseData retrieveOne(String productId);
 
-    CurrentProductResponseData retrieveOne(String idType, String id);
-
-    CurrentProductTemplateResponseData retrieveTemplate();
+    CurrentProductResponseData retrieveOne(String idType, String identifier);
 
     CommandProcessingResult create(String requestJson);
 
     CommandProcessingResult update(String productId, String requestJson);
 
-    CommandProcessingResult update(String idType, String id, String requestJson);
+    CommandProcessingResult update(String idType, String identifier, String requestJson);
 
     CommandProcessingResult delete(String productId);
 
-    CommandProcessingResult delete(String idType, String id);
+    CommandProcessingResult delete(String idType, String identifier);
 }

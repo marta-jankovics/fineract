@@ -18,12 +18,16 @@
  */
 package org.apache.fineract.currentaccount.api.product.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -41,6 +45,8 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
+import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -51,7 +57,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
-@Path("/v1/current-products")
+@Path("/v2/current-products")
 @Consumes({ MediaType.APPLICATION_JSON })
 @Produces({ MediaType.APPLICATION_JSON })
 @Component
@@ -63,6 +69,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     private final PlatformSecurityContext context;
     private final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService;
     private final CurrentProductReadService currentProductReadService;
+
+    @GET
+    @Path("template")
+    @Operation(summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
+            + "Example Request:\n \n" + "current-products/template \n \n")
+    @Override
+    public CurrentProductTemplateResponseData template() {
+        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
+        return this.currentProductReadService.retrieveTemplate();
+    }
 
     @GET
     @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
@@ -79,8 +95,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
             + "current-products/1")
     @Override
     public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final String productId) {
-        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveById(productId);
+        return retrieveOne(CurrentProductIdType.ID, productId);
     }
 
     @GET
@@ -89,20 +104,14 @@ public class CurrentProductsApiResource implements CurrentProductApi {
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
     public CurrentProductResponseData retrieveOne(
-            @PathParam("idType") @Parameter(description = "idType", required = true) final String idType,
-            @PathParam("identifier") @Parameter(description = "identifier", required = true) final String identifier) {
-        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
+        return retrieveOne(IdTypeResolver.resolve(CurrentProductIdType.class, idType), identifier);
     }
 
-    @GET
-    @Path("template")
-    @Operation(summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
-            + "Example Request:\n \n" + "current-products/template \n \n")
-    @Override
-    public CurrentProductTemplateResponseData retrieveTemplate() {
-        this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return this.currentProductReadService.retrieveTemplate();
+    private CurrentProductResponseData retrieveOne(@NotNull CurrentProductIdType idType, String identifier) {
+        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
+        return currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
     }
 
     @POST
@@ -123,8 +132,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Override
     public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final String productId,
             @Parameter(hidden = true) final String requestJson) {
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
-        return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
+        return updateCurrentProduct(null, productId, requestJson);
     }
 
     @PUT
@@ -132,11 +140,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
     @Override
-    public CommandProcessingResult update(@PathParam("idType") @Parameter(description = "idType") final String idType,
-            @PathParam("identifier") @Parameter(description = "identifier") final String identifier,
+    public CommandProcessingResult update(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
-        final String productId = resolveByIdType(idType, identifier);
-        return update(productId, requestJson);
+        return updateCurrentProduct(idType, identifier, requestJson);
+    }
+
+    private CommandProcessingResult updateCurrentProduct(String idType, String identifier, String requestJson) {
+        String productId = getResolvedProductId(idType, identifier);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
+        return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
     @DELETE
@@ -144,21 +157,26 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
     @Override
     public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final String productId) {
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(productId).build();
-        return this.commandSourceWritePlatformService.logCommandSource(commandRequest);
+        return deleteCurrentProduct(null, productId);
     }
 
     @DELETE
     @Path("{idType}/{identifier}")
     @Operation(summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @Override
-    public CommandProcessingResult delete(@PathParam("idType") @Parameter(description = "idType") final String idType,
-            @PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
-        final String productId = resolveByIdType(idType, identifier);
-        return delete(productId);
+    public CommandProcessingResult delete(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
+        return deleteCurrentProduct(idType, identifier);
     }
 
-    private String resolveByIdType(String idType, String id) {
-        return this.currentProductReadService.retrieveIdByIdTypeAndIdentifier(idType, id);
+    private CommandProcessingResult deleteCurrentProduct(String idType, String identifier) {
+        String productId = getResolvedProductId(idType, identifier);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(productId).build();
+        return commandSourceWritePlatformService.logCommandSource(commandRequest);
+    }
+
+    private String getResolvedProductId(String idType, String identifier) {
+        return currentProductReadService.retrieveIdByIdTypeAndIdentifier(IdTypeResolver.resolve(CurrentProductIdType.class, idType),
+                identifier);
     }
 }

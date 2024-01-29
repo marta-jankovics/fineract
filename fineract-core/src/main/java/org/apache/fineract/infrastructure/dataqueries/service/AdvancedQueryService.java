@@ -16,15 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.core.exception;
+package org.apache.fineract.infrastructure.dataqueries.service;
 
-/**
- * A {@link RuntimeException} thrown when resources that are queried for are not found.
- */
-public class PlatformResourceNotFoundException extends AbstractPlatformResourceNotFoundException {
+import com.google.gson.JsonObject;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
+import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
+import org.springframework.data.domain.Page;
 
-    public PlatformResourceNotFoundException(String resourceId, String defaultUserMessage, Object... defaultUserMessageArgs) {
-        super(String.format("error.msg.%s.not.found", resourceId), String.format(defaultUserMessage, defaultUserMessageArgs),
-                defaultUserMessageArgs);
-    }
+public interface AdvancedQueryService {
+
+    Page<JsonObject> query(@NotNull EntityTables entityTables, @NotNull PagedLocalRequest<AdvancedQueryRequest> pagedRequest,
+            List<ColumnFilterData> addFilters);
 }

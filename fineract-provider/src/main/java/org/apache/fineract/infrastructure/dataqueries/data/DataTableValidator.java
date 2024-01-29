@@ -39,11 +39,6 @@ import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
-import org.apache.fineract.portfolio.search.data.ColumnFilterData;
-import org.apache.fineract.portfolio.search.data.FilterData;
-import org.apache.fineract.portfolio.search.data.TableQueryData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
