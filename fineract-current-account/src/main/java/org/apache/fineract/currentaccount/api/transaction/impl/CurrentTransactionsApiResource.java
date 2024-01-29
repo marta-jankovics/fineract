@@ -75,6 +75,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Tag(name = "Current Transactions")
 @RequiredArgsConstructor
+@Consumes({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON })
 public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private final PlatformSecurityContext context;
@@ -83,78 +85,62 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final CurrentAccountReadService currentAccountReadService;
     private final AdvancedQueryService advancedQueryService;
 
-    private boolean is(final String commandParam, final String commandValue) {
-        return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
-    }
-
-    @Override
     @GET
     @Path("{accountId}/transactions/template")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Override
     public CurrentTransactionTemplateResponseData template(@PathParam("accountId") final String accountId) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTemplate(accountId);
     }
 
-    @Override
     @GET
     @Path("{accountId}/transactions")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId, @Pagination Pageable pageable) {
+    @Override
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId, @Pagination @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTransactionsByAccountId(accountId, pageable);
     }
 
-    @Override
     @GET
     @Path("{accountId}/transactions/{transactionId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Override
     public CurrentTransactionResponseData retrieveOne(@PathParam("accountId") final String accountId,
             @PathParam("transactionId") final String transactionId) {
         return retrieveOne(accountId, CurrentTransactionIdType.ID, transactionId);
     }
 
-    @Override
     @GET
     @Path("{accIdType}/{accIdentifier}/transactions/{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Override
     public CurrentTransactionResponseData retrieveOne(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = "accIdType", required = true) final String accIdType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
         return retrieveOne(getResolvedAccountId(accIdType, accIdentifier, null),
                 IdTypeResolver.resolve(CurrentTransactionIdType.class, idType), identifier);
     }
 
-    @Override
     @GET
     @Path("{accIdType}/{accIdentifier}/{accSubIdentifier}/transactions/{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Override
     public CurrentTransactionResponseData retrieveOne(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = "accIdType", required = true) final String accIdType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "accSubIdentifier", required = true) final String accSubIdentifier,
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @PathParam("accSubIdentifier") @Parameter(description = "accSubIdentifier", required = true) final String accSubIdentifier,
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
         return retrieveOne(getResolvedAccountId(accIdType, accIdentifier, accSubIdentifier),
                 IdTypeResolver.resolve(CurrentTransactionIdType.class, idType), identifier);
     }
 
-    @Override
     @POST
     @Path("{accountId}/transactions")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Deposit/Withdrawal/Hold Amount transaction API", description = "Deposit/Withdrawal/Hold Amount transaction API\n\n"
             + "Example Requests:\n" + "\n" + "\n" + "currentaccounts/{accountId}/transactions/?command=deposit\n" + "\n"
             + "Accepted command = deposit, withdrawal, hold")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
+    @Override
     public CommandProcessingResult transaction(@PathParam("accountId") final String accountId,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(requestJson);
@@ -179,49 +165,43 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         return result;
     }
 
-    @Override
     @POST
     @Path("{accountId}/transactions/{transactionId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
+    @Override
     public CommandProcessingResult action(@PathParam("accountId") final String accountId,
             @PathParam("transactionId") final String transactionId,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleCommands(accountId, null, transactionId, commandParam, requestJson);
     }
 
-    @Override
     @POST
     @Path("{accIdType}/{accIdentifier}/transactions/{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
+    @Override
     public CommandProcessingResult action(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = "accIdType", required = true) final String accIdType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleCommands(getResolvedAccountId(accIdType, accIdentifier, null), idType, identifier, commandParam, requestJson);
     }
 
-    @Override
     @POST
     @Path("{accIdType}/{accIdentifier}/{accSubIdentifier}/transactions/{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
+    @Override
     public CommandProcessingResult action(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = "accIdType", required = true) final String accIdType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "accSubIdentifier", required = true) final String accSubIdentifier,
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @PathParam("accSubIdentifier") @Parameter(description = "accSubIdentifier", required = true) final String accSubIdentifier,
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
@@ -231,11 +211,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     @POST
     @Path("{accountId}/transactions/query")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Advanced search Current Account Transactions")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
+    @Override
     public Page<JsonObject> advancedQuery(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(null, accountId, null, queryRequest);
@@ -243,11 +222,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     @POST
     @Path("{idType}/{identifier}/transactions/query")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Advanced search Current Account Transactions")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
+    @Override
     public Page<JsonObject> advancedQuery(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
@@ -257,11 +235,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     @POST
     @Path("{idType}/{identifier}/{subIdentifier}/transactions/query")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(summary = "Advanced search Current Account Transactions")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
+    @Override
     public Page<JsonObject> advancedQuery(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
@@ -313,5 +290,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private String getResolvedTransactionId(String idType, String identifier) {
         return currentTransactionReadService.retrieveIdByIdTypeAndIdentifier(IdTypeResolver.resolve(CurrentTransactionIdType.class, idType),
                 identifier);
+    }
+
+    private boolean is(final String commandParam, final String commandValue) {
+        return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
     }
 }

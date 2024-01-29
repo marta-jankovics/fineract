@@ -53,6 +53,7 @@ public class NanoIdSequence extends Sequence implements SessionCustomizer {
         return false;
     }
 
+    @Override
     public void customize(Session session) {
         NanoIdSequence sequence = new NanoIdSequence("nanoIdSequence");
         session.getLogin().addSequence(sequence);
