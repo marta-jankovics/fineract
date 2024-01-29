@@ -63,9 +63,9 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
             submittedOnDateParamName, allowOverdraftParamName, overdraftLimitParamName, minimumRequiredBalanceParamName,
             allowForceTransactionParamName, balanceCalculationTypeParamName, identifiersParamName));
 
-    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, accountNumberParamName, externalIdParamName, allowOverdraftParamName, overdraftLimitParamName,
-                    minimumRequiredBalanceParamName, allowForceTransactionParamName, balanceCalculationTypeParamName));
+    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
+            accountNumberParamName, externalIdParamName, allowOverdraftParamName, overdraftLimitParamName, minimumRequiredBalanceParamName,
+            allowForceTransactionParamName, balanceCalculationTypeParamName, identifiersParamName));
 
     @Override
     public void validateForSubmit(final JsonCommand command) {

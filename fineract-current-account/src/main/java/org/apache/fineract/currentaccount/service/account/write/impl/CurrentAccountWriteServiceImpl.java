@@ -18,12 +18,9 @@
  */
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
-
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
@@ -32,13 +29,11 @@ import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataVa
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
-import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
 import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -54,55 +49,37 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult submitApplication(final JsonCommand command) {
-        try {
-            currentAccountDataValidator.validateForSubmit(command);
-            final CurrentAccount account = currentAccountAssembler.assemble(command);
+        currentAccountDataValidator.validateForSubmit(command);
+        final CurrentAccount account = currentAccountAssembler.assemble(command);
 
-            // TODO: Business event handling
-            // businessEventNotifierService.notifyPostBusinessEvent(new CurrentAccountCreateBusinessEvent(account));
+        // TODO: Business event handling
+        // businessEventNotifierService.notifyPostBusinessEvent(new CurrentAccountCreateBusinessEvent(account));
 
-            return new CommandProcessingResultBuilder() //
-                    .withCommandId(command.commandId()) //
-                    .withClientId(account.getClientId()) //
-                    .withResourceIdentifier(account.getId()) //
-                    .withEntityExternalId(account.getExternalId()).withClientId(account.getClientId()) //
-                    .build();
-        } catch (final DataAccessException dve) {
-            handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
-            return CommandProcessingResult.empty();
-        } catch (final Exception dve) {
-            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
-            handleDataIntegrityIssues(command, throwable, dve);
-            return CommandProcessingResult.empty();
-        }
+        return new CommandProcessingResultBuilder() //
+                .withCommandId(command.commandId()) //
+                .withClientId(account.getClientId()) //
+                .withResourceIdentifier(account.getId()) //
+                .withEntityExternalId(account.getExternalId()).withClientId(account.getClientId()) //
+                .build();
     }
 
     @Transactional(timeout = 3)
     @Override
-    public CommandProcessingResult modifyApplication(final String accountId, final JsonCommand command) {
-        try {
-            final CurrentAccount account = currentAccountRepository.findById(accountId)
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
-                            "Current account with id: %s cannot be found", accountId));
-            currentAccountDataValidator.validateForUpdate(command, account);
-            checkClientActive(account);
-            Map<String, Object> changes = currentAccountAssembler.update(account, command);
+    public CommandProcessingResult update(final String accountId, final JsonCommand command) {
 
-            return new CommandProcessingResultBuilder() //
-                    .withCommandId(command.commandId()) //
-                    .withResourceIdentifier(account.getId()) //
-                    .withEntityExternalId(account.getExternalId()) //
-                    .withClientId(account.getClientId()) //
-                    .with(changes) //
-                    .build();
-        } catch (final DataAccessException dve) {
-            handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
-            return CommandProcessingResult.resourceResult(-1L);
-        } catch (final Exception dve) {
-            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
-            handleDataIntegrityIssues(command, throwable, dve);
-            return CommandProcessingResult.empty();
-        }
+        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+        currentAccountDataValidator.validateForUpdate(command, account);
+        checkClientActive(account);
+        Map<String, Object> changes = currentAccountAssembler.update(account, command);
+
+        return new CommandProcessingResultBuilder() //
+                .withCommandId(command.commandId()) //
+                .withResourceIdentifier(account.getId()) //
+                .withEntityExternalId(account.getExternalId()) //
+                .withClientId(account.getClientId()) //
+                .with(changes) //
+                .build();
     }
 
     @Transactional(timeout = 3)
@@ -169,36 +146,6 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
                 .withClientId(account.getClientId()) //
                 .with(changes) //
                 .build();
-    }
-
-    /*
-     * Guaranteed to throw an exception no matter what the data integrity issue is.
-     */
-    private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
-        String msgCode = "error.msg." + CURRENT_ACCOUNT_RESOURCE_NAME;
-        String msg = "Unknown data integrity issue with current account.";
-        String param = null;
-        Object[] msgArgs;
-        Throwable checkEx = realCause == null ? dve : realCause;
-        String message = checkEx.getMessage();
-        if (message != null && message.contains("m_current_account_account_no_key")) {
-            final String accountNumber = command.stringValueOfParameterNamed("accountNumber");
-            msgCode += ".duplicate.accountNumber";
-            msg = "Current account with account number " + accountNumber + " already exists";
-            param = "accountNumber";
-            msgArgs = new Object[] { accountNumber, dve };
-        } else if (message != null && message.contains("m_current_account_external_id_key")) {
-            final String externalId = command.stringValueOfParameterNamed("externalId");
-            msgCode += ".duplicate.externalId";
-            msg = "Current account with externalId " + externalId + " already exists";
-            param = "externalId";
-            msgArgs = new Object[] { externalId, dve };
-        } else {
-            msgCode += ".unknown.data.integrity.issue";
-            msgArgs = new Object[] { dve };
-        }
-        log.error("Error occurred.", dve);
-        throw ErrorHandler.getMappable(dve, msgCode, msg, param, msgArgs);
     }
 
     private void checkClientActive(final CurrentAccount account) {

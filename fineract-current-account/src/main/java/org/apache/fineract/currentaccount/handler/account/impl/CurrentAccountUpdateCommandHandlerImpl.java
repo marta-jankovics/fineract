@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.handler.account.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import org.apache.fineract.currentaccount.handler.account.CurrentAccountModifyApplicationCommandHandler;
+import org.apache.fineract.currentaccount.handler.account.CurrentAccountUpdateCommandHandler;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -30,13 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @CommandType(entity = "CURRENTACCOUNT", action = "UPDATE")
 @RequiredArgsConstructor
-public class CurrentAccountModifyApplicationCommandHandlerImpl implements CurrentAccountModifyApplicationCommandHandler {
+public class CurrentAccountUpdateCommandHandlerImpl implements CurrentAccountUpdateCommandHandler {
 
     private final CurrentAccountWriteService writePlatformService;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        return this.writePlatformService.modifyApplication(command.getResourceIdentifier(), command);
+        return this.writePlatformService.update(command.getResourceIdentifier(), command);
     }
 }

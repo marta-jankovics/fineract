@@ -43,6 +43,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
@@ -88,6 +90,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final ExternalIdFactory externalIdFactory;
+
+    private static boolean valueIsEmpty(IdTypeValueSubValueData itemObject) {
+        return itemObject.getValue() == null || itemObject.getValue().isEmpty();
+    }
 
     /**
      * Assembles a new {@link CurrentAccount} from JSON details passed in request inheriting details where relevant from
@@ -161,7 +167,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         validateAccountValuesWithProduct(product, account);
         // TODO: Would be better to not flush, but then the exception handlign should be moved to the transaction
         // boundary
-        currentAccountRepository.saveAndFlush(account);
+        currentAccountRepository.save(account);
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
         persistAccountIdentifiers(account, command);
@@ -233,6 +239,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             actualChanges.put("locale", localeAsInput);
         }
 
+        updateIdentifiers(account, command, actualChanges);
+
         if (!dataValidationErrors.isEmpty()) {
             throw new PlatformApiDataValidationException(dataValidationErrors);
         }
@@ -244,7 +252,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         if (!actualChanges.isEmpty()) {
             // TODO: Would be better to not flush
-            currentAccountRepository.saveAndFlush(account);
+            currentAccountRepository.save(account);
         }
 
         return actualChanges;
@@ -477,42 +485,81 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
-        try {
-            if (command.hasParameter(identifiersParamName)) {
-                JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
+        if (command.hasParameter(identifiersParamName)) {
+            JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
 
-                if (identifiers != null) {
-                    for (JsonElement itemElement : identifiers) {
-                        boolean saved = false;
-                        IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
-                        String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
-                        for (InteropIdentifierType interopIdentifierType : InteropIdentifierType.values()) {
-                            if (reformattedKey.equals(interopIdentifierType.name())
-                                    || reformattedKey.equals(interopIdentifierType.getAlias())) {
-                                String value = itemObject.getValue();
-                                String subValue = itemObject.getSubValue();
-                                AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(),
-                                        interopIdentifierType, value, subValue, 1L);
-                                // TODO: would be better to not flush, but then the error handling should be moved to
-                                // the transaction boundary
-                                accountIdentifierRepository.saveAndFlush(entityAction);
-                                saved = true;
-                                break;
-                            }
-                        }
-                        if (!saved) {
-                            baseDataValidator.reset().parameter(itemObject.getIdType())
-                                    .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
-                        }
+            if (identifiers != null) {
+                for (JsonElement itemElement : identifiers) {
+                    IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
+                    String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
+                    InteropIdentifierType identifierType = InteropIdentifierType.resolveName(reformattedKey);
+                    if (identifierType != null) {
+                        String value = itemObject.getValue();
+                        String subValue = itemObject.getSubValue();
+                        AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(),
+                                identifierType, value, subValue, 1L);
+                        // TODO: would be better to not flush, but then the error handling should be moved to
+                        // the transaction boundary
+                        accountIdentifierRepository.save(entityAction);
+                    } else {
+                        baseDataValidator.reset().parameter(itemObject.getIdType())
+                                .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
                     }
                 }
             }
-        } catch (IllegalStateException e) {
-            baseDataValidator.reset().parameter(identifiersParamName)
-                    .failWithCodeNoParameterAddedToErrorCode("error.during.processing.identifiers");
         }
+
         if (!dataValidationErrors.isEmpty()) {
             throw new PlatformApiDataValidationException(dataValidationErrors);
+        }
+    }
+
+    private void updateIdentifiers(CurrentAccount account, JsonCommand command, Map<String, Object> actualChanges) {
+        if (command.hasParameter(identifiersParamName)) {
+            actualChanges.computeIfAbsent(identifiersParamName, k -> new ArrayList<>());
+            final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
+            final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors);
+            Map<InteropIdentifierType, AccountIdentifier> secondaryIdentifiers = accountIdentifierRepository
+                    .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
+                    .collect(Collectors.toMap(AccountIdentifier::getIdentifierType, Function.identity()));
+            JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
+
+            if (identifiers != null) {
+                for (JsonElement itemElement : identifiers) {
+                    IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
+                    String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
+                    InteropIdentifierType identifierType = InteropIdentifierType.resolveName(reformattedKey);
+                    if (identifierType != null) {
+                        AccountIdentifier accountIdentifier;
+                        if (secondaryIdentifiers.containsKey(identifierType)) {
+                            accountIdentifier = secondaryIdentifiers.get(identifierType);
+                            if (valueIsEmpty(itemObject)) {
+                                accountIdentifierRepository.delete(accountIdentifier);
+                            } else {
+                                accountIdentifier.setValue(itemObject.getValue());
+                                accountIdentifier.setSubValue(itemObject.getSubValue());
+                            }
+                        } else {
+                            if (valueIsEmpty(itemObject)) {
+                                baseDataValidator.reset().parameter(itemObject.getIdType())
+                                        .failWithCodeNoParameterAddedToErrorCode("value.must.be.set");
+                            } else {
+                                accountIdentifier = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType,
+                                        itemObject.getValue(), itemObject.getSubValue(), 1L);
+                                accountIdentifierRepository.save(accountIdentifier);
+                            }
+                        }
+                    } else {
+                        baseDataValidator.reset().parameter(itemObject.getIdType())
+                                .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
+                    }
+
+                    ((List) actualChanges.get(identifiersParamName)).add(itemObject);
+                }
+                if (!dataValidationErrors.isEmpty()) {
+                    throw new PlatformApiDataValidationException(dataValidationErrors);
+                }
+            }
         }
     }
 }

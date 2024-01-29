@@ -25,7 +25,7 @@ public interface CurrentAccountWriteService {
 
     CommandProcessingResult submitApplication(JsonCommand command);
 
-    CommandProcessingResult modifyApplication(String accountId, JsonCommand command);
+    CommandProcessingResult update(String accountId, JsonCommand command);
 
     CommandProcessingResult cancelApplication(String accountId, JsonCommand command);
 
