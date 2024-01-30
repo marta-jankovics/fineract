@@ -19,18 +19,18 @@
 package org.apache.fineract.currentaccount.api.account.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 public final class CurrentAccountsApiResourceSwagger {
 
-    private CurrentAccountsApiResourceSwagger() {}
+    private CurrentAccountsApiResourceSwagger() {
+    }
 
     @Schema(description = "PostCurrentAccountSubmitRequest")
     public static final class PostCurrentAccountSubmitRequest {
-
-        private PostCurrentAccountSubmitRequest() {}
 
         @Schema(example = "1")
         public Long clientId;
@@ -58,12 +58,12 @@ public final class CurrentAccountsApiResourceSwagger {
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
         public List<DatatableEntriesRequest> datatables;
+        private PostCurrentAccountSubmitRequest() {
+        }
     }
 
     @Schema(description = "PutCurrentAccountUpdateRequest")
     public static final class PutCurrentAccountUpdateRequest {
-
-        private PutCurrentAccountUpdateRequest() {}
 
         @Schema(example = "en")
         public String locale;
@@ -83,12 +83,12 @@ public final class CurrentAccountsApiResourceSwagger {
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
         public List<DatatableEntriesRequest> datatables;
+        private PutCurrentAccountUpdateRequest() {
+        }
     }
 
     @Schema(description = "PostCurrentAccountActionRequest")
     public static final class PostCurrentAccountActionRequest {
-
-        private PostCurrentAccountActionRequest() {}
 
         @Schema(example = "dd MMMM yyyy")
         public String dateFormat;
@@ -96,15 +96,17 @@ public final class CurrentAccountsApiResourceSwagger {
         public String locale;
         @Schema(example = "05 September 2014")
         public String actionDate;
+        private PostCurrentAccountActionRequest() {
+        }
     }
 
     static final class DatatableEntriesRequest {
-
-        private DatatableEntriesRequest() {}
 
         @Schema(example = "dt_test_datatable", description = "Name of the datatable")
         public String name;
         @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
         public List<Map<String, String>> entries;
+        private DatatableEntriesRequest() {
+        }
     }
 }

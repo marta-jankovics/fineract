@@ -90,7 +90,7 @@ public final class CurrentProductsApiResourceSwagger {
         }
     }
 
-    static final class DatatableEntriesRequest {
+    public static final class DatatableEntriesRequest {
 
         private DatatableEntriesRequest() {}
 
@@ -98,5 +98,29 @@ public final class CurrentProductsApiResourceSwagger {
         public String name;
         @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
         public List<Map<String, String>> entries;
+    }
+
+    @Schema(description = "CurrentProductDeleteCommandResponse")
+    public static final class CurrentProductDeleteCommandResponse extends CurrentProductPostCommandResponse {
+
+    }
+
+    @Schema(description = "CurrentProductPostCommandResponse")
+    public static class CurrentProductPostCommandResponse {
+
+        @Schema(example = "7GGBmEwPEf6WgTchzDHnX")
+        public Long resourceIdentifier;
+        @Schema(example = "95174ff9-1a75-4d72-a413-6f9b1cb988b7")
+        public String resourceExternalId;
+
+        private CurrentProductPostCommandResponse() {}
+    }
+
+    @Schema(description = "CurrentProductPutCommandResponse")
+    public static final class CurrentProductPutCommandResponse extends CurrentProductPostCommandResponse {
+        @Schema(example = "")
+        public Map<String, Object> changes;
+
+        private CurrentProductPutCommandResponse() {}
     }
 }

@@ -18,9 +18,10 @@
  */
 package org.apache.fineract.currentaccount.mapper.product;
 
-import java.util.List;
+import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
+import org.apache.fineract.currentaccount.data.product.PaymentChannelToFundSourceData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -28,6 +29,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentProductResponseDataMapper {
@@ -39,6 +42,14 @@ public interface CurrentProductResponseDataMapper {
     @Mapping(target = "currency", source = "currentProductData", qualifiedByName = "currency")
     @Mapping(target = "accountingType", source = "currentProductData", qualifiedByName = "accountingType")
     @Mapping(target = "balanceCalculationType", source = "currentProductData", qualifiedByName = "balanceCalculationType")
+    @Mapping(target = "controlAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "referenceAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "overdraftAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "transfersInSuspenseAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "writeOffAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "incomeFromFee", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "incomeFromPenalty", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "paymentChannelToFundSourceMappings", source = "currentProductData", qualifiedByName = "paymentChannelMapping")
     CurrentProductResponseData map(CurrentProductData currentProductData);
 
     @Named("currency")
@@ -55,6 +66,18 @@ public interface CurrentProductResponseDataMapper {
     @Named("balanceCalculationType")
     default StringEnumOptionData mapBalanceCalculationType(CurrentProductData currentProductData) {
         return currentProductData.getBalanceCalculationType().toStringEnumOptionData();
+    }
+
+    @Named("glAccountMapping")
+    default GLAccountDataForLookup glAccountMapping(CurrentProductData currentProductData) {
+        //TODO: implementation
+        return null;
+    }
+
+    @Named("paymentChannelMapping")
+    default List<PaymentChannelToFundSourceData> paymentChannelMapping(CurrentProductData currentProductData) {
+        //TODO: implementation
+        return null;
     }
 
     List<CurrentProductResponseData> map(List<CurrentProductData> data);
