@@ -52,7 +52,7 @@ public class StaffTest extends IntegrationTest {
 
     Long create() {
         return ok(fineract().staff
-                .create4(new PostStaffRequest().officeId(1L).firstname("StaffTest " + random()).lastname("Staffer " + random())
+                .create5(new PostStaffRequest().officeId(1L).firstname("StaffTest " + random()).lastname("Staffer " + random())
                         .externalId(random()).joiningDate(LocalDate.now(ZoneId.of("UTC"))).dateFormat(dateFormat()).locale("en_US")))
                 .getResourceId();
     }

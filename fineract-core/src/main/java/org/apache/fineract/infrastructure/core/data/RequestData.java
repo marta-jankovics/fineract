@@ -16,13 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.enumeration.account;
+package org.apache.fineract.infrastructure.core.data;
 
-public enum EntityActionType {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-    SUBMIT, //
-    ACTIVATE, //
-    CANCEL, //
-    CLOSE, //
-    ;
+@Getter
+@AllArgsConstructor
+public class RequestData {
+
+    protected final String locale;
+    protected final String dateFormat;
 }

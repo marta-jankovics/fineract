@@ -57,7 +57,7 @@ public class SavingsAccountsTest extends IntegrationTest {
         request.setDateFormat(dateFormat);
         request.submittedOnDate(formattedDate);
 
-        Response<PostSavingsAccountsResponse> response = okR(fineract().savingsAccounts.submitApplication3(request));
+        Response<PostSavingsAccountsResponse> response = okR(fineract().savingsAccounts.submitApplication2(request));
 
         assertThat(response.isSuccessful()).isTrue();
         assertThat(response.body()).isNotNull();

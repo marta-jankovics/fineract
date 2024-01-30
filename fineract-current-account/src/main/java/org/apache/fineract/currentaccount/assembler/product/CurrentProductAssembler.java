@@ -18,13 +18,9 @@
  */
 package org.apache.fineract.currentaccount.assembler.product;
 
-import java.util.Map;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.domain.EntityAssembler;
 
-public interface CurrentProductAssembler {
+public interface CurrentProductAssembler extends EntityAssembler<CurrentProduct> {
 
-    CurrentProduct assemble(JsonCommand command);
-
-    Map<String, Object> update(CurrentProduct product, JsonCommand command);
 }

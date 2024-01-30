@@ -22,8 +22,9 @@ import java.util.Map;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.domain.EntityAssembler;
 
-public interface CurrentTransactionAssembler {
+public interface CurrentTransactionAssembler extends EntityAssembler<CurrentTransaction> {
 
     CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 

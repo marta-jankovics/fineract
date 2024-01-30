@@ -55,7 +55,7 @@ public class ClientTest extends IntegrationTest {
         // TODO activationDate() why String? https://issues.apache.org/jira/browse/FINERACT-1232
         // TODO why dateFormat and locale required even when no activationDate?!
         // https://issues.apache.org/jira/browse/FINERACT-1233
-        return ok(fineract().clients.create7(
+        return ok(fineract().clients.create8(
                 new PostClientsRequest().legalFormId(1L).officeId(1L).fullname("TestClient").dateFormat(dateFormat()).locale("en_US")))
                 .getClientId();
     }

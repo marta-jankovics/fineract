@@ -58,7 +58,7 @@ public class SavingsAccountsExternalIdTest extends IntegrationTest {
         request.submittedOnDate(formattedDate);
         request.setExternalId(EXTERNAL_ID);
 
-        Response<PostSavingsAccountsResponse> response = okR(fineract().savingsAccounts.submitApplication3(request));
+        Response<PostSavingsAccountsResponse> response = okR(fineract().savingsAccounts.submitApplication2(request));
 
         assertThat(response.isSuccessful()).isTrue();
         assertThat(response.body()).isNotNull();

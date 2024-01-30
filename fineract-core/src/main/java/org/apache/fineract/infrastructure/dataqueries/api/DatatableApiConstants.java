@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.enumeration.account;
+package org.apache.fineract.infrastructure.dataqueries.api;
 
-public enum EntityActionType {
+@SuppressWarnings({ "HideUtilityClassConstructor" })
+public class DatatableApiConstants {
 
-    SUBMIT, //
-    ACTIVATE, //
-    CANCEL, //
-    CLOSE, //
-    ;
+    public static final String DATATABLES_PARAM = "datatables";
+    public static final String DATATABLE_NAME_PARAM = "table";
+    public static final String DATATABLE_ENTRIES_PARAM = "entries";
+    public static final String DATATABLE_ID_PARAM = "id";
+
 }

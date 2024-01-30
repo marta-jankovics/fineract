@@ -21,12 +21,9 @@ package org.apache.fineract.currentaccount.assembler.account;
 import java.util.Map;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.domain.EntityAssembler;
 
-public interface CurrentAccountAssembler {
-
-    CurrentAccount assemble(JsonCommand command);
-
-    Map<String, Object> update(CurrentAccount account, JsonCommand command);
+public interface CurrentAccountAssembler extends EntityAssembler<CurrentAccount> {
 
     Map<String, Object> cancelApplication(CurrentAccount account, JsonCommand command);
 

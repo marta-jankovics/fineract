@@ -90,7 +90,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n" + "\n" + "currentaccounts\n" + "\n" + "\n" + "currentaccounts")
     @Override
-    public Page<CurrentAccountResponseData> retrieveAll(@Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
+    public Page<CurrentAccountResponseData> retrieveAll(
+            @Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveAll(pageable);
     }
@@ -180,13 +181,13 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @POST
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    @Operation(summary = "Submit new current application", description = "Submits new current application\n\n"
+    @Operation(summary = "Create new current application", description = "Creates new current application\n\n"
             + "Mandatory Fields: clientId, productId, accountNumber, submittedOnDate\n\n"
             + "Optional Fields: externalId, submittedOnDate\n\n"
-            + "Inherited from Product (if not provided): enforceminimumRequiredBalance, minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
+            + "Inherited from Product (if not provided): minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
     @Override
-    public CommandProcessingResult submitApplication(@Parameter(hidden = true) final String requestJson) {
+    public CommandProcessingResult create(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentAccount().withJson(requestJson).build();
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
@@ -260,7 +261,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
     @Override
     public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
             @Parameter(hidden = true) final String requestJson) {
@@ -274,7 +275,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
     @Override
     public CommandProcessingResult update(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
@@ -290,7 +291,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountActionRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
     @Override
     public CommandProcessingResult update(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,

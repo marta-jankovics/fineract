@@ -96,7 +96,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @GET
     @Path("{accountId}/transactions")
     @Override
-    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId, @Pagination @Parameter(hidden = true) Pageable pageable) {
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId,
+            @Pagination @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTransactionsByAccountId(accountId, pageable);
     }
@@ -169,7 +170,6 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path("{accountId}/transactions/{transactionId}")
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult action(@PathParam("accountId") final String accountId,
             @PathParam("transactionId") final String transactionId,
@@ -181,7 +181,6 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path("{accIdType}/{accIdentifier}/transactions/{idType}/{identifier}")
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult action(
             @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
@@ -196,7 +195,6 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path("{accIdType}/{accIdentifier}/{accSubIdentifier}/transactions/{idType}/{identifier}")
     @Operation(summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n" + "Example Requests:\n" + "\n"
             + "\n" + "currentaccounts/{accountId}/transactions/{transactionId}?command=release\n" + "\n" + "Accepted command = release")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult action(
             @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
@@ -207,6 +205,17 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleCommands(getResolvedAccountId(accIdType, accIdentifier, accSubIdentifier), idType, identifier, commandParam,
                 requestJson);
+    }
+
+    @POST
+    @Path("transactions/query")
+    @Consumes({ MediaType.APPLICATION_JSON })
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Operation(summary = "Advanced search Current Account Transactions")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
+    public Page<JsonObject> advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
+        return query(null, null, null, queryRequest);
     }
 
     @POST
@@ -255,8 +264,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private Page<JsonObject> query(String idType, String identifier, String subIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
-        String accountId = getResolvedAccountId(idType, identifier, subIdentifier);
-        List<ColumnFilterData> addFilters = List.of(ColumnFilterData.eq("account_id", accountId));
+        List<ColumnFilterData> addFilters = null;
+        if (identifier != null) {
+            String accountId = getResolvedAccountId(idType, identifier, subIdentifier);
+            addFilters = List.of(ColumnFilterData.eq("account_id", accountId));
+        }
         return advancedQueryService.query(EntityTables.CURRENT_TRANSACTION, queryRequest, addFilters);
     }
 

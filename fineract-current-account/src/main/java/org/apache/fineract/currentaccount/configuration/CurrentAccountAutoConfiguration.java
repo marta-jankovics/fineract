@@ -57,6 +57,7 @@ import org.apache.fineract.currentaccount.validator.product.impl.CurrentProductD
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.currentaccount.validator.transaction.impl.CurrentTransactionDataValidatorImpl;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
@@ -137,8 +138,9 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentProductAssembler.class)
-    public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory) {
-        return new CurrentProductAssemblerImpl(externalIdFactory);
+    public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory,
+            CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService) {
+        return new CurrentProductAssemblerImpl(externalIdFactory, currentProductRepository, readWriteNonCoreDataService);
     }
 
     @Bean
@@ -169,8 +171,9 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionAssembler.class)
-    public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory) {
-        return new CurrentTransactionAssemblerImpl(externalIdFactory);
+    public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
+            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentTransactionRepository);
     }
 
     @Bean

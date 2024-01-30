@@ -20,6 +20,8 @@ package org.apache.fineract.currentaccount.api.account.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 public final class CurrentAccountsApiResourceSwagger {
 
@@ -54,12 +56,14 @@ public final class CurrentAccountsApiResourceSwagger {
         public BigDecimal overdraftLimit;
         @Schema(example = "LAZY")
         public String balanceCalculationType;
+        @Schema(description = "Datatable details")
+        public List<DatatableEntriesRequest> datatables;
     }
 
-    @Schema(description = "PutCurrentAccountActionRequest")
-    public static final class PutCurrentAccountActionRequest {
+    @Schema(description = "PutCurrentAccountUpdateRequest")
+    public static final class PutCurrentAccountUpdateRequest {
 
-        private PutCurrentAccountActionRequest() {}
+        private PutCurrentAccountUpdateRequest() {}
 
         @Schema(example = "en")
         public String locale;
@@ -77,6 +81,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public BigDecimal overdraftLimit;
         @Schema(example = "LAZY")
         public String balanceCalculationType;
+        @Schema(description = "Datatable details")
+        public List<DatatableEntriesRequest> datatables;
     }
 
     @Schema(description = "PostCurrentAccountActionRequest")
@@ -90,5 +96,15 @@ public final class CurrentAccountsApiResourceSwagger {
         public String locale;
         @Schema(example = "05 September 2014")
         public String actionDate;
+    }
+
+    static final class DatatableEntriesRequest {
+
+        private DatatableEntriesRequest() {}
+
+        @Schema(example = "dt_test_datatable", description = "Name of the datatable")
+        public String name;
+        @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
+        public List<Map<String, String>> entries;
     }
 }

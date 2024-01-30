@@ -33,6 +33,7 @@ import org.springframework.data.domain.Sort;
 public class PagedRequest<T> {
 
     public static final int DEFAULT_PAGE_SIZE = 50;
+    public static final int MAX_PAGE_SIZE = 10000;
 
     private T request;
 
@@ -43,7 +44,7 @@ public class PagedRequest<T> {
 
     public static Pageable createFrom(Pageable pageable) {
         int page = ObjectUtils.defaultIfNull(pageable.getPageNumber(), 0);
-        int size = ObjectUtils.defaultIfNull(pageable.getPageSize(), DEFAULT_PAGE_SIZE);
+        int size = Integer.min(ObjectUtils.defaultIfNull(pageable.getPageSize(), DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
         return PageRequest.of(page, size, pageable.getSort());
     }
 

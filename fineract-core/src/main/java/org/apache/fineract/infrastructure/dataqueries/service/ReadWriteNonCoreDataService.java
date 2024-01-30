@@ -69,6 +69,8 @@ public interface ReadWriteNonCoreDataService {
 
     CommandProcessingResult updateDatatableEntryOneToMany(String datatable, Serializable appTableId, Long datatableId, JsonCommand command);
 
+    CommandProcessingResult updateDatatableEntry(String datatable, Serializable appTableId, Long datatableId, String json);
+
     CommandProcessingResult deleteDatatableEntries(String datatable, Serializable appTableId, JsonCommand command);
 
     CommandProcessingResult deleteDatatableEntry(String datatable, Serializable appTableId, Long datatableId, JsonCommand command);

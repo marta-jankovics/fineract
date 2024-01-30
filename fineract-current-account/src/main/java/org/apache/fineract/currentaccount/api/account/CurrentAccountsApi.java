@@ -43,7 +43,7 @@ public interface CurrentAccountsApi {
 
     IdentifiersResponseData retrieveIdentifiers(String idType, String identifier, String subIdentifier);
 
-    CommandProcessingResult submitApplication(String requestJson);
+    CommandProcessingResult create(String requestJson);
 
     CommandProcessingResult action(String accountId, String commandParam, String requestJson);
 

@@ -20,6 +20,8 @@ package org.apache.fineract.currentaccount.api.transaction.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 public final class CurrentTransactionsApiResourceSwagger {
 
@@ -40,6 +42,17 @@ public final class CurrentTransactionsApiResourceSwagger {
         public String dateFormat;
         @Schema(example = "1")
         public Integer paymentTypeId;
+        @Schema(description = "Datatable details")
+        public List<DatatableEntriesRequest> datatables;
+    }
 
+    static final class DatatableEntriesRequest {
+
+        private DatatableEntriesRequest() {}
+
+        @Schema(example = "dt_test_datatable", description = "Name of the datatable")
+        public String name;
+        @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
+        public List<Map<String, String>> entries;
     }
 }

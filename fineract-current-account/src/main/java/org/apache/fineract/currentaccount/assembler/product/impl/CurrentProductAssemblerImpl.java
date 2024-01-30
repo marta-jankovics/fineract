@@ -43,9 +43,12 @@ import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
+import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
+import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
 @Slf4j
@@ -53,10 +56,11 @@ import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
 
     private final ExternalIdFactory externalIdFactory;
+    private final CurrentProductRepository currentProductRepository;
+    private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
 
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
-
         final Locale locale = command.extractLocale();
         final String name = command.stringValueOfParameterNamed(nameParamName);
         final ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
@@ -75,8 +79,14 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
                 .valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
         final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
 
-        return new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft,
-                overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
+        CurrentProduct product = new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType,
+                allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
+
+        product = currentProductRepository.save(product);
+
+        persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, false, readWriteNonCoreDataService);
+
+        return product;
     }
 
     @Override
@@ -165,6 +175,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             product.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
+        persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, true, readWriteNonCoreDataService);
         return actualChanges;
     }
 }

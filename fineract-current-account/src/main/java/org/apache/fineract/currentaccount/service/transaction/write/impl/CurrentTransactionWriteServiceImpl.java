@@ -25,8 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
@@ -40,14 +38,12 @@ import org.apache.fineract.currentaccount.validator.transaction.CurrentTransacti
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
-import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
 import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -71,7 +67,6 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction depositTransaction = currentTransactionAssembler.deposit(account, command, changes);
-        persistTransaction(command, depositTransaction);
 
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -98,7 +93,6 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
         boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
         testBalance(account, withdrawalTransaction, enforce);
-        persistTransaction(command, withdrawalTransaction);
 
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
@@ -126,7 +120,6 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
         testBalance(account, holdTransaction, enforce);
 
-        persistTransaction(command, holdTransaction);
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
@@ -153,7 +146,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction releaseTransaction = currentTransactionAssembler.release(account, holdTransaction, changes);
-        persistTransaction(command, releaseTransaction);
+
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
@@ -185,40 +178,6 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                         "Violated minimum required balance!");
             }
         }
-    }
-
-    private void persistTransaction(JsonCommand command, CurrentTransaction transaction) {
-        try {
-            currentTransactionRepository.saveAndFlush(transaction);
-        } catch (final DataAccessException dve) {
-            handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
-        } catch (final Exception dve) {
-            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
-            handleDataIntegrityIssues(command, throwable, dve);
-        }
-    }
-
-    /*
-     * Guaranteed to throw an exception no matter what the data integrity issue is.
-     */
-    private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
-        String msgCode = "error.msg." + CurrentAccountApiConstants.CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME;
-        String msg = "Unknown data integrity issue with current account.";
-        String param = null;
-        Object[] msgArgs;
-        Throwable checkEx = realCause == null ? dve : realCause;
-        if (checkEx.getMessage().contains("m_current_transaction_external_id_key")) {
-            final String externalId = command.stringValueOfParameterNamed("externalId");
-            msgCode += ".duplicate.externalId";
-            msg = "Current transaction with externalId " + externalId + " already exists";
-            param = "externalId";
-            msgArgs = new Object[] { externalId, dve };
-        } else {
-            msgCode += ".unknown.data.integrity.issue";
-            msgArgs = new Object[] { dve };
-        }
-        log.error("Error occurred.", dve);
-        throw ErrorHandler.getMappable(dve, msgCode, msg, param, msgArgs);
     }
 
     private void checkClientActive(final CurrentAccount account) {

@@ -1346,19 +1346,20 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     @Override
     public CommandProcessingResult updateDatatableEntryOneToOne(final String datatable, final Serializable appTableId,
             final JsonCommand command) {
-        return updateDatatableEntry(datatable, appTableId, null, command);
+        return updateDatatableEntry(datatable, appTableId, null, command.json());
     }
 
     @Transactional
     @Override
     public CommandProcessingResult updateDatatableEntryOneToMany(final String datatable, final Serializable appTableId,
             final Long datatableId, final JsonCommand command) {
-        return updateDatatableEntry(datatable, appTableId, datatableId, command);
+        return updateDatatableEntry(datatable, appTableId, datatableId, command.json());
     }
 
     @SuppressWarnings({ "WhitespaceAround" })
-    private CommandProcessingResult updateDatatableEntry(final String datatable, final Serializable appTableId, final Long datatableId,
-            final JsonCommand command) {
+    @Override
+    public CommandProcessingResult updateDatatableEntry(final String datatable, final Serializable appTableId, final Long datatableId,
+            final String json) {
         final EntityTables entity = queryForApplicationEntity(datatable);
         CommandProcessingResult commandProcessingResult = checkMainResourceExistsWithinScope(entity, appTableId);
 
@@ -1382,7 +1383,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 (map, e) -> map.put(e, existingValues.get(map.size())), (map, map2) -> {});
 
         final Type typeOfMap = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> dataParams = fromJsonHelper.extractDataMap(typeOfMap, command.json());
+        final Map<String, String> dataParams = fromJsonHelper.extractDataMap(typeOfMap, json);
 
         final String dateFormat = dataParams.get(API_PARAM_DATE_FORMAT);
         // fall back to dateFormat to keep backward compatibility
@@ -1428,7 +1429,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         } else {
             log.debug("No change on update {}", datatable);
         }
-        return new CommandProcessingResultBuilder().withCommandId(command.commandId()) //
+        String commandId = dataParams.get("commandId");
+        return new CommandProcessingResultBuilder().withCommandId(commandId == null ? null : Long.valueOf(commandId)) //
                 .withResource(primaryKey) //
                 .withOfficeId(commandProcessingResult.getOfficeId()) //
                 .withGroupId(commandProcessingResult.getGroupId()) //
@@ -1729,7 +1731,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     // --- Utils ---
 
     private static boolean isTechnicalParam(String param) {
-        return API_PARAM_DATE_FORMAT.equals(param) || API_PARAM_DATETIME_FORMAT.equals(param) || API_PARAM_LOCALE.equals(param);
+        return API_PARAM_DATE_FORMAT.equals(param) || API_PARAM_DATETIME_FORMAT.equals(param) || API_PARAM_LOCALE.equals(param)
+                || TABLE_FIELD_ID.equals(param);
     }
 
     private boolean isMultirowDatatable(final List<ResultsetColumnHeaderData> columnHeaders) {

@@ -53,8 +53,6 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
             final CurrentProduct product = currentProductAssembler.assemble(command);
 
-            currentProductRepository.saveAndFlush(product);
-
             return new CommandProcessingResultBuilder() //
                     .withResourceIdentifier(product.getId()) //
                     .withEntityExternalId(product.getExternalId()) //

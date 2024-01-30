@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.api;
 
+import org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants;
+
 @SuppressWarnings({ "HideUtilityClassConstructor" })
 public class CurrentAccountApiConstants {
 
@@ -46,6 +48,12 @@ public class CurrentAccountApiConstants {
     public static final String dateFormatParamName = "dateFormat";
     public static final String monthDayFormatParamName = "monthDayFormat";
     public static final String staffIdParamName = "currentOfficerId";
+
+    // datatable
+    public static final String DATATABLES_PARAM = DatatableApiConstants.DATATABLES_PARAM;
+    public static final String DATATABLE_NAME_PARAM = DatatableApiConstants.DATATABLE_NAME_PARAM;
+    public static final String DATATABLE_ENTRIES_PARAM = DatatableApiConstants.DATATABLE_ENTRIES_PARAM;
+    public static final String DATATABLE_ID_PARAM = DatatableApiConstants.DATATABLE_ID_PARAM;
 
     // query
     public static final String ID_TYPE_PARAM = "idType";
@@ -169,8 +177,6 @@ public class CurrentAccountApiConstants {
     public static final String daysToInactiveParamName = "daysToInactive";
     public static final String daysToDormancyParamName = "daysToDormancy";
     public static final String daysToEscheatParamName = "daysToEscheat";
-
-    public static final String datatables = "datatables";
 
     public static final String gsimApplicationId = "applicationId";
     public static final String gsimLastApplication = "lastApplication";
