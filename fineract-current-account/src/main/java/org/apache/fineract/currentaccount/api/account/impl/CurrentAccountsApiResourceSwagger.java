@@ -59,6 +59,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Alternative identifiers")
+        public List<CurrentAccountIdentifiers> identifiers;
         private PostCurrentAccountSubmitRequest() {
         }
     }
@@ -84,6 +86,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Alternative identifiers")
+        public List<CurrentAccountIdentifiers> identifiers;
         private PutCurrentAccountUpdateRequest() {
         }
     }
@@ -120,5 +124,15 @@ public final class CurrentAccountsApiResourceSwagger {
         public Map<String, Object> changes;
 
         private CurrentAccountUpdateCommandResponse() {}
+    }
+
+    @Schema(description = "CurrentAccountIdentifiers")
+    public static final class CurrentAccountIdentifiers {
+        @Schema(example = "iban")
+        public String idType;
+        @Schema(example = "123456789")
+        public String value;
+        @Schema(example = "A")
+        public String subValue;
     }
 }
