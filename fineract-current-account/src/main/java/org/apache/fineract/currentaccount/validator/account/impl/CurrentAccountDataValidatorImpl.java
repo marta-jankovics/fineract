@@ -83,14 +83,14 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         final Long clientId = command.longValueOfParameterNamed(CLIENT_ID_PARAM);
         baseDataValidator.reset().parameter(CLIENT_ID_PARAM).value(clientId).notNull().integerGreaterThanZero();
 
-        final String productId = command.stringValueOfParameterNamed(PRODUCT_ID_PARAM);
+        final String productId = command.stringValueOfParameterNamedAllowingNull(PRODUCT_ID_PARAM);
         baseDataValidator.reset().parameter(PRODUCT_ID_PARAM).value(productId).notNull().notBlank();
 
         final LocalDate submittedOnDate = command.localDateValueOfParameterNamed(SUBMITTED_ON_DATE_PARAM);
         baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate).ignoreIfNull();
 
         if (command.hasParameter(ACCOUNT_NUMBER_PARAM)) {
-            final String accountNumber = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
+            final String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
             baseDataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
@@ -114,7 +114,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
         if (command.parameterExists(ACCOUNT_NUMBER_PARAM)) {
-            final String accountNumber = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
+            final String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
             baseDataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
@@ -189,7 +189,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
     private static void validateExternalId(JsonCommand command, DataValidatorBuilder baseDataValidator) {
         if (command.parameterExists(EXTERNAL_ID_PARAM)) {
-            final String externalId = command.stringValueOfParameterNamed(EXTERNAL_ID_PARAM);
+            final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
             baseDataValidator.reset().parameter(EXTERNAL_ID_PARAM).value(externalId).notExceedingLengthOf(100);
         }
     }

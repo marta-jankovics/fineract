@@ -101,9 +101,9 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
      */
     @Override
     public CurrentAccount assemble(final JsonCommand command) {
-        String accountNumber = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
-        final String externalId = command.stringValueOfParameterNamed(EXTERNAL_ID_PARAM);
-        final String productId = command.stringValueOfParameterNamed(PRODUCT_ID_PARAM);
+        String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
+        final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
+        final String productId = command.stringValueOfParameterNamedAllowingNull(PRODUCT_ID_PARAM);
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
@@ -154,7 +154,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         BalanceCalculationType balanceCalculationType;
         if (command.parameterExists(BALANCE_CALCULATION_TYPE_PARAM)) {
-            balanceCalculationType = BalanceCalculationType.valueOf(command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM));
+            balanceCalculationType = BalanceCalculationType.valueOf(command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM));
         } else {
             balanceCalculationType = product.getBalanceCalculationType();
         }
@@ -165,8 +165,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
-        // TODO: Would be better to not flush, but then the exception handlign should be moved to the transaction
-        // boundary
         account = currentAccountRepository.save(account);
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
@@ -186,12 +184,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final String localeAsInput = command.locale();
 
         if (command.isChangeInStringParameterNamed(ACCOUNT_NUMBER_PARAM, account.getAccountNumber())) {
-            final String newValue = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
             actualChanges.put(ACCOUNT_NUMBER_PARAM, newValue);
             account.setAccountNumber(newValue);
         }
         if (command.isChangeInStringParameterNamed(EXTERNAL_ID_PARAM, account.getExternalId().getValue())) {
-            final String newValue = command.stringValueOfParameterNamed(EXTERNAL_ID_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
             actualChanges.put(EXTERNAL_ID_PARAM, newValue);
             account.setExternalId(externalIdFactory.create(newValue));
         }
@@ -226,7 +224,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, account.getBalanceCalculationType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
             actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
             account.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
@@ -251,7 +249,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         validateAccountValuesWithProduct(product, account);
 
         if (!actualChanges.isEmpty()) {
-            // TODO: Would be better to not flush
             currentAccountRepository.save(account);
         }
 
@@ -509,8 +506,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                     String subValue = itemObject.getSubValue();
                     AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType,
                             value, subValue, 1L);
-                    // TODO: would be better to not flush, but then the error handling should be moved to
-                    // the transaction boundary
                     accountIdentifierRepository.save(entityAction);
                 } else {
                     baseDataValidator.reset().parameter(itemObject.getIdType())

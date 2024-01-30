@@ -113,7 +113,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     private CurrentTransaction persistTransaction(CurrentTransaction transaction) {
         try {
-            return currentTransactionRepository.saveAndFlush(transaction);
+            return currentTransactionRepository.save(transaction);
         } catch (final DataAccessException dve) {
             handleDataIntegrityIssues(transaction, dve.getMostSpecificCause(), dve);
         } catch (final Exception dve) {

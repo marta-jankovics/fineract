@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.product.write.impl;
 
+import jakarta.persistence.EntityManager;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 
 import java.util.Map;
@@ -44,6 +45,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     private final CurrentProductRepository currentProductRepository;
     private final CurrentProductDataValidator currentProductDataValidator;
     private final CurrentProductAssembler currentProductAssembler;
+    private final EntityManager entityManager;
 
     @Transactional(timeout = 3)
     @Override
@@ -53,6 +55,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
 
             final CurrentProduct product = currentProductAssembler.assemble(command);
 
+            entityManager.flush();
             return new CommandProcessingResultBuilder() //
                     .withResourceIdentifier(product.getId()) //
                     .withEntityExternalId(product.getExternalId()) //
@@ -122,13 +125,13 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
         Throwable checkEx = realCause == null ? dae : realCause;
         String message = checkEx.getMessage();
         if (message != null && checkEx.getMessage().contains("m_current_product_name_key")) {
-            final String name = command.stringValueOfParameterNamed("name");
+            final String name = command.stringValueOfParameterNamedAllowingNull("name");
             msgCode += ".duplicate.name";
             msg = "Current product with name `" + name + "` already exists";
             param = "name";
             msgArgs = new Object[] { name, dae };
         } else if (message != null && checkEx.getMessage().contains("m_current_product_short_name_key")) {
-            final String shortName = command.stringValueOfParameterNamed("shortName");
+            final String shortName = command.stringValueOfParameterNamedAllowingNull("shortName");
             msgCode += ".duplicate.short.name";
             msg = "Current product with short name `" + shortName + "` already exists";
             param = "shortName";

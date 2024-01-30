@@ -21,7 +21,9 @@ package org.apache.fineract.currentaccount.data.product;
 import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
-public class PaymentChannelToFundSourceData {
+import java.io.Serializable;
+
+public class PaymentChannelToFundSourceData implements Serializable {
     public PaymentTypeData paymentTypeId;
     public GLAccountDataForLookup fundSourceAccountId;
 }

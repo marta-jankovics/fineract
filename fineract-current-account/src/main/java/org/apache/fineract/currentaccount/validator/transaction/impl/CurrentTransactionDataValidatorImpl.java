@@ -108,7 +108,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         validatePaymentTypeDetails(baseDataValidator, command);
 
         if (command.hasParameter(ENFORCE_PARAM)) {
-            String enforceStr = command.stringValueOfParameterNamed(ENFORCE_PARAM);
+            String enforceStr = command.stringValueOfParameterNamedAllowingNull(ENFORCE_PARAM);
             baseDataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(enforceStr).validateForBooleanValue();
         }
 

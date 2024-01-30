@@ -62,21 +62,21 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
         final Locale locale = command.extractLocale();
-        final String name = command.stringValueOfParameterNamed(NAME_PARAM);
+        final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
         final ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
-        final String shortName = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
-        final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
-        final String currencyCode = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+        final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
+        final String description = command.stringValueOfParameterNamedAllowingNullAllowingNull(DESCRIPTION_PARAM);
+        final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         final Integer currencyDigitsAfterDecimal = command.integerValueOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
         final Integer currencyInMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM);
         final MonetaryCurrency currency = new MonetaryCurrency(currencyCode, currencyDigitsAfterDecimal, currencyInMultiplesOf);
         final AccountingRuleType accountingRuleType = AccountingRuleType
-                .valueOf(command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM).toUpperCase(locale));
+                .valueOf(command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM).toUpperCase(locale));
         final boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
         final BigDecimal overdraftLimit = allowOverdraft ? command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM) : null;
         final boolean allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
         final BalanceCalculationType balanceCalculationType = BalanceCalculationType
-                .valueOf(command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM));
+                .valueOf(command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM));
         final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
 
         CurrentProduct product = new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType,
@@ -96,19 +96,19 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         final String localeAsInput = command.locale();
 
         if (command.isChangeInStringParameterNamed(NAME_PARAM, product.getName())) {
-            final String newValue = command.stringValueOfParameterNamed(NAME_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
             actualChanges.put(NAME_PARAM, newValue);
             product.setName(newValue);
         }
 
         if (command.isChangeInStringParameterNamed(SHORT_NAME_PARAM, product.getShortName())) {
-            final String newValue = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
             actualChanges.put(SHORT_NAME_PARAM, newValue);
             product.setShortName(newValue);
         }
 
         if (command.isChangeInStringParameterNamed(DESCRIPTION_PARAM, product.getDescription())) {
-            final String newValue = command.stringValueOfParameterNamed(DESCRIPTION_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
             actualChanges.put(DESCRIPTION_PARAM, newValue);
             product.setDescription(newValue);
         }
@@ -121,7 +121,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         }
 
         if (command.isChangeInStringParameterNamed(CURRENCY_CODE_PARAM, product.getCurrency().getCode())) {
-            final String newValue = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
             actualChanges.put(CURRENCY_CODE_PARAM, newValue);
             product.getCurrency().setCode(newValue);
         }
@@ -134,7 +134,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         }
 
         if (command.isChangeInStringParameterNamed(ACCOUNTING_TYPE_PARAM, product.getAccountingType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
             actualChanges.put(ACCOUNTING_TYPE_PARAM, newValue);
             product.setAccountingType(AccountingRuleType.valueOf(newValue));
         }
@@ -170,7 +170,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         }
 
         if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, product.getBalanceCalculationType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+            final String newValue = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
             product.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }

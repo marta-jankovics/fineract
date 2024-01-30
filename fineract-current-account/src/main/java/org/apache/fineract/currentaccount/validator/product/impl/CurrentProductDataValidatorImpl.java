@@ -87,13 +87,13 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_PRODUCT_RESOURCE_NAME);
 
-        final String name = command.stringValueOfParameterNamed(NAME_PARAM);
+        final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
         baseDataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
 
-        final String shortName = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
+        final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
         baseDataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
 
-        final String currencyCode = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+        final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         baseDataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
 
         final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
@@ -105,12 +105,12 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         }
 
         if (command.parameterExists(DESCRIPTION_PARAM)) {
-            final String description = command.stringValueOfParameterNamed(DESCRIPTION_PARAM);
+            final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
             baseDataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).ignoreIfNull().notExceedingLengthOf(500);
         }
 
         // accounting related data validation
-        final String accountingRuleType = command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM);
+        final String accountingRuleType = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
         baseDataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleType).notNull()
                 .isOneOfEnumValues(AccountingRuleType.class);
 
@@ -127,7 +127,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
         }
 
-        final String balanceCalculationType = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+        final String balanceCalculationType = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
         baseDataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                 .isOneOfEnumValues(BalanceCalculationType.class);
 
@@ -149,22 +149,22 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
                 .resource(CURRENT_PRODUCT_RESOURCE_NAME);
 
         if (command.parameterExists(NAME_PARAM)) {
-            final String name = command.stringValueOfParameterNamed(NAME_PARAM);
+            final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
             baseDataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
         }
 
         if (command.parameterExists(SHORT_NAME_PARAM)) {
-            final String shortName = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
+            final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
             baseDataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
         }
 
         if (command.parameterExists(DESCRIPTION_PARAM)) {
-            final String description = command.stringValueOfParameterNamed(DESCRIPTION_PARAM);
+            final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
             baseDataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).notBlank().notExceedingLengthOf(500);
         }
 
         if (command.parameterExists(CURRENCY_CODE_PARAM)) {
-            final String currencyCode = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+            final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
             baseDataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
         }
 
@@ -201,7 +201,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         }
 
         if (command.parameterExists(BALANCE_CALCULATION_TYPE_PARAM)) {
-            final String balanceCalculationType = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+            final String balanceCalculationType = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             baseDataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                     .isOneOfEnumValues(BalanceCalculationType.class);
         }
