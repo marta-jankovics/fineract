@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.data.product;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import lombok.Data;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
 @Data
@@ -33,10 +33,10 @@ public class CurrentProductResponseData implements Serializable {
     private final String shortName;
     private final String description;
     private final CurrencyData currency;
-    private final EnumOptionData accountingType;
+    private final StringEnumOptionData accountingType;
     private final Boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
     private final BigDecimal minimumRequiredBalance;
     private final Boolean allowForceTransaction;
-    private final EnumOptionData balanceCalculationType;
+    private final StringEnumOptionData balanceCalculationType;
 }

@@ -21,12 +21,12 @@ package org.apache.fineract.currentaccount.data.product;
 import java.io.Serializable;
 import java.util.List;
 import lombok.Data;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
 @Data
 public class CurrentProductTemplateResponseData implements Serializable {
 
     private final List<CurrencyData> currencyOptions;
-    private final List<EnumOptionData> accountingTypeOptions;
+    private final List<StringEnumOptionData> accountingTypeOptions;
 }

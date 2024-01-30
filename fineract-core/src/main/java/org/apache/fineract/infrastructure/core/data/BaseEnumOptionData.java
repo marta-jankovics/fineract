@@ -31,8 +31,9 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
-public abstract class BaseEnumOptionData implements Serializable {
+public abstract class BaseEnumOptionData<T> implements Serializable {
 
+    protected T id;
     protected final String code;
     protected final String value;
 }

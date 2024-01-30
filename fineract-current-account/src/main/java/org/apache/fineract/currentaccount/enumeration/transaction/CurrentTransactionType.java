@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.enumeration.transaction;
 
 import lombok.Getter;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.portfolio.TransactionEntryType;
 
 /**
@@ -29,20 +29,20 @@ import org.apache.fineract.portfolio.TransactionEntryType;
 @Getter
 public enum CurrentTransactionType {
 
-    DEPOSIT(1, "Deposit transaction", TransactionEntryType.CREDIT), //
-    WITHDRAWAL(2, "Withdrawal transaction", TransactionEntryType.DEBIT), //
-    AMOUNT_HOLD(3, "Hold amount transaction", TransactionEntryType.DEBIT), //
-    AMOUNT_RELEASE(4, "Release amount transaction", TransactionEntryType.CREDIT); //
+    DEPOSIT("currentTransactionType.deposit", "Deposit transaction", TransactionEntryType.CREDIT), //
+    WITHDRAWAL("currentTransactionType.withdrawal", "Withdrawal transaction", TransactionEntryType.DEBIT), //
+    AMOUNT_HOLD("currentTransactionType.amount_hold", "Hold amount transaction", TransactionEntryType.DEBIT), //
+    AMOUNT_RELEASE("currentTransactionType.amount_release", "Release amount transaction", TransactionEntryType.CREDIT); //
 
     private static final CurrentTransactionType[] VALUES = values();
 
-    private final long id;
-    private final String value;
+    private final String code;
+    private final String description;
     private final TransactionEntryType entryType;
 
-    CurrentTransactionType(final long id, final String value, TransactionEntryType entryType) {
-        this.id = id;
-        this.value = value;
+    CurrentTransactionType(final String code, final String description, TransactionEntryType entryType) {
+        this.code = code;
+        this.description = description;
         this.entryType = entryType;
     }
 
@@ -80,7 +80,7 @@ public enum CurrentTransactionType {
         return isDebitEntryType() && !isAmountOnHold();
     }
 
-    public EnumOptionData toEnumOptionData() {
-        return new EnumOptionData(getId(), name(), getValue());
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

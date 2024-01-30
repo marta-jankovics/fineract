@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.enumeration.account;
 
 import lombok.Getter;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 /**
  * Enum representation of {@link CurrentAccount} status states.
@@ -28,26 +28,17 @@ import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 @Getter
 public enum CurrentAccountStatus {
 
-    SUBMITTED(100, "Current account is submitted"), //
-    ACTIVE(300, "Current account is active"), //
-    CANCELLED(400, "Current account is cancelled"), //
-    CLOSED(600, "Current account is closed"); //
+    SUBMITTED("currentAccountStatus.submitted", "Current account is submitted"), //
+    ACTIVE("currentAccountStatus.active", "Current account is active"), //
+    CANCELLED("currentAccountStatus.cancelled", "Current account is cancelled"), //
+    CLOSED("currentAccountStatus.closed", "Current account is closed"); //
 
-    private final long id;
-    private final String value;
+    private final String code;
+    private final String description;
 
-    CurrentAccountStatus(final Integer id, final String value) {
-        this.id = id;
-        this.value = value;
-    }
-
-    public static CurrentAccountStatus fromInt(final Integer type) {
-        return switch (type) {
-            case 100 -> CurrentAccountStatus.SUBMITTED;
-            case 300 -> CurrentAccountStatus.ACTIVE;
-            case 600 -> CurrentAccountStatus.CLOSED;
-            default -> throw new UnsupportedOperationException(String.format("Unsupported current account status: %s", type));
-        };
+    CurrentAccountStatus(final String code, final String description) {
+        this.code = code;
+        this.description = description;
     }
 
     public boolean hasStateOf(final CurrentAccountStatus state) {
@@ -66,15 +57,11 @@ public enum CurrentAccountStatus {
         return this == CurrentAccountStatus.ACTIVE;
     }
 
-    public boolean isSubmittedOrActive() {
-        return isSubmitted() || isActive();
-    }
-
     public boolean isClosed() {
         return this == CurrentAccountStatus.CLOSED || isCancelled();
     }
 
-    public EnumOptionData toEnumOptionData() {
-        return new EnumOptionData(getId(), name(), getValue());
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

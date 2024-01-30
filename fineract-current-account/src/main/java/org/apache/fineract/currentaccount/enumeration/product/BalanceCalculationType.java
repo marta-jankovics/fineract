@@ -19,24 +19,24 @@
 package org.apache.fineract.currentaccount.enumeration.product;
 
 import lombok.Getter;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
 public enum BalanceCalculationType {
 
-    LAZY(1, "Lazy balance calculation for debit/credit transactions"), //
-    STRICT_DEBIT(2, "Strict balance calculation for debit transactions"), //
-    STRICT(3, "Strict balance calculation for debit/credit transactions"); //
+    LAZY("balanceCalculationType.lazy", "Lazy balance calculation for debit/credit transactions"), //
+    STRICT_DEBIT("balanceCalculationType.strict_debit", "Strict balance calculation for debit transactions"), //
+    STRICT("balanceCalculationType.strict", "Strict balance calculation for debit/credit transactions"); //
 
-    private final long id;
-    private final String value;
+    private final String code;
+    private final String description;
 
-    BalanceCalculationType(long id, String value) {
-        this.id = id;
-        this.value = value;
+    BalanceCalculationType(String code, String description) {
+        this.code = code;
+        this.description = description;
     }
 
-    public EnumOptionData toEnumOptionData() {
-        return new EnumOptionData(getId(), name(), getValue());
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

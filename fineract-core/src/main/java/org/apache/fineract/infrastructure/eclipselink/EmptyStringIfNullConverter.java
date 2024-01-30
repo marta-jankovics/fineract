@@ -26,13 +26,15 @@ public class EmptyStringIfNullConverter implements Converter {
     /**
      * Creates an instance of default UUID field value to JDBC data type converter.
      */
-    public EmptyStringIfNullConverter() {
-    }
+    public EmptyStringIfNullConverter() {}
 
     /**
      * Converts String field value to non-null String.
-     * @param value source Object field value
-     * @param session current database session
+     *
+     * @param value
+     *            source Object field value
+     * @param session
+     *            current database session
      * @return target String to be stored as JDBC VARCHAR
      */
     @Override
@@ -42,8 +44,11 @@ public class EmptyStringIfNullConverter implements Converter {
 
     /**
      * Converts String from JDBC VARCHAR parameter to String field value.
-     * @param jdbcValue source String from JDBC VARCHAR
-     * @param session current database session
+     *
+     * @param jdbcValue
+     *            source String from JDBC VARCHAR
+     * @param session
+     *            current database session
      * @return target UUID field value
      */
     @Override
@@ -53,6 +58,7 @@ public class EmptyStringIfNullConverter implements Converter {
 
     /**
      * UUID values and String are immutable.
+     *
      * @return value of {@code false}
      */
     @Override
@@ -62,10 +68,12 @@ public class EmptyStringIfNullConverter implements Converter {
 
     /**
      * Initialize mapping for JDBC data type.
-     * @param mapping field database mapping
-     * @param session current database session
+     *
+     * @param mapping
+     *            field database mapping
+     * @param session
+     *            current database session
      */
     @Override
-    public void initialize(DatabaseMapping mapping, Session session) {
-    }
+    public void initialize(DatabaseMapping mapping, Session session) {}
 }

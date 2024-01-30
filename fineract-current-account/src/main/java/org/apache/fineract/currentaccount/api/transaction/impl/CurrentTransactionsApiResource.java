@@ -53,7 +53,7 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentTransactionIdType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
 import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
@@ -96,7 +96,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @GET
     @Path("{accountId}/transactions")
     @Override
-    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId, @Pagination @Parameter(hidden = true) Pageable pageable) {
+    public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId,
+            @Pagination @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTransactionsByAccountId(accountId, pageable);
     }

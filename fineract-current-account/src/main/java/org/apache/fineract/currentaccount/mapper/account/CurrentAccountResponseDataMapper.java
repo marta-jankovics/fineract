@@ -24,7 +24,7 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -64,12 +64,12 @@ public interface CurrentAccountResponseDataMapper {
     }
 
     @Named("status")
-    default EnumOptionData mapStatus(CurrentAccountData currentAccountData) {
-        return currentAccountData.getStatus().toEnumOptionData();
+    default StringEnumOptionData mapStatus(CurrentAccountData currentAccountData) {
+        return currentAccountData.getStatus().toStringEnumOptionData();
     }
 
     @Named("balanceCalculationType")
-    default EnumOptionData mapBalanceCalculationType(CurrentAccountData currentAccountData) {
-        return currentAccountData.getBalanceCalculationType().toEnumOptionData();
+    default StringEnumOptionData mapBalanceCalculationType(CurrentAccountData currentAccountData) {
+        return currentAccountData.getBalanceCalculationType().toStringEnumOptionData();
     }
 }

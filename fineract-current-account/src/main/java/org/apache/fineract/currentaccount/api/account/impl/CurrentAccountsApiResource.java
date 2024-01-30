@@ -90,7 +90,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @Operation(summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n" + "\n" + "currentaccounts\n" + "\n" + "\n" + "currentaccounts")
     @Override
-    public Page<CurrentAccountResponseData> retrieveAll(@Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
+    public Page<CurrentAccountResponseData> retrieveAll(
+            @Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         return currentAccountReadService.retrieveAll(pageable);
     }
