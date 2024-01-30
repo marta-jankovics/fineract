@@ -33,4 +33,6 @@ public @interface Pagination {
 
     @AliasFor("value")
     int size() default 50;
+
+    int maximumSize() default 10000;
 }

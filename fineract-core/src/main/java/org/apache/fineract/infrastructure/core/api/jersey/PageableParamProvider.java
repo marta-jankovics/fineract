@@ -54,10 +54,12 @@ public class PageableParamProvider implements ValueParamProvider {
 
         @Override
         public Pageable apply(ContainerRequest request) {
+            Pagination pagination = param.getAnnotation(Pagination.class);
             MultivaluedMap<String, String> queryParameters = request.getUriInfo().getQueryParameters();
             List<Sort.Order> sortingOrders = new ArrayList<>();
             AtomicInteger page = new AtomicInteger(0);
-            AtomicInteger size = new AtomicInteger(param.getAnnotation(Pagination.class).size());
+            int pageSize = pagination.size() > pagination.maximumSize() ? pagination.maximumSize() : pagination.size();
+            AtomicInteger size = new AtomicInteger(pageSize);
             AtomicReference<List<String>> sort = new AtomicReference<>();
             queryParameters.forEach((key, list) -> {
                 switch (key) {
