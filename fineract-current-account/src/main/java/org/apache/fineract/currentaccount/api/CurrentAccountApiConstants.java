@@ -27,14 +27,13 @@ public class CurrentAccountApiConstants {
     public static final String CURRENT_ACCOUNT_RESOURCE_NAME = "currentaccount";
     public static final String CURRENT_TRANSACTION_RESOURCE_NAME = "currenttransaction";
     public static final String CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME = "currentaccount.transaction";
-    public static final String CURRENT_ACCOUNT_CHARGE_RESOURCE_NAME = "currentaccountcharge";
 
     // actions
-    public static final String submitAction = "submit";
-    public static final String cancelAction = "cancel";
-    public static final String activateAction = "activate";
-    public static final String modifyApplicationAction = "modify";
-    public static final String closeAction = "close";
+    public static final String SUBMIT_ACTION = "submit";
+    public static final String CANCEL_ACTION = "cancel";
+    public static final String ACTIVATE_ACTION = "activate";
+    public static final String MODIFY_ACTION = "modify";
+    public static final String CLOSE_ACTION = "close";
 
     // command
     public static final String COMMAND = "command";
@@ -44,10 +43,8 @@ public class CurrentAccountApiConstants {
     public static final String COMMAND_RELEASE = "release";
 
     // general
-    public static final String localeParamName = "locale";
-    public static final String dateFormatParamName = "dateFormat";
-    public static final String monthDayFormatParamName = "monthDayFormat";
-    public static final String staffIdParamName = "currentOfficerId";
+    public static final String LOCALE_PARAM = "locale";
+    public static final String DATE_FORMAT_PARAM = "dateFormat";
 
     // datatable
     public static final String DATATABLES_PARAM = DatatableApiConstants.DATATABLES_PARAM;
@@ -61,126 +58,39 @@ public class CurrentAccountApiConstants {
     public static final String SUB_IDENTIFIER_PARAM = "subIdentifier";
 
     // current product and account parameters
-    public static final String idParamName = "id";
-    public static final String isGSIM = "isGSIM";
-    public static final String isParentAccount = "isParentAccount";
-    public static final String accountNumberParamName = "accountNumber";
-    public static final String externalIdParamName = "externalId";
-    public static final String statusParamName = "status";
-    public static final String reasonForBlockParamName = "reasonForBlock";
-    public static final String clientIdParamName = "clientId";
-    public static final String isRetailAccountParamName = "isRetailAccount";
-    public static final String autogenerateTransactionIdParamName = "autogenerateTransactionId";
-    public static final String transactionUpperLimitParamName = "transactionUpperLimit";
-    public static final String transactionLowerLimitParamName = "transactionLowerLimit";
-    public static final String retailEntriesParamName = "retailEntries";
-    public static final String childAccountIdParamName = "childAccountId";
-    public static final String interestPostedTillDate = "interestPostedTillDate";
+    public static final String ACCOUNT_NUMBER_PARAM = "accountNumber";
+    public static final String EXTERNAL_ID_PARAM = "externalId";
+    public static final String STATUS_PARAM = "status";
+    public static final String CLIENT_ID_PARAM = "clientId";
+    public static final String PRODUCT_ID_PARAM = "productId";
+    public static final String SUBMITTED_ON_DATE_PARAM = "submittedOnDate";
+    public static final String ACTION_DATE_PARAM = "actionDate";
+    public static final String IDENTIFIERS_PARAM = "identifiers";
+    public static final String NAME_PARAM = "name";
+    public static final String SHORT_NAME_PARAM = "shortName";
+    public static final String DESCRIPTION_PARAM = "description";
+    public static final String CURRENCY_CODE_PARAM = "currencyCode";
+    public static final String CURRENCY_DIGITS_AFTER_DECIMAL_PARAM = "currencyDigitsAfterDecimal";
+    public static final String CURRENCY_IN_MULTIPLES_OF_PARAM = "currencyInMultiplesOf";
+    public static final String ACCOUNTING_TYPE_PARAM = "accountingType";
+    public static final String PAYMENT_TYPE_ID_PARAM = "paymentTypeId";
+    public static final String TRANSACTION_ACCOUNT_NUMBER_PARAM = "accountNumber";
+    public static final String ENFORCE_PARAM = "enforce";
+    public static final String ALLOW_OVERDRAFT_PARAM = "allowOverdraft";
+    public static final String ALLOW_FORCE_TRANSACTION_PARAM = "allowForceTransaction";
+    public static final String BALANCE_CALCULATION_TYPE_PARAM = "balanceCalculationType";
+    public static final String OVERDRAFT_LIMIT_PARAM = "overdraftLimit";
+    public static final String MINIMUM_REQUIRED_BALANCE_PARAM = "minimumRequiredBalance";
+    public static final String TRANSACTION_DATE_PARAM = "transactionDate";
+    public static final String TRANSACTION_AMOUNT_PARAM = "transactionAmount";
+    public static final String CONTROL_ACCOUNT_ID_PARAM = "controlAccountId";
+    public static final String REFERENCE_ACCOUNT_ID_PARAM = "referenceAccountId";
+    public static final String OVERDRAFT_ACCOUNT_ID_PARAM = "overdraftAccountId";
+    public static final String TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM = "transfersInSuspenseAccountId";
+    public static final String WRITE_OFF_ACCOUNT_ID_PARAM = "writeOffAccountId";
+    public static final String INCOME_FROM_FEE_PARAM = "incomeFromFee";
+    public static final String INCOME_FROM_PENALTY_PARAM = "incomeFromPenalty";
 
-    public static final String groupIdParamName = "groupId";
-    public static final String productIdParamName = "productId";
-    public static final String fieldOfficerIdParamName = "fieldOfficerId";
+    public static final String REASON_FOR_BLOCK_PARAM = "reasonForBlock";
 
-    public static final String submittedOnDateParamName = "submittedOnDate";
-    public static final String actionDateParamName = "actionDate";
-    public static final String identifiersParamName = "identifiers";
-
-    public static final String activeParamName = "active";
-    public static final String nameParamName = "name";
-    public static final String shortNameParamName = "shortName";
-    public static final String descriptionParamName = "description";
-    public static final String currencyCodeParamName = "currencyCode";
-    public static final String currencyDigitsAfterDecimalParamName = "currencyDigitsAfterDecimal";
-    public static final String currencyInMultiplesOfParamName = "currencyInMultiplesOf";
-    public static final String nominalAnnualInterestRateParamName = "nominalAnnualInterestRate";
-    public static final String interestCompoundingPeriodTypeParamName = "interestCompoundingPeriodType";
-    public static final String interestPostingPeriodTypeParamName = "interestPostingPeriodType";
-    public static final String interestCalculationTypeParamName = "interestCalculationType";
-    public static final String interestCalculationDaysInYearTypeParamName = "interestCalculationDaysInYearType";
-    public static final String lockinPeriodFrequencyParamName = "lockinPeriodFrequency";
-    public static final String lockinPeriodFrequencyTypeParamName = "lockinPeriodFrequencyType";
-    public static final String withdrawalFeeAmountParamName = "withdrawalFeeAmount";
-    public static final String withdrawalFeeTypeParamName = "withdrawalFeeType";
-    public static final String withdrawalFeeForTransfersParamName = "withdrawalFeeForTransfers";
-    public static final String feeAmountParamName = "feeAmount";// to be deleted
-    public static final String feeOnMonthDayParamName = "feeOnMonthDay";
-    public static final String feeIntervalParamName = "feeInterval";
-    public static final String accountingTypeParamName = "accountingType";
-    public static final String paymentTypeIdParamName = "paymentTypeId";
-    public static final String transactionAccountNumberParamName = "accountNumber";
-    public static final String checkNumberParamName = "checkNumber";
-    public static final String routingCodeParamName = "routingCode";
-    public static final String receiptNumberParamName = "receiptNumber";
-    public static final String bankNumberParamName = "bankNumber";
-    public static final String enforceParamName = "enforce";
-    public static final String allowOverdraftParamName = "allowOverdraft";
-    public static final String allowForceTransactionParamName = "allowForceTransaction";
-    public static final String balanceCalculationTypeParamName = "balanceCalculationType";
-    public static final String overdraftLimitParamName = "overdraftLimit";
-    public static final String nominalAnnualInterestRateOverdraftParamName = "nominalAnnualInterestRateOverdraft";
-    public static final String minOverdraftForInterestCalculationParamName = "minOverdraftForInterestCalculation";
-    public static final String minimumRequiredBalanceParamName = "minimumRequiredBalance";
-
-    public static final String maxAllowedLienLimitParamName = "maxAllowedLienLimit";
-    public static final String lienAllowedParamName = "lienAllowed";
-    public static final String minBalanceForInterestCalculationParamName = "minBalanceForInterestCalculation";
-    public static final String withdrawalBalanceParamName = "withdrawalBalance";
-    public static final String onHoldFundsParamName = "onHoldFunds";
-    public static final String currentAmountOnHold = "currentAmountOnHold";
-    public static final String withHoldTaxParamName = "withHoldTax";
-    public static final String taxGroupIdParamName = "taxGroupId";
-
-    // transaction parameters
-    public static final String transactionDateParamName = "transactionDate";
-    public static final String lienParamName = "lien";
-    public static final String transactionAmountParamName = "transactionAmount";
-    public static final String paymentDetailDataParamName = "paymentDetailData";
-    public static final String runningBalanceParamName = "runningBalance";
-    public static final String reversedParamName = "reversed";
-    public static final String dateParamName = "date";
-
-    // charges parameters
-    public static final String chargeIdParamName = "chargeId";
-    public static final String chargesParamName = "charges";
-    public static final String currentAccountChargeIdParamName = "currentAccountChargeId";
-    public static final String chargeNameParamName = "name";
-    public static final String penaltyParamName = "penalty";
-    public static final String chargeTimeTypeParamName = "chargeTimeType";
-    public static final String dueAsOfDateParamName = "dueDate";
-    public static final String chargeCalculationTypeParamName = "chargeCalculationType";
-    public static final String percentageParamName = "percentage";
-    public static final String amountPercentageAppliedToParamName = "amountPercentageAppliedTo";
-    public static final String currencyParamName = "currency";
-    public static final String amountWaivedParamName = "amountWaived";
-    public static final String amountWrittenOffParamName = "amountWrittenOff";
-    public static final String amountOutstandingParamName = "amountOutstanding";
-    public static final String amountOrPercentageParamName = "amountOrPercentage";
-    public static final String amountParamName = "amount";
-    public static final String amountPaidParamName = "amountPaid";
-    public static final String chargeOptionsParamName = "chargeOptions";
-    public static final String chargePaymentModeParamName = "chargePaymentMode";
-
-    public static final String noteParamName = "note";
-
-    // Current account associations
-    public static final String transactions = "transactions";
-    public static final String charges = "charges";
-    public static final String linkedAccount = "linkedAccount";
-
-    // Current on hold transaction
-    public static final String onHoldTransactionTypeParamName = "transactionType";
-    public static final String onHoldTransactionDateParamName = "transactionDate";
-    public static final String onHoldReversedParamName = "reversed";
-
-    // Current Dormancy
-    public static final String isDormancyTrackingActiveParamName = "isDormancyTrackingActive";
-    public static final String daysToInactiveParamName = "daysToInactive";
-    public static final String daysToDormancyParamName = "daysToDormancy";
-    public static final String daysToEscheatParamName = "daysToEscheat";
-
-    public static final String gsimApplicationId = "applicationId";
-    public static final String gsimLastApplication = "lastApplication";
-    public static final String ERROR_MSG_CURRENT_ACCOUNT_NOT_ACTIVE = "not.in.active.state";
-
-    public static final String accountMappingForPaymentParamName = "accountMappingForPayment";
 }

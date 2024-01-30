@@ -18,20 +18,20 @@
  */
 package org.apache.fineract.currentaccount.assembler.product.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountingTypeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyCodeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyDigitsAfterDecimalParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.currencyInMultiplesOfParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.descriptionParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.nameParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.shortNameParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNTING_TYPE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_FORCE_TRANSACTION_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_OVERDRAFT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.BALANCE_CALCULATION_TYPE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_CODE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_DIGITS_AFTER_DECIMAL_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_IN_MULTIPLES_OF_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DESCRIPTION_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.NAME_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SHORT_NAME_PARAM;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -62,22 +62,22 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
         final Locale locale = command.extractLocale();
-        final String name = command.stringValueOfParameterNamed(nameParamName);
-        final ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
-        final String shortName = command.stringValueOfParameterNamed(shortNameParamName);
-        final String description = command.stringValueOfParameterNamedAllowingNull(descriptionParamName);
-        final String currencyCode = command.stringValueOfParameterNamed(currencyCodeParamName);
-        final Integer currencyDigitsAfterDecimal = command.integerValueOfParameterNamed(currencyDigitsAfterDecimalParamName);
-        final Integer currencyInMultiplesOf = command.integerValueOfParameterNamed(currencyInMultiplesOfParamName);
+        final String name = command.stringValueOfParameterNamed(NAME_PARAM);
+        final ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
+        final String shortName = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
+        final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
+        final String currencyCode = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+        final Integer currencyDigitsAfterDecimal = command.integerValueOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
+        final Integer currencyInMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM);
         final MonetaryCurrency currency = new MonetaryCurrency(currencyCode, currencyDigitsAfterDecimal, currencyInMultiplesOf);
         final AccountingRuleType accountingRuleType = AccountingRuleType
-                .valueOf(command.stringValueOfParameterNamed(accountingTypeParamName).toUpperCase(locale));
-        final boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
-        final BigDecimal overdraftLimit = allowOverdraft ? command.bigDecimalValueOfParameterNamed(overdraftLimitParamName) : null;
-        final boolean allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
+                .valueOf(command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM).toUpperCase(locale));
+        final boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+        final BigDecimal overdraftLimit = allowOverdraft ? command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM) : null;
+        final boolean allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
         final BalanceCalculationType balanceCalculationType = BalanceCalculationType
-                .valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
-        final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
+                .valueOf(command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM));
+        final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
 
         CurrentProduct product = new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType,
                 allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
@@ -95,83 +95,83 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
 
         final String localeAsInput = command.locale();
 
-        if (command.isChangeInStringParameterNamed(nameParamName, product.getName())) {
-            final String newValue = command.stringValueOfParameterNamed(nameParamName);
-            actualChanges.put(nameParamName, newValue);
+        if (command.isChangeInStringParameterNamed(NAME_PARAM, product.getName())) {
+            final String newValue = command.stringValueOfParameterNamed(NAME_PARAM);
+            actualChanges.put(NAME_PARAM, newValue);
             product.setName(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(shortNameParamName, product.getShortName())) {
-            final String newValue = command.stringValueOfParameterNamed(shortNameParamName);
-            actualChanges.put(shortNameParamName, newValue);
+        if (command.isChangeInStringParameterNamed(SHORT_NAME_PARAM, product.getShortName())) {
+            final String newValue = command.stringValueOfParameterNamed(SHORT_NAME_PARAM);
+            actualChanges.put(SHORT_NAME_PARAM, newValue);
             product.setShortName(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(descriptionParamName, product.getDescription())) {
-            final String newValue = command.stringValueOfParameterNamed(descriptionParamName);
-            actualChanges.put(descriptionParamName, newValue);
+        if (command.isChangeInStringParameterNamed(DESCRIPTION_PARAM, product.getDescription())) {
+            final String newValue = command.stringValueOfParameterNamed(DESCRIPTION_PARAM);
+            actualChanges.put(DESCRIPTION_PARAM, newValue);
             product.setDescription(newValue);
         }
 
-        if (command.isChangeInIntegerParameterNamed(currencyDigitsAfterDecimalParamName, product.getCurrency().getDigitsAfterDecimal())) {
-            final Integer newValue = command.integerValueOfParameterNamed(currencyDigitsAfterDecimalParamName);
-            actualChanges.put(currencyDigitsAfterDecimalParamName, newValue);
-            actualChanges.put(localeParamName, localeAsInput);
+        if (command.isChangeInIntegerParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM, product.getCurrency().getDigitsAfterDecimal())) {
+            final Integer newValue = command.integerValueOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
+            actualChanges.put(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM, newValue);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             product.getCurrency().setDigitsAfterDecimal(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(currencyCodeParamName, product.getCurrency().getCode())) {
-            final String newValue = command.stringValueOfParameterNamed(currencyCodeParamName);
-            actualChanges.put(currencyCodeParamName, newValue);
+        if (command.isChangeInStringParameterNamed(CURRENCY_CODE_PARAM, product.getCurrency().getCode())) {
+            final String newValue = command.stringValueOfParameterNamed(CURRENCY_CODE_PARAM);
+            actualChanges.put(CURRENCY_CODE_PARAM, newValue);
             product.getCurrency().setCode(newValue);
         }
 
-        if (command.isChangeInIntegerParameterNamed(currencyInMultiplesOfParamName, product.getCurrency().getCurrencyInMultiplesOf())) {
-            final Integer newValue = command.integerValueOfParameterNamed(currencyInMultiplesOfParamName);
-            actualChanges.put(currencyInMultiplesOfParamName, newValue);
-            actualChanges.put(localeParamName, localeAsInput);
+        if (command.isChangeInIntegerParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM, product.getCurrency().getCurrencyInMultiplesOf())) {
+            final Integer newValue = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM);
+            actualChanges.put(CURRENCY_IN_MULTIPLES_OF_PARAM, newValue);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             product.getCurrency().setInMultiplesOf(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(accountingTypeParamName, product.getAccountingType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(accountingTypeParamName);
-            actualChanges.put(accountingTypeParamName, newValue);
+        if (command.isChangeInStringParameterNamed(ACCOUNTING_TYPE_PARAM, product.getAccountingType().name())) {
+            final String newValue = command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM);
+            actualChanges.put(ACCOUNTING_TYPE_PARAM, newValue);
             product.setAccountingType(AccountingRuleType.valueOf(newValue));
         }
 
-        if (command.isChangeInBooleanParameterNamed(allowOverdraftParamName, product.isAllowOverdraft())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
-            actualChanges.put(allowOverdraftParamName, newValue);
+        if (command.isChangeInBooleanParameterNamed(ALLOW_OVERDRAFT_PARAM, product.isAllowOverdraft())) {
+            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+            actualChanges.put(ALLOW_OVERDRAFT_PARAM, newValue);
             product.setAllowOverdraft(newValue);
             if (!newValue) {
                 product.setOverdraftLimit(null);
             }
         }
 
-        if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(overdraftLimitParamName, product.getOverdraftLimit())) {
-            final BigDecimal newValue = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(overdraftLimitParamName);
-            actualChanges.put(overdraftLimitParamName, newValue);
-            actualChanges.put(localeParamName, localeAsInput);
+        if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(OVERDRAFT_LIMIT_PARAM, product.getOverdraftLimit())) {
+            final BigDecimal newValue = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(OVERDRAFT_LIMIT_PARAM);
+            actualChanges.put(OVERDRAFT_LIMIT_PARAM, newValue);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             product.setOverdraftLimit(newValue);
         }
 
-        if (command.isChangeInBooleanParameterNamed(allowForceTransactionParamName, product.isAllowForceTransaction())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
-            actualChanges.put(allowForceTransactionParamName, newValue);
+        if (command.isChangeInBooleanParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM, product.isAllowForceTransaction())) {
+            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
+            actualChanges.put(ALLOW_FORCE_TRANSACTION_PARAM, newValue);
             product.setAllowForceTransaction(newValue);
         }
 
-        if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(minimumRequiredBalanceParamName,
+        if (command.isChangeInBigDecimalParameterNamedDefaultingZeroToNull(MINIMUM_REQUIRED_BALANCE_PARAM,
                 product.getMinimumRequiredBalance())) {
-            final BigDecimal newValue = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minimumRequiredBalanceParamName);
-            actualChanges.put(minimumRequiredBalanceParamName, newValue);
-            actualChanges.put(localeParamName, localeAsInput);
+            final BigDecimal newValue = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
+            actualChanges.put(MINIMUM_REQUIRED_BALANCE_PARAM, newValue);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             product.setMinimumRequiredBalance(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(balanceCalculationTypeParamName, product.getBalanceCalculationType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(balanceCalculationTypeParamName);
-            actualChanges.put(balanceCalculationTypeParamName, newValue);
+        if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, product.getBalanceCalculationType().name())) {
+            final String newValue = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+            actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
             product.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 

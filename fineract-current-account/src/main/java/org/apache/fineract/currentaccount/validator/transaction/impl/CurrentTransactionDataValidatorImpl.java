@@ -19,17 +19,13 @@
 package org.apache.fineract.currentaccount.validator.transaction.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.bankNumberParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.checkNumberParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.dateFormatParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.localeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.paymentTypeIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.receiptNumberParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.routingCodeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionAccountNumberParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionAmountParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionDateParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ACCOUNT_NUMBER_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
 
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -55,9 +51,8 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDataValidator {
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(localeParamName, dateFormatParamName, transactionDateParamName, transactionAmountParamName,
-                    paymentTypeIdParamName, transactionAccountNumberParamName, checkNumberParamName, routingCodeParamName,
-                    receiptNumberParamName, bankNumberParamName, enforceParamName));
+            Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, TRANSACTION_AMOUNT_PARAM, PAYMENT_TYPE_ID_PARAM,
+                    TRANSACTION_ACCOUNT_NUMBER_PARAM, ENFORCE_PARAM));
 
     @Override
     public void validateDeposit(JsonCommand command) {
@@ -98,46 +93,31 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
 
-        if (command.hasParameter(transactionDateParamName)) {
-            final LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
-            baseDataValidator.reset().parameter(transactionDateParamName).value(transactionDate).notNull()
+        if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
+            final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);
+            baseDataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
                     .validateDateForEqual(DateUtils.getBusinessLocalDate());
         }
 
-        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
-        baseDataValidator.reset().parameter(transactionAmountParamName).value(transactionAmount).notNull().positiveAmount();
+        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_AMOUNT_PARAM);
+        baseDataValidator.reset().parameter(TRANSACTION_AMOUNT_PARAM).value(transactionAmount).notNull().positiveAmount();
 
-        final Integer paymentType = command.integerValueOfParameterNamed(paymentTypeIdParamName);
-        baseDataValidator.reset().parameter(paymentTypeIdParamName).value(paymentType).notNull();
+        final Integer paymentType = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
+        baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentType).notNull();
 
         validatePaymentTypeDetails(baseDataValidator, command);
 
-        if (command.hasParameter(enforceParamName)) {
-            String enforceStr = command.stringValueOfParameterNamed(enforceParamName);
-            baseDataValidator.reset().parameter(transactionDateParamName).value(enforceStr).validateForBooleanValue();
+        if (command.hasParameter(ENFORCE_PARAM)) {
+            String enforceStr = command.stringValueOfParameterNamed(ENFORCE_PARAM);
+            baseDataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(enforceStr).validateForBooleanValue();
         }
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
     private void validatePaymentTypeDetails(final DataValidatorBuilder baseDataValidator, JsonCommand command) {
-        // Validate all string payment detail fields for max length
-        boolean checkPaymentTypeDetails = false;
-        final Integer paymentTypeId = command.integerValueOfParameterNamed(paymentTypeIdParamName);
-        baseDataValidator.reset().parameter(paymentTypeIdParamName).value(paymentTypeId).ignoreIfNull().integerGreaterThanZero();
-        final Set<String> paymentDetailParameters = new HashSet<>(Arrays.asList(transactionAccountNumberParamName, checkNumberParamName,
-                routingCodeParamName, receiptNumberParamName, bankNumberParamName));
-        for (final String paymentDetailParameterName : paymentDetailParameters) {
-            final String paymentDetailParameterValue = command.stringValueOfParameterNamed(paymentDetailParameterName);
-            baseDataValidator.reset().parameter(paymentDetailParameterName).value(paymentDetailParameterValue).ignoreIfNull()
-                    .notExceedingLengthOf(50);
-            if (paymentDetailParameterValue != null && !paymentDetailParameterValue.isEmpty()) {
-                checkPaymentTypeDetails = true;
-            }
-        }
-        if (checkPaymentTypeDetails) {
-            baseDataValidator.reset().parameter(paymentTypeIdParamName).value(paymentTypeId).notBlank().integerGreaterThanZero();
-        }
+        final Integer paymentTypeId = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
+        baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentTypeId).ignoreIfNull().integerGreaterThanZero();
     }
 
     private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {

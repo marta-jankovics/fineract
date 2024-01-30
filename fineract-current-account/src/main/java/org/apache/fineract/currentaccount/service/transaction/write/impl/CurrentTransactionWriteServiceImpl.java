@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.enforceParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -91,7 +91,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
-        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
+        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(ENFORCE_PARAM);
         testBalance(account, withdrawalTransaction, enforce);
 
         // TODO: accounting and external event emitting
@@ -117,7 +117,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction holdTransaction = currentTransactionAssembler.hold(account, command, changes);
-        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(enforceParamName);
+        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(ENFORCE_PARAM);
         testBalance(account, holdTransaction, enforce);
 
         // TODO: accounting and external event emitting

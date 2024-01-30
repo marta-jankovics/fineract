@@ -26,6 +26,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
@@ -43,6 +45,7 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
+import org.apache.fineract.currentaccount.api.swagger.CurrentAccountCommonApiResourceSwagger;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
@@ -119,7 +122,9 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(summary = "Create a Current Product", description = "Creates a Current Product\n\n"
             + "Mandatory Fields: name, shortName, currencyCode, currencyDigitsAfterDecimal, accountingType, allowOverdraft, allowForceTransaction, balanceCalculationType, locale\n\n"
             + "Optional Fields: externalId, currencyInMultiplesOf, overdraftLimit, minimumRequiredBalance, description")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PostCurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountCommonApiResourceSwagger.PostCommandResponse.class))) })
     @Override
     public CommandProcessingResult create(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentProduct().withJson(requestJson).build();
@@ -129,7 +134,9 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @PUT
     @Path("{productId}")
     @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountCommonApiResourceSwagger.PostCommandResponse.class))) })
     @Override
     public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final String productId,
             @Parameter(hidden = true) final String requestJson) {
@@ -139,7 +146,9 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @PUT
     @Path("{idType}/{identifier}")
     @Operation(summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountCommonApiResourceSwagger.PostCommandResponse.class))) })
     @Override
     public CommandProcessingResult update(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
@@ -156,6 +165,8 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @DELETE
     @Path("{productId}")
     @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountCommonApiResourceSwagger.PostCommandResponse.class))) })
     @Override
     public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final String productId) {
         return deleteCurrentProduct(null, productId);
@@ -164,6 +175,8 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @DELETE
     @Path("{idType}/{identifier}")
     @Operation(summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountCommonApiResourceSwagger.PostCommandResponse.class))) })
     @Override
     public CommandProcessingResult delete(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {

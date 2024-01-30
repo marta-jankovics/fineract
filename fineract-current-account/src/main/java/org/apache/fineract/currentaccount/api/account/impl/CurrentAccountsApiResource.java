@@ -18,12 +18,12 @@
  */
 package org.apache.fineract.currentaccount.api.account.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACTIVATE_ACTION;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CANCEL_ACTION;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CLOSE_ACTION;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUB_IDENTIFIER_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.activateAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.cancelAction;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.closeAction;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -325,18 +325,18 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(jsonApiRequest);
 
         CommandProcessingResult result = null;
-        if (is(commandParam, CurrentAccountApiConstants.cancelAction)) {
+        if (is(commandParam, CurrentAccountApiConstants.CANCEL_ACTION)) {
             final CommandWrapper commandRequest = builder.cancelCurrentAccountApplication(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.activateAction)) {
+        } else if (is(commandParam, CurrentAccountApiConstants.ACTIVATE_ACTION)) {
             final CommandWrapper commandRequest = builder.currentAccountActivation(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.closeAction)) {
+        } else if (is(commandParam, CurrentAccountApiConstants.CLOSE_ACTION)) {
             final CommandWrapper commandRequest = builder.closeCurrentAccountApplication(accountId).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         }
         if (result == null) {
-            throw new UnrecognizedQueryParamException("command", commandParam, cancelAction, activateAction, closeAction);
+            throw new UnrecognizedQueryParamException("command", commandParam, CANCEL_ACTION, ACTIVATE_ACTION, CLOSE_ACTION);
         }
         return result;
     }

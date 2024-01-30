@@ -18,18 +18,18 @@
  */
 package org.apache.fineract.currentaccount.assembler.account.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_NUMBER_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_FORCE_TRANSACTION_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_OVERDRAFT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.BALANCE_CALCULATION_TYPE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CLIENT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.accountNumberParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowForceTransactionParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.allowOverdraftParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.balanceCalculationTypeParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.clientIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.identifiersParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.minimumRequiredBalanceParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.overdraftLimitParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.productIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.submittedOnDateParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIERS_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
 import com.google.gson.Gson;
@@ -101,16 +101,16 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
      */
     @Override
     public CurrentAccount assemble(final JsonCommand command) {
-        String accountNumber = command.stringValueOfParameterNamed(accountNumberParamName);
-        final String externalId = command.stringValueOfParameterNamed(externalIdParamName);
-        final String productId = command.stringValueOfParameterNamed(productIdParamName);
+        String accountNumber = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
+        final String externalId = command.stringValueOfParameterNamed(EXTERNAL_ID_PARAM);
+        final String productId = command.stringValueOfParameterNamed(PRODUCT_ID_PARAM);
 
         final CurrentProduct product = this.currentProductRepository.findById(productId)
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
                         "Current product with provided id: %s cannot be found", productId));
 
         Client client;
-        final Long clientId = command.longValueOfParameterNamed(clientIdParamName);
+        final Long clientId = command.longValueOfParameterNamed(CLIENT_ID_PARAM);
         if (clientId != null) {
             client = this.clientRepository.findById(clientId).orElseThrow(() -> new ClientNotFoundException(clientId));
             if (client.isNotActive()) {
@@ -119,42 +119,42 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         } else {
             throw new ClientNotFoundException(clientId);
         }
-        LocalDate submittedOnDate = command.localDateValueOfParameterNamed(submittedOnDateParamName);
+        LocalDate submittedOnDate = command.localDateValueOfParameterNamed(SUBMITTED_ON_DATE_PARAM);
         if (submittedOnDate == null) {
             submittedOnDate = DateUtils.getBusinessLocalDate();
         }
 
         boolean allowOverdraft;
-        if (command.parameterExists(allowOverdraftParamName)) {
-            allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
+        if (command.parameterExists(ALLOW_OVERDRAFT_PARAM)) {
+            allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
         } else {
             allowOverdraft = product.isAllowOverdraft();
         }
 
         BigDecimal overdraftLimit;
-        if (command.parameterExists(overdraftLimitParamName)) {
-            overdraftLimit = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(overdraftLimitParamName);
+        if (command.parameterExists(OVERDRAFT_LIMIT_PARAM)) {
+            overdraftLimit = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(OVERDRAFT_LIMIT_PARAM);
         } else {
             overdraftLimit = product.getOverdraftLimit();
         }
 
         BigDecimal minimumRequiredBalance;
-        if (command.parameterExists(minimumRequiredBalanceParamName)) {
-            minimumRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(minimumRequiredBalanceParamName);
+        if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
+            minimumRequiredBalance = command.bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
         } else {
             minimumRequiredBalance = product.getMinimumRequiredBalance();
         }
 
         boolean allowForceTransaction;
-        if (command.parameterExists(allowForceTransactionParamName)) {
-            allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
+        if (command.parameterExists(ALLOW_FORCE_TRANSACTION_PARAM)) {
+            allowForceTransaction = command.booleanPrimitiveValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
         } else {
             allowForceTransaction = product.isAllowForceTransaction();
         }
 
         BalanceCalculationType balanceCalculationType;
-        if (command.parameterExists(balanceCalculationTypeParamName)) {
-            balanceCalculationType = BalanceCalculationType.valueOf(command.stringValueOfParameterNamed(balanceCalculationTypeParamName));
+        if (command.parameterExists(BALANCE_CALCULATION_TYPE_PARAM)) {
+            balanceCalculationType = BalanceCalculationType.valueOf(command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM));
         } else {
             balanceCalculationType = product.getBalanceCalculationType();
         }
@@ -181,55 +181,54 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         Map<String, Object> actualChanges = new HashMap<>();
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.modifyApplicationAction);
+                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.MODIFY_ACTION);
 
         final String localeAsInput = command.locale();
 
-        if (command.isChangeInStringParameterNamed(accountNumberParamName, account.getAccountNumber())) {
-            final String newValue = command.stringValueOfParameterNamed(accountNumberParamName);
-            actualChanges.put(accountNumberParamName, newValue);
+        if (command.isChangeInStringParameterNamed(ACCOUNT_NUMBER_PARAM, account.getAccountNumber())) {
+            final String newValue = command.stringValueOfParameterNamed(ACCOUNT_NUMBER_PARAM);
+            actualChanges.put(ACCOUNT_NUMBER_PARAM, newValue);
             account.setAccountNumber(newValue);
         }
-        if (command.isChangeInStringParameterNamed(externalIdParamName, account.getExternalId().getValue())) {
-            final String newValue = command.stringValueOfParameterNamed(externalIdParamName);
-            actualChanges.put(externalIdParamName, newValue);
+        if (command.isChangeInStringParameterNamed(EXTERNAL_ID_PARAM, account.getExternalId().getValue())) {
+            final String newValue = command.stringValueOfParameterNamed(EXTERNAL_ID_PARAM);
+            actualChanges.put(EXTERNAL_ID_PARAM, newValue);
             account.setExternalId(externalIdFactory.create(newValue));
         }
 
-        if (command.isChangeInBooleanParameterNamed(allowOverdraftParamName, account.isAllowOverdraft())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowOverdraftParamName);
-            actualChanges.put(allowOverdraftParamName, newValue);
+        if (command.isChangeInBooleanParameterNamed(ALLOW_OVERDRAFT_PARAM, account.isAllowOverdraft())) {
+            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+            actualChanges.put(ALLOW_OVERDRAFT_PARAM, newValue);
             account.setAllowOverdraft(newValue);
             if (!newValue) {
                 account.setOverdraftLimit(null);
             }
         }
 
-        if (account.isAllowOverdraft()
-                && command.isChangeInBigDecimalParameterNamed(overdraftLimitParamName, account.getOverdraftLimit())) {
-            final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(overdraftLimitParamName);
-            actualChanges.put(overdraftLimitParamName, newValue);
-            actualChanges.put(CurrentAccountApiConstants.localeParamName, localeAsInput);
+        if (account.isAllowOverdraft() && command.isChangeInBigDecimalParameterNamed(OVERDRAFT_LIMIT_PARAM, account.getOverdraftLimit())) {
+            final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
+            actualChanges.put(OVERDRAFT_LIMIT_PARAM, newValue);
+            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
             account.setOverdraftLimit(newValue);
         }
 
-        if (command.isChangeInBooleanParameterNamed(allowForceTransactionParamName, account.isAllowForceTransaction())) {
-            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(allowForceTransactionParamName);
-            actualChanges.put(allowForceTransactionParamName, newValue);
+        if (command.isChangeInBooleanParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM, account.isAllowForceTransaction())) {
+            final boolean newValue = command.booleanPrimitiveValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
+            actualChanges.put(ALLOW_FORCE_TRANSACTION_PARAM, newValue);
             account.setAllowForceTransaction(newValue);
         }
 
-        if (command.isChangeInBigDecimalParameterNamed(minimumRequiredBalanceParamName, account.getMinimumRequiredBalance())) {
-            final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(minimumRequiredBalanceParamName);
-            actualChanges.put(minimumRequiredBalanceParamName, newValue);
-            actualChanges.put(CurrentAccountApiConstants.localeParamName, localeAsInput);
+        if (command.isChangeInBigDecimalParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM, account.getMinimumRequiredBalance())) {
+            final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
+            actualChanges.put(MINIMUM_REQUIRED_BALANCE_PARAM, newValue);
+            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
             account.setMinimumRequiredBalance(newValue);
         }
 
-        if (command.isChangeInStringParameterNamed(balanceCalculationTypeParamName, account.getBalanceCalculationType().name())) {
-            final String newValue = command.stringValueOfParameterNamed(balanceCalculationTypeParamName);
-            actualChanges.put(balanceCalculationTypeParamName, newValue);
-            actualChanges.put(CurrentAccountApiConstants.localeParamName, localeAsInput);
+        if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, account.getBalanceCalculationType().name())) {
+            final String newValue = command.stringValueOfParameterNamed(BALANCE_CALCULATION_TYPE_PARAM);
+            actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
+            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
             account.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
@@ -271,12 +270,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.cancelAction);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CANCEL_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -285,24 +284,24 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         account.setStatus(CurrentAccountStatus.CANCELLED);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
 
-        LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.actionDateParamName);
+        LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
         if (cancelledOnDate == null) {
             cancelledOnDate = DateUtils.getBusinessLocalDate();
         }
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
 
-        actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.actionDateParamName, fmt.format(cancelledOnDate));
+        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
+        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, fmt.format(cancelledOnDate));
 
         final LocalDate submittalDate = fetchSubmittedOnDate(account);
         if (DateUtils.isBefore(cancelledOnDate, submittalDate)) {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String submittalDateAsString = formatter.format(submittalDate);
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(submittalDateAsString)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(submittalDateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -310,7 +309,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
         }
         if (DateUtils.isAfterBusinessDate(cancelledOnDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(cancelledOnDate)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(cancelledOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -327,12 +326,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.activateAction);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.ACTIVATE_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submitted.state");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -340,24 +339,24 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
         }
 
-        LocalDate activationDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.actionDateParamName);
+        LocalDate activationDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
         if (activationDate == null) {
             activationDate = DateUtils.getBusinessLocalDate();
         }
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         account.setStatus(CurrentAccountStatus.ACTIVE);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
-        actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.actionDateParamName, fmt.format(activationDate));
+        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
+        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, fmt.format(activationDate));
 
         account.setActivatedOnDate(activationDate);
 
         Client client = clientRepository.findById(account.getClientId())
                 .orElseThrow(() -> new ClientNotFoundException(account.getClientId()));
         if (client != null && client.isActivatedAfter(account.getActivatedOnDate())) {
-            baseDataValidator.reset().parameter(submittedOnDateParamName).value(client.getActivationDate())
+            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
         }
 
@@ -366,7 +365,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String dateAsString = formatter.format(submittedOnDate);
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(dateAsString)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(dateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submitted.date");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -375,7 +374,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (DateUtils.isAfterBusinessDate(activationDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(activationDate)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(activationDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
 
             if (!dataValidationErrors.isEmpty()) {
@@ -394,7 +393,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.closeAction);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CLOSE_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.ACTIVE.hasStateOf(currentStatus)) {
@@ -406,17 +405,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final Locale locale = command.extractLocale();
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(locale);
-        final LocalDate closedDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.actionDateParamName);
+        final LocalDate closedDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
 
         if (DateUtils.isBefore(closedDate, account.getActivatedOnDate())) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(closedDate)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
                     .failWithCode("must.be.after.activation.date");
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);
             }
         }
         if (DateUtils.isAfterBusinessDate(closedDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.actionDateParamName).value(closedDate)
+            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
                     .failWithCode("cannot.be.a.future.date");
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);
@@ -432,10 +431,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         account.setStatus(CurrentAccountStatus.CLOSED);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
-        actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.actionDateParamName, closedDate.format(fmt));
+        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
+        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, closedDate.format(fmt));
 
         persistEntityAction(account, EntityActionType.CLOSE, closedDate);
 
@@ -453,7 +452,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
         if (account.getOverdraftLimit() != null && product.getOverdraftLimit() != null
                 && account.getOverdraftLimit().compareTo(product.getOverdraftLimit()) > 0) {
-            baseDataValidator.reset().parameter(overdraftLimitParamName).value(account.getOverdraftLimit())
+            baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(account.getOverdraftLimit())
                     .parameter("overDraftLimitOnProduct").value(product.getOverdraftLimit()).failWithCode("cannot.exceed.product.value");
         }
         if (!dataValidationErrors.isEmpty()) {
@@ -464,15 +463,15 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private void validateDates(Client client, LocalDate submittedOnDate) {
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.submitAction);
+                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.SUBMIT_ACTION);
 
         if (DateUtils.isDateInTheFuture(submittedOnDate)) {
-            baseDataValidator.reset().parameter(submittedOnDateParamName).value(submittedOnDate)
+            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
         }
 
         if (client != null && client.isActivatedAfter(submittedOnDate)) {
-            baseDataValidator.reset().parameter(submittedOnDateParamName).value(client.getActivationDate())
+            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
         }
 
@@ -491,13 +490,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private void persistAccountIdentifiers(CurrentAccount account, JsonCommand command) {
         // TODO CURRENT! check identifiers permission
         // TODO CURRENT! check maker-checker config for permission
-        if (!command.hasParameter(identifiersParamName)) {
+        if (!command.hasParameter(IDENTIFIERS_PARAM)) {
             return;
         }
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
-        JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
+
+        JsonArray identifiers = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
 
         if (identifiers != null) {
             for (JsonElement itemElement : identifiers) {
@@ -525,16 +525,16 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     private void updateIdentifiers(CurrentAccount account, JsonCommand command, Map<String, Object> actualChanges) {
-        if (!command.hasParameter(identifiersParamName)) {
+        if (!command.hasParameter(IDENTIFIERS_PARAM)) {
             return;
         }
-        actualChanges.computeIfAbsent(identifiersParamName, k -> new ArrayList<>());
+        actualChanges.computeIfAbsent(IDENTIFIERS_PARAM, k -> new ArrayList<>());
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors);
         Map<InteropIdentifierType, AccountIdentifier> secondaryIdentifiers = accountIdentifierRepository
                 .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
                 .collect(Collectors.toMap(AccountIdentifier::getIdentifierType, Function.identity()));
-        JsonArray identifiers = command.jsonElement(identifiersParamName).getAsJsonArray();
+        JsonArray identifiers = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
 
         if (identifiers != null) {
             for (JsonElement itemElement : identifiers) {
@@ -566,7 +566,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                             .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
                 }
 
-                ((List) actualChanges.get(identifiersParamName)).add(itemObject);
+                ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(itemObject);
             }
             if (!dataValidationErrors.isEmpty()) {
                 throw new PlatformApiDataValidationException(dataValidationErrors);

@@ -27,8 +27,8 @@ public final class CurrentProductsApiResourceSwagger {
 
     private CurrentProductsApiResourceSwagger() {}
 
-    @Schema(description = "PostCurrentProductRequest")
-    public static final class PostCurrentProductRequest {
+    @Schema(description = "CurrentProductRequest")
+    public static final class CurrentProductRequest {
 
         @Schema(example = "Normal current product")
         public String name;
@@ -59,42 +59,35 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(description = "Datatable details")
         public List<DatatableEntriesRequest> datatables;
 
-        private PostCurrentProductRequest() {}
-    }
-
-    @Schema(description = "PutCurrentProductRequest")
-    public static final class PutCurrentProductRequest {
-
-        @Schema(example = "Normal current product")
-        public String name;
-        @Schema(example = "NCP")
-        public String shortName;
-        @Schema(example = "A good old regular current product")
-        public String description;
-        @Schema(example = "USD")
-        public String currencyCode;
-        @Schema(example = "2")
-        public Integer digitsAfterDecimal;
-        @Schema(example = "0")
-        public Integer inMultiplesOf;
-        @Schema(example = "en")
-        public String locale;
+        // Accounting
         @Schema(example = "1")
-        public Integer accountingType;
-        @Schema(example = "true")
-        public Boolean allowOverdraft;
-        @Schema(example = "1000")
-        public BigDecimal overdraftLimit;
-        @Schema(example = "true")
-        public Boolean allowForceTransaction;
-        @Schema(example = "100")
-        public BigDecimal minimumRequiredBalance;
-        @Schema(example = "LAZY")
-        public String balanceCalculationType;
-        @Schema(description = "Datatable details")
-        public List<DatatableEntriesRequest> datatables;
+        public Long controlAccountId;
+        @Schema(example = "1")
+        public Long referenceAccountId;
+        @Schema(example = "1")
+        public Long overdraftAccountId;
+        @Schema(example = "1")
+        public Long transfersInSuspenseAccountId;
+        @Schema(example = "1")
+        public Long writeOffAccountId;
+        @Schema(example = "1")
+        public Long incomeFromFee;
+        @Schema(example = "1")
+        public Long incomeFromPenalty;
+        @Schema(example = "")
+        public List<PaymentChannelToFundSource> paymentChannelToFundSourceMappings;
 
-        private PutCurrentProductRequest() {}
+        private CurrentProductRequest() {}
+
+        public static final class PaymentChannelToFundSource {
+
+            @Schema(example = "1")
+            public Long paymentTypeId;
+            @Schema(example = "1")
+            public Long fundSourceAccountId;
+
+            private PaymentChannelToFundSource() {}
+        }
     }
 
     static final class DatatableEntriesRequest {

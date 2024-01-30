@@ -18,9 +18,8 @@
  */
 package org.apache.fineract.currentaccount.assembler.transaction.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.externalIdParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionAmountParamName;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.transactionDateParamName;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
 import static org.apache.fineract.infrastructure.core.filters.CorrelationHeaderFilter.CORRELATION_ID_KEY;
 
 import java.math.BigDecimal;
@@ -94,14 +93,14 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     @NotNull
     private CurrentTransaction assemble(JsonCommand command, CurrentAccount account, CurrentTransactionType deposit) {
-        ExternalId externalId = externalIdFactory.createFromCommand(command, externalIdParamName);
+        ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
         final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
-        LocalDate transactionDate = command.localDateValueOfParameterNamed(transactionDateParamName);
+        LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);
         if (transactionDate == null) {
             transactionDate = DateUtils.getBusinessLocalDate();
         }
-        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(transactionAmountParamName);
+        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_DATE_PARAM);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null,
