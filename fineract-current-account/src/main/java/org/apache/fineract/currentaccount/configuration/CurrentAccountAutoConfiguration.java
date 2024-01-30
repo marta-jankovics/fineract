@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.configuration;
 
-import jakarta.persistence.EntityManager;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.assembler.account.impl.CurrentAccountAssemblerImpl;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
@@ -147,10 +146,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductWriteService.class)
     public CurrentProductWriteService currentProductWriteService(CurrentProductRepository currentProductRepository,
-            CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler,
-            EntityManager entityManager) {
-        return new CurrentProductWriteServiceImpl(currentProductRepository, currentProductDataValidator, currentProductAssembler,
-                entityManager);
+            CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler) {
+        return new CurrentProductWriteServiceImpl(currentProductRepository, currentProductDataValidator, currentProductAssembler);
     }
 
     @Bean
