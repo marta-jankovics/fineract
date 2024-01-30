@@ -73,7 +73,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @GET
     @Path("template")
-    @Operation(summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
+    @Operation(operationId = "templateForCurrentProduct", summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Request:\n \n" + "current-products/template \n \n")
     @Override
     public CurrentProductTemplateResponseData template() {
@@ -82,7 +82,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Operation(summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
+    @Operation(operationId = "retrieveAllOfCurrentProduct", summary = "List Current Products", description = "Lists Current Products\n\n" + "Example Requests:\n" + "\n"
             + "current-products")
     @Override
     public Page<CurrentProductResponseData> retrieveAll(
@@ -93,7 +93,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @GET
     @Path("{productId}")
-    @Operation(summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
+    @Operation(operationId = "retrieveOneOfCurrentProduct", summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n" + "Example Requests:\n" + "\n"
             + "current-products/1")
     @Override
     public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final String productId) {
@@ -102,7 +102,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @GET
     @Path("{idType}/{identifier}")
-    @Operation(summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
+    @Operation(operationId = "retrieveOneOfCurrentProduct", summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
     public CurrentProductResponseData retrieveOne(
@@ -111,13 +111,8 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return retrieveOne(IdTypeResolver.resolve(CurrentProductIdType.class, idType), identifier);
     }
 
-    private CurrentProductResponseData retrieveOne(@NotNull CurrentProductIdType idType, String identifier) {
-        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
-        return currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
-    }
-
     @POST
-    @Operation(summary = "Create a Current Product", description = "Creates a Current Product\n\n"
+    @Operation(operationId = "createCurrentProduct", summary = "Create a Current Product", description = "Creates a Current Product\n\n"
             + "Mandatory Fields: name, shortName, currencyCode, currencyDigitsAfterDecimal, accountingType, allowOverdraft, allowForceTransaction, balanceCalculationType, locale\n\n"
             + "Optional Fields: externalId, currencyInMultiplesOf, overdraftLimit, minimumRequiredBalance, description")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
@@ -131,7 +126,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @PUT
     @Path("{productId}")
-    @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
+    @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class)))})
@@ -143,7 +138,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @PUT
     @Path("{idType}/{identifier}")
-    @Operation(summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
+    @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class)))})
@@ -154,15 +149,9 @@ public class CurrentProductsApiResource implements CurrentProductApi {
         return updateCurrentProduct(idType, identifier, requestJson);
     }
 
-    private CommandProcessingResult updateCurrentProduct(String idType, String identifier, String requestJson) {
-        String productId = getResolvedProductId(idType, identifier);
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
-        return commandSourceWritePlatformService.logCommandSource(commandRequest);
-    }
-
     @DELETE
     @Path("{productId}")
-    @Operation(summary = "Delete a Current Product", description = "Delete a Current Product")
+    @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product", description = "Delete a Current Product")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class)))})
     @Override
@@ -172,7 +161,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @DELETE
     @Path("{idType}/{identifier}")
-    @Operation(summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
+    @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class)))})
     @Override
@@ -190,5 +179,16 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     private String getResolvedProductId(String idType, String identifier) {
         return currentProductReadService.retrieveIdByIdTypeAndIdentifier(IdTypeResolver.resolve(CurrentProductIdType.class, idType),
                 identifier);
+    }
+
+    private CurrentProductResponseData retrieveOne(@NotNull CurrentProductIdType idType, String identifier) {
+        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME);
+        return currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
+    }
+
+    private CommandProcessingResult updateCurrentProduct(String idType, String identifier, String requestJson) {
+        String productId = getResolvedProductId(idType, identifier);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
+        return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 }
