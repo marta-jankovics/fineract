@@ -31,7 +31,7 @@ import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdTy
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -51,8 +51,8 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     @Override
     public CurrentProductTemplateResponseData retrieveTemplate() {
         final List<CurrencyData> currencyOptions = currencyReadPlatformService.retrieveAllowedCurrencies();
-        final List<EnumOptionData> accountingRuleOptions = Arrays.stream(AccountingRuleType.values())
-                .map(art -> new EnumOptionData((long) art.getValue(), art.name(), art.toString())).toList();
+        final List<StringEnumOptionData> accountingRuleOptions = Arrays.stream(AccountingRuleType.values())
+                .map(art -> new StringEnumOptionData(art.name(), art.getCode(), art.getDescription())).toList();
 
         return new CurrentProductTemplateResponseData(currencyOptions, accountingRuleOptions);
     }

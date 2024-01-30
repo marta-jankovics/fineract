@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -48,13 +48,13 @@ public interface CurrentProductResponseDataMapper {
     }
 
     @Named("accountingType")
-    default EnumOptionData mapAccountingType(CurrentProductData currentProductData) {
-        return currentProductData.getAccountingType().toEnumOptionData();
+    default StringEnumOptionData mapAccountingType(CurrentProductData currentProductData) {
+        return currentProductData.getAccountingType().toStringEnumOptionData();
     }
 
     @Named("balanceCalculationType")
-    default EnumOptionData mapBalanceCalculationType(CurrentProductData currentProductData) {
-        return currentProductData.getBalanceCalculationType().toEnumOptionData();
+    default StringEnumOptionData mapBalanceCalculationType(CurrentProductData currentProductData) {
+        return currentProductData.getBalanceCalculationType().toStringEnumOptionData();
     }
 
     List<CurrentProductResponseData> map(List<CurrentProductData> data);

@@ -21,7 +21,7 @@ package org.apache.fineract.currentaccount.service.transaction.read;
 import jakarta.validation.constraints.NotNull;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentTransactionIdType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

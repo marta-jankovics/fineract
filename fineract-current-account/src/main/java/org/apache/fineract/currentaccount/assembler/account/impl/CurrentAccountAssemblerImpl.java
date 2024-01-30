@@ -285,7 +285,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         account.setStatus(CurrentAccountStatus.CANCELLED);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
 
         LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.actionDateParamName);
         if (cancelledOnDate == null) {
@@ -347,7 +347,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         account.setStatus(CurrentAccountStatus.ACTIVE);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
         actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
         actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
         actualChanges.put(CurrentAccountApiConstants.actionDateParamName, fmt.format(activationDate));
@@ -432,7 +432,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         account.setStatus(CurrentAccountStatus.CLOSED);
-        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toEnumOptionData());
+        actualChanges.put(CurrentAccountApiConstants.statusParamName, account.getStatus().toStringEnumOptionData());
         actualChanges.put(CurrentAccountApiConstants.localeParamName, command.locale());
         actualChanges.put(CurrentAccountApiConstants.dateFormatParamName, command.dateFormat());
         actualChanges.put(CurrentAccountApiConstants.actionDateParamName, closedDate.format(fmt));

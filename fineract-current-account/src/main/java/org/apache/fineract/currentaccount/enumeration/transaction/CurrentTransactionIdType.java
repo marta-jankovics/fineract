@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.enumeration.product;
+package org.apache.fineract.currentaccount.enumeration.transaction;
 
 import org.apache.fineract.infrastructure.core.service.DefaultOption;
 

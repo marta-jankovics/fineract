@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.mapstruct.Mapper;
@@ -50,13 +50,13 @@ public interface CurrentTransactionResponseDataMapper {
     }
 
     @Named("transactionType")
-    default EnumOptionData mapTransactionType(CurrentTransactionData data) {
-        return data.getTransactionType().toEnumOptionData();
+    default StringEnumOptionData mapTransactionType(CurrentTransactionData data) {
+        return data.getTransactionType().toStringEnumOptionData();
     }
 
     @Named("transactionEntryType")
-    default EnumOptionData mapTransactionEntryType(CurrentTransactionData data) {
-        return data.getTransactionType().getEntryType().toEnumOptionData();
+    default StringEnumOptionData mapTransactionEntryType(CurrentTransactionData data) {
+        return data.getTransactionType().getEntryType().toStringEnumOptionData();
     }
 
     @Named("mapPaymentTypeData")

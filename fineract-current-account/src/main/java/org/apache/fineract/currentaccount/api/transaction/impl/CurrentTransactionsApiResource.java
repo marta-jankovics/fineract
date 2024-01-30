@@ -53,7 +53,7 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentTransactionIdType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
 import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;

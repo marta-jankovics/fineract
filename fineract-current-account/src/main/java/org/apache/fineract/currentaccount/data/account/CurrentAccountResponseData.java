@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.Data;
-import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
@@ -35,14 +35,14 @@ public class CurrentAccountResponseData implements Serializable {
     private final ExternalId externalId;
     private final Long clientId;
     private final String productId;
-    private final EnumOptionData status;
+    private final StringEnumOptionData status;
     private final LocalDate activatedOnDate;
     private final CurrencyData currency;
     private final Boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
     private final Boolean allowForceTransaction;
     private final BigDecimal minimumRequiredBalance;
-    private final EnumOptionData balanceCalculationType;
+    private final StringEnumOptionData balanceCalculationType;
     private final BigDecimal accountBalance;
     private final BigDecimal holdAmount;
 }
