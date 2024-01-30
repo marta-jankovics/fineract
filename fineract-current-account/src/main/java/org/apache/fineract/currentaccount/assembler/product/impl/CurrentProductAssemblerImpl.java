@@ -65,7 +65,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
         final ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
         final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
-        final String description = command.stringValueOfParameterNamedAllowingNullAllowingNull(DESCRIPTION_PARAM);
+        final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
         final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         final Integer currencyDigitsAfterDecimal = command.integerValueOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
         final Integer currencyInMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM);
