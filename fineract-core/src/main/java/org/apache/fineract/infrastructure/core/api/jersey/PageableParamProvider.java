@@ -57,7 +57,7 @@ public class PageableParamProvider implements ValueParamProvider {
             MultivaluedMap<String, String> queryParameters = request.getUriInfo().getQueryParameters();
             List<Sort.Order> sortingOrders = new ArrayList<>();
             AtomicInteger page = new AtomicInteger(0);
-            AtomicInteger size = new AtomicInteger(50);
+            AtomicInteger size = new AtomicInteger(param.getAnnotation(Pagination.class).size());
             AtomicReference<List<String>> sort = new AtomicReference<>();
             queryParameters.forEach((key, list) -> {
                 switch (key) {
