@@ -19,6 +19,8 @@
 package org.apache.fineract.currentaccount.api.product.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(example = "LAZY")
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
-        public List<DatatableEntriesRequest> datatables;
+        public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
 
         // Accounting
         @Schema(example = "1")
@@ -90,37 +92,27 @@ public final class CurrentProductsApiResourceSwagger {
         }
     }
 
-    public static final class DatatableEntriesRequest {
-
-        private DatatableEntriesRequest() {}
-
-        @Schema(example = "dt_test_datatable", description = "Name of the datatable")
-        public String name;
-        @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
-        public List<Map<String, String>> entries;
-    }
-
     @Schema(description = "CurrentProductDeleteCommandResponse")
-    public static final class CurrentProductDeleteCommandResponse extends CurrentProductPostCommandResponse {
+    public static final class CurrentProductDeleteCommandResponse extends CurrentProductCommandResponse {
 
     }
 
-    @Schema(description = "CurrentProductPostCommandResponse")
-    public static class CurrentProductPostCommandResponse {
+    @Schema(description = "CurrentProductCommandResponse")
+    public static class CurrentProductCommandResponse {
 
         @Schema(example = "7GGBmEwPEf6WgTchzDHnX")
-        public Long resourceIdentifier;
+        public String resourceIdentifier;
         @Schema(example = "95174ff9-1a75-4d72-a413-6f9b1cb988b7")
         public String resourceExternalId;
 
-        private CurrentProductPostCommandResponse() {}
+        private CurrentProductCommandResponse() {}
     }
 
-    @Schema(description = "CurrentProductPutCommandResponse")
-    public static final class CurrentProductPutCommandResponse extends CurrentProductPostCommandResponse {
+    @Schema(description = "CurrentProductUpdateCommandResponse")
+    public static final class CurrentProductUpdateCommandResponse extends CurrentProductCommandResponse {
         @Schema(example = "")
         public Map<String, Object> changes;
 
-        private CurrentProductPutCommandResponse() {}
+        private CurrentProductUpdateCommandResponse() {}
     }
 }

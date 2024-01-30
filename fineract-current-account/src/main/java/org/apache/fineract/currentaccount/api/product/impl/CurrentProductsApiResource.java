@@ -122,7 +122,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
             + "Optional Fields: externalId, currencyInMultiplesOf, overdraftLimit, minimumRequiredBalance, description")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductPostCommandResponse.class)))})
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductCommandResponse.class)))})
     @Override
     public CommandProcessingResult create(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentProduct().withJson(requestJson).build();
@@ -134,7 +134,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductPutCommandResponse.class)))})
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final String productId,
                                           @Parameter(hidden = true) final String requestJson) {
@@ -146,7 +146,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductPutCommandResponse.class)))})
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult update(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
                                           @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,

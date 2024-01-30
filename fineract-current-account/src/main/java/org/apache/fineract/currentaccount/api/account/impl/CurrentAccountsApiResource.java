@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.api.account.impl;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACTIVATE_ACTION;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CANCEL_ACTION;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CLOSE_ACTION;
@@ -48,6 +50,7 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
+import org.apache.fineract.currentaccount.api.product.impl.CurrentProductsApiResourceSwagger;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
@@ -186,6 +189,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Optional Fields: externalId, submittedOnDate\n\n"
             + "Inherited from Product (if not provided): minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountCommandResponse.class)))})
     @Override
     public CommandProcessingResult create(@Parameter(hidden = true) final String requestJson) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createCurrentAccount().withJson(requestJson).build();
@@ -204,6 +209,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult action(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
@@ -223,6 +230,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult action(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
@@ -244,6 +253,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
             + "closedOnDate is closure date of current account\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult action(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
@@ -262,6 +273,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
             @Parameter(hidden = true) final String requestJson) {
@@ -276,6 +289,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult update(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
@@ -292,6 +307,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PutCurrentAccountUpdateRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class)))})
     @Override
     public CommandProcessingResult update(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,

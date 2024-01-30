@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.api.account.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,7 +30,7 @@ public final class CurrentAccountsApiResourceSwagger {
     private CurrentAccountsApiResourceSwagger() {
     }
 
-    @Schema(description = "PostCurrentAccountSubmitRequest")
+    @Schema(description = "CurrentAccountSubmitRequest")
     public static final class PostCurrentAccountSubmitRequest {
 
         @Schema(example = "1")
@@ -57,12 +58,12 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "LAZY")
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
-        public List<DatatableEntriesRequest> datatables;
+        public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         private PostCurrentAccountSubmitRequest() {
         }
     }
 
-    @Schema(description = "PutCurrentAccountUpdateRequest")
+    @Schema(description = "CurrentAccountUpdateRequest")
     public static final class PutCurrentAccountUpdateRequest {
 
         @Schema(example = "en")
@@ -82,12 +83,12 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "LAZY")
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
-        public List<DatatableEntriesRequest> datatables;
+        public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         private PutCurrentAccountUpdateRequest() {
         }
     }
 
-    @Schema(description = "PostCurrentAccountActionRequest")
+    @Schema(description = "CurrentAccountActionRequest")
     public static final class PostCurrentAccountActionRequest {
 
         @Schema(example = "dd MMMM yyyy")
@@ -100,13 +101,24 @@ public final class CurrentAccountsApiResourceSwagger {
         }
     }
 
-    static final class DatatableEntriesRequest {
+    @Schema(description = "CurrentAccountCommandResponse")
+    public static class CurrentAccountCommandResponse {
 
-        @Schema(example = "dt_test_datatable", description = "Name of the datatable")
-        public String name;
-        @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
-        public List<Map<String, String>> entries;
-        private DatatableEntriesRequest() {
-        }
+        @Schema(example = "1")
+        public Long clientId;
+        @Schema(example = "7GGBmEwPEf6WgTchzDHnX")
+        public String resourceIdentifier;
+        @Schema(example = "95174ff9-1a75-4d72-a413-6f9b1cb988b7")
+        public String resourceExternalId;
+
+        private CurrentAccountCommandResponse() {}
+    }
+
+    @Schema(description = "CurrentAccountUpdateCommandResponse")
+    public static final class CurrentAccountUpdateCommandResponse extends CurrentAccountCommandResponse {
+        @Schema(example = "")
+        public Map<String, Object> changes;
+
+        private CurrentAccountUpdateCommandResponse() {}
     }
 }
