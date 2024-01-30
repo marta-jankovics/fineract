@@ -695,7 +695,7 @@ public class SavingsAccountHelper extends IntegrationTest {
     }
 
     public Map<String, Object> querySavingsTransactions(Integer savingsId, PagedLocalRequestAdvancedQueryRequest request) {
-        String response = ok(fineract().savingsTransactions.advancedQuery5(savingsId.longValue(), request));
+        String response = ok(fineract().savingsTransactions.advancedQuery1(savingsId.longValue(), request));
         return JsonPath.from(response).get("");
     }
 

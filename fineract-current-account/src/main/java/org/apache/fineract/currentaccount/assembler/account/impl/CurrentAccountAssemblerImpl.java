@@ -26,6 +26,8 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIERS_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_VALUE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
@@ -63,6 +65,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
+import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
@@ -154,7 +157,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         BalanceCalculationType balanceCalculationType;
         if (command.parameterExists(BALANCE_CALCULATION_TYPE_PARAM)) {
-            balanceCalculationType = BalanceCalculationType.valueOf(command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM));
+            balanceCalculationType = BalanceCalculationType
+                    .valueOf(command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM));
         } else {
             balanceCalculationType = product.getBalanceCalculationType();
         }
@@ -327,7 +331,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-
             baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submitted.state");
 
@@ -460,7 +463,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private void validateDates(Client client, LocalDate submittedOnDate) {
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.SUBMIT_ACTION);
+                .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CREATE_ACTION);
 
         if (DateUtils.isDateInTheFuture(submittedOnDate)) {
             baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate)
@@ -485,38 +488,33 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     private void persistAccountIdentifiers(CurrentAccount account, JsonCommand command) {
-        // TODO CURRENT! check identifiers permission
-        // TODO CURRENT! check maker-checker config for permission
+        // no separate identifiers permission
         if (!command.hasParameter(IDENTIFIERS_PARAM)) {
             return;
         }
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
-
-        JsonArray identifiers = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
-
-        if (identifiers != null) {
-            for (JsonElement itemElement : identifiers) {
-                IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
-                String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
-                InteropIdentifierType identifierType = InteropIdentifierType.resolveName(reformattedKey);
-                if (identifierType != null) {
-                    String value = itemObject.getValue();
-                    String subValue = itemObject.getSubValue();
-                    AccountIdentifier entityAction = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType,
-                            value, subValue, 1L);
-                    accountIdentifierRepository.save(entityAction);
-                } else {
-                    baseDataValidator.reset().parameter(itemObject.getIdType())
-                            .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
-                }
+        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        JsonArray identifierArray = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
+        if (identifierArray == null) {
+            return;
+        }
+        ArrayList<AccountIdentifier> identifiers = new ArrayList<>();
+        for (JsonElement identifierElement : identifierArray) {
+            IdTypeValueSubValueData identifierObject = new Gson().fromJson(identifierElement, IdTypeValueSubValueData.class);
+            String idType = identifierObject.getIdType();
+            InteropIdentifierType identifierType = InteropIdentifierType.resolveName(IdTypeResolver.formatIdType(idType));
+            if (identifierType == null) {
+                validator.reset().parameter(ID_TYPE_PARAM).value(idType).failWithCode("unknown.identifier");
+                continue;
             }
-        }
+            String value = identifierObject.getValue();
+            validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
 
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
+            String subValue = identifierObject.getSubValue();
+            identifiers.add(new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType, value, subValue));
         }
+        validator.throwValidationErrors();
+
+        accountIdentifierRepository.saveAll(identifiers);
     }
 
     private void updateIdentifiers(CurrentAccount account, JsonCommand command, Map<String, Object> actualChanges) {
@@ -524,48 +522,50 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             return;
         }
         actualChanges.computeIfAbsent(IDENTIFIERS_PARAM, k -> new ArrayList<>());
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors);
-        Map<InteropIdentifierType, AccountIdentifier> secondaryIdentifiers = accountIdentifierRepository
+        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        JsonArray identifierArray = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
+        if (identifierArray == null) {
+            return;
+        }
+
+        Map<InteropIdentifierType, AccountIdentifier> existingIdentifiers = accountIdentifierRepository
                 .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
                 .collect(Collectors.toMap(AccountIdentifier::getIdentifierType, Function.identity()));
-        JsonArray identifiers = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
 
-        if (identifiers != null) {
-            for (JsonElement itemElement : identifiers) {
-                IdTypeValueSubValueData itemObject = new Gson().fromJson(itemElement, IdTypeValueSubValueData.class);
-                String reformattedKey = itemObject.getIdType().toUpperCase().replace("-", "_");
-                InteropIdentifierType identifierType = InteropIdentifierType.resolveName(reformattedKey);
-                if (identifierType != null) {
-                    AccountIdentifier accountIdentifier;
-                    if (secondaryIdentifiers.containsKey(identifierType)) {
-                        accountIdentifier = secondaryIdentifiers.get(identifierType);
-                        if (itemObject.isEmpty()) {
-                            accountIdentifierRepository.delete(accountIdentifier);
-                        } else {
-                            accountIdentifier.setValue(itemObject.getValue());
-                            accountIdentifier.setSubValue(itemObject.getSubValue());
-                        }
-                    } else {
-                        if (itemObject.isEmpty()) {
-                            baseDataValidator.reset().parameter(itemObject.getIdType())
-                                    .failWithCodeNoParameterAddedToErrorCode("value.must.be.set");
-                        } else {
-                            accountIdentifier = new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType,
-                                    itemObject.getValue(), itemObject.getSubValue(), 1L);
-                            accountIdentifierRepository.save(accountIdentifier);
-                        }
-                    }
+        ArrayList<AccountIdentifier> identifiersToDelete = new ArrayList<>();
+        ArrayList<AccountIdentifier> identifiersToSave = new ArrayList<>();
+        for (JsonElement identifierElement : identifierArray) {
+            IdTypeValueSubValueData identifierObject = new Gson().fromJson(identifierElement, IdTypeValueSubValueData.class);
+            String idType = identifierObject.getIdType();
+            InteropIdentifierType identifierType = InteropIdentifierType.resolveName(IdTypeResolver.formatIdType(idType));
+            if (identifierType == null) {
+                validator.reset().parameter(ID_TYPE_PARAM).value(idType).failWithCode("unknown.identifier");
+                continue;
+            }
+            String value = identifierObject.getValue();
+            AccountIdentifier accountIdentifier;
+            if (existingIdentifiers.containsKey(identifierType)) {
+                accountIdentifier = existingIdentifiers.get(identifierType);
+                validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
+                if (identifierObject.isEmpty()) {
+                    identifiersToDelete.add(accountIdentifier);
                 } else {
-                    baseDataValidator.reset().parameter(itemObject.getIdType())
-                            .failWithCodeNoParameterAddedToErrorCode("unknown.identifier.found");
+                    accountIdentifier.setValue(value);
+                    accountIdentifier.setSubValue(identifierObject.getSubValue());
                 }
-
-                ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(itemObject);
+            } else {
+                if (identifierObject.isEmpty()) {
+                    validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
+                } else {
+                    identifiersToSave.add(new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType, value,
+                            identifierObject.getSubValue()));
+                }
             }
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(identifierObject);
         }
+        validator.throwValidationErrors();
+
+        accountIdentifierRepository.deleteAll(identifiersToDelete);
+        accountIdentifierRepository.saveAll(identifiersToSave);
     }
 }

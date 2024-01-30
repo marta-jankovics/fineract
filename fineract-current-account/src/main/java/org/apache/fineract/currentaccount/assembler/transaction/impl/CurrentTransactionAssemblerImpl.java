@@ -127,7 +127,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
      * Guaranteed to throw an exception no matter what the data integrity issue is.
      */
     private void handleDataIntegrityIssues(CurrentTransaction transaction, Throwable realCause, Exception dve) {
-        String msgCode = "error.msg." + CurrentAccountApiConstants.CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME;
+        String msgCode = "error.msg." + CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
         String msg = "Unknown data integrity issue with current account.";
         String param = null;
         Object[] msgArgs;

@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.currentaccount.validator.transaction.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
@@ -73,7 +73,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
     public void validateRelease(JsonCommand command) {
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
+                .resource(CURRENT_TRANSACTION_RESOURCE_NAME);
 
         final String holdTransactionId = command.getTransactionId();
         baseDataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
@@ -91,7 +91,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME);
+                .resource(CURRENT_TRANSACTION_RESOURCE_NAME);
 
         if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
             final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);

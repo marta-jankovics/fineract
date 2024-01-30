@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.mapper.product;
 
+import java.util.List;
 import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
@@ -29,8 +30,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
 
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentProductResponseDataMapper {
@@ -70,13 +69,13 @@ public interface CurrentProductResponseDataMapper {
 
     @Named("glAccountMapping")
     default GLAccountDataForLookup glAccountMapping(CurrentProductData currentProductData) {
-        //TODO: implementation
+        // TODO: implementation
         return null;
     }
 
     @Named("paymentChannelMapping")
     default List<PaymentChannelToFundSourceData> paymentChannelMapping(CurrentProductData currentProductData) {
-        //TODO: implementation
+        // TODO: implementation
         return null;
     }
 

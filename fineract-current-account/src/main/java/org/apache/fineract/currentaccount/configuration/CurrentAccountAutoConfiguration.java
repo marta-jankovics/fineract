@@ -147,8 +147,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductWriteService.class)
     public CurrentProductWriteService currentProductWriteService(CurrentProductRepository currentProductRepository,
-                                                                 CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler, EntityManager entityManager) {
-        return new CurrentProductWriteServiceImpl(currentProductRepository, currentProductDataValidator, currentProductAssembler, entityManager);
+            CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler,
+            EntityManager entityManager) {
+        return new CurrentProductWriteServiceImpl(currentProductRepository, currentProductDataValidator, currentProductAssembler,
+                entityManager);
     }
 
     @Bean

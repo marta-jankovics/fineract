@@ -19,11 +19,10 @@
 package org.apache.fineract.currentaccount.api.product.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
 
 public final class CurrentProductsApiResourceSwagger {
 
@@ -110,6 +109,7 @@ public final class CurrentProductsApiResourceSwagger {
 
     @Schema(description = "CurrentProductUpdateCommandResponse")
     public static final class CurrentProductUpdateCommandResponse extends CurrentProductCommandResponse {
+
         @Schema(example = "")
         public Map<String, Object> changes;
 

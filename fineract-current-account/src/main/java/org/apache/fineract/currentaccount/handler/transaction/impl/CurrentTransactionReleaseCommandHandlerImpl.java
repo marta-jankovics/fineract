@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.handler.transaction.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_RELEASE;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
 import org.apache.fineract.currentaccount.handler.transaction.CurrentTransactionReleaseCommandHandler;
@@ -29,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "RELEASE")
+@CommandType(entity = CURRENT_TRANSACTION_ENTITY_NAME, action = ACTION_RELEASE)
 public class CurrentTransactionReleaseCommandHandlerImpl implements CurrentTransactionReleaseCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;

@@ -16,8 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.handler.transaction;
+package org.apache.fineract.currentaccount.handler.account;
 
 import org.apache.fineract.commands.handler.NewCommandSourceHandler;
 
-public interface CurrentTransactionDepositCommandHandler extends NewCommandSourceHandler {}
+public interface CurrentAccountHoldCommandHandler extends NewCommandSourceHandler {}

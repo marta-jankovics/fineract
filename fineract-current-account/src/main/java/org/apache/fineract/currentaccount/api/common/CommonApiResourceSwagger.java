@@ -19,19 +19,19 @@
 package org.apache.fineract.currentaccount.api.common;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 import java.util.Map;
 
 public final class CommonApiResourceSwagger {
 
     public static final class DatatableEntriesRequest {
+
         @Schema(example = "dt_test_datatable", description = "Name of the datatable")
         public String name;
         @Schema(description = "List of entries. An entry is a String column name-value map. For One To Many update entry, the 'id' name-value pair is mandatory.")
         public List<Map<String, String>> entries;
-        private DatatableEntriesRequest() {
-        }
+
+        private DatatableEntriesRequest() {}
     }
 
 }

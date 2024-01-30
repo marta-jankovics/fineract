@@ -25,7 +25,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,7 +40,6 @@ import org.eclipse.persistence.annotations.Converter;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "m_account_identifier")
 @Converter(name = "EmptyStringIfNullConverter", converterClass = EmptyStringIfNullConverter.class)
 public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Long> {
@@ -66,4 +64,13 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
 
     @Version
     private Long version;
+
+    public AccountIdentifier(PortfolioAccountType accountType, String accountId, InteropIdentifierType identifierType, String value,
+            String subValue) {
+        this.accountType = accountType;
+        this.accountId = accountId;
+        this.identifierType = identifierType;
+        this.value = value;
+        this.subValue = subValue;
+    }
 }

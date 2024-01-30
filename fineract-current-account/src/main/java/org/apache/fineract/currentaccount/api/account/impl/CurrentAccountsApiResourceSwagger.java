@@ -19,16 +19,14 @@
 package org.apache.fineract.currentaccount.api.account.impl;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
 
 public final class CurrentAccountsApiResourceSwagger {
 
-    private CurrentAccountsApiResourceSwagger() {
-    }
+    private CurrentAccountsApiResourceSwagger() {}
 
     @Schema(description = "CurrentAccountSubmitRequest")
     public static final class PostCurrentAccountSubmitRequest {
@@ -61,8 +59,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         @Schema(description = "Alternative identifiers")
         public List<CurrentAccountIdentifiers> identifiers;
-        private PostCurrentAccountSubmitRequest() {
-        }
+
+        private PostCurrentAccountSubmitRequest() {}
     }
 
     @Schema(description = "CurrentAccountUpdateRequest")
@@ -88,8 +86,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         @Schema(description = "Alternative identifiers")
         public List<CurrentAccountIdentifiers> identifiers;
-        private PutCurrentAccountUpdateRequest() {
-        }
+
+        private PutCurrentAccountUpdateRequest() {}
     }
 
     @Schema(description = "CurrentAccountActionRequest")
@@ -101,8 +99,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String locale;
         @Schema(example = "05 September 2014")
         public String actionDate;
-        private PostCurrentAccountActionRequest() {
-        }
+
+        private PostCurrentAccountActionRequest() {}
     }
 
     @Schema(description = "CurrentAccountCommandResponse")
@@ -120,6 +118,7 @@ public final class CurrentAccountsApiResourceSwagger {
 
     @Schema(description = "CurrentAccountUpdateCommandResponse")
     public static final class CurrentAccountUpdateCommandResponse extends CurrentAccountCommandResponse {
+
         @Schema(example = "")
         public Map<String, Object> changes;
 
@@ -128,6 +127,7 @@ public final class CurrentAccountsApiResourceSwagger {
 
     @Schema(description = "CurrentAccountIdentifiers")
     public static final class CurrentAccountIdentifiers {
+
         @Schema(example = "iban")
         public String idType;
         @Schema(example = "123456789")

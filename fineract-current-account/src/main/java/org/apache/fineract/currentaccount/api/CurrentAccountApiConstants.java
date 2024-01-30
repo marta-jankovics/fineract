@@ -18,18 +18,24 @@
  */
 package org.apache.fineract.currentaccount.api;
 
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CREATE;
+
 import org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants;
 
 @SuppressWarnings({ "HideUtilityClassConstructor" })
 public class CurrentAccountApiConstants {
 
-    public static final String CURRENT_PRODUCT_RESOURCE_NAME = "currentproduct";
-    public static final String CURRENT_ACCOUNT_RESOURCE_NAME = "currentaccount";
-    public static final String CURRENT_TRANSACTION_RESOURCE_NAME = "currenttransaction";
-    public static final String CURRENT_ACCOUNT_TRANSACTION_RESOURCE_NAME = "currentaccount.transaction";
+    public static final String CURRENT_PRODUCT_ENTITY_NAME = "CURRENTPRODUCT";
+    public static final String CURRENT_ACCOUNT_ENTITY_NAME = "CURRENTACCOUNT";
+    public static final String CURRENT_TRANSACTION_ENTITY_NAME = "CURRENTTRANSACTION";
+    public static final String CURRENT_IDENTIFIER_ENTITY_NAME = "CURRENTIDENTIFIER";
+
+    public static final String CURRENT_PRODUCT_RESOURCE_NAME = CURRENT_PRODUCT_ENTITY_NAME.toLowerCase();
+    public static final String CURRENT_ACCOUNT_RESOURCE_NAME = CURRENT_ACCOUNT_ENTITY_NAME.toLowerCase();
+    public static final String CURRENT_TRANSACTION_RESOURCE_NAME = CURRENT_TRANSACTION_ENTITY_NAME.toLowerCase();
 
     // actions
-    public static final String SUBMIT_ACTION = "submit";
+    public static final String CREATE_ACTION = ACTION_CREATE;
     public static final String CANCEL_ACTION = "cancel";
     public static final String ACTIVATE_ACTION = "activate";
     public static final String MODIFY_ACTION = "modify";
@@ -41,6 +47,7 @@ public class CurrentAccountApiConstants {
     public static final String COMMAND_WITHDRAWAL = "withdrawal";
     public static final String COMMAND_HOLD = "hold";
     public static final String COMMAND_RELEASE = "release";
+    public static final String COMMAND_PARAM_FORCE = "force";
 
     // general
     public static final String LOCALE_PARAM = "locale";
@@ -52,8 +59,10 @@ public class CurrentAccountApiConstants {
     public static final String DATATABLE_ENTRIES_PARAM = DatatableApiConstants.DATATABLE_ENTRIES_PARAM;
     public static final String DATATABLE_ID_PARAM = DatatableApiConstants.DATATABLE_ID_PARAM;
 
-    // query
+    // identifier
     public static final String ID_TYPE_PARAM = "idType";
+    public static final String ID_VALUE_PARAM = "value";
+    public static final String ID_SUBVALUE_PARAM = "subValue";
     public static final String IDENTIFIER_PARAM = "identifier";
     public static final String SUB_IDENTIFIER_PARAM = "subIdentifier";
 

@@ -102,7 +102,7 @@ public class ClientHelper extends IntegrationTest {
     }
 
     public PostClientsResponse createClient(final PostClientsRequest request) {
-        return ok(fineract().clients.create8(request));
+        return ok(fineract().clients.create6(request));
     }
 
     public PageClientSearchData searchClients(String text) {

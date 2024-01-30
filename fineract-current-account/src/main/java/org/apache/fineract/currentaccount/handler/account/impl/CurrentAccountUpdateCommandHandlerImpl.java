@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.handler.account.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_UPDATE;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
 import org.apache.fineract.currentaccount.handler.account.CurrentAccountUpdateCommandHandler;
@@ -28,7 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@CommandType(entity = "CURRENTACCOUNT", action = "UPDATE")
+@CommandType(entity = CURRENT_ACCOUNT_ENTITY_NAME, action = ACTION_UPDATE)
 @RequiredArgsConstructor
 public class CurrentAccountUpdateCommandHandlerImpl implements CurrentAccountUpdateCommandHandler {
 

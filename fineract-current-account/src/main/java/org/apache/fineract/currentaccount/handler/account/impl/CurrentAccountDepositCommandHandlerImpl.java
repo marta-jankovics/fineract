@@ -16,11 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.handler.transaction.impl;
+package org.apache.fineract.currentaccount.handler.account.impl;
+
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_DEPOSIT;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import org.apache.fineract.currentaccount.handler.transaction.CurrentTransactionDepositCommandHandler;
+import org.apache.fineract.currentaccount.handler.account.CurrentAccountDepositCommandHandler;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -28,9 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@CommandType(entity = CURRENT_ACCOUNT_ENTITY_NAME, action = ACTION_DEPOSIT)
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "DEPOSIT")
-public class CurrentTransactionDepositCommandHandlerImpl implements CurrentTransactionDepositCommandHandler {
+public class CurrentAccountDepositCommandHandlerImpl implements CurrentAccountDepositCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 

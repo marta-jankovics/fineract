@@ -41,7 +41,13 @@ public interface CurrentTransactionApi {
     CurrentTransactionResponseData retrieveOne(String accIdType, String accIdentifier, String accSubIdentifier, String idType,
             String identifier);
 
-    CommandProcessingResult transaction(String accountId, String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult transaction(String accountId, String commandParam, Boolean forceParam, String apiRequestBodyAsJson);
+
+    CommandProcessingResult transaction(String idType, String identifier, String commandParam, Boolean forceParam,
+            String apiRequestBodyAsJson);
+
+    CommandProcessingResult transaction(String idType, String identifier, String subIdentifier, String commandParam, Boolean forceParam,
+            String apiRequestBodyAsJson);
 
     CommandProcessingResult action(String accountId, String transactionId, String commandParam, String apiRequestBodyAsJson);
 
@@ -50,6 +56,8 @@ public interface CurrentTransactionApi {
 
     CommandProcessingResult action(String accIdType, String accIdentifier, String accSubIdentifier, String idType, String identifier,
             String commandParam, String apiRequestBodyAsJson);
+
+    Page<JsonObject> advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
     Page<JsonObject> advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 

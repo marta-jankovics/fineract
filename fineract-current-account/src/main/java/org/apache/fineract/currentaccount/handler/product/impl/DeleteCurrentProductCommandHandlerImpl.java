@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.handler.product.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_DELETE;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
 import org.apache.fineract.currentaccount.handler.product.DeleteCurrentProductCommandHandler;
@@ -27,7 +30,7 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.stereotype.Service;
 
 @Service
-@CommandType(entity = "CURRENTPRODUCT", action = "DELETE")
+@CommandType(entity = CURRENT_PRODUCT_ENTITY_NAME, action = ACTION_DELETE)
 @RequiredArgsConstructor
 public class DeleteCurrentProductCommandHandlerImpl implements DeleteCurrentProductCommandHandler {
 

@@ -18,10 +18,14 @@
  */
 package org.apache.fineract.currentaccount.api.account;
 
+import com.google.gson.JsonObject;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
+import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -56,4 +60,13 @@ public interface CurrentAccountsApi {
     CommandProcessingResult update(String idType, String identifier, String requestJson);
 
     CommandProcessingResult update(String idType, String identifier, String subIdentifier, String requestJson);
+
+    Page<JsonObject> advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    Page<JsonObject> advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    Page<JsonObject> advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    Page<JsonObject> advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
+            UriInfo uriInfo);
 }

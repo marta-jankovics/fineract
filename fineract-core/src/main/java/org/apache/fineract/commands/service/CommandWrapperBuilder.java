@@ -18,6 +18,18 @@
  */
 package org.apache.fineract.commands.service;
 
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_ACTIVATE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CANCEL;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CLOSE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CREATE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_DELETE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_DEPOSIT;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_FORCE_WITHDRAWAL;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_HOLDAMOUNT;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_RELEASE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_UPDATE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_WITHDRAWAL;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.infrastructure.accountnumberformat.service.AccountNumberFormatConstants;
@@ -3660,14 +3672,14 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder createCurrentProduct() {
-        this.actionName = "CREATE";
+        this.actionName = ACTION_CREATE;
         this.entityName = "CURRENTPRODUCT";
         this.href = "/currentproducts/template";
         return this;
     }
 
     public CommandWrapperBuilder updateCurrentProduct(final String productId) {
-        this.actionName = "UPDATE";
+        this.actionName = ACTION_UPDATE;
         this.entityName = "CURRENTPRODUCT";
         this.entityIdentifier = productId;
         this.href = "/currentproducts/" + productId;
@@ -3675,7 +3687,7 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder deleteCurrentProduct(final String productId) {
-        this.actionName = "DELETE";
+        this.actionName = ACTION_DELETE;
         this.entityName = "CURRENTPRODUCT";
         this.entityIdentifier = productId;
         this.href = "/currentproducts/" + productId;
@@ -3683,14 +3695,14 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder createCurrentAccount() {
-        this.actionName = "CREATE";
+        this.actionName = ACTION_CREATE;
         this.entityName = "CURRENTACCOUNT";
         this.href = "/currentaccounts/template";
         return this;
     }
 
     public CommandWrapperBuilder updateCurrentAccount(final String accountId) {
-        this.actionName = "UPDATE";
+        this.actionName = ACTION_UPDATE;
         this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId;
@@ -3698,47 +3710,23 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder deleteCurrentAccount(final String accountId) {
-        this.actionName = "DELETE";
+        this.actionName = ACTION_DELETE;
         this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId;
         return this;
     }
 
-    public CommandWrapperBuilder rejectCurrentAccountApplication(final String accountId) {
-        this.actionName = "REJECT";
-        this.entityName = "CURRENTACCOUNT";
-        this.entityIdentifier = accountId;
-        this.href = "/currentaccounts/" + accountId + "?command=reject";
-        return this;
-    }
-
     public CommandWrapperBuilder cancelCurrentAccountApplication(final String accountId) {
-        this.actionName = "CANCEL";
+        this.actionName = ACTION_CANCEL;
         this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=cancel";
         return this;
     }
 
-    public CommandWrapperBuilder approveCurrentAccountApplication(final String accountId) {
-        this.actionName = "APPROVE";
-        this.entityName = "CURRENTACCOUNT";
-        this.entityIdentifier = accountId;
-        this.href = "/currentaccounts/" + accountId + "?command=approve";
-        return this;
-    }
-
-    public CommandWrapperBuilder undoCurrentAccountApplication(final String accountId) {
-        this.actionName = "APPROVALUNDO";
-        this.entityName = "CURRENTACCOUNT";
-        this.entityIdentifier = accountId;
-        this.href = "/currentaccounts/" + accountId + "?command=undoApproval";
-        return this;
-    }
-
-    public CommandWrapperBuilder currentAccountActivation(final String accountId) {
-        this.actionName = "ACTIVATE";
+    public CommandWrapperBuilder activateCurrentAccount(final String accountId) {
+        this.actionName = ACTION_ACTIVATE;
         this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=activate";
@@ -3746,39 +3734,39 @@ public class CommandWrapperBuilder {
     }
 
     public CommandWrapperBuilder closeCurrentAccountApplication(final String accountId) {
-        this.actionName = "CLOSE";
+        this.actionName = ACTION_CLOSE;
         this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "?command=close";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionDeposit(final String accountId) {
-        this.actionName = "DEPOSIT";
-        this.entityName = "CURRENTTRANSACTION";
+    public CommandWrapperBuilder currentAccountDeposit(final String accountId) {
+        this.actionName = ACTION_DEPOSIT;
+        this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionWithdrawal(final String accountId) {
-        this.actionName = "WITHDRAWAL";
-        this.entityName = "CURRENTTRANSACTION";
+    public CommandWrapperBuilder currentAccountWithdrawal(final String accountId, boolean force) {
+        this.actionName = force ? ACTION_FORCE_WITHDRAWAL : ACTION_WITHDRAWAL;
+        this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
-    public CommandWrapperBuilder currentTransactionHold(final String accountId) {
-        this.actionName = "HOLD";
-        this.entityName = "CURRENTTRANSACTION";
+    public CommandWrapperBuilder currentAccountHold(final String accountId) {
+        this.actionName = ACTION_HOLDAMOUNT;
+        this.entityName = "CURRENTACCOUNT";
         this.entityIdentifier = accountId;
         this.href = "/currentaccounts/" + accountId + "/transactions";
         return this;
     }
 
     public CommandWrapperBuilder currentTransactionRelease(final String accountId, final String transactionId) {
-        this.actionName = "RELEASE";
+        this.actionName = ACTION_RELEASE;
         this.entityName = "CURRENTTRANSACTION";
         this.entityIdentifier = accountId;
         this.transactionId = transactionId;

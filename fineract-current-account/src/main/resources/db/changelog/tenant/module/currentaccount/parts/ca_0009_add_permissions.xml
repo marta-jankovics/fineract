@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership. The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+<!--    Current Product -->
+    <changeSet author="fineract" id="1">
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="CREATE_CURRENTPRODUCT"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="CREATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="CREATE_CURRENTPRODUCT_CHECKER"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="CREATE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="DELETE_CURRENTPRODUCT"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="DELETE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="DELETE_CURRENTPRODUCT_CHECKER"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="DELETE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="READ_CURRENTPRODUCT"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="UPDATE_CURRENTPRODUCT"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="UPDATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="organisation"/>
+            <column name="code" value="UPDATE_CURRENTPRODUCT_CHECKER"/>
+            <column name="entity_name" value="CURRENTPRODUCT"/>
+            <column name="action_name" value="UPDATE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+<!--    Current Account -->
+    <changeSet author="fineract" id="2">
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="ACTIVATE_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="ACTIVATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="ACTIVATE_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="ACTIVATE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="CLOSE_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="CLOSE"/>
+            <column name="can_maker_checker" valueBoolean="true"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="CLOSE_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="CLOSE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="CREATE_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="CREATE"/>
+            <column name="can_maker_checker" valueBoolean="true"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="CREATE_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="CREATE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="DELETE_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="DELETE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="DELETE_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="DELETE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="DEPOSIT_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="DEPOSIT"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="DEPOSIT_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="DEPOSIT_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="HOLDAMOUNT_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="HOLDAMOUNT"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="HOLDAMOUNT_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="HOLDAMOUNT_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="READ_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="UPDATE_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="UPDATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="UPDATE_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="UPDATE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="WITHDRAWAL_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="WITHDRAWAL"/>
+            <column name="can_maker_checker" valueBoolean="true"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="WITHDRAWAL_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="WITHDRAWAL_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="FORCEWITHDRAWAL_CURRENTACCOUNT"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="FORCEWITHDRAWAL"/>
+            <column name="can_maker_checker" valueBoolean="true"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="FORCEWITHDRAWAL_CURRENTACCOUNT_CHECKER"/>
+            <column name="entity_name" value="CURRENTACCOUNT"/>
+            <column name="action_name" value="FORCEWITHDRAWAL_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+    <!--    Current Transaction -->
+    <changeSet author="fineract" id="3">
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="READ_CURRENTTRANSACTION"/>
+            <column name="entity_name" value="CURRENTTRANSACTION"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="RELEASE_CURRENTTRANSACTION"/>
+            <column name="entity_name" value="CURRENTTRANSACTION"/>
+            <column name="action_name" value="RELEASE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="RELEASE_CURRENTTRANSACTION_CHECKER"/>
+            <column name="entity_name" value="CURRENTTRANSACTION"/>
+            <column name="action_name" value="RELEASE_CHECKER"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+    <!--    Current Identifier -->
+    <changeSet author="fineract" id="3">
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="READ_CURRENTIDENTIFIER"/>
+            <column name="entity_name" value="CURRENTIDENTIFIER"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -27,7 +27,7 @@
   <include relativeToChangelogFile="true" file="parts/ca_0002_current_account.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0003_current_transaction.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0004_command_source.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0005_current_account_balance_snapshot.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0005_current_account_balance.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0006_current_account_balance_calculation_job.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0007_entity_action.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0008_account_identifier.xml"/>

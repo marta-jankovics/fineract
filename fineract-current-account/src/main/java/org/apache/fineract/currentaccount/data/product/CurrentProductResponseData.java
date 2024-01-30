@@ -18,14 +18,13 @@
  */
 package org.apache.fineract.currentaccount.data.product;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.Data;
 import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 public class CurrentProductResponseData implements Serializable {

@@ -16,11 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.handler.transaction.impl;
+package org.apache.fineract.currentaccount.handler.account.impl;
+
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_HOLDAMOUNT;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import org.apache.fineract.currentaccount.handler.transaction.CurrentTransactionHoldCommandHandler;
+import org.apache.fineract.currentaccount.handler.account.CurrentAccountHoldCommandHandler;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -28,9 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@CommandType(entity = CURRENT_ACCOUNT_ENTITY_NAME, action = ACTION_HOLDAMOUNT)
 @RequiredArgsConstructor
-@CommandType(entity = "CURRENTTRANSACTION", action = "HOLD")
-public class CurrentTransactionHoldCommandHandlerImpl implements CurrentTransactionHoldCommandHandler {
+public class CurrentAccountHoldCommandHandlerImpl implements CurrentAccountHoldCommandHandler {
 
     private final CurrentTransactionWriteService writePlatformService;
 

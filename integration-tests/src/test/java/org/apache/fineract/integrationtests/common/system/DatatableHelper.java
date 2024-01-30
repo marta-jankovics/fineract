@@ -106,7 +106,7 @@ public class DatatableHelper extends IntegrationTest {
     }
 
     public Map<String, Object> queryDatatable(String dataTableName, PagedLocalRequestAdvancedQueryData request) {
-        String response = ok(fineract().dataTables.advancedQuery4(dataTableName, request));
+        String response = ok(fineract().dataTables.advancedQuery(dataTableName, request));
         return JsonPath.from(response).get("");
     }
 

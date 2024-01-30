@@ -29,11 +29,12 @@ public enum InteropIdentifierType {
     MSISDN(), //
     EMAIL(), //
     PERSONAL_ID("PERSONALID"), //
-    BUSINESS("BBAN"), //
+    BUSINESS(), //
     DEVICE(), //
     ACCOUNT_ID("ACCOUNTID"), //
     IBAN(), //
     ALIAS(), //
+    BBAN(), //
     ; //
 
     private static final Map<String, InteropIdentifierType> BY_ALIAS = Arrays.stream(values())
