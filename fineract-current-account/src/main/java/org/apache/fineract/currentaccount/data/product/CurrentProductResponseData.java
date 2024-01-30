@@ -20,7 +20,12 @@ package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
+import org.apache.fineract.currentaccount.api.product.impl.CurrentProductsApiResourceSwagger;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
@@ -39,4 +44,13 @@ public class CurrentProductResponseData implements Serializable {
     private final BigDecimal minimumRequiredBalance;
     private final Boolean allowForceTransaction;
     private final StringEnumOptionData balanceCalculationType;
+
+    public GLAccountDataForLookup controlAccountId;
+    public GLAccountDataForLookup referenceAccountId;
+    public GLAccountDataForLookup overdraftAccountId;
+    public GLAccountDataForLookup transfersInSuspenseAccountId;
+    public GLAccountDataForLookup writeOffAccountId;
+    public GLAccountDataForLookup incomeFromFee;
+    public GLAccountDataForLookup incomeFromPenalty;
+    public List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
 }
