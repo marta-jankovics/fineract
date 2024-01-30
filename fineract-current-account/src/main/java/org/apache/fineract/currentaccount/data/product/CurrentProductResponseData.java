@@ -42,12 +42,12 @@ public class CurrentProductResponseData implements Serializable {
     private final Boolean allowForceTransaction;
     private final StringEnumOptionData balanceCalculationType;
 
-    public GLAccountDataForLookup controlAccountId;
-    public GLAccountDataForLookup referenceAccountId;
-    public GLAccountDataForLookup overdraftAccountId;
-    public GLAccountDataForLookup transfersInSuspenseAccountId;
-    public GLAccountDataForLookup writeOffAccountId;
-    public GLAccountDataForLookup incomeFromFee;
-    public GLAccountDataForLookup incomeFromPenalty;
-    public List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
+    private GLAccountDataForLookup controlAccountId;
+    private GLAccountDataForLookup referenceAccountId;
+    private GLAccountDataForLookup overdraftAccountId;
+    private GLAccountDataForLookup transfersInSuspenseAccountId;
+    private GLAccountDataForLookup writeOffAccountId;
+    private GLAccountDataForLookup incomeFromFee;
+    private GLAccountDataForLookup incomeFromPenalty;
+    private List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
 }

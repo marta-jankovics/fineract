@@ -94,8 +94,6 @@ import org.apache.fineract.infrastructure.core.service.database.DatabaseType;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseTypeResolver;
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant;
-import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryData;
-import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
 import org.apache.fineract.infrastructure.dataqueries.data.DataTableValidator;
 import org.apache.fineract.infrastructure.dataqueries.data.DatatableData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
@@ -109,6 +107,8 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.infrastructure.security.service.SqlInjectionPreventerService;
 import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
+import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
+import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;

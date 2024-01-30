@@ -32,7 +32,6 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
 import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
-import org.apache.fineract.infrastructure.dataqueries.data.ColumnFilterData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData;
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
@@ -40,6 +39,7 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.portfolio.savings.SavingsAccountTransactionType;
 import org.apache.fineract.portfolio.savings.data.SavingsAccountTransactionData;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountReadPlatformServiceImpl;
+import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.TransactionSearchRequest;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.jetbrains.annotations.Nullable;

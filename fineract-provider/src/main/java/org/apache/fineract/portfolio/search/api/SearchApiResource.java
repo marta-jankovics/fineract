@@ -93,7 +93,7 @@ public class SearchApiResource {
 
         final SearchConditions searchConditions = new SearchConditions(query, resource, exactMatch);
 
-        final Collection<SearchData> searchResults = this.searchReadPlatformService.retriveMatchingData(searchConditions);
+        final Collection<SearchData> searchResults = this.searchReadPlatformService.retrieveMatchingData(searchConditions);
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
         return this.toApiJsonSerializer.serialize(settings, searchResults, SEARCH_RESPONSE_PARAMETERS);

@@ -26,10 +26,10 @@ import java.util.Locale;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
-import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryData;
 import org.apache.fineract.infrastructure.dataqueries.data.DatatableData;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.data.GenericResultsetData;
+import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 

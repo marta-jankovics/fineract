@@ -27,6 +27,7 @@ dependencies {
     implementation(project(path: ':fineract-core'))
     implementation(project(path: ':fineract-investor'))
     implementation(project(path: ':fineract-loan'))
+    implementation(project(path: ':fineract-savings'))
     implementation(project(path: ':fineract-current-account'))
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 
@@ -106,7 +107,7 @@ dependencies {
             'io.github.resilience4j:resilience4j-spring-boot3',
             )
 
-    implementation ('software.amazon.msk:aws-msk-iam-auth:2.0.2') {
+    implementation ('software.amazon.msk:aws-msk-iam-auth:2.0.3') {
         exclude group: 'commons-logging'
     }
 

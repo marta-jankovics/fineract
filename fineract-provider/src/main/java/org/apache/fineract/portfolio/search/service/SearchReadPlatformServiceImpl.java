@@ -58,7 +58,7 @@ public class SearchReadPlatformServiceImpl implements SearchReadPlatformService 
     private final DatabaseSpecificSQLGenerator sqlGenerator;
 
     @Override
-    public Collection<SearchData> retriveMatchingData(final SearchConditions searchConditions) {
+    public Collection<SearchData> retrieveMatchingData(final SearchConditions searchConditions) {
         final AppUser currentUser = context.authenticatedUser();
         final String hierarchy = currentUser.getOffice().getHierarchy();
 

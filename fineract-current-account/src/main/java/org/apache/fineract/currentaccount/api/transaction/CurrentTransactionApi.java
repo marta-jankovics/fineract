@@ -24,7 +24,7 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionRes
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
-import org.apache.fineract.infrastructure.dataqueries.data.AdvancedQueryRequest;
+import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

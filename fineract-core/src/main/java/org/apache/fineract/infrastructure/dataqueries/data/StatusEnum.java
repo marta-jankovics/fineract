@@ -18,9 +18,7 @@
  */
 package org.apache.fineract.infrastructure.dataqueries.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
@@ -54,14 +52,6 @@ public enum StatusEnum {
     StatusEnum(String name, Integer code) {
         this.name = name;
         this.value = code;
-    }
-
-    public static List<DatatableCheckStatusData> getStatusList() {
-        List<DatatableCheckStatusData> data = new ArrayList<>();
-        for (StatusEnum status : VALUES) {
-            data.add(new DatatableCheckStatusData(status.name, status.value));
-        }
-        return data;
     }
 
     public static StatusEnum fromInt(final Integer value) {
