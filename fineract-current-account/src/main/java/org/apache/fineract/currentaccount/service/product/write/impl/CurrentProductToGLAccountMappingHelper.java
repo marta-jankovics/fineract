@@ -110,20 +110,20 @@ public class CurrentProductToGLAccountMappingHelper {
 
     public void updatePaymentChannelToFundSourceMappings(final JsonCommand command, final CurrentProduct product,
             final Map<String, Object> changes) {
-        // find all existing payment Channel to Fund source Mappings
-        final List<ProductToGLAccountMapping> existingPaymentChannelToFundSourceMappings = this.accountMappingRepository
-                .findAllPaymentTypeToFundSourceMappings(product.getId(), PortfolioProductType.CURRENT.getValue());
         final JsonArray paymentChannelMappingArray = command.arrayOfParameterNamed(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM);
-        /**
-         * Variable stores a map representation of Payment channels (key) and their fund sources (value) extracted from
-         * the passed in Jsoncommand
-         **/
-        final Map<Long, Long> inputPaymentChannelFundSourceMap = new HashMap<>();
-        /***
-         * Variable stores all payment types which have already been mapped to Fund Sources in the system
-         **/
-        final Set<Long> existingPaymentTypes = new HashSet<>();
         if (paymentChannelMappingArray != null) {
+            // find all existing payment Channel to Fund source Mappings
+            final List<ProductToGLAccountMapping> existingPaymentChannelToFundSourceMappings = this.accountMappingRepository
+                    .findAllPaymentTypeToFundSourceMappings(product.getId(), PortfolioProductType.CURRENT.getValue());
+            /**
+             * Variable stores a map representation of Payment channels (key) and their fund sources (value) extracted
+             * from the passed in Jsoncommand
+             **/
+            final Map<Long, Long> inputPaymentChannelFundSourceMap = new HashMap<>();
+            /***
+             * Variable stores all payment types which have already been mapped to Fund Sources in the system
+             **/
+            final Set<Long> existingPaymentTypes = new HashSet<>();
             if (changes != null) {
                 changes.put(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM,
                         command.jsonFragment(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM));
@@ -168,30 +168,39 @@ public class CurrentProductToGLAccountMappingHelper {
 
     public void handleChangesToCurrentProductProductToGLAccountMappings(final CurrentProduct product, final JsonCommand command,
             final Map<String, Object> changes) {
-
         // asset
-        updateCurrentProductAccountMappingChanges(command, REFERENCE_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.REFERENCE,
-                changes);
-
-        updateCurrentProductAccountMappingChanges(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.OVERDRAFT_CONTROL, changes);
+        if (command.hasParameter(REFERENCE_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, REFERENCE_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.REFERENCE,
+                    changes);
+        }
+        if (command.hasParameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.OVERDRAFT_CONTROL, changes);
+        }
 
         // income
-        updateCurrentProductAccountMappingChanges(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.INCOME_FROM_FEES, changes);
-
-        updateCurrentProductAccountMappingChanges(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.INCOME_FROM_PENALTIES, changes);
-
+        if (command.hasParameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.INCOME_FROM_FEES, changes);
+        }
+        if (command.hasParameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.INCOME_FROM_PENALTIES, changes);
+        }
         // expenses
-        updateCurrentProductAccountMappingChanges(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.LOSSES_WRITTEN_OFF, changes);
-
+        if (command.hasParameter(WRITE_OFF_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.LOSSES_WRITTEN_OFF, changes);
+        }
         // liability
-        updateCurrentProductAccountMappingChanges(command, CONTROL_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.CONTROL, changes);
-        updateCurrentProductAccountMappingChanges(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.TRANSFERS_SUSPENSE, changes);
-
+        if (command.hasParameter(CONTROL_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, CONTROL_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.CONTROL,
+                    changes);
+        }
+        if (command.hasParameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM)) {
+            updateCurrentProductAccountMappingChanges(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.TRANSFERS_SUSPENSE, changes);
+        }
     }
 
     public void deleteProductToGLAccountMapping(final CurrentProduct product) {

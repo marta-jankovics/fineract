@@ -127,7 +127,7 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
                     isMakerChecker);
         } catch (Throwable t) { // NOSONAR
             RuntimeException mappable = ErrorHandler.getMappable(t);
-            ErrorInfo errorInfo = commandSourceService.generateErrorInfo(mappable);
+            ErrorInfo errorInfo = commandSourceService.generateErrorInfo(t);
             Integer statusCode = errorInfo.getStatusCode();
             commandSource.setResultStatusCode(statusCode);
             commandSource.setResult(errorInfo.getMessage());

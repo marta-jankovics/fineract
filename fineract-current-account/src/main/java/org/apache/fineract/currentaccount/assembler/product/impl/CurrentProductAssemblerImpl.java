@@ -205,33 +205,34 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     }
 
     private void persistAccountingRules(CurrentProduct product, JsonCommand command) {
-        // asset
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, REFERENCE_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.REFERENCE);
+        if (product.getAccountingType().equals(AccountingRuleType.CASH_BASED)) {
+            // asset
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, REFERENCE_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.REFERENCE);
 
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.OVERDRAFT_CONTROL);
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.OVERDRAFT_CONTROL);
 
-        // income
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.INCOME_FROM_FEES);
+            // income
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.INCOME_FROM_FEES);
 
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.INCOME_FROM_PENALTIES);
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM,
+                    product, CurrentProductCashAccounts.INCOME_FROM_PENALTIES);
 
-        // expenses
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.LOSSES_WRITTEN_OFF);
+            // expenses
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.LOSSES_WRITTEN_OFF);
 
-        // liability
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, CONTROL_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.CONTROL);
+            // liability
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, CONTROL_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashAccounts.CONTROL);
 
-        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, product,
-                CurrentProductCashAccounts.TRANSFERS_SUSPENSE);
+            currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM,
+                    product, CurrentProductCashAccounts.TRANSFERS_SUSPENSE);
 
-        // advanced accounting mappings
-        currentProductToGLAccountMappingHelper.savePaymentChannelToFundSourceMappings(command, product, null);
+            // advanced accounting mappings
+            currentProductToGLAccountMappingHelper.savePaymentChannelToFundSourceMappings(command, product, null);
+        }
     }
-
 }
