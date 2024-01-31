@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.assembler.transaction.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
 import static org.apache.fineract.infrastructure.core.filters.CorrelationHeaderFilter.CORRELATION_ID_KEY;
 
@@ -98,7 +99,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (transactionDate == null) {
             transactionDate = DateUtils.getBusinessLocalDate();
         }
-        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_DATE_PARAM);
+        final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_AMOUNT_PARAM);
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null,
