@@ -23,16 +23,13 @@ import static org.apache.fineract.portfolio.PortfolioProductType.SAVING;
 import static org.apache.fineract.portfolio.savings.statement.data.SavingsStatementData.STATEMENT_TYPE_ALL;
 import static org.apache.fineract.portfolio.savings.statement.data.SavingsStatementData.STATEMENT_TYPE_BOOKED;
 import static org.apache.fineract.portfolio.savings.statement.data.SavingsStatementData.STATEMENT_TYPE_PENDING;
-import static org.apache.fineract.portfolio.statement.domain.StatementType.CAMT053;
+import static org.apache.fineract.statement.domain.StatementType.CAMT053;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.constraints.NotNull;
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoField;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,15 +51,16 @@ import org.apache.fineract.portfolio.savings.exception.SavingsAccountNotFoundExc
 import org.apache.fineract.portfolio.savings.statement.data.SavingsCamt053Data;
 import org.apache.fineract.portfolio.savings.statement.data.SavingsMetaData;
 import org.apache.fineract.portfolio.savings.statement.data.SavingsStatementData;
-import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
-import org.apache.fineract.portfolio.statement.data.camt053.GroupHeaderData;
-import org.apache.fineract.portfolio.statement.domain.AccountStatement;
-import org.apache.fineract.portfolio.statement.domain.AccountStatementRepository;
-import org.apache.fineract.portfolio.statement.domain.AccountStatementResult;
-import org.apache.fineract.portfolio.statement.domain.AccountStatementResultRepository;
-import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
-import org.apache.fineract.portfolio.statement.domain.StatementType;
+import org.apache.fineract.statement.data.AccountStatementGenerationData;
+import org.apache.fineract.statement.data.camt053.GroupHeaderData;
+import org.apache.fineract.statement.domain.AccountStatement;
+import org.apache.fineract.statement.domain.AccountStatementRepository;
+import org.apache.fineract.statement.domain.AccountStatementResult;
+import org.apache.fineract.statement.domain.AccountStatementResultRepository;
+import org.apache.fineract.statement.domain.StatementPublishType;
+import org.apache.fineract.statement.domain.StatementType;
 import org.apache.fineract.statement.service.AccountStatementGenerationWriteServiceImpl;
+import org.apache.fineract.statement.service.SavingsStatementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +94,7 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
     @Override
     protected AccountStatementResult generateResult(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType, @NotNull List<AccountStatementGenerationData> generationBatch,
-            @NotNull HashMap<Long, AccountStatement> statements) {
+            @NotNull Map<Long, AccountStatement> statements) {
         OffsetDateTime creationDateTime = DateUtils.getAuditOffsetDateTime();
         String messageId = UUID.randomUUID().toString();
         GroupHeaderData headerData = new GroupHeaderData(messageId, creationDateTime);
@@ -202,15 +200,8 @@ public class SavingsStatementGenerationWriteServiceImpl extends AccountStatement
     }
 
     @NotNull
-    private static String calcResultPath(@NotNull SavingsCamt053Data camt053, @NotNull LocalDate transactionDate) {
+    private String calcResultPath(@NotNull SavingsCamt053Data camt053, @NotNull LocalDate transactionDate) {
         Boolean conversionAccount = camt053.isConversionAccount();
-        int year = transactionDate.get(ChronoField.YEAR);
-        int month = transactionDate.get(ChronoField.MONTH_OF_YEAR);
-        int day = transactionDate.get(ChronoField.DAY_OF_MONTH);
-        String path = year + File.separator + year + '-' + month + File.separator + year + '-' + month + '-' + day;
-        if (conversionAccount != null) {
-            path += File.separator + (conversionAccount ? "conversion_account" : "disposal_account");
-        }
-        return path;
+        return calcResultPath(conversionAccount ? "conversion_account" : "disposal_account", transactionDate);
     }
 }

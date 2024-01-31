@@ -83,10 +83,10 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
 
         for (CurrentTransaction currentTransactionData : currentTransactionDataList) {
             switch (currentTransactionData.getTransactionType()) {
-                case DEPOSIT -> accountBalance = accountBalance.add(currentTransactionData.getTransactionAmount());
-                case WITHDRAWAL -> accountBalance = accountBalance.subtract(currentTransactionData.getTransactionAmount());
-                case AMOUNT_HOLD -> holdAmount = holdAmount.add(currentTransactionData.getTransactionAmount());
-                case AMOUNT_RELEASE -> holdAmount = holdAmount.subtract(currentTransactionData.getTransactionAmount());
+                case DEPOSIT -> accountBalance = accountBalance.add(currentTransactionData.getAmount());
+                case WITHDRAWAL -> accountBalance = accountBalance.subtract(currentTransactionData.getAmount());
+                case AMOUNT_HOLD -> holdAmount = holdAmount.add(currentTransactionData.getAmount());
+                case AMOUNT_RELEASE -> holdAmount = holdAmount.subtract(currentTransactionData.getAmount());
                 default -> throw new UnsupportedOperationException(currentTransactionData.getTransactionType().toString());
             }
             calculatedTillDate = currentTransactionData.getCreatedDateTime();

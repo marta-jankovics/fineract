@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.portfolio.savings.data;
 
-import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import java.util.Arrays;
 import java.util.HashSet;

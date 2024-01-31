@@ -19,7 +19,8 @@
 package org.apache.fineract.portfolio.savings.service;
 
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
-import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL;
+import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -87,7 +88,7 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductRepository;
 import org.apache.fineract.portfolio.savings.exception.SavingsProductNotFoundException;
-import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
+import org.apache.fineract.statement.service.SavingsStatementService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -181,8 +182,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimAccount = gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO,
-                                    Long.valueOf(1), true, SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(),
-                                    applicationId);
+                                    Long.valueOf(1), true, SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimAccount);
                             this.savingAccountRepository.saveAndFlush(account);
 
@@ -191,7 +191,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO, Long.valueOf(1), true,
-                                    SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
+                                    SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimRepository.findOneByAccountNumber(accountNumber));
                             this.savingAccountRepository.saveAndFlush(account);
                         }
@@ -212,7 +212,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO, Long.valueOf(1), true,
-                                    SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
+                                    SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimAccount);
                             this.savingAccountRepository.saveAndFlush(account);
                         }
@@ -498,7 +498,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             if (result != null) {
                 count++;
                 if (count == parentSavings.getChildAccountsCount()) {
-                    parentSavings.setSavingsStatus(SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue());
+                    parentSavings.setSavingsStatus(SUBMITTED_AND_PENDING_APPROVAL.getValue());
                     gsimRepository.save(parentSavings);
                 }
             }
@@ -694,7 +694,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
      * Guaranteed to throw an exception no matter what the data integrity issue is.
      */
     private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
-        String msgCode = "error.msg." + SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
+        String msgCode = "error.msg." + SAVINGS_ACCOUNT_RESOURCE_NAME;
         String msg = "Unknown data integrity issue with savings account.";
         String param = null;
         Object[] msgArgs;

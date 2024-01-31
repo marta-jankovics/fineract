@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.portfolio.statement.data.camt053.EnvelopeData;
+import org.apache.fineract.statement.data.camt053.EnvelopeData;
 
 @Getter
 @AllArgsConstructor

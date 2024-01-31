@@ -23,15 +23,16 @@ import java.util.Map;
 import lombok.Getter;
 import org.apache.fineract.portfolio.paymentdetail.domain.PaymentDetail;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
-import org.apache.fineract.portfolio.statement.data.camt053.BalanceAmountData;
-import org.apache.fineract.portfolio.statement.data.camt053.EntryDetailsData;
-import org.apache.fineract.portfolio.statement.data.camt053.PartyData;
-import org.apache.fineract.portfolio.statement.data.camt053.RelatedAccountData;
-import org.apache.fineract.portfolio.statement.data.camt053.RemittanceInfoData;
-import org.apache.fineract.portfolio.statement.data.camt053.SupplementaryData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionDetailsData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionPartiesData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionReferencesData;
+import org.apache.fineract.statement.data.SavingsTransactionEnvelopeData;
+import org.apache.fineract.statement.data.camt053.BalanceAmountData;
+import org.apache.fineract.statement.data.camt053.EntryDetailsData;
+import org.apache.fineract.statement.data.camt053.PartyData;
+import org.apache.fineract.statement.data.camt053.RelatedAccountData;
+import org.apache.fineract.statement.data.camt053.RemittanceInfoData;
+import org.apache.fineract.statement.data.camt053.SupplementaryData;
+import org.apache.fineract.statement.data.camt053.TransactionDetailsData;
+import org.apache.fineract.statement.data.camt053.TransactionPartiesData;
+import org.apache.fineract.statement.data.camt053.TransactionReferencesData;
 
 @Getter
 public class SavingsEntryDetailsData extends EntryDetailsData {

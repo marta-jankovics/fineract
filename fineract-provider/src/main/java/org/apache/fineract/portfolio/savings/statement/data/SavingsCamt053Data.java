@@ -28,9 +28,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import org.apache.fineract.portfolio.statement.data.camt053.Camt053Data;
-import org.apache.fineract.portfolio.statement.data.camt053.GroupHeaderData;
-import org.apache.fineract.portfolio.statement.data.camt053.StatementData;
+import org.apache.fineract.statement.data.camt053.Camt053Data;
+import org.apache.fineract.statement.data.camt053.GroupHeaderData;
+import org.apache.fineract.statement.data.camt053.StatementData;
 import org.apache.logging.log4j.util.Strings;
 
 @Getter

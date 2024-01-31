@@ -33,7 +33,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.fineract.portfolio.statement.data.camt053.StatementMetaData;
+import org.apache.fineract.statement.data.camt053.StatementMetaData;
 
 @Getter
 @AllArgsConstructor

@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.savings.statement.service;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,12 +38,13 @@ import org.apache.fineract.portfolio.savings.SavingsAccountTransactionType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
-import org.apache.fineract.portfolio.statement.data.AccountStatementData;
-import org.apache.fineract.portfolio.statement.data.StatementParser;
-import org.apache.fineract.portfolio.statement.domain.AccountStatement;
-import org.apache.fineract.portfolio.statement.domain.AccountStatementRepository;
-import org.apache.fineract.portfolio.statement.domain.ProductStatementRepository;
+import org.apache.fineract.statement.data.AccountStatementData;
+import org.apache.fineract.statement.data.StatementParser;
+import org.apache.fineract.statement.domain.AccountStatement;
+import org.apache.fineract.statement.domain.AccountStatementRepository;
+import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.service.AccountStatementServiceImpl;
+import org.apache.fineract.statement.service.SavingsStatementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -75,9 +77,10 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
 
     @Override
     @NotNull
-    protected AccountStatementData createDefaultAccountStatementData(Long accountId) {
-        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(accountId);
-        HashMap<String, Object> accountDetails = retrieveAccountDetails(account.clientId(), accountId);
+    protected AccountStatementData createDefaultAccountStatementData(Serializable accountId) {
+        // TODO CURRENT!
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection((Long) accountId);
+        HashMap<String, Object> accountDetails = retrieveAccountDetails(account.clientId(), (Long) accountId);
         String prefix = null;
         if (accountDetails != null) {
             boolean isConversionAccount = String.valueOf(accountId).equals(accountDetails.get("conversion_account_id"));
@@ -87,13 +90,15 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     }
 
     @Override
-    protected List<Long> getAccountIds(Long productId, PortfolioProductType productType) {
-        return savingsAccountRepository.findByProductId(productId).stream().map(SavingsAccount::getId).toList();
+    protected List<Serializable> getAccountIds(Serializable productId, PortfolioProductType productType) {
+        // TODO CURRENT!
+        return (List) savingsAccountRepository.findByProductId((Long) productId).stream().map(SavingsAccount::getId).toList();
     }
 
     @Override
-    protected boolean preStatementCreate(@NotNull Long accountId) {
-        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(accountId);
+    protected boolean preStatementCreate(@NotNull Serializable accountId) {
+        // TODO CURRENT!
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection((Long) accountId);
         return !account.isClosed();
     }
 

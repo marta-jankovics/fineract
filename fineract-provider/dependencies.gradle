@@ -29,6 +29,7 @@ dependencies {
     implementation(project(path: ':fineract-loan'))
     implementation(project(path: ':fineract-savings'))
     implementation(project(path: ':fineract-current-account'))
+    implementation(project(path: ':fineract-statement'))
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 
     // Never use "compile" scope, but make all dependencies either 'implementation', 'runtimeOnly' or 'testCompile'.
@@ -37,9 +38,7 @@ dependencies {
 
     // implementation dependencies are directly used (compiled against) in src/main (and src/test)
     //
-    implementation(
-            project(path: ':fineract-avro-schemas')
-            )
+    implementation(project(path: ':fineract-avro-schemas'))
     implementation(
             'org.springframework.boot:spring-boot-starter-web',
             'org.springframework.boot:spring-boot-starter-security',

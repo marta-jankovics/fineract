@@ -87,7 +87,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY),
                 holdTransaction.getId(), holdTransaction.getPaymentTypeId(), CurrentTransactionType.AMOUNT_RELEASE, actualDate, actualDate,
-                holdTransaction.getTransactionAmount());
+                holdTransaction.getAmount());
         return persistTransaction(transaction);
     }
 

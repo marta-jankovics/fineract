@@ -127,8 +127,8 @@ import org.apache.fineract.portfolio.savings.exception.SavingsAccountTransaction
 import org.apache.fineract.portfolio.savings.exception.SavingsOfficerAssignmentException;
 import org.apache.fineract.portfolio.savings.exception.SavingsOfficerUnassignmentException;
 import org.apache.fineract.portfolio.savings.exception.TransactionUpdateNotAllowedException;
-import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
 import org.apache.fineract.portfolio.transfer.api.TransferApiConstants;
+import org.apache.fineract.statement.service.SavingsStatementService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
 import org.springframework.data.domain.PageRequest;

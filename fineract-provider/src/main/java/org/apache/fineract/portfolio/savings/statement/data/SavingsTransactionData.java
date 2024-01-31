@@ -28,13 +28,13 @@ import java.time.LocalDate;
 import java.util.Map;
 import org.apache.fineract.portfolio.TransactionEntryType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
-import org.apache.fineract.portfolio.statement.data.camt053.BalanceAmountData;
-import org.apache.fineract.portfolio.statement.data.camt053.BankTransactionCodeData;
-import org.apache.fineract.portfolio.statement.data.camt053.CodeOrProprietaryData;
-import org.apache.fineract.portfolio.statement.data.camt053.CreditDebitIndicator;
-import org.apache.fineract.portfolio.statement.data.camt053.DateAndTimeData;
-import org.apache.fineract.portfolio.statement.data.camt053.EntryDetailsData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionData;
+import org.apache.fineract.statement.data.camt053.BalanceAmountData;
+import org.apache.fineract.statement.data.camt053.BankTransactionCodeData;
+import org.apache.fineract.statement.data.camt053.CodeOrProprietaryData;
+import org.apache.fineract.statement.data.camt053.CreditDebitIndicator;
+import org.apache.fineract.statement.data.camt053.DateAndTimeData;
+import org.apache.fineract.statement.data.camt053.EntryDetailsData;
+import org.apache.fineract.statement.data.camt053.TransactionData;
 import org.apache.logging.log4j.util.Strings;
 
 public final class SavingsTransactionData extends TransactionData {

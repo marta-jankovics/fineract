@@ -49,7 +49,7 @@ import static org.apache.fineract.portfolio.savings.SavingsApiConstants.shortNam
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.taxGroupIdParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.withHoldTaxParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.withdrawalFeeForTransfersParamName;
-import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

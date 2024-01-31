@@ -23,7 +23,7 @@ import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDoma
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadReportingService;
 import org.apache.fineract.infrastructure.dataqueries.service.export.S3DatatableReportExportServiceImpl;
-import org.apache.fineract.portfolio.statement.domain.AccountStatementResultRepository;
+import org.apache.fineract.statement.domain.AccountStatementResultRepository;
 import org.apache.fineract.statement.service.AccountStatementS3Publisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;

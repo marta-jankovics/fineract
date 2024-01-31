@@ -18,11 +18,14 @@
  */
 package org.apache.fineract.portfolio.savings.service;
 
+import static org.apache.fineract.infrastructure.entityaccess.domain.FineractEntityAccessType.OFFICE_ACCESS_TO_SAVINGS_PRODUCTS;
+import static org.apache.fineract.portfolio.PortfolioProductType.SAVING;
+import static org.apache.fineract.portfolio.savings.DepositAccountType.SAVINGS_DEPOSIT;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_PRODUCT_RESOURCE_NAME;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.accountingRuleParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.chargesParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.taxGroupIdParamName;
-import static org.apache.fineract.portfolio.statement.data.StatementParser.PARAM_STATEMENTS;
+import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENTS;
 
 import jakarta.persistence.PersistenceException;
 import java.util.ArrayList;
@@ -40,13 +43,9 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuild
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
-import org.apache.fineract.infrastructure.entityaccess.domain.FineractEntityAccessType;
 import org.apache.fineract.infrastructure.entityaccess.service.FineractEntityAccessUtil;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
-import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.charge.domain.Charge;
-import org.apache.fineract.portfolio.savings.DepositAccountType;
-import org.apache.fineract.portfolio.savings.SavingsApiConstants;
 import org.apache.fineract.portfolio.savings.data.SavingsProductDataValidator;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductAssembler;
@@ -73,7 +72,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
      * Guaranteed to throw an exception no matter what the data integrity issue is.
      */
     private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dae) {
-        String msgCode = "error.msg." + SavingsApiConstants.SAVINGS_PRODUCT_RESOURCE_NAME;
+        String msgCode = "error.msg." + SAVINGS_PRODUCT_RESOURCE_NAME;
         String msg = "Unknown data integrity issue with savings product.";
         String param = null;
         Object[] msgArgs;
@@ -109,16 +108,15 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             this.savingProductRepository.saveAndFlush(product);
 
             // save accounting mappings
-            this.accountMappingWritePlatformService.createSavingProductToGLAccountMapping(product.getId(), command,
-                    DepositAccountType.SAVINGS_DEPOSIT);
+            this.accountMappingWritePlatformService.createSavingProductToGLAccountMapping(product.getId(), command, SAVINGS_DEPOSIT);
 
-            productStatementService.createProductStatements(product.getId(), PortfolioProductType.SAVING, command);
+            productStatementService.createProductStatements(product.getId(), SAVING, command);
 
             // check if the office specific products are enabled. If yes, then
             // save this savings product against a specific office
             // i.e. this savings product is specific for this office.
-            fineractEntityAccessUtil.checkConfigurationAndAddProductResrictionsForUserOffice(
-                    FineractEntityAccessType.OFFICE_ACCESS_TO_SAVINGS_PRODUCTS, product.getId());
+            fineractEntityAccessUtil.checkConfigurationAndAddProductResrictionsForUserOffice(OFFICE_ACCESS_TO_SAVINGS_PRODUCTS,
+                    product.getId());
 
             return new CommandProcessingResultBuilder() //
                     .withEntityId(product.getId()) //
@@ -171,11 +169,10 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             final boolean accountingTypeChanged = changes.containsKey(accountingRuleParamName);
             final Map<String, Object> accountingMappingChanges = this.accountMappingWritePlatformService
                     .updateSavingsProductToGLAccountMapping(product.getId(), command, accountingTypeChanged, product.getAccountingType(),
-                            DepositAccountType.SAVINGS_DEPOSIT);
+                            SAVINGS_DEPOSIT);
             changes.putAll(accountingMappingChanges);
 
-            Map<String, Object> statementChanges = productStatementService.updateProductStatements(product.getId(),
-                    PortfolioProductType.SAVING, command);
+            Map<String, Object> statementChanges = productStatementService.updateProductStatements(product.getId(), SAVING, command);
             if (statementChanges != null) {
                 changes.put(PARAM_STATEMENTS, statementChanges);
             }

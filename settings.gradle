@@ -61,6 +61,7 @@ include ':fineract-client'
 include ':fineract-doc'
 include ':fineract-avro-schemas'
 include ':fineract-current-account'
+include ':fineract-statement'
 // NOTE: custom Docker image with all custom modules included
 include ':custom:docker'
 // NOTE: dynamically load custom modules with pattern "custom -> company -> category -> module"

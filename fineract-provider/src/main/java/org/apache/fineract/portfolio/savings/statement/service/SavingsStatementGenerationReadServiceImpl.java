@@ -19,7 +19,7 @@
 package org.apache.fineract.portfolio.savings.statement.service;
 
 import static org.apache.fineract.portfolio.PortfolioProductType.SAVING;
-import static org.apache.fineract.portfolio.statement.domain.StatementStatus.ACTIVE;
+import static org.apache.fineract.statement.domain.StatementStatus.ACTIVE;
 
 import jakarta.validation.constraints.NotNull;
 import java.sql.ResultSet;
@@ -34,10 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
-import org.apache.fineract.portfolio.statement.data.AccountStatementGenerationData;
-import org.apache.fineract.portfolio.statement.domain.StatementBatchType;
-import org.apache.fineract.portfolio.statement.domain.StatementPublishType;
-import org.apache.fineract.portfolio.statement.domain.StatementType;
+import org.apache.fineract.statement.data.AccountStatementGenerationData;
+import org.apache.fineract.statement.domain.StatementBatchType;
+import org.apache.fineract.statement.domain.StatementPublishType;
+import org.apache.fineract.statement.domain.StatementType;
 import org.apache.fineract.statement.service.AccountStatementGenerationReadService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -68,16 +68,6 @@ public class SavingsStatementGenerationReadServiceImpl implements AccountStateme
         List<AccountStatementGenerationData> statementGenerations = namedParameterTemplate.query(rm.schema(), params, rm);
         return statementGenerations.stream().collect(Collectors.groupingBy(AccountStatementGenerationData::getStatementType,
                 Collectors.groupingBy(AccountStatementGenerationData::getPublishType, Collectors.groupingBy(this::calcBatchId))));
-    }
-
-    private String calcBatchId(AccountStatementGenerationData generation) {
-        return switch (generation.getBatchType()) {
-            case SINGLE -> String.valueOf(generation.getAccountStatementId());
-            case ACCOUNT -> String.valueOf(generation.getAccountId());
-            case PRODUCT -> String.valueOf(generation.getProductId());
-            case CLIENT -> String.valueOf(generation.getProductId()) + '/' + generation.getClientId();
-            default -> String.valueOf(generation.getAccountStatementId());
-        };
     }
 
     private static final class StatementGenerationMapper implements RowMapper<AccountStatementGenerationData> {

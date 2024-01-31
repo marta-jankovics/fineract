@@ -18,9 +18,9 @@
  */
 package org.apache.fineract.portfolio.savings.statement.data;
 
-import static org.apache.fineract.portfolio.statement.data.camt053.AccountBalanceData.BALANCE_CODE_BEGIN_OF_PERIOD;
-import static org.apache.fineract.portfolio.statement.data.camt053.AccountBalanceData.BALANCE_CODE_END_OF_PERIOD;
-import static org.apache.fineract.portfolio.statement.data.camt053.AccountBalanceData.BALANCE_CODE_FULL_OF_PERIOD;
+import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_BEGIN_OF_PERIOD;
+import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_END_OF_PERIOD;
+import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_FULL_OF_PERIOD;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Transient;
@@ -36,13 +36,13 @@ import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountSummary;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
-import org.apache.fineract.portfolio.statement.data.camt053.AccountBalanceData;
-import org.apache.fineract.portfolio.statement.data.camt053.AccountData;
-import org.apache.fineract.portfolio.statement.data.camt053.DateTimePeriodData;
-import org.apache.fineract.portfolio.statement.data.camt053.StatementData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionData;
-import org.apache.fineract.portfolio.statement.data.camt053.TransactionsSummaryData;
-import org.apache.fineract.portfolio.statement.domain.AccountStatement;
+import org.apache.fineract.statement.data.camt053.AccountBalanceData;
+import org.apache.fineract.statement.data.camt053.AccountData;
+import org.apache.fineract.statement.data.camt053.DateTimePeriodData;
+import org.apache.fineract.statement.data.camt053.StatementData;
+import org.apache.fineract.statement.data.camt053.TransactionData;
+import org.apache.fineract.statement.data.camt053.TransactionsSummaryData;
+import org.apache.fineract.statement.domain.AccountStatement;
 
 public final class SavingsStatementData extends StatementData {
 

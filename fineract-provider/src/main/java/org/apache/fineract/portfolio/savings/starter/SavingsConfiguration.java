@@ -136,8 +136,8 @@ import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPos
 import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPosterTask;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionSearchService;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionsSearchServiceImpl;
-import org.apache.fineract.portfolio.savings.statement.service.SavingsStatementService;
 import org.apache.fineract.statement.service.ProductStatementService;
+import org.apache.fineract.statement.service.SavingsStatementService;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

@@ -165,7 +165,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         if (!enforce) {
             final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
             BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance()
-                    .subtract(currentAccountBalanceData.getHoldAmount()).subtract(debitTransaction.getTransactionAmount());
+                    .subtract(currentAccountBalanceData.getHoldAmount()).subtract(debitTransaction.getAmount());
             if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
                 if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
                     throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");
