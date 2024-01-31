@@ -24,6 +24,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.data.ApiGlobalErrorResponse;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.springframework.context.annotation.Scope;
@@ -45,8 +46,17 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
     @Override
     public Response toResponse(final PlatformDataIntegrityException exception) {
         log.warn("Exception: {}, Message: {}", exception.getClass().getName(), exception.getMessage());
+        String message = exception.getDefaultUserMessage();
+        // TODO: extract?
+        if (exception.getMessage().contains("duplicate key value violates unique constraint")) {
+            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
+            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") already exists");
+            message = "Duplicate entry '" + entry + "' for key '" + key + "'";
+        } else if (exception.getMessage().contains("Duplicate entry")) {
+            message = "Duplicate entry" + StringUtils.substringBetween(exception.getMessage(), "Duplicate entry", "\nError Code");
+        }
         final ApiGlobalErrorResponse dataIntegrityError = ApiGlobalErrorResponse.dataIntegrityError(exception.getGlobalisationMessageCode(),
-                exception.getDefaultUserMessage(), exception.getParameterName(), exception.getDefaultUserMessageArgs());
+                message, exception.getParameterName(), exception.getDefaultUserMessageArgs());
 
         return Response.status(Status.FORBIDDEN).entity(dataIntegrityError).type(MediaType.APPLICATION_JSON).build();
     }

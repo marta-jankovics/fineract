@@ -66,15 +66,15 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(example = "1")
         public Long referenceAccountId;
         @Schema(example = "1")
-        public Long overdraftAccountId;
+        public Long overdraftControlAccountId;
         @Schema(example = "1")
         public Long transfersInSuspenseAccountId;
         @Schema(example = "1")
         public Long writeOffAccountId;
         @Schema(example = "1")
-        public Long incomeFromFee;
+        public Long incomeFromFeeAccountId;
         @Schema(example = "1")
-        public Long incomeFromPenalty;
+        public Long incomeFromPenaltyAccountId;
         @Schema(example = "")
         public List<PaymentChannelToFundSource> paymentChannelToFundSourceMappings;
 

@@ -61,4 +61,17 @@ public interface ProductToGLAccountMappingRepository
             @Param("productType") int productType);
 
     List<ProductToGLAccountMapping> findByProductIdAndProductType(Long productId, int productType);
+
+    List<ProductToGLAccountMapping> findByProductIdentifierAndProductType(String productIdentifier, int productType);
+
+    @Query("select mapping from ProductToGLAccountMapping mapping where mapping.productIdentifier =:productIdentifier and mapping.productType =:productType and mapping.financialAccountType=:financialAccountType and mapping.paymentType is NULL and mapping.charge is NULL")
+    ProductToGLAccountMapping findCoreProductToFinAccountMapping(@Param("productIdentifier") String productIdentifier,
+            @Param("productType") int productType, @Param("financialAccountType") int financialAccountType);
+
+    /***
+     * The financial Account Type for a fund source will always be an asset (1)
+     ***/
+    @Query("select mapping from ProductToGLAccountMapping mapping where mapping.productIdentifier =:productIdentifier and mapping.productType =:productType and mapping.financialAccountType=1 and mapping.paymentType is not NULL")
+    List<ProductToGLAccountMapping> findAllPaymentTypeToFundSourceMappings(@Param("productIdentifier") String productIdentifier,
+            @Param("productType") int productType);
 }

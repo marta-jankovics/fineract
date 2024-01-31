@@ -29,18 +29,24 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DESCRIPTION_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_FEE_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_PENALTY_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.FUND_SOURCE_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_FEE_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.NAME_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.REFERENCE_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SHORT_NAME_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.WRITE_OFF_ACCOUNT_ID_PARAM;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -70,8 +76,9 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             Arrays.asList(LOCALE_PARAM, NAME_PARAM, EXTERNAL_ID_PARAM, SHORT_NAME_PARAM, DESCRIPTION_PARAM, CURRENCY_CODE_PARAM,
                     CURRENCY_DIGITS_AFTER_DECIMAL_PARAM, CURRENCY_IN_MULTIPLES_OF_PARAM, ACCOUNTING_TYPE_PARAM, ALLOW_OVERDRAFT_PARAM,
                     OVERDRAFT_LIMIT_PARAM, ALLOW_FORCE_TRANSACTION_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM, BALANCE_CALCULATION_TYPE_PARAM,
-                    CONTROL_ACCOUNT_ID_PARAM, REFERENCE_ACCOUNT_ID_PARAM, OVERDRAFT_ACCOUNT_ID_PARAM,
-                    TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, WRITE_OFF_ACCOUNT_ID_PARAM, INCOME_FROM_FEE_PARAM, INCOME_FROM_PENALTY_PARAM));
+                    CONTROL_ACCOUNT_ID_PARAM, REFERENCE_ACCOUNT_ID_PARAM, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM,
+                    TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, WRITE_OFF_ACCOUNT_ID_PARAM, INCOME_FROM_FEE_ACCOUNT_ID_PARAM,
+                    INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM));
 
     @Override
     public void validateForCreate(final JsonCommand command) {
@@ -131,6 +138,35 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         baseDataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                 .isOneOfEnumValues(BalanceCalculationType.class);
 
+        if (AccountingRuleType.valueOf(accountingRuleType).equals(AccountingRuleType.CASH_BASED)) {
+            final Long controlAccountId = command.longValueOfParameterNamed(CONTROL_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(controlAccountId).notNull().integerGreaterThanZero();
+
+            final Long referenceAccountId = command.longValueOfParameterNamed(REFERENCE_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(referenceAccountId).notNull().integerGreaterThanZero();
+
+            final Long transfersInSuspenseAccountId = command.longValueOfParameterNamed(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
+                    .integerGreaterThanZero();
+
+            final Long incomeFromFeeAccountId = command.longValueOfParameterNamed(INCOME_FROM_FEE_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
+                    .integerGreaterThanZero();
+
+            final Long incomeFromPenaltyAccountId = command.longValueOfParameterNamed(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
+                    .integerGreaterThanZero();
+
+            final Long overdraftControlAccountId = command.longValueOfParameterNamed(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
+                    .integerGreaterThanZero();
+
+            final Long writeOffAccountId = command.longValueOfParameterNamed(WRITE_OFF_ACCOUNT_ID_PARAM);
+            baseDataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writeOffAccountId).notNull().integerGreaterThanZero();
+
+            validatePaymentChannelFundSourceMappings(baseDataValidator, command);
+        }
+
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
@@ -178,7 +214,13 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             final Integer inMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM, Locale.getDefault());
             baseDataValidator.reset().parameter(CURRENCY_IN_MULTIPLES_OF_PARAM).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
-
+        AccountingRuleType accountingRuleType = product.getAccountingType();
+        if (command.parameterExists(CURRENCY_IN_MULTIPLES_OF_PARAM)) {
+            final String accountingRuleTypeStr = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
+            baseDataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleTypeStr).notNull()
+                    .isOneOfEnumValues(AccountingRuleType.class);
+            accountingRuleType = AccountingRuleType.valueOf(accountingRuleTypeStr);
+        }
         if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
             final BigDecimal minimumRequiredBalance = command
                     .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
@@ -206,12 +248,70 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
                     .isOneOfEnumValues(BalanceCalculationType.class);
         }
 
+        if (accountingRuleType.equals(AccountingRuleType.CASH_BASED)) {
+            if (command.parameterExists(CONTROL_ACCOUNT_ID_PARAM)) {
+                final Long savingsControlAccountId = command.longValueOfParameterNamed(CONTROL_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(savingsControlAccountId).notNull()
+                        .integerGreaterThanZero();
+
+            }
+            if (command.parameterExists(REFERENCE_ACCOUNT_ID_PARAM)) {
+                final Long savingsReferenceAccountId = command.longValueOfParameterNamed(REFERENCE_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(savingsReferenceAccountId).notNull()
+                        .integerGreaterThanZero();
+            }
+            if (command.parameterExists(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM)) {
+                final Long transfersInSuspenseAccountId = command.longValueOfParameterNamed(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
+                        .integerGreaterThanZero();
+            }
+            if (command.parameterExists(INCOME_FROM_FEE_ACCOUNT_ID_PARAM)) {
+                final Long incomeFromFeeAccountId = command.longValueOfParameterNamed(INCOME_FROM_FEE_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
+                        .integerGreaterThanZero();
+            }
+            if (command.parameterExists(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM)) {
+                final Long incomeFromPenaltyAccountId = command.longValueOfParameterNamed(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
+                        .integerGreaterThanZero();
+            }
+            if (command.parameterExists(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM)) {
+                final Long overdraftControlAccountId = command.longValueOfParameterNamed(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
+                        .integerGreaterThanZero();
+            }
+            if (command.parameterExists(WRITE_OFF_ACCOUNT_ID_PARAM)) {
+                final Long writtenoff = command.longValueOfParameterNamed(WRITE_OFF_ACCOUNT_ID_PARAM);
+                baseDataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writtenoff).notNull().integerGreaterThanZero();
+            }
+            validatePaymentChannelFundSourceMappings(baseDataValidator, command);
+        }
+
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
     private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {
         if (!dataValidationErrors.isEmpty()) {
             throw new PlatformApiDataValidationException(dataValidationErrors);
+        }
+    }
+
+    /**
+     * Validation for advanced accounting options
+     */
+    private void validatePaymentChannelFundSourceMappings(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
+        if (command.parameterExists(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM)) {
+            final JsonArray paymentChannelMappingArray = command.arrayOfParameterNamed(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM);
+            if (paymentChannelMappingArray != null) {
+                for (JsonElement paymentChannelMapping : paymentChannelMappingArray) {
+                    final JsonObject jsonObject = paymentChannelMapping.getAsJsonObject();
+                    final Long paymentTypeId = jsonObject.get(PAYMENT_TYPE_ID_PARAM).getAsLong();
+                    final Long paymentSpecificFundAccountId = jsonObject.get(FUND_SOURCE_ACCOUNT_ID_PARAM).getAsLong();
+                    baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentTypeId).notNull().longGreaterThanZero();
+                    baseDataValidator.reset().parameter(FUND_SOURCE_ACCOUNT_ID_PARAM).value(paymentSpecificFundAccountId).notNull()
+                            .longGreaterThanZero();
+                }
+            }
         }
     }
 }

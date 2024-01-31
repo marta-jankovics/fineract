@@ -44,10 +44,10 @@ public class CurrentProductResponseData implements Serializable {
 
     private GLAccountDataForLookup controlAccountId;
     private GLAccountDataForLookup referenceAccountId;
-    private GLAccountDataForLookup overdraftAccountId;
+    private GLAccountDataForLookup overdraftControlAccountId;
     private GLAccountDataForLookup transfersInSuspenseAccountId;
     private GLAccountDataForLookup writeOffAccountId;
-    private GLAccountDataForLookup incomeFromFee;
-    private GLAccountDataForLookup incomeFromPenalty;
+    private GLAccountDataForLookup incomeFromFeeAccountId;
+    private GLAccountDataForLookup incomeFromPenaltyAccountId;
     private List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
 }

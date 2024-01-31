@@ -378,7 +378,6 @@ public class ProductToGLAccountMappingWritePlatformServiceImpl implements Produc
          * of mappings
          ***/
         if (accountingRuleChanged) {
-            this.deserializer.validateForSavingsProductCreate(command.json(), accountType);
             this.savingsProductToGLAccountMappingHelper.deleteSavingsProductToGLAccountMapping(savingsProductId);
             createSavingProductToGLAccountMapping(savingsProductId, command, accountType);
             changes = this.savingsProductToGLAccountMappingHelper.populateChangesForNewSavingsProductToGLAccountMappingCreation(element,
