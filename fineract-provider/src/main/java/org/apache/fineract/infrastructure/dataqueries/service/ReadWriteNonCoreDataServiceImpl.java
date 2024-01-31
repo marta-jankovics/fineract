@@ -562,8 +562,9 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             } else {
                 sqlBuilder.append(", PRIMARY KEY (").append(fkColumn).append(")");
             }
-            sqlBuilder.append(", CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(fkColumn).append(") ").append("REFERENCES ")
-                    .append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn()).append(")");
+            sqlBuilder.append(", CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(fkColumn).append(") ")
+                    .append("REFERENCES ").append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn())
+                    .append(")");
 
             sqlBuilder.append(constrainBuilder);
             sqlBuilder.append(")");
