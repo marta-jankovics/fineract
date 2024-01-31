@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.configuration;
 
+import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
+import org.apache.fineract.accounting.producttoaccountmapping.service.ProductToGLAccountMappingHelper;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.assembler.account.impl.CurrentAccountAssemblerImpl;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
@@ -45,6 +47,7 @@ import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAcco
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.currentaccount.service.product.read.impl.CurrentProductReadServiceImpl;
 import org.apache.fineract.currentaccount.service.product.write.CurrentProductWriteService;
+import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProductToGLAccountMappingHelper;
 import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProductWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.currentaccount.service.transaction.read.impl.CurrentTransactionReadServiceImpl;
@@ -60,6 +63,7 @@ import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
+import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -139,8 +143,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductAssembler.class)
     public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory,
-            CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService) {
-        return new CurrentProductAssemblerImpl(externalIdFactory, currentProductRepository, readWriteNonCoreDataService);
+            CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService,
+            CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper) {
+        return new CurrentProductAssemblerImpl(externalIdFactory, currentProductRepository, readWriteNonCoreDataService,
+                currentProductToGLAccountMappingHelper);
     }
 
     @Bean
@@ -180,5 +186,14 @@ public class CurrentAccountAutoConfiguration {
     @ConditionalOnMissingBean(CurrentTransactionDataValidator.class)
     public CurrentTransactionDataValidator currentTransactionDataValidator() {
         return new CurrentTransactionDataValidatorImpl();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentProductToGLAccountMappingHelper.class)
+    public CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper(
+            ProductToGLAccountMappingRepository accountMappingRepository, ProductToGLAccountMappingHelper productToGLAccountMappingHelper,
+            PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
+        return new CurrentProductToGLAccountMappingHelper(accountMappingRepository, productToGLAccountMappingHelper,
+                paymentTypeRepositoryWrapper);
     }
 }

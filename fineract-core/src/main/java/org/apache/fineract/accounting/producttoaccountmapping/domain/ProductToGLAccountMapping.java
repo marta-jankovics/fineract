@@ -49,6 +49,9 @@ public class ProductToGLAccountMapping extends AbstractPersistableCustom<Long> {
     @Column(name = "product_id", nullable = true)
     private Long productId;
 
+    @Column(name = "product_identifier", nullable = true)
+    private String productIdentifier;
+
     @ManyToOne
     @JoinColumn(name = "payment_type", nullable = true)
     private PaymentType paymentType;

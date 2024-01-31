@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForShares;
 import org.apache.fineract.accounting.common.AccountingConstants.SharesProductAccountingParams;
 import org.apache.fineract.accounting.common.AccountingRuleType;
-import org.apache.fineract.accounting.glaccount.domain.GLAccountRepository;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountRepositoryWrapper;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
@@ -38,11 +37,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ShareProductToGLAccountMappingHelper extends ProductToGLAccountMappingHelper {
 
-    public ShareProductToGLAccountMappingHelper(final GLAccountRepository glAccountRepository,
-            final ProductToGLAccountMappingRepository glAccountMappingRepository, final FromJsonHelper fromApiJsonHelper,
-            final ChargeRepositoryWrapper chargeRepositoryWrapper, final GLAccountRepositoryWrapper accountRepositoryWrapper,
-            final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
-        super(glAccountRepository, glAccountMappingRepository, fromApiJsonHelper, chargeRepositoryWrapper, accountRepositoryWrapper,
+    public ShareProductToGLAccountMappingHelper(final ProductToGLAccountMappingRepository glAccountMappingRepository,
+            final FromJsonHelper fromApiJsonHelper, final ChargeRepositoryWrapper chargeRepositoryWrapper,
+            final GLAccountRepositoryWrapper accountRepositoryWrapper, final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
+        super(glAccountMappingRepository, fromApiJsonHelper, chargeRepositoryWrapper, accountRepositoryWrapper,
                 paymentTypeRepositoryWrapper);
     }
 

@@ -47,7 +47,7 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
     public Response toResponse(final PlatformDataIntegrityException exception) {
         log.warn("Exception: {}, Message: {}", exception.getClass().getName(), exception.getMessage());
         String message = exception.getDefaultUserMessage();
-        //TODO: extract?
+        // TODO: extract?
         if (exception.getMessage().contains("duplicate key value violates unique constraint")) {
             String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
             String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") already exists");

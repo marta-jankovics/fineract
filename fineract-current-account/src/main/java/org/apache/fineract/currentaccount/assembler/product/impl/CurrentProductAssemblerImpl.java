@@ -22,16 +22,23 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_FORCE_TRANSACTION_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_OVERDRAFT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.BALANCE_CALCULATION_TYPE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CONTROL_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_CODE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_DIGITS_AFTER_DECIMAL_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_IN_MULTIPLES_OF_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DESCRIPTION_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_FEE_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.NAME_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.REFERENCE_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SHORT_NAME_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.WRITE_OFF_ACCOUNT_ID_PARAM;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -43,7 +50,9 @@ import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashAccounts;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
+import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProductToGLAccountMappingHelper;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
@@ -58,6 +67,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     private final ExternalIdFactory externalIdFactory;
     private final CurrentProductRepository currentProductRepository;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
+    private final CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper;
 
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
@@ -85,6 +95,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         product = currentProductRepository.save(product);
 
         persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, false, readWriteNonCoreDataService);
+        persistAccountingRules(product, command);
 
         return product;
     }
@@ -176,6 +187,51 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         }
 
         persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, true, readWriteNonCoreDataService);
+        updateAccountingRules(product, command, actualChanges);
         return actualChanges;
     }
+
+    private void updateAccountingRules(CurrentProduct product, JsonCommand command, Map<String, Object> actualChanges) {
+        final AccountingRuleType accountingRuleType = command.hasParameter(ACCOUNTING_TYPE_PARAM)
+                ? AccountingRuleType.valueOf(command.stringValueOfParameterNamed(ACCOUNTING_TYPE_PARAM))
+                : product.getAccountingType();
+
+        if (accountingRuleType.equals(AccountingRuleType.NONE)) {
+            currentProductToGLAccountMappingHelper.deleteProductToGLAccountMapping(product);
+        } else if (accountingRuleType.equals(AccountingRuleType.CASH_BASED)) {
+            currentProductToGLAccountMappingHelper.handleChangesToCurrentProductProductToGLAccountMappings(product, command, actualChanges);
+            currentProductToGLAccountMappingHelper.updatePaymentChannelToFundSourceMappings(command, product, actualChanges);
+        }
+    }
+
+    private void persistAccountingRules(CurrentProduct product, JsonCommand command) {
+        // asset
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, REFERENCE_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.REFERENCE);
+
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.OVERDRAFT_CONTROL);
+
+        // income
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.INCOME_FROM_FEES);
+
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.INCOME_FROM_PENALTIES);
+
+        // expenses
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.LOSSES_WRITTEN_OFF);
+
+        // liability
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, CONTROL_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.CONTROL);
+
+        currentProductToGLAccountMappingHelper.createCurrentProductAccountMapping(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, product,
+                CurrentProductCashAccounts.TRANSFERS_SUSPENSE);
+
+        // advanced accounting mappings
+        currentProductToGLAccountMappingHelper.savePaymentChannelToFundSourceMappings(command, product, null);
+    }
+
 }

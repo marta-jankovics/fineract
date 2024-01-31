@@ -43,11 +43,11 @@ public interface CurrentProductResponseDataMapper {
     @Mapping(target = "balanceCalculationType", source = "currentProductData", qualifiedByName = "balanceCalculationType")
     @Mapping(target = "controlAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
     @Mapping(target = "referenceAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "overdraftAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "overdraftControlAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
     @Mapping(target = "transfersInSuspenseAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
     @Mapping(target = "writeOffAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "incomeFromFee", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "incomeFromPenalty", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "incomeFromFeeAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "incomeFromPenaltyAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
     @Mapping(target = "paymentChannelToFundSourceMappings", source = "currentProductData", qualifiedByName = "paymentChannelMapping")
     CurrentProductResponseData map(CurrentProductData currentProductData);
 

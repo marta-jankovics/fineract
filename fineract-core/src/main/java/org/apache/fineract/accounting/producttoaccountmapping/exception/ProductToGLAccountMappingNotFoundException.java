@@ -30,4 +30,9 @@ public class ProductToGLAccountMappingNotFoundException extends AbstractPlatform
         super("error.msg.productToAccountMapping.not.found", "Mapping for product of type " + type.toString() + " with Id " + productId
                 + " does not exist for an account of type " + accountType, type.toString(), productId, accountType);
     }
+
+    public ProductToGLAccountMappingNotFoundException(final PortfolioProductType type, final String productId, final String accountType) {
+        super("error.msg.productToAccountMapping.not.found", "Mapping for product of type " + type + " with Identifier " + productId
+                + " does not exist for an account of type " + accountType, type, productId, accountType);
+    }
 }

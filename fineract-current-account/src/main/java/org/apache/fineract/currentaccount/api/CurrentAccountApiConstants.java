@@ -90,16 +90,19 @@ public class CurrentAccountApiConstants {
     public static final String BALANCE_CALCULATION_TYPE_PARAM = "balanceCalculationType";
     public static final String OVERDRAFT_LIMIT_PARAM = "overdraftLimit";
     public static final String MINIMUM_REQUIRED_BALANCE_PARAM = "minimumRequiredBalance";
-    public static final String TRANSACTION_DATE_PARAM = "transactionDate";
-    public static final String TRANSACTION_AMOUNT_PARAM = "transactionAmount";
+    // Accounting
     public static final String CONTROL_ACCOUNT_ID_PARAM = "controlAccountId";
     public static final String REFERENCE_ACCOUNT_ID_PARAM = "referenceAccountId";
-    public static final String OVERDRAFT_ACCOUNT_ID_PARAM = "overdraftAccountId";
+    public static final String OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM = "overdraftControlAccountId";
     public static final String TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM = "transfersInSuspenseAccountId";
     public static final String WRITE_OFF_ACCOUNT_ID_PARAM = "writeOffAccountId";
-    public static final String INCOME_FROM_FEE_PARAM = "incomeFromFee";
-    public static final String INCOME_FROM_PENALTY_PARAM = "incomeFromPenalty";
-
+    public static final String INCOME_FROM_FEE_ACCOUNT_ID_PARAM = "incomeFromFeeAccountId";
+    public static final String INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM = "incomeFromPenaltyAccountId";
+    public static final String PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM = "paymentChannelToFundSourceMappings";
+    public static final String FUND_SOURCE_ACCOUNT_ID_PARAM = "fundSourceAccountId";
+    // Transaction
+    public static final String TRANSACTION_DATE_PARAM = "transactionDate";
+    public static final String TRANSACTION_AMOUNT_PARAM = "transactionAmount";
     public static final String REASON_FOR_BLOCK_PARAM = "reasonForBlock";
 
 }
