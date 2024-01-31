@@ -31,4 +31,6 @@
   <include relativeToChangelogFile="true" file="parts/ca_0006_current_account_balance_calculation_job.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0007_entity_action.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0008_account_identifier.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0009_add_permissions.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0010_add_product_identifier.xml"/>
 </databaseChangeLog>
