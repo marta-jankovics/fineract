@@ -31,7 +31,6 @@ import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 public class CurrentTransactionTemplateResponseData implements Serializable {
 
     private final String accountId;
-    private final String accountNumber;
     private final LocalDate transactionDate;
     private final LocalDate submittedOnDate;
     private final CurrencyData currency;

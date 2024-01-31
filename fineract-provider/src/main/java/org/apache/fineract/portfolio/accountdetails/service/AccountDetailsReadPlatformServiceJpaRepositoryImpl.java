@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
+import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
@@ -62,6 +64,8 @@ public class AccountDetailsReadPlatformServiceJpaRepositoryImpl implements Accou
     private final GroupReadPlatformService groupReadPlatformService;
     private final ColumnValidator columnValidator;
     private final CurrentAccountReadService currentAccountReadService;
+    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
 
     @Override
     public AccountSummaryCollectionData retrieveClientAccountDetails(final Long clientId) {
@@ -83,8 +87,10 @@ public class AccountDetailsReadPlatformServiceJpaRepositoryImpl implements Accou
         final List<ShareAccountSummaryData> shareAccounts = retrieveShareAccountDetails(clientId);
         final List<GuarantorAccountSummaryData> guarantorloanAccounts = retrieveGuarantorLoanAccountDetails(guarantorWhereClause,
                 new Object[] { clientId });
-        final List<CurrentAccountResponseData> currentAccount = currentAccountReadService.retrieveAllByClientId(clientId,
-                Sort.by("createdDate"));
+
+        final List<CurrentAccountResponseData> currentAccount = currentAccountResponseDataMapper.map(
+                currentAccountReadService.retrieveAllByClientId(clientId, Sort.by("createdDate")),
+                currentAccountBalanceReadService::getBalance);
         return new AccountSummaryCollectionData(loanAccounts, glimAccounts, savingsAccounts, shareAccounts, guarantorloanAccounts,
                 currentAccount);
     }

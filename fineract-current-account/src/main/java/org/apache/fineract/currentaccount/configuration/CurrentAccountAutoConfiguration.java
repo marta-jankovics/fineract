@@ -27,9 +27,7 @@ import org.apache.fineract.currentaccount.assembler.product.impl.CurrentProductA
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.assembler.transaction.impl.CurrentTransactionAssemblerImpl;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
-import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
-import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
@@ -88,11 +86,10 @@ public class CurrentAccountAutoConfiguration {
     @ConditionalOnMissingBean(CurrentAccountReadService.class)
     public CurrentAccountReadService currentAccountReadService(CurrentAccountRepository currentAccountRepository,
             AccountIdentifierRepository accountIdentifierRepository, CurrentProductReadService currentProductReadPlatformService,
-            CurrentAccountBalanceReadService currentAccountBalanceReadService,
-            CurrentAccountResponseDataMapper currentAccountResponseDataMapper,
+            CurrentProductResponseDataMapper currentProductResponseDataMapper,
             CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
-        return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentAccountBalanceReadService,
-                currentProductReadPlatformService, currentAccountResponseDataMapper, currentAccountIdentifiersResponseDataMapper);
+        return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentProductReadPlatformService,
+                currentAccountIdentifiersResponseDataMapper, currentProductResponseDataMapper);
     }
 
     @Bean
@@ -130,8 +127,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductReadService.class)
     public CurrentProductReadService currentProductReadService(CurrentProductRepository currentProductRepository,
-            CurrentProductResponseDataMapper currentProductResponseDataMapper, CurrencyReadPlatformService currencyReadPlatformService) {
-        return new CurrentProductReadServiceImpl(currentProductRepository, currentProductResponseDataMapper, currencyReadPlatformService);
+            CurrencyReadPlatformService currencyReadPlatformService) {
+        return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService);
     }
 
     @Bean
@@ -158,11 +155,10 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionReadService.class)
-    public CurrentTransactionReadService currentTransactionReadService(CurrentAccountRepository currentAccountRepository,
-            PaymentTypeReadPlatformService paymentTypeReadPlatformService, CurrentTransactionRepository currentTransactionRepository,
-            CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper) {
-        return new CurrentTransactionReadServiceImpl(currentAccountRepository, paymentTypeReadPlatformService, currentTransactionRepository,
-                currentTransactionResponseDataMapper);
+    public CurrentTransactionReadService currentTransactionReadService(CurrentAccountReadService CurrentAccountReadService,
+            PaymentTypeReadPlatformService paymentTypeReadPlatformService, CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentTransactionReadServiceImpl(CurrentAccountReadService, paymentTypeReadPlatformService,
+                currentTransactionRepository);
     }
 
     @Bean

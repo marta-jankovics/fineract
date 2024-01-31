@@ -48,6 +48,7 @@ import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
+import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
@@ -71,6 +72,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     private final PlatformSecurityContext context;
     private final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService;
     private final CurrentProductReadService currentProductReadService;
+    private final CurrentProductResponseDataMapper currentProductResponseDataMapper;
 
     @GET
     @Path("template")
@@ -89,7 +91,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     public Page<CurrentProductResponseData> retrieveAll(
             @Pagination @SortDefault(sort = "createdDate") @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
-        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
+        return currentProductResponseDataMapper.map(this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable)));
     }
 
     @GET
@@ -184,7 +186,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     private CurrentProductResponseData retrieveOne(@NotNull CurrentProductIdType idType, String identifier) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
-        return currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier);
+        return currentProductResponseDataMapper.map(currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier));
     }
 
     private CommandProcessingResult updateCurrentProduct(String idType, String identifier, String requestJson) {

@@ -19,20 +19,48 @@
 package org.apache.fineract.currentaccount.api.transaction;
 
 import com.google.gson.JsonObject;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
+import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.SortDefault;
 
 public interface CurrentTransactionApi {
 
     CurrentTransactionTemplateResponseData template(String accountId);
 
     Page<CurrentTransactionResponseData> retrieveAll(String accountId, Pageable pageable);
+
+    @GET
+    @Path("{accIdType}/{accIdentifier}/transactions")
+    @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
+            + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
+    Page<CurrentTransactionResponseData> retrieveAll(
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) String accIdentifier,
+            @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
+                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable);
+
+    @GET
+    @Path("{accIdType}/{accIdentifier}/{accSubIdentifier}/transactions")
+    @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
+            + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
+    Page<CurrentTransactionResponseData> retrieveAll(
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) String accIdentifier,
+            @PathParam("accSubIdentifier") @Parameter(description = "accSubIdentifier", required = true) String accSubIdentifier,
+            @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
+                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable);
 
     CurrentTransactionResponseData retrieveOne(String accountId, String transactionId);
 

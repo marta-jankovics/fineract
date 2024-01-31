@@ -25,10 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
-import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
-import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
@@ -45,7 +43,6 @@ import org.springframework.data.domain.Sort;
 public class CurrentProductReadServiceImpl implements CurrentProductReadService {
 
     private final CurrentProductRepository currentProductRepository;
-    private final CurrentProductResponseDataMapper currentProductResponseDataMapper;
     private final CurrencyReadPlatformService currencyReadPlatformService;
 
     @Override
@@ -58,17 +55,17 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public List<CurrentProductResponseData> retrieveAll(Sort sort) {
-        return currentProductResponseDataMapper.map(currentProductRepository.findAllSorted(sort));
+    public List<CurrentProductData> retrieveAll(Sort sort) {
+        return currentProductRepository.findAllSorted(sort);
     }
 
     @Override
-    public Page<CurrentProductResponseData> retrieveAll(Pageable pageable) {
-        return currentProductResponseDataMapper.map(currentProductRepository.findAllCurrentProductData(pageable));
+    public Page<CurrentProductData> retrieveAll(Pageable pageable) {
+        return currentProductRepository.findAllCurrentProductData(pageable);
     }
 
     @Override
-    public CurrentProductResponseData retrieveByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier) {
+    public CurrentProductData retrieveByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier) {
         CurrentProductData productData = switch (idType) {
             case ID -> currentProductRepository.findCurrentProductDataById(identifier);
             case EXTERNAL_ID -> currentProductRepository.findCurrentProductDataByExternalId(new ExternalId(identifier));
@@ -78,7 +75,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
             throw new PlatformResourceNotFoundException("current.product", "Current product with %s: %s cannot be found", idType,
                     identifier);
         }
-        return currentProductResponseDataMapper.map(productData);
+        return productData;
     }
 
     @Override

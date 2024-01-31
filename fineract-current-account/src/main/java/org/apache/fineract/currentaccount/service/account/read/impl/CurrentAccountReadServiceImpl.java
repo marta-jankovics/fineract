@@ -22,21 +22,18 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
-import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
+import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountIdType;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
-import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
+import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -53,35 +50,32 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
 
     private final CurrentAccountRepository currentAccountRepository;
     private final AccountIdentifierRepository accountIdentifierRepository;
-    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentProductReadService currentProductReadPlatformService;
-    private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
     private final CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper;
+    private final CurrentProductResponseDataMapper productResponseDataMapper;
 
     @Override
     public CurrentAccountTemplateResponseData retrieveTemplate() {
-        final List<CurrentProductResponseData> productOptions = this.currentProductReadPlatformService
+        final List<CurrentProductData> productOptions = this.currentProductReadPlatformService
                 .retrieveAll(Sort.by(Sort.Direction.ASC, "name"));
 
         return CurrentAccountTemplateResponseData.builder() //
-                .productOptions(productOptions) //
+                .productOptions(productResponseDataMapper.map(productOptions)) //
                 .build(); //
     }
 
     @Override
-    public Page<CurrentAccountResponseData> retrieveAll(Pageable pageable) {
-        return currentAccountResponseDataMapper.map(currentAccountRepository.findAllCurrentAccountData(pageable),
-                currentAccountBalanceReadService::getBalance);
+    public Page<CurrentAccountData> retrieveAll(Pageable pageable) {
+        return currentAccountRepository.findAllCurrentAccountData(pageable);
     }
 
     @Override
-    public List<CurrentAccountResponseData> retrieveAllByClientId(@NotNull Long clientId, Sort sort) {
-        return currentAccountResponseDataMapper.map(currentAccountRepository.findAllByClientId(clientId, sort),
-                currentAccountBalanceReadService::getBalance);
+    public List<CurrentAccountData> retrieveAllByClientId(@NotNull Long clientId, Sort sort) {
+        return currentAccountRepository.findAllByClientId(clientId, sort);
     }
 
     @Override
-    public CurrentAccountResponseData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
+    public CurrentAccountData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
             String subIdentifier) {
         CurrentAccountIdType currentType = idType.getCurrentType();
         if (idType.isSecondaryIdentifier()) {
@@ -98,8 +92,8 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
             throw new PlatformResourceNotFoundException("current.account", "Current account with %s: %s cannot be found", currentType,
                     identifier);
         }
-        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountData.getId());
-        return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
+
+        return accountData;
     }
 
     @Override

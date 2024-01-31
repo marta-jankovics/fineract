@@ -20,7 +20,7 @@ package org.apache.fineract.currentaccount.service.account.read;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
@@ -32,12 +32,11 @@ public interface CurrentAccountReadService {
 
     CurrentAccountTemplateResponseData retrieveTemplate();
 
-    Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
+    Page<CurrentAccountData> retrieveAll(Pageable pageable);
 
-    List<CurrentAccountResponseData> retrieveAllByClientId(@NotNull Long clientId, Sort sort);
+    List<CurrentAccountData> retrieveAllByClientId(@NotNull Long clientId, Sort sort);
 
-    CurrentAccountResponseData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
-            String subIdentifier);
+    CurrentAccountData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
 
     String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
 

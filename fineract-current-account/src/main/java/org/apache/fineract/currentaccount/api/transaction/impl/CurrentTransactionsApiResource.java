@@ -54,6 +54,7 @@ import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
+import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
 import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
@@ -69,6 +70,7 @@ import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
 @Path("/v2/current-accounts")
@@ -83,6 +85,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
     private final CurrentTransactionReadService currentTransactionReadService;
     private final CurrentAccountReadService currentAccountReadService;
+    private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
     private final AdvancedQueryService advancedQueryService;
 
     @GET
@@ -101,9 +104,36 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
     public Page<CurrentTransactionResponseData> retrieveAll(@PathParam("accountId") final String accountId,
-            @Pagination @Parameter(hidden = true) Pageable pageable) {
-        this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
-        return this.currentTransactionReadService.retrieveTransactionsByAccountId(accountId, pageable);
+            @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
+                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+        return retrieveAll(accountId, null, null, null, pageable);
+    }
+
+    @GET
+    @Path("{accIdType}/{accIdentifier}/transactions")
+    @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
+            + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
+    @Override
+    public Page<CurrentTransactionResponseData> retrieveAll(
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
+                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+        return retrieveAll(null, accIdType, accIdentifier, null, pageable);
+    }
+
+    @GET
+    @Path("{accIdType}/{accIdentifier}/{accSubIdentifier}/transactions")
+    @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
+            + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
+    @Override
+    public Page<CurrentTransactionResponseData> retrieveAll(
+            @PathParam("accIdType") @Parameter(description = "accIdType", required = true) final String accIdType,
+            @PathParam("accIdentifier") @Parameter(description = "accIdentifier", required = true) final String accIdentifier,
+            @PathParam("accSubIdentifier") @Parameter(description = "accSubIdentifier", required = true) final String accSubIdentifier,
+            @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
+                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+        return retrieveAll(null, accIdType, accIdentifier, accSubIdentifier, pageable);
     }
 
     @GET
@@ -295,7 +325,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private CurrentTransactionResponseData retrieveOne(String accountId, @NotNull CurrentTransactionIdType idType, String identifier) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
-        return currentTransactionReadService.retrieveByIdTypeAndIdentifier(accountId, idType, identifier);
+        return currentTransactionResponseDataMapper
+                .map(currentTransactionReadService.retrieveByIdTypeAndIdentifier(accountId, idType, identifier));
     }
 
     private Page<JsonObject> query(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
@@ -363,5 +394,12 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private boolean is(final String commandParam, final String commandValue) {
         return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
+    }
+
+    private Page<CurrentTransactionResponseData> retrieveAll(String accountId, String accountIdType, String accountIdentifier,
+            String accountSubIdentifier, Pageable pageable) {
+        this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
+        return currentTransactionResponseDataMapper.map(this.currentTransactionReadService.retrieveAllByIdTypeAndIdentifier(accountId,
+                accountIdType, accountIdentifier, accountSubIdentifier, pageable));
     }
 }

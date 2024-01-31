@@ -55,10 +55,14 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
+import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -83,6 +87,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     private final PlatformSecurityContext context;
     private final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService;
     private final CurrentAccountReadService currentAccountReadService;
+    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
     private final AdvancedQueryService advancedQueryService;
 
     @GET
@@ -106,7 +112,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     public Page<CurrentAccountResponseData> retrieveAll(
             @Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
-        return currentAccountReadService.retrieveAll(pageable);
+        return currentAccountResponseDataMapper.map(currentAccountReadService.retrieveAll(pageable),
+                currentAccountBalanceReadService::getBalance);
     }
 
     @GET
@@ -379,7 +386,10 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
 
     private CurrentAccountResponseData retrieveOne(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
-        return currentAccountReadService.retrieveByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        currentAccountReadService.retrieveByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        CurrentAccountData accountData = currentAccountReadService.retrieveByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountData.getId());
+        return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
     }
 
     private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountIdTypeResolver idType, String identifier,

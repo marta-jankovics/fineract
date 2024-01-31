@@ -121,9 +121,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
             ArrayList<Object> dataParams = new ArrayList<>();
             for (int i = 0; i < datatableQueries.size(); i++) {
                 TableQueryData tableQuery = datatableQueries.get(i);
-                boolean added = datatableService.buildDataQueryEmbedded(entity, tableQuery.getTable(),
-                        tableQuery.getQuery(), selectColumns, dataSelect, dataFrom, dataWhere, dataParams, alias, ("d" + i), dateFormat,
-                        dateTimeFormat, locale);
+                boolean added = datatableService.buildDataQueryEmbedded(entity, tableQuery.getTable(), tableQuery.getQuery(), selectColumns,
+                        dataSelect, dataFrom, dataWhere, dataParams, alias, ("d" + i), dateFormat, dateTimeFormat, locale);
                 if (added) {
                     if (!dataSelect.isEmpty()) {
                         select.append(select.isEmpty() ? "SELECT " : ", ").append(dataSelect);
