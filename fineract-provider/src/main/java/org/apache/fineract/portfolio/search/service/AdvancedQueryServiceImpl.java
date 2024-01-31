@@ -59,10 +59,9 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Page<JsonObject> query(@NotNull EntityTables entityTables, @NotNull PagedLocalRequest<AdvancedQueryRequest> pagedRequest,
+    public Page<JsonObject> query(@NotNull EntityTables entity, @NotNull PagedLocalRequest<AdvancedQueryRequest> pagedRequest,
             List<ColumnFilterData> addFilters) {
-        String apptable = EntityTables.SAVINGS_TRANSACTION.getApptableName();
-
+        String apptable = entity.getApptableName();
         AdvancedQueryRequest queryRequest = pagedRequest.getRequest().orElseThrow();
         dataTableValidator.validateTableSearch(queryRequest);
 
@@ -122,7 +121,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
             ArrayList<Object> dataParams = new ArrayList<>();
             for (int i = 0; i < datatableQueries.size(); i++) {
                 TableQueryData tableQuery = datatableQueries.get(i);
-                boolean added = datatableService.buildDataQueryEmbedded(EntityTables.SAVINGS_TRANSACTION, tableQuery.getTable(),
+                boolean added = datatableService.buildDataQueryEmbedded(entity, tableQuery.getTable(),
                         tableQuery.getQuery(), selectColumns, dataSelect, dataFrom, dataWhere, dataParams, alias, ("d" + i), dateFormat,
                         dateTimeFormat, locale);
                 if (added) {
