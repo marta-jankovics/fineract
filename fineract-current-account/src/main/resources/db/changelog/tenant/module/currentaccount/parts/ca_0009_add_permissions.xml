@@ -235,7 +235,7 @@
         </insert>
     </changeSet>
     <!--    Current Identifier -->
-    <changeSet author="fineract" id="3">
+    <changeSet author="fineract" id="4">
         <insert tableName="m_permission">
             <column name="grouping" value="portfolio"/>
             <column name="code" value="READ_CURRENTIDENTIFIER"/>

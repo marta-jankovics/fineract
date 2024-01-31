@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.commands.exception.UnsupportedCommandException;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
@@ -45,7 +44,6 @@ import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDa
 import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
-import org.springframework.dao.DataAccessException;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -88,7 +86,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY),
                 holdTransaction.getId(), holdTransaction.getPaymentTypeId(), CurrentTransactionType.AMOUNT_RELEASE, actualDate, actualDate,
                 holdTransaction.getAmount());
-        return persistTransaction(transaction);
+        return currentTransactionRepository.save(transaction);
     }
 
     @NotNull
@@ -105,21 +103,9 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null,
                 paymentTypeId, deposit, transactionDate, submittedOnDate, transactionAmount);
-        transaction = persistTransaction(transaction);
+        transaction = currentTransactionRepository.save(transaction);
 
         persistDatatableEntries(EntityTables.CURRENT_TRANSACTION, transaction.getId(), command, false, readWriteNonCoreDataService);
-        return transaction;
-    }
-
-    private CurrentTransaction persistTransaction(CurrentTransaction transaction) {
-        try {
-            return currentTransactionRepository.save(transaction);
-        } catch (final DataAccessException dve) {
-            handleDataIntegrityIssues(transaction, dve.getMostSpecificCause(), dve);
-        } catch (final Exception dve) {
-            Throwable throwable = ExceptionUtils.getRootCause(dve.getCause());
-            handleDataIntegrityIssues(transaction, throwable, dve);
-        }
         return transaction;
     }
 

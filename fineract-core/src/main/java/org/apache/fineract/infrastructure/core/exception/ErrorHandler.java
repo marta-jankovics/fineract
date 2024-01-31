@@ -191,12 +191,15 @@ public final class ErrorHandler {
             msgCode = msgCode == null ? codePfx + ".authentication.error" : msgCode;
             return new PlatformDataIntegrityException(msgCode, msg, param, args);
         }
-        if (t instanceof RuntimeException re) {
-            return re;
-        }
         if (t instanceof ParseException) {
             msgCode = msgCode == null ? codePfx + ".parse.error" : msgCode;
             return new PlatformDataIntegrityException(msgCode, msg, param, args);
+        }
+        if (t.getCause() != null) {
+            return getMappable(t.getCause(), msgCode, defaultMsg, param, defaultMsgArgs);
+        }
+        if (t instanceof RuntimeException re) {
+            return re;
         }
         return new RuntimeException(msg, t);
     }

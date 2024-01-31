@@ -65,7 +65,6 @@ import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformSer
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -192,8 +191,7 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductToGLAccountMappingHelper.class)
     public CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper(
-            ProductToGLAccountMappingRepository accountMappingRepository,
-            @Qualifier("productToGLAccountMappingHelper") ProductToGLAccountMappingHelper productToGLAccountMappingHelper,
+            ProductToGLAccountMappingRepository accountMappingRepository, ProductToGLAccountMappingHelper productToGLAccountMappingHelper,
             PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
         return new CurrentProductToGLAccountMappingHelper(accountMappingRepository, productToGLAccountMappingHelper,
                 paymentTypeRepositoryWrapper);
