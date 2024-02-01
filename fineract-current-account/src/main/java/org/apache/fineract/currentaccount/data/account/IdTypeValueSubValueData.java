@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.data.account;
 
 import java.io.Serializable;
 import lombok.Data;
-import org.apache.logging.log4j.util.Strings;
 
 @Data
 public class IdTypeValueSubValueData implements Serializable {
@@ -28,8 +27,4 @@ public class IdTypeValueSubValueData implements Serializable {
     private final String idType;
     private final String value;
     private final String subValue;
-
-    public boolean isEmpty() {
-        return Strings.isBlank(value);
-    }
 }

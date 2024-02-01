@@ -528,12 +528,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             return;
         }
 
-        Map<InteropIdentifierType, AccountIdentifier> existingIdentifiers = accountIdentifierRepository
+        Map<IdTypeValueSubValueData, AccountIdentifier> existingIdentifiers = accountIdentifierRepository
                 .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
-                .collect(Collectors.toMap(AccountIdentifier::getIdentifierType, Function.identity()));
+                .collect(Collectors.toMap(ai -> new IdTypeValueSubValueData(ai.getIdentifierType().name(), ai.getValue(), ai.getSubValue()),
+                        Function.identity()));
 
-        ArrayList<AccountIdentifier> identifiersToDelete = new ArrayList<>();
-        ArrayList<AccountIdentifier> identifiersToSave = new ArrayList<>();
+        List<AccountIdentifier> persistedIdentifiers = new ArrayList<>();
         for (JsonElement identifierElement : identifierArray) {
             IdTypeValueSubValueData identifierObject = new Gson().fromJson(identifierElement, IdTypeValueSubValueData.class);
             String idType = identifierObject.getIdType();
@@ -544,28 +544,29 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
             String value = identifierObject.getValue();
             AccountIdentifier accountIdentifier;
-            if (existingIdentifiers.containsKey(identifierType)) {
-                accountIdentifier = existingIdentifiers.get(identifierType);
+            if (existingIdentifiers.containsKey(identifierObject)) {
+                accountIdentifier = existingIdentifiers.get(identifierObject);
                 validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
-                if (identifierObject.isEmpty()) {
-                    identifiersToDelete.add(accountIdentifier);
-                } else {
-                    accountIdentifier.setValue(value);
-                    accountIdentifier.setSubValue(identifierObject.getSubValue());
-                }
+                accountIdentifier.setValue(value);
+                accountIdentifier.setSubValue(identifierObject.getSubValue());
+                persistedIdentifiers.add(accountIdentifier);
+                existingIdentifiers.remove(identifierObject);
             } else {
-                if (identifierObject.isEmpty()) {
-                    validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
-                } else {
-                    identifiersToSave.add(new AccountIdentifier(PortfolioAccountType.CURRENT, account.getId(), identifierType, value,
-                            identifierObject.getSubValue()));
-                }
+                validator.reset().parameter(ID_VALUE_PARAM).value(value).notBlank();
+                AccountIdentifier savedIdentifier = accountIdentifierRepository.save(new AccountIdentifier(PortfolioAccountType.CURRENT,
+                        account.getId(), identifierType, value, identifierObject.getSubValue()));
+                persistedIdentifiers.add(savedIdentifier);
             }
-            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(identifierObject);
         }
-        validator.throwValidationErrors();
+        List<AccountIdentifier> removedIdentifiers = new ArrayList<>(existingIdentifiers.values());
+        if (!removedIdentifiers.isEmpty()) {
+            accountIdentifierRepository.deleteAll(removedIdentifiers);
+            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("removed", removedIdentifiers));
+        }
+        if (!persistedIdentifiers.isEmpty()) {
+            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("persisted", persistedIdentifiers));
+        }
 
-        accountIdentifierRepository.deleteAll(identifiersToDelete);
-        accountIdentifierRepository.saveAll(identifiersToSave);
+        validator.throwValidationErrors();
     }
 }
