@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.validator.transaction.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
@@ -52,7 +53,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, TRANSACTION_AMOUNT_PARAM, PAYMENT_TYPE_ID_PARAM,
-                    TRANSACTION_ACCOUNT_NUMBER_PARAM, ENFORCE_PARAM));
+                    TRANSACTION_ACCOUNT_NUMBER_PARAM, ENFORCE_PARAM, DATATABLES_PARAM));
 
     @Override
     public void validateDeposit(JsonCommand command) {

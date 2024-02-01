@@ -27,6 +27,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_DIGITS_AFTER_DECIMAL_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_IN_MULTIPLES_OF_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_PRODUCT_RESOURCE_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DESCRIPTION_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.FUND_SOURCE_ACCOUNT_ID_PARAM;
@@ -78,7 +79,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
                     OVERDRAFT_LIMIT_PARAM, ALLOW_FORCE_TRANSACTION_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM, BALANCE_CALCULATION_TYPE_PARAM,
                     CONTROL_ACCOUNT_ID_PARAM, REFERENCE_ACCOUNT_ID_PARAM, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM,
                     TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, WRITE_OFF_ACCOUNT_ID_PARAM, INCOME_FROM_FEE_ACCOUNT_ID_PARAM,
-                    INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM));
+                    INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM, DATATABLES_PARAM));
 
     @Override
     public void validateForCreate(final JsonCommand command) {
