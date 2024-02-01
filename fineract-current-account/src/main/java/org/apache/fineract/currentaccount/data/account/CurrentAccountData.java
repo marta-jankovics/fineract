@@ -35,6 +35,9 @@ public class CurrentAccountData implements Serializable {
     private final ExternalId externalId;
     private final Long clientId;
     private final String productId;
+    private final String productName;
+    private final String productShortName;
+    private final String productDescription;
     private final CurrentAccountStatus status;
     private final LocalDate activatedOnDate;
     private final Boolean allowOverdraft;
