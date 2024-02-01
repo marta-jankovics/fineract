@@ -20,30 +20,29 @@ package org.apache.fineract.currentaccount.service.account;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountIdType;
-import org.apache.fineract.currentaccount.service.IdTypeResolver;
+import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 
 @Getter
-public class CurrentAccountIdTypeResolver {
+@RequiredArgsConstructor
+public class CurrentAccountResolver {
 
-    CurrentAccountIdType currentType;
-    InteropIdentifierType interopType;
+    private final CurrentAccountIdType idType;
+    private final InteropIdentifierType interopIdType;
+    private final String identifier;
+    private final String subIdentifier;
 
-    protected CurrentAccountIdTypeResolver(CurrentAccountIdType currentType, InteropIdentifierType interopType) {
-        this.currentType = currentType;
-        this.interopType = interopType;
+    @NotNull
+    public static CurrentAccountResolver resolveDefault(String identifier) {
+        return new CurrentAccountResolver(CurrentAccountIdType.ID, null, identifier, null);
     }
 
     @NotNull
-    public static CurrentAccountIdTypeResolver resolveDefault() {
-        return new CurrentAccountIdTypeResolver(CurrentAccountIdType.ID, null);
-    }
-
-    @NotNull
-    public static CurrentAccountIdTypeResolver resolve(String idType) {
+    public static CurrentAccountResolver resolve(String idType, String identifier, String subIdentifier) {
         if (idType == null) {
-            return resolveDefault();
+            return resolveDefault(identifier);
         }
         idType = IdTypeResolver.formatIdType(idType);
         CurrentAccountIdType currentType = CurrentAccountIdType.resolveName(idType);
@@ -54,10 +53,10 @@ public class CurrentAccountIdTypeResolver {
                 throw IdTypeResolver.resolveFailed(idType, null);
             }
         }
-        return new CurrentAccountIdTypeResolver(currentType, interopType);
+        return new CurrentAccountResolver(currentType, interopType, identifier, subIdentifier);
     }
 
     public boolean isSecondaryIdentifier() {
-        return interopType != null;
+        return interopIdType != null;
     }
 }

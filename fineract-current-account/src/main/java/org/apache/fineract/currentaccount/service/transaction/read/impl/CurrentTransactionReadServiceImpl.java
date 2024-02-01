@@ -25,10 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
-import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
+import org.apache.fineract.currentaccount.service.transaction.CurrentTransactionResolver;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
@@ -48,9 +48,8 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
-    public CurrentTransactionTemplateResponseData retrieveTemplate(String accountId) {
-        CurrentAccountData currentAccountData = currentAccountReadService
-                .retrieveByIdTypeAndIdentifier(CurrentAccountIdTypeResolver.resolveDefault(), accountId, null);
+    public CurrentTransactionTemplateResponseData retrieveTemplate(@NotNull CurrentAccountResolver accountResolver) {
+        CurrentAccountData currentAccountData = currentAccountReadService.retrieve(accountResolver);
         final List<PaymentTypeData> paymentTypeOptions = this.paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         CurrencyData currencyData = new CurrencyData(currentAccountData.getCurrencyCode(), currentAccountData.getCurrencyName(),
                 currentAccountData.getCurrencyDigitsAfterDecimal(), currentAccountData.getCurrencyInMultiplesOf(),
@@ -65,37 +64,32 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     }
 
     @Override
-    public CurrentTransactionData retrieveByIdTypeAndIdentifier(String accountId, @NotNull CurrentTransactionIdType idType,
-            String identifier) {
-        CurrentTransactionData transactionData = switch (idType) {
-            case ID -> currentTransactionRepository.findByIdAndAccountId(accountId, identifier);
-            case EXTERNAL_ID -> currentTransactionRepository.findByExternalIdAndAccountId(accountId, new ExternalId(identifier));
+    public CurrentTransactionData retrieve(@NotNull CurrentAccountResolver accountResolver,
+            @NotNull CurrentTransactionResolver transactionResolver) {
+        CurrentTransactionData transactionData = switch (transactionResolver.getIdType()) {
+            case ID -> currentTransactionRepository.getTransaction(accountResolver.getIdentifier(), transactionResolver.getIdentifier());
+            case EXTERNAL_ID -> currentTransactionRepository.getTransaction(accountResolver.getIdentifier(),
+                    new ExternalId(transactionResolver.getIdentifier()));
         };
         if (transactionData == null) {
             throw new PlatformResourceNotFoundException("current.product", "Current transaction with %s: %s on account %s cannot be found",
-                    idType, identifier, accountId);
+                    transactionResolver.getIdType(), transactionResolver.getIdType(), accountResolver.getIdType(),
+                    accountResolver.getIdentifier(), accountResolver.getSubIdentifier());
         }
         return transactionData;
     }
 
     @Override
-    public String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentTransactionIdType idType, String identifier) {
-        return switch (idType) {
-            case ID -> identifier;
-            case EXTERNAL_ID -> currentTransactionRepository.findIdByExternalId(new ExternalId(identifier));
+    public String retrieveId(@NotNull CurrentAccountResolver accountResolver, @NotNull CurrentTransactionResolver transactionResolver) {
+        return switch (transactionResolver.getIdType()) {
+            case ID -> transactionResolver.getIdentifier();
+            case EXTERNAL_ID -> currentTransactionRepository.getTransactionId(new ExternalId(transactionResolver.getIdentifier()));
         };
     }
 
     @Override
-    public Page<CurrentTransactionData> retrieveAllByIdTypeAndIdentifier(String accountId, String accountIdType, String accountIdentifier,
-            String accountSubIdentifier, Pageable pageable) {
-        String currentAccountId;
-        if (accountId != null) {
-            currentAccountId = accountId;
-        } else {
-            currentAccountId = currentAccountReadService.retrieveIdByIdTypeAndIdentifier(
-                    CurrentAccountIdTypeResolver.resolve(accountIdType), accountIdentifier, accountSubIdentifier);
-        }
-        return currentTransactionRepository.findByAccountId(currentAccountId, pageable);
+    public Page<CurrentTransactionData> retrieveAll(@NotNull CurrentAccountResolver accountResolver, Pageable pageable) {
+        String currentAccountId = currentAccountReadService.retrieveId(accountResolver);
+        return currentTransactionRepository.getTransactions(currentAccountId, pageable);
     }
 }

@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
+import org.apache.fineract.currentaccount.service.product.CurrentProductResolver;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -65,25 +65,26 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public CurrentProductData retrieveByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier) {
-        CurrentProductData productData = switch (idType) {
-            case ID -> currentProductRepository.findCurrentProductDataById(identifier);
-            case EXTERNAL_ID -> currentProductRepository.findCurrentProductDataByExternalId(new ExternalId(identifier));
-            case SHORT_NAME -> currentProductRepository.findCurrentProductDataByShortName(identifier);
+    public CurrentProductData retrieve(@NotNull CurrentProductResolver productResolver) {
+        CurrentProductData productData = switch (productResolver.getIdType()) {
+            case ID -> currentProductRepository.findCurrentProductDataById(productResolver.getIdentifier());
+            case EXTERNAL_ID ->
+                currentProductRepository.findCurrentProductDataByExternalId(new ExternalId(productResolver.getIdentifier()));
+            case SHORT_NAME -> currentProductRepository.findCurrentProductDataByShortName(productResolver.getIdentifier());
         };
         if (productData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with %s: %s cannot be found", idType,
-                    identifier);
+            throw new PlatformResourceNotFoundException("current.product", "Current product with %s: %s cannot be found",
+                    productResolver.getIdType(), productResolver.getIdentifier());
         }
         return productData;
     }
 
     @Override
-    public String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier) {
-        return switch (idType) {
-            case ID -> identifier;
-            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(identifier));
-            case SHORT_NAME -> currentProductRepository.findIdByShortName(identifier);
+    public String retrieveId(@NotNull CurrentProductResolver productResolver) {
+        return switch (productResolver.getIdType()) {
+            case ID -> productResolver.getIdentifier();
+            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(productResolver.getIdentifier()));
+            case SHORT_NAME -> currentProductRepository.findIdByShortName(productResolver.getIdentifier());
         };
     }
 }

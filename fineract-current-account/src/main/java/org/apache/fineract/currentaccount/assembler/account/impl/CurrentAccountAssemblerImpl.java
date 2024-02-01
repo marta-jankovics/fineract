@@ -65,8 +65,8 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
-import org.apache.fineract.currentaccount.service.IdTypeResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
+import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;

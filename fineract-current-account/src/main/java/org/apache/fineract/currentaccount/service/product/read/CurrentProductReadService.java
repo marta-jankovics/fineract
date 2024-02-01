@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
+import org.apache.fineract.currentaccount.service.product.CurrentProductResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +35,7 @@ public interface CurrentProductReadService {
 
     Page<CurrentProductData> retrieveAll(Pageable pageRequest);
 
-    CurrentProductData retrieveByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier);
+    CurrentProductData retrieve(@NotNull CurrentProductResolver productResolver);
 
-    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentProductIdType idType, String identifier);
+    String retrieveId(@NotNull CurrentProductResolver productResolver);
 }

@@ -47,9 +47,8 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
-import org.apache.fineract.currentaccount.service.IdTypeResolver;
+import org.apache.fineract.currentaccount.service.product.CurrentProductResolver;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -95,12 +94,12 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Path("{productId}")
+    @Path("{identifier}")
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n"
             + "Example Requests:\n" + "\n" + "current-products/1")
     @Override
-    public CurrentProductResponseData retrieveOne(@PathParam("productId") @Parameter(description = "productId") final String productId) {
-        return retrieveOne(CurrentProductIdType.ID, productId);
+    public CurrentProductResponseData retrieveOne(@PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+        return retrieveOne(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @GET
@@ -111,7 +110,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     public CurrentProductResponseData retrieveOne(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
-        return retrieveOne(IdTypeResolver.resolve(CurrentProductIdType.class, idType), identifier);
+        return retrieveOne(CurrentProductResolver.resolve(idType, identifier));
     }
 
     @POST
@@ -128,15 +127,15 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @PUT
-    @Path("{productId}")
+    @Path("{identifier}")
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult update(@PathParam("productId") @Parameter(description = "productId") final String productId,
+    public CommandProcessingResult update(@PathParam("identifier") @Parameter(description = "identifier") final String identifier,
             @Parameter(hidden = true) final String requestJson) {
-        return updateCurrentProduct(null, productId, requestJson);
+        return updateCurrentProduct(CurrentProductResolver.resolveDefault(identifier), requestJson);
     }
 
     @PUT
@@ -149,17 +148,17 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     public CommandProcessingResult update(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
-        return updateCurrentProduct(idType, identifier, requestJson);
+        return updateCurrentProduct(CurrentProductResolver.resolve(idType, identifier), requestJson);
     }
 
     @DELETE
-    @Path("{productId}")
+    @Path("{identifier}")
     @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product", description = "Delete a Current Product")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
     @Override
-    public CommandProcessingResult delete(@PathParam("productId") @Parameter(description = "productId") final String productId) {
-        return deleteCurrentProduct(null, productId);
+    public CommandProcessingResult delete(@PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+        return deleteCurrentProduct(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @DELETE
@@ -170,28 +169,27 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Override
     public CommandProcessingResult delete(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
-        return deleteCurrentProduct(idType, identifier);
+        return deleteCurrentProduct(CurrentProductResolver.resolve(idType, identifier));
     }
 
-    private CommandProcessingResult deleteCurrentProduct(String idType, String identifier) {
-        String productId = getResolvedProductId(idType, identifier);
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(productId).build();
+    private CommandProcessingResult deleteCurrentProduct(@NotNull CurrentProductResolver productResolver) {
+        String identifier = getResolvedProductId(productResolver);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteCurrentProduct(identifier).build();
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
-    private String getResolvedProductId(String idType, String identifier) {
-        return currentProductReadService.retrieveIdByIdTypeAndIdentifier(IdTypeResolver.resolve(CurrentProductIdType.class, idType),
-                identifier);
+    private String getResolvedProductId(@NotNull CurrentProductResolver productResolver) {
+        return currentProductReadService.retrieveId(productResolver);
     }
 
-    private CurrentProductResponseData retrieveOne(@NotNull CurrentProductIdType idType, String identifier) {
+    private CurrentProductResponseData retrieveOne(@NotNull CurrentProductResolver productResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
-        return currentProductResponseDataMapper.map(currentProductReadService.retrieveByIdTypeAndIdentifier(idType, identifier));
+        return currentProductResponseDataMapper.map(currentProductReadService.retrieve(productResolver));
     }
 
-    private CommandProcessingResult updateCurrentProduct(String idType, String identifier, String requestJson) {
-        String productId = getResolvedProductId(idType, identifier);
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(productId).withJson(requestJson).build();
+    private CommandProcessingResult updateCurrentProduct(@NotNull CurrentProductResolver productResolver, String requestJson) {
+        String identifier = getResolvedProductId(productResolver);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentProduct(identifier).withJson(requestJson).build();
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 }

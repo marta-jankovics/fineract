@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
-import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,10 +36,9 @@ public interface CurrentAccountReadService {
 
     List<CurrentAccountData> retrieveAllByClientId(@NotNull Long clientId, Sort sort);
 
-    CurrentAccountData retrieveByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
+    CurrentAccountData retrieve(@NotNull CurrentAccountResolver accountResolver);
 
-    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier);
+    String retrieveId(@NotNull CurrentAccountResolver accountResolver);
 
-    IdentifiersResponseData retrieveIdentifiersByIdTypeAndIdentifier(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
-            String subIdentifier);
+    IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver);
 }

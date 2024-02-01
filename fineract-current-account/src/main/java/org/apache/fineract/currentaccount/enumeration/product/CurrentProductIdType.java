@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.enumeration.product;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.core.service.DefaultOption;
 
 public enum CurrentProductIdType implements DefaultOption {
@@ -26,6 +29,13 @@ public enum CurrentProductIdType implements DefaultOption {
     EXTERNAL_ID, //
     SHORT_NAME, //
     ;
+
+    private static final Map<String, CurrentProductIdType> BY_NAME = Arrays.stream(values())
+            .collect(Collectors.toMap(CurrentProductIdType::name, v -> v));
+
+    public static CurrentProductIdType resolveName(String name) {
+        return name == null ? null : BY_NAME.get(name);
+    }
 
     @Override
     public boolean isDefault() {

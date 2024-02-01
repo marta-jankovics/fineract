@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.currentaccount.enumeration.transaction;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.core.service.DefaultOption;
 
 public enum CurrentTransactionIdType implements DefaultOption {
@@ -25,6 +28,13 @@ public enum CurrentTransactionIdType implements DefaultOption {
     ID, //
     EXTERNAL_ID, //
     ;
+
+    private static final Map<String, CurrentTransactionIdType> BY_NAME = Arrays.stream(values())
+            .collect(Collectors.toMap(CurrentTransactionIdType::name, v -> v));
+
+    public static CurrentTransactionIdType resolveName(String name) {
+        return name == null ? null : BY_NAME.get(name);
+    }
 
     @Override
     public boolean isDefault() {

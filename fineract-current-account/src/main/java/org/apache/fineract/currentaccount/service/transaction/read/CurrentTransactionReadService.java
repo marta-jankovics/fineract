@@ -21,18 +21,19 @@ package org.apache.fineract.currentaccount.service.transaction.read;
 import jakarta.validation.constraints.NotNull;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
-import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionIdType;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
+import org.apache.fineract.currentaccount.service.transaction.CurrentTransactionResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionReadService {
 
-    CurrentTransactionTemplateResponseData retrieveTemplate(String accountId);
+    CurrentTransactionTemplateResponseData retrieveTemplate(@NotNull CurrentAccountResolver accountResolver);
 
-    CurrentTransactionData retrieveByIdTypeAndIdentifier(String accountId, @NotNull CurrentTransactionIdType idType, String identifier);
+    CurrentTransactionData retrieve(@NotNull CurrentAccountResolver accountResolver,
+            @NotNull CurrentTransactionResolver transactionResolver);
 
-    String retrieveIdByIdTypeAndIdentifier(@NotNull CurrentTransactionIdType idType, String identifier);
+    String retrieveId(@NotNull CurrentAccountResolver accountResolver, @NotNull CurrentTransactionResolver transactionResolver);
 
-    Page<CurrentTransactionData> retrieveAllByIdTypeAndIdentifier(String accountId, String accountIdType, String accountIdentifier,
-            String accountSubIdentifier, Pageable pageable);
+    Page<CurrentTransactionData> retrieveAll(@NotNull CurrentAccountResolver accountResolver, Pageable pageable);
 }

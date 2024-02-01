@@ -61,7 +61,7 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseDat
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
-import org.apache.fineract.currentaccount.service.account.CurrentAccountIdTypeResolver;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
@@ -83,6 +83,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Tag(name = "Current Accounts", description = "Current accounts are instances of a particular current product created for an individual. An application process around the creation of accounts is also supported.")
 @RequiredArgsConstructor
+@Consumes({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON })
 public class CurrentAccountsApiResource implements CurrentAccountsApi {
 
     private final PlatformSecurityContext context;
@@ -95,8 +97,6 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
 
     @GET
     @Path("template")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "templateCurrentAccount", summary = "Retrieve Current Account Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Requests:\n\n" + "current-accounts/template\n\n")
     @Override
@@ -106,8 +106,6 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @GET
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "retrieveAllCurrentAccounts", summary = "List current applications/accounts", description = "Lists current applications/accounts\n\n"
             + "Example Requests:\n\n" + "currentaccounts")
     @Override
@@ -119,33 +117,27 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @GET
-    @Path("{accountId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("{identifier}")
     @Operation(operationId = "retrieveOneCurrentAccount", summary = "Retrieve a current application/account", description = "Retrieves a current application/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1")
     @Override
-    public CurrentAccountResponseData retrieveOne(@PathParam("accountId") @Parameter(description = "accountId") final String accountId) {
-        return retrieveOne(CurrentAccountIdTypeResolver.resolveDefault(), accountId, null);
+    public CurrentAccountResponseData retrieveOne(@PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+        return retrieveOne(CurrentAccountResolver.resolveDefault(identifier));
     }
 
     @GET
     @Path("{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "retrieveOneCurrentAccountByIdentifier", summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
     public CurrentAccountResponseData retrieveOne(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
-        return retrieveOne(CurrentAccountIdTypeResolver.resolve(idType), identifier, null);
+        return retrieveOne(CurrentAccountResolver.resolve(idType, identifier, null));
     }
 
     @GET
     @Path("{idType}/{identifier}/{subIdentifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "retrieveOneCurrentAccountBySubIdentifier", summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
@@ -153,38 +145,32 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier) {
-        return retrieveOne(CurrentAccountIdTypeResolver.resolve(idType), identifier, subIdentifier);
+        return retrieveOne(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
     }
 
     @GET
-    @Path("{accountId}/identifiers")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("{identifier}/identifiers")
     @Operation(operationId = "retrieveIdentifiersCurrentAccount", summary = "Retrieve a identifiers/account", description = "Retrieves a current identifiers/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1/identifiers")
     @Override
     public IdentifiersResponseData retrieveIdentifiers(
-            @PathParam("accountId") @Parameter(description = "accountId") final String accountId) {
-        return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolveDefault(), accountId, null);
+            @PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+        return retrieveIdentifiers(CurrentAccountResolver.resolveDefault(identifier));
     }
 
     @GET
     @Path("{idType}/{identifier}/identifiers")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "retrieveIdentifiersCurrentAccountByIdentifier", summary = "Retrieve identifiers/account by alternative id", description = "Retrieves a current identifiers/account by identifier\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/identifiers")
     @Override
     public IdentifiersResponseData retrieveIdentifiers(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
-        return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolve(idType), identifier, null);
+        return retrieveIdentifiers(CurrentAccountResolver.resolve(idType, identifier, null));
     }
 
     @GET
     @Path("{idType}/{identifier}/{subIdentifier}/identifiers")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "retrieveIdentifiersCurrentAccountBySubIdentifier", summary = "Retrieve identifiers/account by alternative id\", description = \"Retrieves a current identifiers/account by identifier\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/identifiers")
     @Override
@@ -192,12 +178,10 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier) {
-        return retrieveIdentifiers(CurrentAccountIdTypeResolver.resolve(idType), identifier, subIdentifier);
+        return retrieveIdentifiers(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
     }
 
     @POST
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "createCurrentAccount", summary = "Create new current application", description = "Creates new current application\n\n"
             + "Mandatory Fields: clientId, productId, accountNumber, submittedOnDate\n\n"
             + "Optional Fields: externalId, submittedOnDate\n\n"
@@ -212,9 +196,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{accountId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("{identifier}")
     @Operation(operationId = "actionCurrentAccount", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -226,16 +208,14 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult action(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
+    public CommandProcessingResult action(@PathParam("identifier") @Parameter(description = "identifier") final String identifier,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
-        return handleCommands(accountId, commandParam, requestJson);
+        return handleCommands(CurrentAccountResolver.resolveDefault(identifier), commandParam, requestJson);
     }
 
     @POST
     @Path("{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "actionCurrentAccountByIdentifier", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -252,13 +232,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
-        return handleCommands(getResolvedAccountId(idType, identifier, null), commandParam, requestJson);
+        return handleCommands(CurrentAccountResolver.resolve(idType, identifier, null), commandParam, requestJson);
     }
 
     @POST
     @Path("{idType}/{identifier}/{subIdentifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "actionCurrentAccountBySubIdentifier", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -276,13 +254,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             @QueryParam("command") @Parameter(description = "command") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
-        return handleCommands(getResolvedAccountId(idType, identifier, subIdentifier), commandParam, requestJson);
+        return handleCommands(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), commandParam, requestJson);
     }
 
     @PUT
-    @Path("{accountId}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("{identifier}")
     @Operation(operationId = "updateCurrentAccount", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -290,15 +266,13 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult update(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
+    public CommandProcessingResult update(@PathParam("identifier") @Parameter(description = "identifier") final String identifier,
             @Parameter(hidden = true) final String requestJson) {
-        return updateCurrentAccount(accountId, requestJson);
+        return updateCurrentAccount(CurrentAccountResolver.resolveDefault(identifier), requestJson);
     }
 
     @PUT
     @Path("{idType}/{identifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "updateCurrentAccountByIdentifier", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -310,13 +284,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
-        return updateCurrentAccount(getResolvedAccountId(idType, identifier, null), requestJson);
+        return updateCurrentAccount(CurrentAccountResolver.resolve(idType, identifier, null), requestJson);
     }
 
     @PUT
     @Path("{idType}/{identifier}/{subIdentifier}")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "updateCurrentAccountBySubIdentifier", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -329,13 +301,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             @Parameter(hidden = true) final String requestJson) {
-        return updateCurrentAccount(getResolvedAccountId(idType, identifier, subIdentifier), requestJson);
+        return updateCurrentAccount(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), requestJson);
     }
 
     @POST
     @Path("query")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
     @Operation(operationId = "advancedQueryCurrentAccount", summary = "Advanced search Current Accounts", description = "Example Requests:\n\n"
             + "current-accounts/query")
     @ApiResponses({
@@ -346,15 +316,15 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{accountId}/query")
+    @Path("{identifier}/query")
     @Operation(operationId = "advancedQueryCurrentAccountById", summary = "Advanced search Current Account", description = "Example Requests:\n\n"
             + "current-accounts/1/query")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public String advancedQuery(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
+    public String advancedQuery(@PathParam("identifier") @Parameter(description = "identifier") final String identifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
-        return query(accountId, queryRequest);
+        return query(CurrentAccountResolver.resolveDefault(identifier), queryRequest);
     }
 
     @POST
@@ -367,7 +337,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     public String advancedQuery(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
-        return query(getResolvedAccountId(idType, identifier, null), queryRequest);
+        return query(CurrentAccountResolver.resolve(idType, identifier, null), queryRequest);
     }
 
     @POST
@@ -381,44 +351,44 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
-        return query(getResolvedAccountId(idType, identifier, subIdentifier), queryRequest);
+        return query(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), queryRequest);
     }
 
-    private CurrentAccountResponseData retrieveOne(@NotNull CurrentAccountIdTypeResolver idType, String identifier, String subIdentifier) {
+    private CurrentAccountResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
-        currentAccountReadService.retrieveByIdTypeAndIdentifier(idType, identifier, subIdentifier);
-        CurrentAccountData accountData = currentAccountReadService.retrieveByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        CurrentAccountData accountData = currentAccountReadService.retrieve(accountResolver);
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountData.getId());
         return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
     }
 
-    private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountIdTypeResolver idType, String identifier,
-            String subIdentifier) {
+    private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_IDENTIFIER_ENTITY_NAME);
-        return currentAccountReadService.retrieveIdentifiersByIdTypeAndIdentifier(idType, identifier, subIdentifier);
+        return currentAccountReadService.retrieveIdentifiers(accountResolver);
     }
 
-    private CommandProcessingResult updateCurrentAccount(String accountId, String requestJson) {
-        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentAccount(accountId).withJson(requestJson).build();
+    private CommandProcessingResult updateCurrentAccount(@NotNull CurrentAccountResolver accountResolver, String requestJson) {
+        String identifier = getResolvedAccountId(accountResolver);
+        final CommandWrapper commandRequest = new CommandWrapperBuilder().updateCurrentAccount(identifier).withJson(requestJson).build();
         return commandSourceWritePlatformService.logCommandSource(commandRequest);
     }
 
-    private CommandProcessingResult handleCommands(String accountId, String commandParam, String requestJson) {
+    private CommandProcessingResult handleCommands(@NotNull CurrentAccountResolver accountResolver, String commandParam,
+            String requestJson) {
         String jsonApiRequest = requestJson;
         if (StringUtils.isBlank(jsonApiRequest)) {
             jsonApiRequest = "{}";
         }
         final CommandWrapperBuilder builder = new CommandWrapperBuilder().withJson(jsonApiRequest);
-
+        String identifier = getResolvedAccountId(accountResolver);
         CommandProcessingResult result = null;
         if (is(commandParam, CurrentAccountApiConstants.CANCEL_ACTION)) {
-            final CommandWrapper commandRequest = builder.cancelCurrentAccountApplication(accountId).build();
+            final CommandWrapper commandRequest = builder.cancelCurrentAccountApplication(identifier).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         } else if (is(commandParam, CurrentAccountApiConstants.ACTIVATE_ACTION)) {
-            final CommandWrapper commandRequest = builder.activateCurrentAccount(accountId).build();
+            final CommandWrapper commandRequest = builder.activateCurrentAccount(identifier).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         } else if (is(commandParam, CurrentAccountApiConstants.CLOSE_ACTION)) {
-            final CommandWrapper commandRequest = builder.closeCurrentAccountApplication(accountId).build();
+            final CommandWrapper commandRequest = builder.closeCurrentAccountApplication(identifier).build();
             result = commandSourceWritePlatformService.logCommandSource(commandRequest);
         }
         if (result == null) {
@@ -427,19 +397,19 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         return result;
     }
 
-    private String query(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
+    private String query(@NotNull CurrentAccountResolver accountResolver, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_ACCOUNT_RESOURCE_NAME);
         List<ColumnFilterData> addFilters = null;
-        if (accountId != null) {
-            addFilters = List.of(ColumnFilterData.eq("id", accountId));
+        String identifier = getResolvedAccountId(accountResolver);
+        if (identifier != null) {
+            addFilters = List.of(ColumnFilterData.eq("id", identifier));
         }
         Page<JsonObject> result = advancedQueryService.query(EntityTables.CURRENT, queryRequest, addFilters);
         return toApiJsonSerializer.serializePretty(true, result);
     }
 
-    private String getResolvedAccountId(String idType, String identifier, String subIdentifier) {
-        return currentAccountReadService.retrieveIdByIdTypeAndIdentifier(CurrentAccountIdTypeResolver.resolve(idType), identifier,
-                subIdentifier);
+    private String getResolvedAccountId(@NotNull CurrentAccountResolver accountResolver) {
+        return currentAccountReadService.retrieveId(accountResolver);
     }
 
     private boolean is(final String commandParam, final String commandValue) {
