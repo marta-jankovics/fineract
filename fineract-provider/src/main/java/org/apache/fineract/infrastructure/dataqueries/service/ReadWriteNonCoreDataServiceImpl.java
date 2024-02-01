@@ -1572,41 +1572,41 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         // means it relates to an m_client that is in a group (still an m_client account)
         return switch (entity) {
             case LOAN -> "select distinct x.* from ( "
-                    + "(select o.id as officeId, l.group_id as groupId, l.client_id as clientId, null as savingsId, l.id as loanId, null as transactionId, null as entityId from m_loan l "
+                    + "(select o.id as officeId, l.group_id as groupId, l.client_id as clientId, null as savingsId, l.id as loanId, null as transactionId, l.id as entityId from m_loan l "
                     + getClientOfficeJoinCondition(officeHierarchy, "l") + " where l.id = " + sqlId + ")" + " union all "
-                    + "(select o.id as officeId, l.group_id as groupId, l.client_id as clientId, null as savingsId, l.id as loanId, null as transactionId, null as entityId from m_loan l "
+                    + "(select o.id as officeId, l.group_id as groupId, l.client_id as clientId, null as savingsId, l.id as loanId, null as transactionId, l.id as entityId from m_loan l "
                     + getGroupOfficeJoinCondition(officeHierarchy, "l") + " where l.id = " + sqlId + ")" + " ) as x";
             case SAVINGS -> "select distinct x.* from ( "
-                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, null as transactionId, null as entityId "
+                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, null as transactionId, s.id as entityId "
                     + "from m_savings_account s " + getClientOfficeJoinCondition(officeHierarchy, "s") + " where s.id = " + sqlId + ")"
                     + " union all "
-                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, null as transactionId, null as entityId "
+                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, null as transactionId, s.id as entityId "
                     + "from m_savings_account s " + getGroupOfficeJoinCondition(officeHierarchy, "s") + " where s.id = " + sqlId + ")"
                     + " ) as x";
             case SAVINGS_TRANSACTION -> "select distinct x.* from ( "
-                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, t.id as transactionId, null as entityId "
+                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, t.id as transactionId, t.id as entityId "
                     + "from m_savings_account_transaction t join m_savings_account s on t.savings_account_id = s.id "
                     + getClientOfficeJoinCondition(officeHierarchy, "s") + " where t.id = " + sqlId + ")" + " union all "
-                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, t.id as transactionId, null as entityId "
+                    + "(select o.id as officeId, s.group_id as groupId, s.client_id as clientId, s.id as savingsId, null as loanId, t.id as transactionId, t.id as entityId "
                     + "from m_savings_account_transaction t join m_savings_account s on t.savings_account_id = s.id "
                     + getGroupOfficeJoinCondition(officeHierarchy, "s") + " where t.id = " + sqlId + ")" + " ) as x";
             case CLIENT ->
-                "select o.id as officeId, null as groupId, c.id as clientId, null as savingsId, null as loanId, null as transactionId, null as entityId from m_client c "
+                "select o.id as officeId, null as groupId, c.id as clientId, null as savingsId, null as loanId, null as transactionId, c.id as entityId from m_client c "
                         + getOfficeJoinCondition(officeHierarchy, "c") + " where c.id = " + sqlId;
             case GROUP, CENTER ->
-                "select o.id as officeId, g.id as groupId, null as clientId, null as savingsId, null as loanId, null as transactionId, null as entityId from m_group g "
+                "select o.id as officeId, g.id as groupId, null as clientId, null as savingsId, null as loanId, null as transactionId, g.id as entityId from m_group g "
                         + getOfficeJoinCondition(officeHierarchy, "g") + " where g.id = " + sqlId;
             case OFFICE ->
-                "select o.id as officeId, null as groupId, null as clientId, null as savingsId, null as loanId, null as transactionId, null as entityId from m_office o "
+                "select o.id as officeId, null as groupId, null as clientId, null as savingsId, null as loanId, null as transactionId, o.id as entityId from m_office o "
                         + "where o.hierarchy like '" + officeHierarchy + "%'" + " and o.id = " + sqlId;
             case CURRENT ->
-                "select o.id as officeId, null as groupId, app.client_id as clientId, null as savingsId, null as loanId, null as transactionId, app.id as entityId "
-                        + "from " + entity.getName() + " app " + getClientOfficeJoinCondition(officeHierarchy, "app") + " where app.id = "
+                "select o.id as officeId, null as groupId, ca.client_id as clientId, null as savingsId, null as loanId, null as transactionId, ca.id as entityId "
+                        + "from " + entity.getName() + " ca " + getClientOfficeJoinCondition(officeHierarchy, "ca") + " where app.id = "
                         + sqlId;
             case CURRENT_TRANSACTION ->
-                "select o.id as officeId, null as groupId, app.client_id as clientId, null as savingsId, null as loanId, app.id as transactionId, acc.id as entityId "
-                        + "from " + entity.getName() + " app join m_current_account acc on app.account_id = acc.id "
-                        + getClientOfficeJoinCondition(officeHierarchy, "acc") + " where app.id = " + sqlId;
+                "select o.id as officeId, null as groupId, ca.client_id as clientId, null as savingsId, null as loanId, ct.id as transactionId, ct.id as entityId "
+                        + "from " + entity.getName() + " ct join m_current_account ca on ct.account_id = ca.id "
+                        + getClientOfficeJoinCondition(officeHierarchy, "ca") + " where ct.id = " + sqlId;
             case LOAN_PRODUCT, SAVINGS_PRODUCT, SHARE_PRODUCT, CURRENT_PRODUCT ->
                 "select null as officeId, null as groupId, null as clientId, null as savingsId, null as loanId, null as transactionId, p.id as entityId from "
                         + entity.getName() + " as p WHERE p.id = " + sqlId;

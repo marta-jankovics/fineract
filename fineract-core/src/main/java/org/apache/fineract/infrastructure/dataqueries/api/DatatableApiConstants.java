@@ -22,7 +22,7 @@ package org.apache.fineract.infrastructure.dataqueries.api;
 public class DatatableApiConstants {
 
     public static final String DATATABLES_PARAM = "datatables";
-    public static final String DATATABLE_NAME_PARAM = "table";
+    public static final String DATATABLE_NAME_PARAM = "name";
     public static final String DATATABLE_ENTRIES_PARAM = "entries";
     public static final String DATATABLE_ID_PARAM = "id";
 
