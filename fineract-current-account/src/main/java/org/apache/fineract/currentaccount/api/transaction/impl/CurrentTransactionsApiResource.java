@@ -62,6 +62,7 @@ import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransa
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
+import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
@@ -87,6 +88,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final CurrentAccountReadService currentAccountReadService;
     private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
     private final AdvancedQueryService advancedQueryService;
+    private final DefaultToApiJsonSerializer<JsonObject> toApiJsonSerializer;
 
     @GET
     @Path("{accountId}/transactions/template")
@@ -278,7 +280,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public Page<JsonObject> advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
+    public String advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(null, queryRequest);
     }
 
@@ -289,7 +291,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public Page<JsonObject> advancedQuery(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
+    public String advancedQuery(@PathParam("accountId") @Parameter(description = "accountId") final String accountId,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(accountId, queryRequest);
     }
@@ -301,8 +303,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public Page<JsonObject> advancedQuery(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
+    public String advancedQuery(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(getResolvedAccountId(idType, identifier, null), queryRequest);
@@ -315,8 +316,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public Page<JsonObject> advancedQuery(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
+    public String advancedQuery(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
@@ -329,13 +329,14 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
                 .map(currentTransactionReadService.retrieveByIdTypeAndIdentifier(accountId, idType, identifier));
     }
 
-    private Page<JsonObject> query(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
+    private String query(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         List<ColumnFilterData> addFilters = null;
         if (accountId != null) {
             addFilters = List.of(ColumnFilterData.eq("account_id", accountId));
         }
-        return advancedQueryService.query(EntityTables.CURRENT_TRANSACTION, queryRequest, addFilters);
+        Page<JsonObject> result = advancedQueryService.query(EntityTables.CURRENT_TRANSACTION, queryRequest, addFilters);
+        return toApiJsonSerializer.serializePretty(true, result);
     }
 
     @NotNull

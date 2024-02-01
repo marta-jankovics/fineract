@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.api.transaction;
 
-import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.GET;
@@ -85,12 +84,12 @@ public interface CurrentTransactionApi {
     CommandProcessingResult action(String accIdType, String accIdentifier, String accSubIdentifier, String idType, String identifier,
             String commandParam, String apiRequestBodyAsJson);
 
-    Page<JsonObject> advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+    String advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    Page<JsonObject> advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+    String advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    Page<JsonObject> advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+    String advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    Page<JsonObject> advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
+    String advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
             UriInfo uriInfo);
 }

@@ -29,7 +29,6 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.commands.exception.UnsupportedCommandException;
-import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
@@ -37,7 +36,6 @@ import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransac
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
@@ -108,28 +106,5 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         persistDatatableEntries(EntityTables.CURRENT_TRANSACTION, transaction.getId(), command, false, readWriteNonCoreDataService);
         return transaction;
-    }
-
-    /*
-     * Guaranteed to throw an exception no matter what the data integrity issue is.
-     */
-    private void handleDataIntegrityIssues(CurrentTransaction transaction, Throwable realCause, Exception dve) {
-        String msgCode = "error.msg." + CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
-        String msg = "Unknown data integrity issue with current account.";
-        String param = null;
-        Object[] msgArgs;
-        Throwable checkEx = realCause == null ? dve : realCause;
-        if (checkEx.getMessage().contains("m_current_transaction_external_id_key")) {
-            final String externalId = transaction.getExternalId().getValue();
-            msgCode += ".duplicate.externalId";
-            msg = "Current transaction with externalId " + externalId + " already exists";
-            param = "externalId";
-            msgArgs = new Object[] { externalId, dve };
-        } else {
-            msgCode += ".unknown.data.integrity.issue";
-            msgArgs = new Object[] { dve };
-        }
-        log.error("Error occurred.", dve);
-        throw ErrorHandler.getMappable(dve, msgCode, msg, param, msgArgs);
     }
 }

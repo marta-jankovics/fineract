@@ -154,7 +154,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         }
 
         StringBuilder query = new StringBuilder().append(select).append(from).append(where);
-        query.append(" ").append(sqlGenerator.buildOrderBy(sortPageable.getSort().toList(), null, false));
+        query.append(" ").append(sqlGenerator.buildOrderBy(sortPageable.getSort().toList(), alias, false));
         if (pageable.isPaged()) {
             query.append(" ").append(sqlGenerator.limit(pageable.getPageSize(), (int) pageable.getOffset()));
         }

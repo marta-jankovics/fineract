@@ -58,12 +58,12 @@ public class DeleteDatatableEntryOneToManyCommandStrategy implements CommandStra
         final List<String> pathParameters = Splitter.on('/').splitToList(relativeUrlWithoutVersion(request));
         // Pluck out the datatable name & entityId out of the relative path
         final String datatable = pathParameters.get(1);
-        final Long entityId = Long.parseLong(pathParameters.get(2));
+        final String appTableId = pathParameters.get(2);
         final Long entryId = Long.parseLong(pathParameters.get(3));
 
         // Calls 'deleteDatatableEntry' function from 'DatatablesApiResource' to delete a datatable entry on an existing
         // entity
-        responseBody = datatablesApiResource.deleteDatatableEntry(datatable, entityId, entryId);
+        responseBody = datatablesApiResource.deleteDatatableEntry(datatable, appTableId, entryId);
 
         response.setStatusCode(HttpStatus.SC_OK);
         // Sets the body of the response after datatable entry is successfully deleted created

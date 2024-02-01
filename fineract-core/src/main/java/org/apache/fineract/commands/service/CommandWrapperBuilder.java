@@ -726,27 +726,27 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder createDatatableEntry(final String datatable, final Long apptableId, final Long datatableId) {
+    public CommandWrapperBuilder createDatatableEntry(final String datatable, final String apptableId, final Long datatableId) {
         this.actionName = "CREATE";
         commonDatatableSettings(datatable, apptableId, datatableId);
         return this;
     }
 
-    public CommandWrapperBuilder updateDatatableEntry(final String datatable, final Long apptableId, final Long datatableId) {
+    public CommandWrapperBuilder updateDatatableEntry(final String datatable, final String apptableId, final Long datatableId) {
         this.actionName = "UPDATE";
         commonDatatableSettings(datatable, apptableId, datatableId);
         return this;
     }
 
-    public CommandWrapperBuilder deleteDatatableEntry(final String datatable, final Long apptableId, final Long datatableId) {
+    public CommandWrapperBuilder deleteDatatableEntry(final String datatable, final String apptableId, final Long datatableId) {
         this.actionName = "DELETE";
         commonDatatableSettings(datatable, apptableId, datatableId);
         return this;
     }
 
-    private void commonDatatableSettings(final String datatable, final Long apptableId, final Long datatableId) {
+    private void commonDatatableSettings(final String datatable, final String apptableId, final Long datatableId) {
         this.entityName = datatable;
-        this.entityId = apptableId;
+        this.entityIdentifier = apptableId;
         this.subentityId = datatableId;
         if (datatableId == null) {
             this.href = "/datatables/" + datatable + "/" + apptableId;

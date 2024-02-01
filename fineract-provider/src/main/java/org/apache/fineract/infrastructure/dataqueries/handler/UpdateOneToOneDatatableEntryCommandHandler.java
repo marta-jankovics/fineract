@@ -40,13 +40,12 @@ public class UpdateOneToOneDatatableEntryCommandHandler implements NewCommandSou
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-
         final CommandProcessingResult commandProcessingResult = this.writePlatformService.updateDatatableEntryOneToOne(command.entityName(),
-                command.entityId(), command);
+                command.getResourceIdentifier(), command);
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
-                .withEntityId(command.entityId()) //
+                .withResourceIdentifier(command.getResourceIdentifier()) //
                 .withOfficeId(commandProcessingResult.getOfficeId()) //
                 .withGroupId(commandProcessingResult.getGroupId()) //
                 .withClientId(commandProcessingResult.getClientId()) //

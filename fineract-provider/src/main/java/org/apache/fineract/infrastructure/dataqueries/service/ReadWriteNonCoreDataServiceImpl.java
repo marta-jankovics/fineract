@@ -1287,7 +1287,9 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         ArrayList<String> insertColumns = new ArrayList<>(
                 List.of(entity.getForeignKeyColumnNameOnDatatable(), CREATEDAT_FIELD_NAME, UPDATEDAT_FIELD_NAME));
         LocalDateTime auditDateTime = DateUtils.getAuditLocalDateTime();
-        ArrayList<Object> params = new ArrayList<>(List.of(appTableId, auditDateTime, auditDateTime));
+        Object fkValue = parseAppTableId(appTableId, entity, headersByName.get(entity.getForeignKeyColumnNameOnDatatable()), dateFormat,
+                dateTimeFormat, locale);
+        ArrayList<Object> params = new ArrayList<>(List.of(fkValue, auditDateTime, auditDateTime));
         for (Map.Entry<String, String> entry : dataParams.entrySet()) {
             if (isTechnicalParam(entry.getKey())) {
                 continue;
@@ -1418,7 +1420,10 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             params.add(columnHeader.getColumnType().toJdbcValue(dialect, columnValue, false));
             changes.put(columnName, columnValue);
         }
-        Serializable primaryKey = datatableId == null ? appTableId : datatableId;
+        Object primaryKey = datatableId == null
+                ? parseAppTableId(appTableId, entity, headersByName.get(entity.getForeignKeyColumnNameOnDatatable()), dateFormat,
+                        dateTimeFormat, locale)
+                : datatableId;
         if (!updateColumns.isEmpty()) {
             ResultsetColumnHeaderData pkColumn = SearchUtil.getFiltered(columnHeaders, ResultsetColumnHeaderData::getIsColumnPrimaryKey);
             params.add(primaryKey);
@@ -1743,6 +1748,13 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
     private String datatableColumnNameToCodeValueName(final String columnName, final String code) {
         return code + "_cd_" + columnName;
+    }
+
+    private Object parseAppTableId(Serializable appTableId, EntityTables entity, ResultsetColumnHeaderData header, String dateFormat,
+            String dateTimeFormat, Locale locale) {
+        return appTableId instanceof String && !entity.getRefColumnType().isStringType()
+                ? SearchUtil.parseJdbcColumnValue(header, (String) appTableId, dateFormat, dateTimeFormat, locale, false, sqlGenerator)
+                : appTableId;
     }
 
     private void handleDataIntegrityIssues(String datatable, Serializable appTableId, final Throwable realCause, final Exception e) {

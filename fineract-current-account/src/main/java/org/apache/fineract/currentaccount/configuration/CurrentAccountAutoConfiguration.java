@@ -155,9 +155,9 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionReadService.class)
-    public CurrentTransactionReadService currentTransactionReadService(CurrentAccountReadService CurrentAccountReadService,
+    public CurrentTransactionReadService currentTransactionReadService(CurrentAccountReadService currentAccountReadService,
             PaymentTypeReadPlatformService paymentTypeReadPlatformService, CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentTransactionReadServiceImpl(CurrentAccountReadService, paymentTypeReadPlatformService,
+        return new CurrentTransactionReadServiceImpl(currentAccountReadService, paymentTypeReadPlatformService,
                 currentTransactionRepository);
     }
 

@@ -287,6 +287,9 @@ public final class SearchUtil {
             String format = dateTimeFormat == null ? DEFAULT_DATETIME_FORMAT : dateTimeFormat;
             return JsonParserHelper.convertDateTimeFrom(columnValue, columnHeader.getColumnName(), format, locale);
         }
+        if (colType.getJavaType().isLongType()) {
+            return Long.valueOf(columnValue);
+        }
         if (colType.isAnyIntegerType()) {
             return helper.convertToInteger(columnValue, columnHeader.getColumnName(), locale);
         }

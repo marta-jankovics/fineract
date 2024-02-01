@@ -51,7 +51,7 @@ public class CreateDatatableEntryCommandStrategyTest {
         final BatchRequest request = getBatchRequest(datatableName, loanId);
         final String responseBody = "{\"resourceId\":193}";
 
-        given(testContext.datatablesApiResource.createDatatableEntry(eq(datatableName), eq(loanId), eq(request.getBody())))
+        given(testContext.datatablesApiResource.createDatatableEntry(eq(datatableName), eq(loanId.toString()), eq(request.getBody())))
                 .willReturn(responseBody);
 
         // when

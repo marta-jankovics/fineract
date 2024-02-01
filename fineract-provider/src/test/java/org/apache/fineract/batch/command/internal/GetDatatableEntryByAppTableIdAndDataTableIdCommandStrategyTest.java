@@ -79,7 +79,7 @@ public class GetDatatableEntryByAppTableIdAndDataTableIdCommandStrategyTest {
         if (queryParameter != null && queryParameter.contains("genericResultSet=true")) {
             genericResultSet = Boolean.TRUE;
         }
-        given(testContext.dataTableApiResource.getDatatableManyEntry(eq(datatableName), eq(loanId), eq(datatableId), eq(null),
+        given(testContext.dataTableApiResource.getDatatableManyEntry(eq(datatableName), eq(loanId.toString()), eq(datatableId), eq(null),
                 eq(genericResultSet), any(UriInfo.class))).willReturn(responseBody);
 
         final BatchResponse response = testContext.subjectToTest.execute(request, testContext.uriInfo);
@@ -88,7 +88,7 @@ public class GetDatatableEntryByAppTableIdAndDataTableIdCommandStrategyTest {
         assertEquals(request.getHeaders(), response.getHeaders());
         assertEquals(responseBody, response.getBody());
 
-        verify(testContext.dataTableApiResource).getDatatableManyEntry(eq(datatableName), eq(loanId), eq(datatableId), eq(null),
+        verify(testContext.dataTableApiResource).getDatatableManyEntry(eq(datatableName), eq(loanId.toString()), eq(datatableId), eq(null),
                 eq(genericResultSet), testContext.uriInfoCaptor.capture());
         MutableUriInfo mutableUriInfo = testContext.uriInfoCaptor.getValue();
         assertThat(mutableUriInfo.getAdditionalQueryParameters()).hasSize(numberOfQueryParams);

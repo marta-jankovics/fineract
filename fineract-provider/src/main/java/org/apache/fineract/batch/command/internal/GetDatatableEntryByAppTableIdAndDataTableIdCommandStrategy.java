@@ -71,7 +71,7 @@ public class GetDatatableEntryByAppTableIdAndDataTableIdCommandStrategy implemen
         // resultSet, uriInfo)
         final String[] resources = StringUtils.split(relativeUrlSubString, "/");
         final String datatable = resources[0];
-        final Long appTableId = Long.parseLong(resources[1]);
+        final String appTableId = resources[1];
         final Long dataTableId = Long.parseLong(StringUtils.substringBefore(resources[2], "?"));
         boolean genericResultSet = false;
         if (relativeUrl.indexOf('?') > 0) {

@@ -57,11 +57,11 @@ public class UpdateDatatableEntryOneToOneCommandStrategy implements CommandStrat
         final List<String> pathParameters = Splitter.on('/').splitToList(relativeUrlWithoutVersion(request));
         // Pluck out the datatable name, entity id & datatable entry id out of the relative path
         final String datatable = pathParameters.get(1);
-        final Long entityId = Long.parseLong(pathParameters.get(2));
+        final String appTableId = pathParameters.get(2);
 
         // Calls 'updateDatatableEntryOneToMany' function from
         // 'DatatablesApiResource' to update a datatable entry on an existing entity in a one-one relationship
-        responseBody = datatablesApiResource.updateDatatableEntryOnetoOne(datatable, entityId, request.getBody());
+        responseBody = datatablesApiResource.updateDatatableEntryOnetoOne(datatable, appTableId, request.getBody());
 
         response.setStatusCode(200);
         // Sets the body of the response after datatable entry is successfully

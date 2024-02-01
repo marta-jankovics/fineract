@@ -52,8 +52,8 @@ public class UpdateDatatableEntryOneToManyCommandStrategyTest {
         final BatchRequest request = getBatchRequest(datatableName, loanId, datatableEntryId);
         final String responseBody = "{\"resourceId\":193}";
 
-        given(testContext.datatablesApiResource.updateDatatableEntryOneToMany(eq(datatableName), eq(loanId), eq(datatableEntryId),
-                eq(request.getBody()))).willReturn(responseBody);
+        given(testContext.datatablesApiResource.updateDatatableEntryOneToMany(eq(datatableName), eq(loanId.toString()),
+                eq(datatableEntryId), eq(request.getBody()))).willReturn(responseBody);
 
         // when
         final BatchResponse response = testContext.subjectToTest.execute(request, testContext.uriInfo);

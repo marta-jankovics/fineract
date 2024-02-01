@@ -57,7 +57,7 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
         // check if is update of own account details
         if (wrapper.isUpdateOfOwnUserDetails(this.context.authenticatedUser(wrapper).getId())) {
             // then allow this operation to proceed.
-            // maker checker doesnt mean anything here.
+            // maker checker doesn't mean anything here.
             isApprovedByChecker = true; // set to true in case permissions have
                                         // been maker-checker enabled by
                                         // accident.
