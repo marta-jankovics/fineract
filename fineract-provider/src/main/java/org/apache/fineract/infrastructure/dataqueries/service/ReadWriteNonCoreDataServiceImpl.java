@@ -1601,7 +1601,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                         + "where o.hierarchy like '" + officeHierarchy + "%'" + " and o.id = " + sqlId;
             case CURRENT ->
                 "select o.id as officeId, null as groupId, ca.client_id as clientId, null as savingsId, null as loanId, null as transactionId, ca.id as entityId "
-                        + "from " + entity.getName() + " ca " + getClientOfficeJoinCondition(officeHierarchy, "ca") + " where app.id = "
+                        + "from " + entity.getName() + " ca " + getClientOfficeJoinCondition(officeHierarchy, "ca") + " where ca.id = "
                         + sqlId;
             case CURRENT_TRANSACTION ->
                 "select o.id as officeId, null as groupId, ca.client_id as clientId, null as savingsId, null as loanId, ct.id as transactionId, ct.id as entityId "
