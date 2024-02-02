@@ -16,21 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.currentaccount.data.accounting;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Data;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 
 @Data
-public class CurrentAccountBalanceData implements Serializable {
+public class GLAccountingHistoryData implements Serializable {
 
     // Current account balance data
     private final Long id;
+    private final PortfolioAccountType accountType;
     private final String accountId;
     private final BigDecimal accountBalance;
-    private final BigDecimal holdAmount;
     private final OffsetDateTime calculatedTill;
     private final String calculatedTillTransactionId;
 }

@@ -1,0 +1,213 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.fineract.currentaccount.service.accounting.write.impl;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.accounting.common.AccountingConstants;
+import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccount;
+import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccountRepositoryWrapper;
+import org.apache.fineract.accounting.glaccount.domain.GLAccount;
+import org.apache.fineract.accounting.journalentry.domain.JournalEntry;
+import org.apache.fineract.accounting.journalentry.domain.JournalEntryRepository;
+import org.apache.fineract.accounting.journalentry.domain.JournalEntryType;
+import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMapping;
+import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
+import org.apache.fineract.currentaccount.domain.accounting.GLAccountingHistory;
+import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashAccounts;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
+import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
+import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
+import org.apache.fineract.organisation.office.domain.Office;
+import org.apache.fineract.organisation.office.domain.OfficeRepository;
+import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@RequiredArgsConstructor
+@Slf4j
+public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountAccountingWriteService {
+
+    private static final List<CurrentTransactionType> ALLOWED_TRANSACTION_TYPES_FOR_ACCOUNTING = List.of(CurrentTransactionType.DEPOSIT,
+            CurrentTransactionType.WITHDRAWAL, CurrentTransactionType.WITHDRAWAL_FEE);
+    private final CurrentAccountRepository currentAccountRepository;
+    private final CurrentTransactionRepository currentTransactionRepository;
+    private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
+    private final FinancialActivityAccountRepositoryWrapper financialActivityAccountRepository;
+    private final ProductToGLAccountMappingRepository accountMappingRepository;
+    private final OfficeRepository officeRepository;
+    private final JournalEntryRepository glJournalEntryRepository;
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createGLEntries(String currenAccountId, OffsetDateTime tillDateTime) {
+        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(currenAccountId);
+        GLAccountingHistory accountingHistory = currentAccountAccountingRepository
+                .findByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, currenAccountId)
+                .orElse(new GLAccountingHistory(currenAccountId, PortfolioAccountType.CURRENT, BigDecimal.ZERO, null, 1L));
+        List<CurrentTransaction> transactionList;
+        if (accountingHistory.isNew()) {
+            transactionList = currentTransactionRepository.getTransactionsTill(currenAccountId, tillDateTime);
+        } else {
+            CurrentTransaction currentTransaction = currentTransactionRepository
+                    .findById(accountingHistory.getCalculatedTillTransactionId())
+                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
+                            "Current transaction with id {} does not found", accountingHistory.getCalculatedTillTransactionId()));
+            transactionList = currentTransactionRepository.getTransactionsFromAndTill(currenAccountId,
+                    currentTransaction.getCreatedDateTime(), tillDateTime);
+        }
+
+        Office office = officeRepository.getReferenceById(currentAccountData.getOfficeId());
+        transactionList.forEach(transaction -> {
+            if (ALLOWED_TRANSACTION_TYPES_FOR_ACCOUNTING.contains(transaction.getTransactionType())) {
+                createJournalEntryForTransaction(office, currentAccountData, transaction, accountingHistory);
+            }
+            accountingHistory.setCalculatedTillTransactionId(transaction.getId());
+            accountingHistory.setAccountBalance(calculateBalance(accountingHistory, transaction));
+        });
+        currentAccountAccountingRepository.save(accountingHistory);
+    }
+
+    private BigDecimal calculateBalance(GLAccountingHistory accountingHistory, CurrentTransaction transaction) {
+        return switch (transaction.getTransactionType()) {
+            case DEPOSIT, AMOUNT_RELEASE -> accountingHistory.getAccountBalance().add(transaction.getAmount());
+            case WITHDRAWAL, WITHDRAWAL_FEE, AMOUNT_HOLD -> accountingHistory.getAccountBalance().subtract(transaction.getAmount());
+        };
+    }
+
+    private void createJournalEntryForTransaction(Office office, CurrentAccountData accountData, CurrentTransaction transaction,
+            GLAccountingHistory accountingHistory) {
+        CurrentProductCashAccounts debitAccountReferenceId;
+        CurrentProductCashAccounts creditAccountReferenceId;
+        CurrentProductCashAccounts overdraftDebitReferenceId;
+        CurrentProductCashAccounts overdraftCreditReferenceId;
+        switch (transaction.getTransactionType()) {
+            case DEPOSIT -> {
+                debitAccountReferenceId = CurrentProductCashAccounts.REFERENCE;
+                creditAccountReferenceId = CurrentProductCashAccounts.CONTROL;
+                overdraftDebitReferenceId = CurrentProductCashAccounts.REFERENCE;
+                overdraftCreditReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
+            }
+            case WITHDRAWAL -> {
+                debitAccountReferenceId = CurrentProductCashAccounts.CONTROL;
+                creditAccountReferenceId = CurrentProductCashAccounts.REFERENCE;
+                overdraftDebitReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
+                overdraftCreditReferenceId = CurrentProductCashAccounts.REFERENCE;
+            }
+            case WITHDRAWAL_FEE -> {
+                debitAccountReferenceId = CurrentProductCashAccounts.CONTROL;
+                creditAccountReferenceId = CurrentProductCashAccounts.INCOME_FROM_FEES;
+                overdraftDebitReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
+                overdraftCreditReferenceId = CurrentProductCashAccounts.INCOME_FROM_FEES;
+            }
+            default -> throw new UnsupportedOperationException(
+                    String.format("Unhandled transaction type for Current account accounting: %s", transaction.getTransactionType()));
+        }
+        createJournalEntryForTransactionType(office, accountData, transaction, accountingHistory, debitAccountReferenceId,
+                creditAccountReferenceId, overdraftDebitReferenceId, overdraftCreditReferenceId);
+    }
+
+    private void createJournalEntryForTransactionType(Office office, CurrentAccountData accountData, CurrentTransaction transaction,
+            GLAccountingHistory accountingHistory, CurrentProductCashAccounts debitAccountReferenceId,
+            CurrentProductCashAccounts creditAccountReferenceId, CurrentProductCashAccounts overdraftDebitReferenceId,
+            CurrentProductCashAccounts overdraftCreditReferenceId) {
+        BigDecimal overdraftAmount = MathUtil.isLessThanZero(accountingHistory.getAccountBalance())
+                ? accountingHistory.getAccountBalance().negate()
+                : BigDecimal.ZERO;
+        BigDecimal transactionBalance = transaction.getAmount();
+        if (MathUtil.isGreaterThanZero(overdraftAmount)) {
+            BigDecimal internalTransactionBalance = MathUtil.isGreaterThan(transactionBalance, overdraftAmount) ? overdraftAmount
+                    : transactionBalance;
+
+            createJournalEntries(office, accountData.getCurrencyCode(), overdraftDebitReferenceId.getId(),
+                    overdraftCreditReferenceId.getId(), accountData.getProductId(), transaction.getPaymentTypeId(), accountData.getId(),
+                    transaction.getId(), transaction.getTransactionDate(), transaction.getSubmittedOnDate(), internalTransactionBalance);
+
+            transactionBalance = transactionBalance.subtract(internalTransactionBalance);
+        }
+        if (MathUtil.isGreaterThanZero(transactionBalance)) {
+            createJournalEntries(office, accountData.getCurrencyCode(), debitAccountReferenceId.getId(), creditAccountReferenceId.getId(),
+                    accountData.getProductId(), transaction.getPaymentTypeId(), accountData.getId(), transaction.getId(),
+                    transaction.getTransactionDate(), transaction.getSubmittedOnDate(), transactionBalance);
+        }
+    }
+
+    private void createJournalEntries(final Office office, final String currencyCode, final int accountTypeToDebitId,
+            final int accountTypeToCreditId, final String currentProductId, final Long paymentTypeId, final String currentAccountId,
+            final String transactionId, final LocalDate transactionDate, final LocalDate submittedOnDate, final BigDecimal amount) {
+        final GLAccount debitAccount = getLinkedGLAccountForSavingsProduct(currentProductId, accountTypeToDebitId, paymentTypeId);
+        final GLAccount creditAccount = getLinkedGLAccountForSavingsProduct(currentProductId, accountTypeToCreditId, paymentTypeId);
+        createJournalEntry(office, currencyCode, JournalEntryType.DEBIT, debitAccount, currentAccountId, transactionId, transactionDate,
+                submittedOnDate, amount);
+        createJournalEntry(office, currencyCode, JournalEntryType.CREDIT, creditAccount, currentAccountId, transactionId, transactionDate,
+                submittedOnDate, amount);
+    }
+
+    private GLAccount getLinkedGLAccountForSavingsProduct(final String currentProductId, final int accountMappingTypeId,
+            final Long paymentTypeId) {
+        GLAccount glAccount;
+        if (isOrganizationAccount(accountMappingTypeId)) {
+            FinancialActivityAccount financialActivityAccount = this.financialActivityAccountRepository
+                    .findByFinancialActivityTypeWithNotFoundDetection(accountMappingTypeId);
+            glAccount = financialActivityAccount.getGlAccount();
+        } else {
+            ProductToGLAccountMapping accountMapping = this.accountMappingRepository.findCoreProductToFinAccountMapping(currentProductId,
+                    PortfolioProductType.CURRENT.getValue(), accountMappingTypeId);
+            /****
+             * Get more specific mapping for FUND source accounts (based on payment channels). Note that fund source
+             * placeholder ID would be same for both cash and accrual accounts
+             ***/
+            if (accountMappingTypeId == AccountingConstants.CashAccountsForSavings.SAVINGS_REFERENCE.getValue()) {
+                final ProductToGLAccountMapping paymentChannelSpecificAccountMapping = this.accountMappingRepository
+                        .findByProductIdentifierAndProductTypeAndFinancialAccountTypeAndPaymentTypeId(currentProductId,
+                                PortfolioProductType.CURRENT.getValue(), accountMappingTypeId, paymentTypeId);
+                if (paymentChannelSpecificAccountMapping != null) {
+                    accountMapping = paymentChannelSpecificAccountMapping;
+                }
+            }
+            glAccount = accountMapping.getGlAccount();
+        }
+        return glAccount;
+    }
+
+    private boolean isOrganizationAccount(final int accountMappingTypeId) {
+        return AccountingConstants.FinancialActivity.fromInt(accountMappingTypeId) != null;
+    }
+
+    private void createJournalEntry(final Office office, final String currencyCode, final JournalEntryType entryType,
+            final GLAccount account, final String currentAccountId, final String transactionId, final LocalDate transactionDate,
+            final LocalDate submittedOnDate, final BigDecimal amount) {
+        final boolean manualEntry = false;
+        final JournalEntry journalEntry = JournalEntry.createNewForCurrentAccount(office, account, currencyCode, transactionId, manualEntry,
+                transactionDate, entryType, amount, PortfolioProductType.CURRENT.getValue(), currentAccountId, submittedOnDate);
+
+        glJournalEntryRepository.save(journalEntry);
+    }
+}

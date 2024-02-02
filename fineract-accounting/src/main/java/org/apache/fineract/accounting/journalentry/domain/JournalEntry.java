@@ -97,6 +97,9 @@ public class JournalEntry extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     @Column(name = "entity_id")
     private Long entityId;
 
+    @Column(name = "entity_identifier")
+    private String entityIdentifier;
+
     @Column(name = "ref_num")
     private String referenceNumber;
 
@@ -109,8 +112,9 @@ public class JournalEntry extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     protected JournalEntry(final Office office, final PaymentDetail paymentDetail, final GLAccount glAccount, final String currencyCode,
             final String transactionId, final boolean manualEntry, final LocalDate transactionDate, final Integer type,
-            final BigDecimal amount, final String description, final Integer entityType, final Long entityId, final String referenceNumber,
-            final Long loanTransactionId, final Long savingsTransactionId, final Long clientTransactionId, final Long shareTransactionId) {
+            final BigDecimal amount, final String description, final Integer entityType, final Long entityId, final String entityIdentifier,
+            final String referenceNumber, final Long loanTransactionId, final Long savingsTransactionId, final Long clientTransactionId,
+            final Long shareTransactionId, final LocalDate submittedOnDate) {
         this.office = office;
         this.glAccount = glAccount;
         this.reversalJournalEntry = null;
@@ -123,6 +127,7 @@ public class JournalEntry extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.description = StringUtils.defaultIfEmpty(description, null);
         this.entityType = entityType;
         this.entityId = entityId;
+        this.entityIdentifier = entityIdentifier;
         this.referenceNumber = referenceNumber;
         this.currencyCode = currencyCode;
         this.loanTransactionId = loanTransactionId;
@@ -130,7 +135,7 @@ public class JournalEntry extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.clientTransactionId = clientTransactionId;
         this.paymentDetail = paymentDetail;
         this.shareTransactionId = shareTransactionId;
-        this.submittedOnDate = DateUtils.getBusinessLocalDate();
+        this.submittedOnDate = submittedOnDate;
     }
 
     public static JournalEntry createNew(final Office office, final PaymentDetail paymentDetail, final GLAccount glAccount,
@@ -139,8 +144,16 @@ public class JournalEntry extends AbstractAuditableWithUTCDateTimeCustom<Long> {
             final Long entityId, final String referenceNumber, final Long loanTransaction, final Long savingsTransaction,
             final Long clientTransaction, Long shareTransactionId) {
         return new JournalEntry(office, paymentDetail, glAccount, currencyCode, transactionId, manualEntry, transactionDate,
-                journalEntryType.getValue(), amount, description, entityType, entityId, referenceNumber, loanTransaction,
-                savingsTransaction, clientTransaction, shareTransactionId);
+                journalEntryType.getValue(), amount, description, entityType, entityId, null, referenceNumber, loanTransaction,
+                savingsTransaction, clientTransaction, shareTransactionId, DateUtils.getBusinessLocalDate());
+    }
+
+    public static JournalEntry createNewForCurrentAccount(final Office office, final GLAccount glAccount, final String currencyCode,
+            final String transactionId, final boolean manualEntry, final LocalDate transactionDate, final JournalEntryType journalEntryType,
+            final BigDecimal amount, final Integer entityType, final String entityIdentifier, final LocalDate submittedOnDate) {
+        return new JournalEntry(office, null, glAccount, currencyCode, transactionId, manualEntry, transactionDate,
+                journalEntryType.getValue(), amount, null, entityType, null, entityIdentifier, null, null, null, null, null,
+                submittedOnDate);
     }
 
     public boolean isDebitEntry() {

@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.configuration;
 
+import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccountRepositoryWrapper;
+import org.apache.fineract.accounting.journalentry.domain.JournalEntryRepository;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
 import org.apache.fineract.accounting.producttoaccountmapping.service.ProductToGLAccountMappingHelper;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
@@ -31,6 +33,7 @@ import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseD
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
+import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
@@ -42,6 +45,10 @@ import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBa
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountBalanceWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.accounting.read.CurrentAccountAccountingReadService;
+import org.apache.fineract.currentaccount.service.accounting.read.impl.CurrentAccountAccountingReadServiceImpl;
+import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.currentaccount.service.accounting.write.impl.CurrentAccountAccountingWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.currentaccount.service.product.read.impl.CurrentProductReadServiceImpl;
 import org.apache.fineract.currentaccount.service.product.write.CurrentProductWriteService;
@@ -60,6 +67,7 @@ import org.apache.fineract.currentaccount.validator.transaction.impl.CurrentTran
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
+import org.apache.fineract.organisation.office.domain.OfficeRepository;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
@@ -193,5 +201,25 @@ public class CurrentAccountAutoConfiguration {
             PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
         return new CurrentProductToGLAccountMappingHelper(accountMappingRepository, productToGLAccountMappingHelper,
                 paymentTypeRepositoryWrapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentAccountAccountingReadService.class)
+    public CurrentAccountAccountingReadService currentAccountAccountingReadService(
+            CurrentAccountAccountingRepository currentAccountAccountingRepository) {
+        return new CurrentAccountAccountingReadServiceImpl(currentAccountAccountingRepository);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentAccountAccountingWriteService.class)
+    public CurrentAccountAccountingWriteService currentAccountAccountingWriteService(CurrentAccountRepository currentAccountRepository,
+            CurrentTransactionRepository currentTransactionRepository,
+            CurrentAccountAccountingRepository currentAccountAccountingRepository,
+            FinancialActivityAccountRepositoryWrapper financialActivityAccountRepository,
+            ProductToGLAccountMappingRepository accountMappingRepository, OfficeRepository officeRepository,
+            JournalEntryRepository glJournalEntryRepository) {
+        return new CurrentAccountAccountingWriteServiceImpl(currentAccountRepository, currentTransactionRepository,
+                currentAccountAccountingRepository, financialActivityAccountRepository, accountMappingRepository, officeRepository,
+                glJournalEntryRepository);
     }
 }

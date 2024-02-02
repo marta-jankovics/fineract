@@ -16,21 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.currentaccount.service.accounting.write;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import lombok.Data;
 
-@Data
-public class CurrentAccountBalanceData implements Serializable {
+public interface CurrentAccountAccountingWriteService {
 
-    // Current account balance data
-    private final Long id;
-    private final String accountId;
-    private final BigDecimal accountBalance;
-    private final BigDecimal holdAmount;
-    private final OffsetDateTime calculatedTill;
-    private final String calculatedTillTransactionId;
+    void createGLEntries(String currenAccountId, OffsetDateTime tillDateTime);
 }
