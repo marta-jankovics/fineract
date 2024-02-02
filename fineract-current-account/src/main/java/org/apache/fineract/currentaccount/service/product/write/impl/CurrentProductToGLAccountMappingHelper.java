@@ -115,14 +115,10 @@ public class CurrentProductToGLAccountMappingHelper {
             // find all existing payment Channel to Fund source Mappings
             final List<ProductToGLAccountMapping> existingPaymentChannelToFundSourceMappings = this.accountMappingRepository
                     .findAllPaymentTypeToFundSourceMappings(product.getId(), PortfolioProductType.CURRENT.getValue());
-            /**
-             * Variable stores a map representation of Payment channels (key) and their fund sources (value) extracted
-             * from the passed in Jsoncommand
-             **/
+            // Variable stores a map representation of Payment channels (key) and their fund sources (value) extracted
+            // from the passed in Jsoncommand
             final Map<Long, Long> inputPaymentChannelFundSourceMap = new HashMap<>();
-            /***
-             * Variable stores all payment types which have already been mapped to Fund Sources in the system
-             **/
+            // Variable stores all payment types which have already been mapped to Fund Sources in the system
             final Set<Long> existingPaymentTypes = new HashSet<>();
             if (changes != null) {
                 changes.put(PAYMENT_CHANNEL_TO_FUND_SOURCE_MAPPINGS_PARAM,

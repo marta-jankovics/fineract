@@ -56,10 +56,6 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
         this.calculatedTillTransactionId = calculatedTillTransactionId;
     }
 
-    private void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
     public void setAccountBalance(BigDecimal accountBalance) {
         this.accountBalance = accountBalance;
     }

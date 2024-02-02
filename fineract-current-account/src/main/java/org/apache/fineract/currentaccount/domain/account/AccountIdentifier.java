@@ -72,18 +72,6 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
         this.subValue = subValue;
     }
 
-    private void setAccountType(PortfolioAccountType accountType) {
-        this.accountType = accountType;
-    }
-
-    private void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    private void setIdentifierType(InteropIdentifierType identifierType) {
-        this.identifierType = identifierType;
-    }
-
     public void setValue(String value) {
         this.value = value;
     }

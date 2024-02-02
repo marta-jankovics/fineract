@@ -120,14 +120,6 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<Strin
         this.externalId = externalId;
     }
 
-    private void setClientId(Long clientId) {
-        this.clientId = clientId;
-    }
-
-    private void setProductId(String productId) {
-        this.productId = productId;
-    }
-
     public void setStatus(CurrentAccountStatus status) {
         this.status = status;
     }
