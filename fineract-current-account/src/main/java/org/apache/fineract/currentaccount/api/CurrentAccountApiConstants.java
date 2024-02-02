@@ -84,7 +84,6 @@ public class CurrentAccountApiConstants {
     public static final String ACCOUNTING_TYPE_PARAM = "accountingType";
     public static final String PAYMENT_TYPE_ID_PARAM = "paymentTypeId";
     public static final String TRANSACTION_ACCOUNT_NUMBER_PARAM = "accountNumber";
-    public static final String ENFORCE_PARAM = "enforce";
     public static final String ALLOW_OVERDRAFT_PARAM = "allowOverdraft";
     public static final String ALLOW_FORCE_TRANSACTION_PARAM = "allowForceTransaction";
     public static final String BALANCE_CALCULATION_TYPE_PARAM = "balanceCalculationType";

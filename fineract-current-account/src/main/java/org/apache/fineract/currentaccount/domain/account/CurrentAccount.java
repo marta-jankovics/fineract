@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.domain.account;
 
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus.SUBMITTED;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,10 +32,8 @@ import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
@@ -41,9 +41,7 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "m_current_account", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "account_no" }, name = "m_current_account_account_no_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_external_id_key") })
@@ -92,22 +90,69 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<Strin
     @Version
     private Long version;
 
-    public static CurrentAccount newInstanceForSubmit(Long clientId, String productId, String accountNumber, ExternalId externalId,
+    public CurrentAccount(String accountNumber, ExternalId externalId, Long clientId, String productId, CurrentAccountStatus status,
             boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction, BigDecimal minimumRequiredBalance,
             BalanceCalculationType balanceCalculationType) {
+        this.accountNumber = accountNumber;
+        this.externalId = externalId;
+        this.clientId = clientId;
+        this.productId = productId;
+        this.status = status;
+        this.allowOverdraft = allowOverdraft;
+        this.overdraftLimit = overdraftLimit;
+        this.allowForceTransaction = allowForceTransaction;
+        this.minimumRequiredBalance = minimumRequiredBalance;
+        this.balanceCalculationType = balanceCalculationType;
+    }
 
-        CurrentAccount currentAccount = new CurrentAccount();
-        currentAccount.setClientId(clientId);
-        currentAccount.setProductId(productId);
-        currentAccount.setAccountNumber(accountNumber);
-        currentAccount.setStatus(CurrentAccountStatus.SUBMITTED);
-        currentAccount.setExternalId(externalId);
-        currentAccount.setAllowOverdraft(allowOverdraft);
-        currentAccount.setOverdraftLimit(overdraftLimit);
-        currentAccount.setAllowForceTransaction(allowForceTransaction);
-        currentAccount.setMinimumRequiredBalance(minimumRequiredBalance);
-        currentAccount.setBalanceCalculationType(balanceCalculationType);
+    public static CurrentAccount newInstanceForSubmit(String accountNumber, ExternalId externalId, Long clientId, String productId,
+            boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction, BigDecimal minimumRequiredBalance,
+            BalanceCalculationType balanceCalculationType) {
+        return new CurrentAccount(accountNumber, externalId, clientId, productId, SUBMITTED, allowOverdraft, overdraftLimit,
+                allowForceTransaction, minimumRequiredBalance, balanceCalculationType);
+    }
 
-        return currentAccount;
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public void setExternalId(ExternalId externalId) {
+        this.externalId = externalId;
+    }
+
+    private void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    private void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public void setStatus(CurrentAccountStatus status) {
+        this.status = status;
+    }
+
+    public void setActivatedOnDate(LocalDate activatedOnDate) {
+        this.activatedOnDate = activatedOnDate;
+    }
+
+    public void setAllowOverdraft(boolean allowOverdraft) {
+        this.allowOverdraft = allowOverdraft;
+    }
+
+    public void setOverdraftLimit(BigDecimal overdraftLimit) {
+        this.overdraftLimit = overdraftLimit;
+    }
+
+    public void setAllowForceTransaction(boolean allowForceTransaction) {
+        this.allowForceTransaction = allowForceTransaction;
+    }
+
+    public void setMinimumRequiredBalance(BigDecimal minimumRequiredBalance) {
+        this.minimumRequiredBalance = minimumRequiredBalance;
+    }
+
+    public void setBalanceCalculationType(BalanceCalculationType balanceCalculationType) {
+        this.balanceCalculationType = balanceCalculationType;
     }
 }

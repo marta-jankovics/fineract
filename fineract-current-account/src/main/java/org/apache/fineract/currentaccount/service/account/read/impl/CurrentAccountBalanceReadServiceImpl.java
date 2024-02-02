@@ -56,7 +56,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
     private CurrentAccountBalanceData calculateBalance(String accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
             Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceRepository.getBalance(accountId);
-        List<CurrentTransaction> currentTransactionDataList;
+        List<CurrentTransaction> currentTransactionDataList; // TODO CURRENT! load data
         BigDecimal accountBalance;
         BigDecimal holdAmount;
         OffsetDateTime calculatedTillDate;

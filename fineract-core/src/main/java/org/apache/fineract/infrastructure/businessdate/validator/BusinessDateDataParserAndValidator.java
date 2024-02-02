@@ -22,7 +22,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ public class BusinessDateDataParserAndValidator {
     private final FromJsonHelper jsonHelper;
 
     public BusinessDateData validateAndParseUpdate(@NotNull final JsonCommand command) {
-        final DataValidatorBuilder dataValidator = new DataValidatorBuilder(new ArrayList<>()).resource("businessdate.update");
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource("businessdate.update");
         JsonObject element = extractJsonObject(command);
 
         BusinessDateData result = validateAndParseUpdate(dataValidator, element, jsonHelper);

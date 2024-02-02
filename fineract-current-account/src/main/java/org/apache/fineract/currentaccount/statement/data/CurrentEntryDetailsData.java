@@ -40,7 +40,7 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
     }
 
     public static CurrentEntryDetailsData create(@NotNull CurrentTransaction transaction, Map<String, Object> clientDetails,
-            @NotNull String currency, @NotNull Map<String, Object> details) {
+            @NotNull String currency, @NotNull Map<String, Object> details) { // TODO CURRENT! load data
         String endToEndId = (String) details.get("end_to_end_id");
         TransactionReferencesData references = TransactionReferencesData.create(endToEndId, String.valueOf(transaction.getId()));
         BalanceAmountData balance = new BalanceAmountData(transaction.getAmount(), currency);

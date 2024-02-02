@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.assembler.transaction.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_CODE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
@@ -29,13 +30,18 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.commands.exception.UnsupportedCommandException;
+import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
+import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
+import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
@@ -50,6 +56,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     private final ExternalIdFactory externalIdFactory;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
+    private final CurrentProductRepository currentProductRepository;
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
@@ -102,9 +109,27 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null,
                 paymentTypeId, deposit, transactionDate, submittedOnDate, transactionAmount);
+
+        String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
+        validateTransaction(account, transaction, currencyCode);
+
         transaction = currentTransactionRepository.save(transaction);
 
         persistDatatableEntries(EntityTables.CURRENT_TRANSACTION, transaction.getId(), command, false, readWriteNonCoreDataService);
         return transaction;
+    }
+
+    private void validateTransaction(CurrentAccount account, CurrentTransaction transaction, String currencyCode) {
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
+                .resource(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
+        if (currencyCode != null) {
+            final CurrentProduct product = currentProductRepository.findById(account.getProductId())
+                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
+                            "Current product with provided id: %s cannot be found", account.getProductId()));
+            if (!currencyCode.equals(product.getCurrency().getCode())) {
+                dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).failWithCode("should.match.product.value");
+            }
+        }
+        dataValidator.throwValidationErrors();
     }
 }

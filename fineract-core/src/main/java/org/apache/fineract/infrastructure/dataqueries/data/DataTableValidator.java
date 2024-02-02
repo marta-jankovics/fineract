@@ -101,8 +101,7 @@ public class DataTableValidator {
     }
 
     public void validateTableSearch(@NotNull AdvancedQueryData queryData) {
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>())
-                .resource(DataTableApiConstant.DATATABLE_RESOURCE_NAME);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(DataTableApiConstant.DATATABLE_RESOURCE_NAME);
         validateQueryData(queryData, validator);
         validator.throwValidationErrors();
     }

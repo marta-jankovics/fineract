@@ -68,13 +68,12 @@ import org.apache.fineract.currentaccount.repository.product.CurrentProductRepos
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
-import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
@@ -163,9 +162,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             balanceCalculationType = product.getBalanceCalculationType();
         }
 
-        CurrentAccount account = CurrentAccount.newInstanceForSubmit(client.getId(), product.getId(), accountNumber,
-                externalIdFactory.create(externalId), allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance,
-                balanceCalculationType);
+        CurrentAccount account = CurrentAccount.newInstanceForSubmit(accountNumber, externalIdFactory.create(externalId), client.getId(),
+                product.getId(), allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType);
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
@@ -181,8 +179,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     @Override
     public Map<String, Object> update(CurrentAccount account, JsonCommand command) {
         Map<String, Object> actualChanges = new HashMap<>();
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.MODIFY_ACTION);
 
         final String localeAsInput = command.locale();
@@ -236,16 +233,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         if (!actualChanges.isEmpty()) {
             if (!account.getStatus().isSubmitted()) {
-                baseDataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
+                dataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
             }
             actualChanges.put("locale", localeAsInput);
         }
 
         updateIdentifiers(account, command, actualChanges);
 
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
+        dataValidator.throwValidationErrors();
 
         final CurrentProduct product = currentProductRepository.findById(account.getProductId())
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
@@ -269,19 +264,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     public Map<String, Object> cancelApplication(CurrentAccount account, JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CANCEL_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
 
         account.setStatus(CurrentAccountStatus.CANCELLED);
@@ -302,20 +292,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String submittalDateAsString = formatter.format(submittalDate);
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(submittalDateAsString)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(submittalDateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
         if (DateUtils.isAfterBusinessDate(cancelledOnDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(cancelledOnDate)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(cancelledOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
         persistEntityAction(account, EntityActionType.CANCEL, cancelledOnDate);
         return actualChanges;
@@ -325,18 +309,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     public Map<String, Object> activate(CurrentAccount account, JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.ACTIVATE_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
                     .failWithCodeNoParameterAddedToErrorCode("not.in.submitted.state");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
 
         LocalDate activationDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
@@ -356,8 +336,9 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         Client client = clientRepository.findById(account.getClientId())
                 .orElseThrow(() -> new ClientNotFoundException(account.getClientId()));
         if (client != null && client.isActivatedAfter(account.getActivatedOnDate())) {
-            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
+            dataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
+            dataValidator.throwValidationErrors();
         }
 
         final LocalDate submittedOnDate = fetchSubmittedOnDate(account);
@@ -365,21 +346,15 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String dateAsString = formatter.format(submittedOnDate);
 
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(dateAsString)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(dateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submitted.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
 
         if (DateUtils.isAfterBusinessDate(activationDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(activationDate)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(activationDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
-
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
 
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
@@ -391,16 +366,13 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     public Map<String, Object> close(CurrentAccount account, JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CLOSE_ACTION);
 
         final CurrentAccountStatus currentStatus = account.getStatus();
         if (!CurrentAccountStatus.ACTIVE.hasStateOf(currentStatus)) {
-            baseDataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.active.state");
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.active.state");
+            dataValidator.throwValidationErrors();
         }
 
         final Locale locale = command.extractLocale();
@@ -408,24 +380,20 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final LocalDate closedDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
 
         if (DateUtils.isBefore(closedDate, account.getActivatedOnDate())) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
                     .failWithCode("must.be.after.activation.date");
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
         if (DateUtils.isAfterBusinessDate(closedDate)) {
-            baseDataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
+            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
                     .failWithCode("cannot.be.a.future.date");
-            if (!dataValidationErrors.isEmpty()) {
-                throw new PlatformApiDataValidationException(dataValidationErrors);
-            }
+            dataValidator.throwValidationErrors();
         }
 
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
 
-        if (currentAccountBalanceData.getAccountBalance().compareTo(BigDecimal.ZERO) != 0
-                || currentAccountBalanceData.getHoldAmount().compareTo(BigDecimal.ZERO) != 0) {
+        if (!MathUtil.isEmpty(currentAccountBalanceData.getAccountBalance())
+                || !MathUtil.isEmpty(currentAccountBalanceData.getHoldAmount())) {
             throw new GeneralPlatformDomainRuleException("error.msg.account.close.with.balance",
                     "Account cannot be closed. Balance is not 0.", account.getId());
         }
@@ -447,37 +415,30 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     }
 
     private void validateAccountValuesWithProduct(CurrentProduct product, CurrentAccount account) {
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME);
-        if (account.getOverdraftLimit() != null && product.getOverdraftLimit() != null
-                && account.getOverdraftLimit().compareTo(product.getOverdraftLimit()) > 0) {
-            baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(account.getOverdraftLimit())
-                    .parameter("overDraftLimitOnProduct").value(product.getOverdraftLimit()).failWithCode("cannot.exceed.product.value");
+        if (product.getOverdraftLimit() != null && MathUtil.isGreaterThan(account.getOverdraftLimit(), product.getOverdraftLimit())) {
+            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(account.getOverdraftLimit()).parameter("overDraftLimitOnProduct")
+                    .value(product.getOverdraftLimit()).failWithCode("cannot.exceed.product.value");
         }
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
+        dataValidator.throwValidationErrors();
     }
 
     private void validateDates(Client client, LocalDate submittedOnDate) {
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CREATE_ACTION);
 
         if (DateUtils.isDateInTheFuture(submittedOnDate)) {
-            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate)
+            dataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
         }
 
         if (client != null && client.isActivatedAfter(submittedOnDate)) {
-            baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
+            dataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(client.getActivationDate())
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
         }
 
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
+        dataValidator.throwValidationErrors();
     }
 
     private LocalDate fetchSubmittedOnDate(CurrentAccount account) {
@@ -492,7 +453,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         if (!command.hasParameter(IDENTIFIERS_PARAM)) {
             return;
         }
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
         JsonArray identifierArray = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
         if (identifierArray == null) {
             return;
@@ -522,7 +483,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             return;
         }
         actualChanges.computeIfAbsent(IDENTIFIERS_PARAM, k -> new ArrayList<>());
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
         JsonArray identifierArray = command.jsonElement(IDENTIFIERS_PARAM).getAsJsonArray();
         if (identifierArray == null) {
             return;

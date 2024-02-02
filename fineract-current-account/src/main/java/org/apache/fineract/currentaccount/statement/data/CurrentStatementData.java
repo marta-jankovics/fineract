@@ -64,7 +64,7 @@ public final class CurrentStatementData extends StatementData {
     public static CurrentStatementData create(@NotNull AccountStatement statement, @NotNull CurrentAccount account,
             Map<String, Object> clientDetails, @NotNull Map<String, Object> accountDetails, @NotNull LocalDate fromDate,
             @NotNull LocalDate toDate, @NotNull String identification, @NotNull OffsetDateTime creationDateTime, int statementType,
-            boolean isConversionAccount, @NotNull List<CurrentTransaction> transactions,
+            boolean isConversionAccount, @NotNull List<CurrentTransaction> transactions, // TODO CURRENT! loan data
             @NotNull Map<String, Map<String, Object>> transactionDetails) {
         DateTimePeriodData fromToDate = DateTimePeriodData.create(fromDate, toDate);
         String iban = null; // (String) accountDetails.get("iban"); only one of the identifiers can be stored here

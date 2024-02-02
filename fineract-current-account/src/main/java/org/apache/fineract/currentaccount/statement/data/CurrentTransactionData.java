@@ -54,7 +54,8 @@ public final class CurrentTransactionData extends TransactionData {
     }
 
     public static CurrentTransactionData create(@NotNull CurrentTransaction transaction, Map<String, Object> clientDetails,
-            @NotNull String currency, int statementType, @NotNull Map<String, Object> details) {
+            @NotNull String currency, int statementType, @NotNull Map<String, Object> details) { // TODO CURRENT! load
+                                                                                                 // data
         CurrentEntryDetailsData entryDetails = null;
         String structuredData = (String) details.get("entry_details");
         if (Strings.isEmpty(structuredData)) {

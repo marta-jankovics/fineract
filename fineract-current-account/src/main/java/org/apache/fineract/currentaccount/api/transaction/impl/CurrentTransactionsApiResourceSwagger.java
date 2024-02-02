@@ -32,7 +32,7 @@ public final class CurrentTransactionsApiResourceSwagger {
 
         private PostCurrentTransactionsRequest() {}
 
-        @Schema(example = "27 March 2022")
+        @Schema(example = "27 March 2022", nullable = true)
         public String transactionDate;
         @Schema(example = "1000")
         public BigDecimal transactionAmount;
@@ -42,6 +42,8 @@ public final class CurrentTransactionsApiResourceSwagger {
         public String dateFormat;
         @Schema(example = "1")
         public Integer paymentTypeId;
+        @Schema(example = "USD", nullable = true)
+        public String currencyCode;
         @Schema(description = "Datatable details")
         public List<DatatableEntriesRequest> datatables;
     }

@@ -28,7 +28,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.portfolio.PortfolioProductType;
@@ -36,7 +35,6 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 //TODO: Move to core when it goes to support other entities as well
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "m_entity_action")

@@ -51,10 +51,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -65,10 +63,8 @@ import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.currentaccount.validator.product.CurrentProductDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
-import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 
 @RequiredArgsConstructor
 public class CurrentProductDataValidatorImpl implements CurrentProductDataValidator {
@@ -91,84 +87,81 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_PRODUCT_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_PRODUCT_RESOURCE_NAME);
 
         final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
-        baseDataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
+        dataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
 
         final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
-        baseDataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
+        dataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
 
         final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
-        baseDataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
+        dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
 
         final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
-        baseDataValidator.reset().parameter(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
+        dataValidator.reset().parameter(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
 
         if (command.parameterExists(CURRENCY_IN_MULTIPLES_OF_PARAM)) {
             final Integer inMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM, Locale.getDefault());
-            baseDataValidator.reset().parameter(CURRENCY_IN_MULTIPLES_OF_PARAM).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
+            dataValidator.reset().parameter(CURRENCY_IN_MULTIPLES_OF_PARAM).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
 
         if (command.parameterExists(DESCRIPTION_PARAM)) {
             final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
-            baseDataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).ignoreIfNull().notExceedingLengthOf(500);
+            dataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).ignoreIfNull().notExceedingLengthOf(500);
         }
 
         // accounting related data validation
         final String accountingRuleType = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
-        baseDataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleType).notNull()
+        dataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleType).notNull()
                 .isOneOfEnumValues(AccountingRuleType.class);
 
         if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
             final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
-            baseDataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
         }
 
         final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
-        baseDataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
+        dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
 
         if (allowOverdraft) {
             final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-            baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
         }
 
         final String balanceCalculationType = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
-        baseDataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
+        dataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                 .isOneOfEnumValues(BalanceCalculationType.class);
 
         if (AccountingRuleType.valueOf(accountingRuleType).equals(AccountingRuleType.CASH_BASED)) {
             final Long controlAccountId = command.longValueOfParameterNamed(CONTROL_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(controlAccountId).notNull().integerGreaterThanZero();
+            dataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(controlAccountId).notNull().integerGreaterThanZero();
 
             final Long referenceAccountId = command.longValueOfParameterNamed(REFERENCE_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(referenceAccountId).notNull().integerGreaterThanZero();
+            dataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(referenceAccountId).notNull().integerGreaterThanZero();
 
             final Long transfersInSuspenseAccountId = command.longValueOfParameterNamed(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
+            dataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
                     .integerGreaterThanZero();
 
             final Long incomeFromFeeAccountId = command.longValueOfParameterNamed(INCOME_FROM_FEE_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
+            dataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
                     .integerGreaterThanZero();
 
             final Long incomeFromPenaltyAccountId = command.longValueOfParameterNamed(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
+            dataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
                     .integerGreaterThanZero();
 
             final Long overdraftControlAccountId = command.longValueOfParameterNamed(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
+            dataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
                     .integerGreaterThanZero();
 
             final Long writeOffAccountId = command.longValueOfParameterNamed(WRITE_OFF_ACCOUNT_ID_PARAM);
-            baseDataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writeOffAccountId).notNull().integerGreaterThanZero();
+            dataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writeOffAccountId).notNull().integerGreaterThanZero();
 
-            validatePaymentChannelFundSourceMappings(baseDataValidator, command);
+            validatePaymentChannelFundSourceMappings(dataValidator, command);
         }
-
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        dataValidator.throwValidationErrors();
     }
 
     @Override
@@ -181,120 +174,109 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_PRODUCT_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_PRODUCT_RESOURCE_NAME);
 
         if (command.parameterExists(NAME_PARAM)) {
             final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
-            baseDataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
+            dataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
         }
 
         if (command.parameterExists(SHORT_NAME_PARAM)) {
             final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
-            baseDataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
+            dataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
         }
 
         if (command.parameterExists(DESCRIPTION_PARAM)) {
             final String description = command.stringValueOfParameterNamedAllowingNull(DESCRIPTION_PARAM);
-            baseDataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).notBlank().notExceedingLengthOf(500);
+            dataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).notBlank().notExceedingLengthOf(500);
         }
 
         if (command.parameterExists(CURRENCY_CODE_PARAM)) {
             final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
-            baseDataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
+            dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
         }
 
         if (command.parameterExists(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM)) {
             final Integer digitsAfterDecimal = command.integerValueSansLocaleOfParameterNamed(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM);
-            baseDataValidator.reset().parameter(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM).value(digitsAfterDecimal).notNull().inMinMaxRange(0,
-                    6);
+            dataValidator.reset().parameter(CURRENCY_DIGITS_AFTER_DECIMAL_PARAM).value(digitsAfterDecimal).notNull().inMinMaxRange(0, 6);
         }
 
         if (command.parameterExists(CURRENCY_IN_MULTIPLES_OF_PARAM)) {
             final Integer inMultiplesOf = command.integerValueOfParameterNamed(CURRENCY_IN_MULTIPLES_OF_PARAM, Locale.getDefault());
-            baseDataValidator.reset().parameter(CURRENCY_IN_MULTIPLES_OF_PARAM).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
+            dataValidator.reset().parameter(CURRENCY_IN_MULTIPLES_OF_PARAM).value(inMultiplesOf).ignoreIfNull().integerZeroOrGreater();
         }
         AccountingRuleType accountingRuleType = product.getAccountingType();
         if (command.parameterExists(CURRENCY_IN_MULTIPLES_OF_PARAM)) {
             final String accountingRuleTypeStr = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
-            baseDataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleTypeStr).notNull()
+            dataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleTypeStr).notNull()
                     .isOneOfEnumValues(AccountingRuleType.class);
             accountingRuleType = AccountingRuleType.valueOf(accountingRuleTypeStr);
         }
         if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
             final BigDecimal minimumRequiredBalance = command
                     .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
-            baseDataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance);
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance);
         }
 
         if (command.parameterExists(ALLOW_OVERDRAFT_PARAM)) {
             final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
-            baseDataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
+            dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
 
             if (allowOverdraft) {
                 final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-                baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+                dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
             }
         }
 
         if (!command.parameterExists(ALLOW_OVERDRAFT_PARAM) && command.parameterExists(OVERDRAFT_LIMIT_PARAM)) {
             final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-            baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
         }
 
         if (command.parameterExists(BALANCE_CALCULATION_TYPE_PARAM)) {
             final String balanceCalculationType = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
-            baseDataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
+            dataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                     .isOneOfEnumValues(BalanceCalculationType.class);
         }
 
         if (accountingRuleType.equals(AccountingRuleType.CASH_BASED)) {
             if (command.parameterExists(CONTROL_ACCOUNT_ID_PARAM)) {
                 final Long savingsControlAccountId = command.longValueOfParameterNamed(CONTROL_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(savingsControlAccountId).notNull()
-                        .integerGreaterThanZero();
+                dataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(savingsControlAccountId).notNull().integerGreaterThanZero();
 
             }
             if (command.parameterExists(REFERENCE_ACCOUNT_ID_PARAM)) {
                 final Long savingsReferenceAccountId = command.longValueOfParameterNamed(REFERENCE_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(savingsReferenceAccountId).notNull()
+                dataValidator.reset().parameter(REFERENCE_ACCOUNT_ID_PARAM).value(savingsReferenceAccountId).notNull()
                         .integerGreaterThanZero();
             }
             if (command.parameterExists(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM)) {
                 final Long transfersInSuspenseAccountId = command.longValueOfParameterNamed(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
+                dataValidator.reset().parameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM).value(transfersInSuspenseAccountId).notNull()
                         .integerGreaterThanZero();
             }
             if (command.parameterExists(INCOME_FROM_FEE_ACCOUNT_ID_PARAM)) {
                 final Long incomeFromFeeAccountId = command.longValueOfParameterNamed(INCOME_FROM_FEE_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
+                dataValidator.reset().parameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM).value(incomeFromFeeAccountId).notNull()
                         .integerGreaterThanZero();
             }
             if (command.parameterExists(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM)) {
                 final Long incomeFromPenaltyAccountId = command.longValueOfParameterNamed(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
+                dataValidator.reset().parameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM).value(incomeFromPenaltyAccountId).notNull()
                         .integerGreaterThanZero();
             }
             if (command.parameterExists(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM)) {
                 final Long overdraftControlAccountId = command.longValueOfParameterNamed(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
+                dataValidator.reset().parameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM).value(overdraftControlAccountId).notNull()
                         .integerGreaterThanZero();
             }
             if (command.parameterExists(WRITE_OFF_ACCOUNT_ID_PARAM)) {
                 final Long writtenoff = command.longValueOfParameterNamed(WRITE_OFF_ACCOUNT_ID_PARAM);
-                baseDataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writtenoff).notNull().integerGreaterThanZero();
+                dataValidator.reset().parameter(WRITE_OFF_ACCOUNT_ID_PARAM).value(writtenoff).notNull().integerGreaterThanZero();
             }
-            validatePaymentChannelFundSourceMappings(baseDataValidator, command);
+            validatePaymentChannelFundSourceMappings(dataValidator, command);
         }
-
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
-    }
-
-    private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
+        dataValidator.throwValidationErrors();
     }
 
     /**

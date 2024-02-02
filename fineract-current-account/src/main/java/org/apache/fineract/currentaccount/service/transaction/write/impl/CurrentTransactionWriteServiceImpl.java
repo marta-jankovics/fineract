@@ -18,8 +18,6 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.write.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
-
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,6 +38,7 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
@@ -91,10 +90,10 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction withdrawalTransaction = currentTransactionAssembler.withdrawal(account, command, changes);
-        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(ENFORCE_PARAM);
-        testBalance(account, withdrawalTransaction, enforce);
+        // TODO: CURRENT! force param
+        testBalance(account, withdrawalTransaction, false);
 
-        // TODO: accounting and external event emitting
+        // TODO: CURRENT! accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
         // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
@@ -117,10 +116,10 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         checkClientActive(account);
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction holdTransaction = currentTransactionAssembler.hold(account, command, changes);
-        boolean enforce = command.booleanPrimitiveValueOfParameterNamed(ENFORCE_PARAM);
-        testBalance(account, holdTransaction, enforce);
+        // TODO: CURRENT! force param
+        testBalance(account, holdTransaction, false);
 
-        // TODO: accounting and external event emitting
+        // TODO: CURRENT! accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,
         // backdatedTxnsAllowedTill);
         // businessEventNotifierService.notifyPostBusinessEvent(new CurrentXXXBusinessEvent(deposit));
@@ -162,21 +161,22 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     }
 
     private void testBalance(CurrentAccount account, CurrentTransaction debitTransaction, boolean enforce) {
-        if (!enforce) {
-            final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
-            BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance()
-                    .subtract(currentAccountBalanceData.getHoldAmount()).subtract(debitTransaction.getAmount());
-            if (newAvailableBalance.compareTo(BigDecimal.ZERO) < 0) {
-                if (account.isAllowOverdraft() && newAvailableBalance.negate().compareTo(account.getOverdraftLimit()) > 0) {
-                    throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");
-                } else {
-                    throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
-                }
-            } else if (account.getMinimumRequiredBalance() != null
-                    && account.getMinimumRequiredBalance().compareTo(newAvailableBalance) > 0) {
-                throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated",
-                        "Violated minimum required balance!");
+        if (enforce) {
+            return;
+        }
+        final CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
+        BigDecimal newAvailableBalance = currentAccountBalanceData.getAccountBalance().subtract(currentAccountBalanceData.getHoldAmount())
+                .subtract(debitTransaction.getAmount());
+        if (MathUtil.isLessThanZero(newAvailableBalance)) {
+            if (!account.isAllowOverdraft()) {
+                throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
+            } else if (MathUtil.isGreaterThan(newAvailableBalance.abs(), account.getOverdraftLimit())) {
+                throw new GeneralPlatformDomainRuleException("error.msg.overdraft.limit.reached", "Reached overdraft limit!");
             }
+        }
+        if (account.getMinimumRequiredBalance() != null && MathUtil.isLessThan(newAvailableBalance, account.getMinimumRequiredBalance())) {
+            throw new GeneralPlatformDomainRuleException("error.msg.minimum.required.balance.violated",
+                    "Violated minimum required balance!");
         }
     }
 

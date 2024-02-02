@@ -24,17 +24,13 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "m_current_account_balance")
 public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
@@ -52,4 +48,27 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
 
     @Version
     private Long version;
+
+    public CurrentAccountBalance(String accountId, BigDecimal accountBalance, BigDecimal holdAmount, String calculatedTillTransactionId) {
+        this.accountId = accountId;
+        this.accountBalance = accountBalance;
+        this.holdAmount = holdAmount;
+        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    }
+
+    private void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public void setAccountBalance(BigDecimal accountBalance) {
+        this.accountBalance = accountBalance;
+    }
+
+    public void setHoldAmount(BigDecimal holdAmount) {
+        this.holdAmount = holdAmount;
+    }
+
+    public void setCalculatedTillTransactionId(String calculatedTillTransactionId) {
+        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    }
 }

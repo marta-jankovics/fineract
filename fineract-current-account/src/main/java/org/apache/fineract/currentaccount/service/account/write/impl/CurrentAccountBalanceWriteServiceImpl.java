@@ -43,7 +43,7 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountId, tillDateTime);
         if (currentAccountBalance == null) {
             currentAccountBalance = new CurrentAccountBalance(accountId, currentAccountBalanceData.getAccountBalance(),
-                    currentAccountBalanceData.getHoldAmount(), currentAccountBalanceData.getCalculatedTillTransactionId(), 1L);
+                    currentAccountBalanceData.getHoldAmount(), currentAccountBalanceData.getCalculatedTillTransactionId());
         } else {
             currentAccountBalance.setAccountBalance(currentAccountBalanceData.getAccountBalance());
             currentAccountBalance.setHoldAmount(currentAccountBalanceData.getHoldAmount());

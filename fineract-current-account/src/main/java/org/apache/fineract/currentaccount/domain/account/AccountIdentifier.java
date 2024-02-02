@@ -27,7 +27,6 @@ import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.eclipselink.EmptyStringIfNullConverter;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
@@ -38,7 +37,6 @@ import org.eclipse.persistence.annotations.Converter;
 //TODO: Move to core when it goes to support other entities as well
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_account_identifier")
 @Converter(name = "EmptyStringIfNullConverter", converterClass = EmptyStringIfNullConverter.class)
@@ -71,6 +69,26 @@ public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Lo
         this.accountId = accountId;
         this.identifierType = identifierType;
         this.value = value;
+        this.subValue = subValue;
+    }
+
+    private void setAccountType(PortfolioAccountType accountType) {
+        this.accountType = accountType;
+    }
+
+    private void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    private void setIdentifierType(InteropIdentifierType identifierType) {
+        this.identifierType = identifierType;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void setSubValue(String subValue) {
         this.subValue = subValue;
     }
 }

@@ -174,8 +174,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionAssembler.class)
     public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
-            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentTransactionRepository);
+            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentProductRepository currentProductRepository,
+            CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentProductRepository,
+                currentTransactionRepository);
     }
 
     @Bean

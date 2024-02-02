@@ -30,10 +30,8 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
@@ -42,14 +40,13 @@ import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "m_current_product", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "m_current_product_name_key"),
         @UniqueConstraint(columnNames = { "short_name" }, name = "m_current_product_short_name_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_product_external_id_key") })
 public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<String> {
 
+    // TODO CURRENT! interface for string id entities
     @Id
     @GeneratedValue(generator = "nanoIdSequence")
     @Getter(onMethod = @__(@Override))
@@ -92,4 +89,64 @@ public class CurrentProduct extends AbstractAuditableWithUTCDateTimeCustom<Strin
 
     @Version
     private Long version;
+
+    public CurrentProduct(ExternalId externalId, String name, String shortName, String description, MonetaryCurrency currency,
+            AccountingRuleType accountingType, boolean allowOverdraft, BigDecimal overdraftLimit, boolean allowForceTransaction,
+            BigDecimal minimumRequiredBalance, BalanceCalculationType balanceCalculationType) {
+        this.externalId = externalId;
+        this.name = name;
+        this.shortName = shortName;
+        this.description = description;
+        this.currency = currency;
+        this.accountingType = accountingType;
+        this.allowOverdraft = allowOverdraft;
+        this.overdraftLimit = overdraftLimit;
+        this.allowForceTransaction = allowForceTransaction;
+        this.minimumRequiredBalance = minimumRequiredBalance;
+        this.balanceCalculationType = balanceCalculationType;
+    }
+
+    public void setExternalId(ExternalId externalId) {
+        this.externalId = externalId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCurrency(MonetaryCurrency currency) {
+        this.currency = currency;
+    }
+
+    public void setAccountingType(AccountingRuleType accountingType) {
+        this.accountingType = accountingType;
+    }
+
+    public void setAllowOverdraft(boolean allowOverdraft) {
+        this.allowOverdraft = allowOverdraft;
+    }
+
+    public void setOverdraftLimit(BigDecimal overdraftLimit) {
+        this.overdraftLimit = overdraftLimit;
+    }
+
+    public void setAllowForceTransaction(boolean allowForceTransaction) {
+        this.allowForceTransaction = allowForceTransaction;
+    }
+
+    public void setMinimumRequiredBalance(BigDecimal minimumRequiredBalance) {
+        this.minimumRequiredBalance = minimumRequiredBalance;
+    }
+
+    public void setBalanceCalculationType(BalanceCalculationType balanceCalculationType) {
+        this.balanceCalculationType = balanceCalculationType;
+    }
 }

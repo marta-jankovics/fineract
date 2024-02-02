@@ -39,10 +39,8 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +48,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
-import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 
 @RequiredArgsConstructor
@@ -73,32 +69,30 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
         }
-
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
         final Long clientId = command.longValueOfParameterNamed(CLIENT_ID_PARAM);
-        baseDataValidator.reset().parameter(CLIENT_ID_PARAM).value(clientId).notNull().integerGreaterThanZero();
+        dataValidator.reset().parameter(CLIENT_ID_PARAM).value(clientId).notNull().integerGreaterThanZero();
 
         final String productId = command.stringValueOfParameterNamedAllowingNull(PRODUCT_ID_PARAM);
-        baseDataValidator.reset().parameter(PRODUCT_ID_PARAM).value(productId).notNull().notBlank();
+        dataValidator.reset().parameter(PRODUCT_ID_PARAM).value(productId).notNull().notBlank();
 
         final LocalDate submittedOnDate = command.localDateValueOfParameterNamed(SUBMITTED_ON_DATE_PARAM);
-        baseDataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate).ignoreIfNull();
+        dataValidator.reset().parameter(SUBMITTED_ON_DATE_PARAM).value(submittedOnDate).ignoreIfNull();
 
         if (command.hasParameter(ACCOUNT_NUMBER_PARAM)) {
             final String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
-            baseDataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
+            dataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
-        validateExternalId(command, baseDataValidator);
-        validateMinimumRequiredBalanceParams(baseDataValidator, command);
-        validateOverdraftParams(baseDataValidator, command);
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        validateExternalId(command, dataValidator);
+        validateMinimumRequiredBalanceParams(dataValidator, command);
+        validateOverdraftParams(dataValidator, command);
+
+        dataValidator.throwValidationErrors();
     }
 
     @Override
@@ -106,24 +100,22 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
         }
-
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
         if (command.parameterExists(ACCOUNT_NUMBER_PARAM)) {
             final String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
-            baseDataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
+            dataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
-        validateExternalId(command, baseDataValidator);
+        validateExternalId(command, dataValidator);
 
-        validateMinimumRequiredBalanceParams(baseDataValidator, command);
-        validateOverdraftParams(baseDataValidator, command);
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        validateMinimumRequiredBalanceParams(dataValidator, command);
+        validateOverdraftParams(dataValidator, command);
+
+        dataValidator.throwValidationErrors();
     }
 
     @Override
@@ -139,12 +131,6 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
     @Override
     public void validateClosing(JsonCommand command) {
         validateAccountAction(command);
-    }
-
-    private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
     }
 
     private void validateOverdraftParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
@@ -171,21 +157,18 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
         }
-
         final Set<String> disbursementParameters = new HashSet<>(Arrays.asList(ACTION_DATE_PARAM, LOCALE_PARAM, DATE_FORMAT_PARAM));
 
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), disbursementParameters);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
         final LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
-        baseDataValidator.reset().parameter(ACTION_DATE_PARAM).value(cancelledOnDate).ignoreIfNull()
+        dataValidator.reset().parameter(ACTION_DATE_PARAM).value(cancelledOnDate).ignoreIfNull()
                 .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
 
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        dataValidator.throwValidationErrors();
     }
 
     private static void validateExternalId(JsonCommand command, DataValidatorBuilder baseDataValidator) {

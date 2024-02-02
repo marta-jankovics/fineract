@@ -23,7 +23,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -88,7 +87,7 @@ public final class StatementParser {
     public ProductStatementData parseProductStatementForCreate(JsonObject element, Long productId, PortfolioProductType productType) {
         fromJsonHelper.checkForUnsupportedParameters(element, PRODUCT_STATEMENT_CREATE_PARAMETERS);
 
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(PRODUCT_STATEMENT_RESOURCE);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(PRODUCT_STATEMENT_RESOURCE);
 
         validator.parameter(PARAM_PRODUCT_ID).value(productId).notBlank();
         validator.parameter(PARAM_PRODUCT_TYPE).value(productType).notNull();
@@ -117,7 +116,7 @@ public final class StatementParser {
     public ProductStatementData parseProductStatementForUpdate(JsonElement element, Long productId, PortfolioProductType productType) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), PRODUCT_STATEMENT_UPDATE_PARAMETERS);
 
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(PRODUCT_STATEMENT_RESOURCE);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(PRODUCT_STATEMENT_RESOURCE);
 
         String code = parseStatementCode(element, validator);
         StatementType statementType = null;
@@ -162,7 +161,7 @@ public final class StatementParser {
     public AccountStatementData parseAccountStatementForCreate(JsonObject element, Serializable accountId) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), ACCOUNT_STATEMENT_CREATE_PARAMETERS);
 
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(ACCOUNT_STATEMENT_RESOURCE);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(ACCOUNT_STATEMENT_RESOURCE);
 
         validator.parameter(PARAM_ACCOUNT_ID).value(accountId).notBlank();
 
@@ -186,7 +185,7 @@ public final class StatementParser {
     public AccountStatementData parseAccountStatementForUpdate(JsonObject element, Long accountId) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), ACCOUNT_STATEMENT_UPDATE_PARAMETERS);
 
-        final DataValidatorBuilder validator = new DataValidatorBuilder(new ArrayList<>()).resource(ACCOUNT_STATEMENT_RESOURCE);
+        final DataValidatorBuilder validator = new DataValidatorBuilder().resource(ACCOUNT_STATEMENT_RESOURCE);
 
         String code = null;
         if (fromJsonHelper.parameterExists(PARAM_STATEMENT_CODE, element)) {

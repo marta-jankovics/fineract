@@ -60,7 +60,6 @@ public class DataValidatorBuilder {
      * @param dataValidationErrors
      *            an existing list of {@link ApiParameterError} to add new validation errors to
      */
-
     public DataValidatorBuilder(final List<ApiParameterError> dataValidationErrors) {
         this.dataValidationErrors = dataValidationErrors;
     }

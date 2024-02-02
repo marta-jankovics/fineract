@@ -89,8 +89,8 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
                 .valueOf(command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM));
         final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
 
-        CurrentProduct product = new CurrentProduct(null, externalId, name, shortName, description, currency, accountingRuleType,
-                allowOverdraft, overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType, null);
+        CurrentProduct product = new CurrentProduct(externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft,
+                overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType);
 
         product = currentProductRepository.save(product);
 

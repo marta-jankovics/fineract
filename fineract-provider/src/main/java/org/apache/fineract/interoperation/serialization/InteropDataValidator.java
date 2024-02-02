@@ -47,7 +47,7 @@ public class InteropDataValidator {
     }
 
     public InteropTransferRequestData validateAndParseTransferRequest(JsonCommand command) {
-        final DataValidatorBuilder dataValidator = new DataValidatorBuilder(new ArrayList<>()).resource("interoperation.transfer");
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource("interoperation.transfer");
         JsonObject element = extractJsonObject(command);
 
         InteropTransferRequestData result = InteropTransferRequestData.validateAndParse(dataValidator, element, jsonHelper);

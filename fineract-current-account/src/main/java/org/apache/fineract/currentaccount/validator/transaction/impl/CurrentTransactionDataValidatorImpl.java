@@ -18,10 +18,10 @@
  */
 package org.apache.fineract.currentaccount.validator.transaction.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_CODE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ENFORCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ACCOUNT_NUMBER_PARAM;
@@ -32,20 +32,16 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
-import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 
 @RequiredArgsConstructor
@@ -53,7 +49,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, TRANSACTION_AMOUNT_PARAM, PAYMENT_TYPE_ID_PARAM,
-                    TRANSACTION_ACCOUNT_NUMBER_PARAM, ENFORCE_PARAM, DATATABLES_PARAM));
+                    TRANSACTION_ACCOUNT_NUMBER_PARAM, CURRENCY_CODE_PARAM, DATATABLES_PARAM));
 
     @Override
     public void validateDeposit(JsonCommand command) {
@@ -72,14 +68,12 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     @Override
     public void validateRelease(JsonCommand command) {
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_TRANSACTION_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_TRANSACTION_RESOURCE_NAME);
 
         final String holdTransactionId = command.getTransactionId();
-        baseDataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
+        dataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
 
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        dataValidator.throwValidationErrors();
     }
 
     private void validateTransaction(JsonCommand command) {
@@ -90,40 +84,31 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS);
 
-        final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(CURRENT_TRANSACTION_RESOURCE_NAME);
+        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_TRANSACTION_RESOURCE_NAME);
 
         if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
             final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);
-            baseDataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
+            dataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
                     .validateDateForEqual(DateUtils.getBusinessLocalDate());
         }
 
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_AMOUNT_PARAM);
-        baseDataValidator.reset().parameter(TRANSACTION_AMOUNT_PARAM).value(transactionAmount).notNull().positiveAmount();
+        dataValidator.reset().parameter(TRANSACTION_AMOUNT_PARAM).value(transactionAmount).notNull().positiveAmount();
 
         final Integer paymentType = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
-        baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentType).notNull();
+        dataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentType).notNull();
 
-        validatePaymentTypeDetails(baseDataValidator, command);
+        validatePaymentTypeDetails(dataValidator, command);
 
-        if (command.hasParameter(ENFORCE_PARAM)) {
-            String enforceStr = command.stringValueOfParameterNamedAllowingNull(ENFORCE_PARAM);
-            baseDataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(enforceStr).validateForBooleanValue();
+        if (command.hasParameter(CURRENCY_CODE_PARAM)) {
+            final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
+            dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
         }
-
-        throwExceptionIfValidationWarningsExist(dataValidationErrors);
+        dataValidator.throwValidationErrors();
     }
 
     private void validatePaymentTypeDetails(final DataValidatorBuilder baseDataValidator, JsonCommand command) {
         final Integer paymentTypeId = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
         baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentTypeId).ignoreIfNull().integerGreaterThanZero();
-    }
-
-    private void throwExceptionIfValidationWarningsExist(final List<ApiParameterError> dataValidationErrors) {
-        if (!dataValidationErrors.isEmpty()) {
-            throw new PlatformApiDataValidationException(dataValidationErrors);
-        }
     }
 }
