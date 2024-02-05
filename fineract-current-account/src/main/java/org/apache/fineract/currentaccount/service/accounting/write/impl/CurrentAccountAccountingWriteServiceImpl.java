@@ -92,7 +92,9 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
             accountingHistory.setCalculatedTillTransactionId(transaction.getId());
             accountingHistory.setAccountBalance(calculateBalance(accountingHistory, transaction));
         });
-        currentAccountAccountingRepository.save(accountingHistory);
+        if (!transactionList.isEmpty()) {
+            currentAccountAccountingRepository.save(accountingHistory);
+        }
     }
 
     private BigDecimal calculateBalance(GLAccountingHistory accountingHistory, CurrentTransaction transaction) {

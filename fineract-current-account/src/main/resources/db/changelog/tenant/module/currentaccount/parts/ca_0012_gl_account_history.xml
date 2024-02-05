@@ -33,8 +33,12 @@
             <column name="account_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="account_balance" type="DECIMAL(19, 6)"/>
-            <column name="calculated_till_transaction_id" type="VARCHAR(50)"/>
+            <column name="account_balance" type="DECIMAL(19, 6)">
+                <constraints nullable="false" />
+            </column>
+            <column name="calculated_till_transaction_id" type="VARCHAR(50)">
+                    <constraints nullable="false" />
+            </column>
             <column defaultValueNumeric="1" name="version" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
