@@ -33,8 +33,9 @@ public class CurrentAccountData implements Serializable {
     private final String id;
     private final String accountNumber;
     private final ExternalId externalId;
-    private final Long officeId;
     private final Long clientId;
+    private final String clientName;
+    private final Long officeId;
     private final String productId;
     private final String productName;
     private final String productShortName;

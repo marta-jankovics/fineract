@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.Data;
+import org.apache.fineract.currentaccount.data.client.ClientBaseResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductBaseResponseData;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -34,7 +35,7 @@ public class CurrentAccountResponseData implements Serializable {
     private final String id;
     private final String accountNumber;
     private final ExternalId externalId;
-    private final Long clientId;
+    private final ClientBaseResponseData client;
     private final CurrentProductBaseResponseData product;
     private final StringEnumOptionData status;
     private final LocalDate activatedOnDate;

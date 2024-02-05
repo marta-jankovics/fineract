@@ -23,6 +23,7 @@ import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
+import org.apache.fineract.currentaccount.data.client.ClientBaseResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductBaseResponseData;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
@@ -54,6 +55,7 @@ public interface CurrentAccountResponseDataMapper {
     @Mapping(target = "currency", source = "currentAccountData", qualifiedByName = "currency")
     @Mapping(target = "status", source = "currentAccountData", qualifiedByName = "status")
     @Mapping(target = "product", source = "currentAccountData", qualifiedByName = "product")
+    @Mapping(target = "client", source = "currentAccountData", qualifiedByName = "client")
     @Mapping(target = "balanceCalculationType", source = "currentAccountData", qualifiedByName = "balanceCalculationType")
     @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
     @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
@@ -79,5 +81,10 @@ public interface CurrentAccountResponseDataMapper {
     default CurrentProductBaseResponseData mapProduct(CurrentAccountData currentAccountData) {
         return new CurrentProductBaseResponseData(currentAccountData.getProductId(), currentAccountData.getProductName(),
                 currentAccountData.getProductShortName(), currentAccountData.getProductDescription());
+    }
+
+    @Named("client")
+    default ClientBaseResponseData mapClient(CurrentAccountData currentAccountData) {
+        return new ClientBaseResponseData(currentAccountData.getClientId(), currentAccountData.getClientName());
     }
 }
