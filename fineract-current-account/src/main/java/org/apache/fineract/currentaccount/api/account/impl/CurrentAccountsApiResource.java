@@ -117,7 +117,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @GET
-    @Path("{identifier}")
+    @Path("{identifier:^(?!transactions).*$}")
     @Operation(operationId = "retrieveOneCurrentAccount", summary = "Retrieve a current application/account", description = "Retrieves a current application/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1")
     @Override
@@ -126,7 +126,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @GET
-    @Path("{idType}/{identifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}")
     @Operation(operationId = "retrieveOneCurrentAccountByIdentifier", summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
@@ -137,7 +137,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @GET
-    @Path("{idType}/{identifier}/{subIdentifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}/{subIdentifier:^(?!transactions).*$}")
     @Operation(operationId = "retrieveOneCurrentAccountBySubIdentifier", summary = "Retrieve a current application/account by alternative id", description = "Retrieves a current application/account by external id\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
@@ -196,7 +196,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{identifier}")
+    @Path("{identifier:^(?!transactions).*$}")
     @Operation(operationId = "actionCurrentAccount", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -215,7 +215,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{idType}/{identifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}")
     @Operation(operationId = "actionCurrentAccountByIdentifier", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -236,7 +236,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{idType}/{identifier}/{subIdentifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}/{subIdentifier:^(?!transactions).*$}")
     @Operation(operationId = "actionCurrentAccountBySubIdentifier", summary = "Cancel current application | Activate a current account | Close a current account", description = "Cancel current application:\n\n"
             + "Used when an applicant withdraws from the current application. It must be in 'Submitted' state.\n\n"
             + "Activate a current account:\n\n"
@@ -258,7 +258,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @PUT
-    @Path("{identifier}")
+    @Path("{identifier:^(?!transactions).*$}")
     @Operation(operationId = "updateCurrentAccount", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -272,7 +272,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @PUT
-    @Path("{idType}/{identifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}")
     @Operation(operationId = "updateCurrentAccountByIdentifier", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -288,7 +288,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @PUT
-    @Path("{idType}/{identifier}/{subIdentifier}")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}/{subIdentifier:^(?!transactions).*$}")
     @Operation(operationId = "updateCurrentAccountBySubIdentifier", summary = "Modify a current application", description = "Modify a current application:\n\n"
             + "Current application can only be modified when in 'Submitted' state. Once the application is activate, the details cannot be changed using this method.\n\n"
             + "Showing request/response for 'Modify a current application'")
@@ -316,7 +316,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{identifier}/query")
+    @Path("{identifier:^(?!transactions).*$}/query")
     @Operation(operationId = "advancedQueryCurrentAccountById", summary = "Advanced search Current Account", description = "Example Requests:\n\n"
             + "current-accounts/1/query")
     @ApiResponses({
@@ -328,7 +328,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{idType}/{identifier}/query")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}/query")
     @Operation(operationId = "advancedQueryCurrentAccountByIdentifier", summary = "Advanced search Current Account", description = "Example Requests:\n\n"
             + "current-accounts/external-id/ExternalId1/query")
     @ApiResponses({
@@ -341,7 +341,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     }
 
     @POST
-    @Path("{idType}/{identifier}/{subIdentifier}/query")
+    @Path("{idType:^(?!transactions).*$}/{identifier:^(?!transactions).*$}/{subIdentifier:^(?!transactions).*$}/query")
     @Operation(operationId = "advancedQueryCurrentAccountBySubIdentifier", summary = "Advanced search Current Account", description = "Example Requests:\n\n"
             + "current-accounts/external-id/ExternalId1/S/query")
     @ApiResponses({
