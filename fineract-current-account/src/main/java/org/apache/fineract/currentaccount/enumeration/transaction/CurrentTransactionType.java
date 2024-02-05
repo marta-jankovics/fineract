@@ -31,6 +31,7 @@ public enum CurrentTransactionType {
 
     DEPOSIT("currentTransactionType.deposit", "Deposit transaction", TransactionEntryType.CREDIT), //
     WITHDRAWAL("currentTransactionType.withdrawal", "Withdrawal transaction", TransactionEntryType.DEBIT), //
+    WITHDRAWAL_FEE("currentTransactionType.withdrawal_fee", "Withdrawal Fee transaction", TransactionEntryType.DEBIT), //
     AMOUNT_HOLD("currentTransactionType.amount_hold", "Hold amount transaction", TransactionEntryType.DEBIT), //
     AMOUNT_RELEASE("currentTransactionType.amount_release", "Release amount transaction", TransactionEntryType.CREDIT); //
 

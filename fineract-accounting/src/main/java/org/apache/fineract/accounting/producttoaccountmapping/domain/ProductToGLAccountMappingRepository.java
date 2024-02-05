@@ -74,4 +74,7 @@ public interface ProductToGLAccountMappingRepository
     @Query("select mapping from ProductToGLAccountMapping mapping where mapping.productIdentifier =:productIdentifier and mapping.productType =:productType and mapping.financialAccountType=1 and mapping.paymentType is not NULL")
     List<ProductToGLAccountMapping> findAllPaymentTypeToFundSourceMappings(@Param("productIdentifier") String productIdentifier,
             @Param("productType") int productType);
+
+    ProductToGLAccountMapping findByProductIdentifierAndProductTypeAndFinancialAccountTypeAndPaymentTypeId(String productIdentifier,
+            int productType, int financialAccountType, Long paymentType);
 }

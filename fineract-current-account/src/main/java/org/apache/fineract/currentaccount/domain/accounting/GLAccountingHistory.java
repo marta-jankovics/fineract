@@ -16,55 +16,46 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.domain.account;
+package org.apache.fineract.currentaccount.domain.accounting;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 
 @Entity
 @Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_current_account_balance")
-public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> {
+@Table(name = "acc_account_history", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "account_id", "account_type" }, name = "acc_account_history_account_id_type_key") })
+public class GLAccountingHistory extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Column(name = "account_id", nullable = false)
     private String accountId;
 
-    @Column(name = "account_balance", nullable = false, precision = 6)
-    private BigDecimal accountBalance;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_type", nullable = false)
+    private PortfolioAccountType accountType;
 
-    @Column(name = "hold_amount", precision = 6)
-    private BigDecimal holdAmount;
+    @Column(name = "account_balance", precision = 6, nullable = false)
+    private BigDecimal accountBalance;
 
     @Column(name = "calculated_till_transaction_id", nullable = false)
     private String calculatedTillTransactionId;
 
     @Version
     private Long version;
-
-    public CurrentAccountBalance(String accountId, BigDecimal accountBalance, BigDecimal holdAmount, String calculatedTillTransactionId) {
-        this.accountId = accountId;
-        this.accountBalance = accountBalance;
-        this.holdAmount = holdAmount;
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
-    }
-
-    public void setAccountBalance(BigDecimal accountBalance) {
-        this.accountBalance = accountBalance;
-    }
-
-    public void setHoldAmount(BigDecimal holdAmount) {
-        this.holdAmount = holdAmount;
-    }
-
-    public void setCalculatedTillTransactionId(String calculatedTillTransactionId) {
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
-    }
 }

@@ -60,6 +60,7 @@ public enum JobName {
     GENERATE_STATEMENTS("Generate Account Statements"), //
     PUBLISH_STATEMENTS("Publish Account Statements"), //
     CALCULATE_CURRENT_ACCOUNT_BALANCE("Update Snapshot Balance of Current Accounts"), //
+    CURRENT_ACCOUNT_ACCOUNTING("Current Account Accounting"), //
     ;
 
     private final String name;

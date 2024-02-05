@@ -33,4 +33,7 @@
   <include relativeToChangelogFile="true" file="parts/ca_0008_account_identifier.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0009_add_permissions.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0010_add_product_identifier.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0011_current_account_accounting_job.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0012_gl_account_history.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0013_enhance_journal_entry.xml"/>
 </databaseChangeLog>
