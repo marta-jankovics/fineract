@@ -167,12 +167,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
-        account = currentAccountRepository.save(account);
+
+        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
+        if (datatables != null && !datatables.isEmpty()) {
+            account = currentAccountRepository.saveAndFlush(account);
+            persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, false, readWriteNonCoreDataService);
+        } else {
+            account = currentAccountRepository.save(account);
+        }
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
         persistAccountIdentifiers(account, command);
-        persistDatatableEntries(EntityTables.CURRENT, account.getId(), command, false, readWriteNonCoreDataService);
-
         return account;
     }
 
@@ -251,12 +256,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             currentAccountRepository.save(account);
         }
 
-        Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT, account.getId(), command, true,
-                readWriteNonCoreDataService);
-        if (datatableChanges != null && !datatableChanges.isEmpty()) {
-            actualChanges.put(DATATABLES_PARAM, datatableChanges);
+        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
+        if (datatables != null && !datatables.isEmpty()) {
+            Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, true,
+                    readWriteNonCoreDataService);
+            if (datatableChanges != null && !datatableChanges.isEmpty()) {
+                actualChanges.put(DATATABLES_PARAM, datatableChanges);
+            }
         }
-
         return actualChanges;
     }
 

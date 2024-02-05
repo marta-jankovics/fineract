@@ -79,7 +79,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
-@Path("/v2/current-accounts")
+@Path("/v1/current-accounts")
 @Component
 @Tag(name = "Current Accounts", description = "Current accounts are instances of a particular current product created for an individual. An application process around the creation of accounts is also supported.")
 @RequiredArgsConstructor

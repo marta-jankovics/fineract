@@ -80,6 +80,16 @@ public class CommandStrategyProvider {
     private static final String ALPHANUMBERIC_WITH_UNDERSCORE_REGEX = "[a-zA-Z0-9_]*";
 
     /**
+     * Regex for identifier path parameters.
+     */
+    private static final String MANDATORY_IDENTIFIER_PATH_PARAMS_REGEX = "((\\/([a-zA-Z_0-9-]+)){1,3})";
+
+    /**
+     * Regex for identifier path parameters.
+     */
+    private static final String OPTIONAL_IDENTIFIER_PATH_PARAMS_REGEX = "((\\/([a-zA-Z_0-9-]+)){0,3})";
+
+    /**
      * Constructs a CommandStrategyProvider with argument of ApplicationContext type. It also initializes
      * commandStrategies using init() function by filling it with available CommandStrategies in
      * {@link org.apache.fineract.batch.command.internal}.
@@ -227,6 +237,15 @@ public class CommandStrategyProvider {
         commandStrategies.put(CommandContext
                 .resource("v1\\/datatables\\/" + ALPHANUMBERIC_WITH_UNDERSCORE_REGEX + "\\/query" + MANDATORY_QUERY_PARAM_REGEX).method(GET)
                 .build(), "getDatatableEntryByQueryCommandStrategy");
+        commandStrategies.put(CommandContext
+                .resource(
+                        "v1\\/current-accounts" + MANDATORY_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions" + MANDATORY_QUERY_PARAM_REGEX)
+                .method(POST).build(), "currentAccountTransactionCommandStrategy");
+        commandStrategies.put(CommandContext
+                .resource("v1\\/current-accounts" + OPTIONAL_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions\\/query").method(POST).build(),
+                "currentTransactionAdvancedQueryCommandStrategy");
+        commandStrategies.put(
+                CommandContext.resource("v1\\/current-accounts((\\/(?!transactions)([a-zA-Z_0-9-]+)){0,3})\\/query").method(POST).build(),
+                "currentAccountAdvancedQueryCommandStrategy");
     }
-
 }

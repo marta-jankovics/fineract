@@ -103,13 +103,13 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
         return respBuilder.status(NO_CONTENT).build();
     }
 
-    private static Map<String, String> buildMetadata(String metadataS) {
+    private static Map<String, String> buildMetadata(String metadatas) {
         Map<String, String> metadata = new HashMap<>();
-        if (metadataS == null) {
+        if (metadatas == null) {
             return metadata;
         }
         try {
-            metadata = JSON_MAPPER.readValue(metadataS, new TypeReference<HashMap<String, List<String>>>() {}).entrySet().stream()
+            metadata = JSON_MAPPER.readValue(metadatas, new TypeReference<HashMap<String, List<String>>>() {}).entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> String.join(",", e.getValue())));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

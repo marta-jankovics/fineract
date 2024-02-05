@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.currentaccount.api.transaction.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_PARAM_FORCE;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
 
 import com.google.gson.JsonObject;
@@ -70,7 +72,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Component;
 
-@Path("/v2/current-accounts")
+@Path("/v1/current-accounts")
 @Component
 @Tag(name = "Current Transactions")
 @RequiredArgsConstructor
@@ -212,10 +214,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Override
     public CommandProcessingResult transaction(
             @PathParam("accountIdentifier") @Parameter(description = "accountIdentifier", required = true) final String accountIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
-            @QueryParam(CurrentAccountApiConstants.COMMAND_PARAM_FORCE) final Boolean forceParam,
+            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
             @Parameter(hidden = true) final String requestJson) {
-        return handleTransaction(CurrentAccountResolver.resolveDefault(accountIdentifier), commandParam, forceParam, requestJson);
+        return handleTransaction(CurrentAccountResolver.resolveDefault(accountIdentifier), command, force, requestJson);
     }
 
     @POST
@@ -228,11 +229,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     public CommandProcessingResult transaction(
             @PathParam("accountIdType") @Parameter(description = "accountIdType", required = true) final String accountIdType,
             @PathParam("accountIdentifier") @Parameter(description = "accountIdentifier", required = true) final String accountIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
-            @QueryParam(CurrentAccountApiConstants.COMMAND_PARAM_FORCE) final Boolean forceParam,
+            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
             @Parameter(hidden = true) final String requestJson) {
-        return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), commandParam, forceParam,
-                requestJson);
+        return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), command, force, requestJson);
     }
 
     @POST
@@ -246,11 +245,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam("accountIdType") @Parameter(description = "accountIdType", required = true) final String accountIdType,
             @PathParam("accountIdentifier") @Parameter(description = "accountIdentifier", required = true) final String accountIdentifier,
             @PathParam("accountSubIdentifier") @Parameter(description = "accountSubIdentifier", required = true) final String accountSubIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam,
-            @QueryParam(CurrentAccountApiConstants.COMMAND_PARAM_FORCE) final Boolean forceParam,
+            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
             @Parameter(hidden = true) final String requestJson) {
-        return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), commandParam,
-                forceParam, requestJson);
+        return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), command, force,
+                requestJson);
     }
 
     @POST
@@ -263,7 +261,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     public CommandProcessingResult action(
             @PathParam("accountIdentifier") @Parameter(description = "accountIdentifier", required = true) final String accountIdentifier,
             @PathParam("transactionIdentifier") @Parameter(description = "transactionIdentifier", required = true) final String transactionIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolveDefault(accountIdentifier),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier), commandParam, requestJson);
     }
@@ -280,7 +278,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam("accountIdentifier") @Parameter(description = "accountIdentifier", required = true) final String accountIdentifier,
             @PathParam("transactionIdType") @Parameter(description = "transactionIdType", required = true) final String transactionIdType,
             @PathParam("transactionIdentifier") @Parameter(description = "transactionIdentifier", required = true) final String transactionIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier), commandParam, requestJson);
     }
@@ -298,7 +296,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam("accountSubIdentifier") @Parameter(description = "accountSubIdentifier", required = true) final String accountSubIdentifier,
             @PathParam("transactionIdType") @Parameter(description = "transactionIdType", required = true) final String transactionIdType,
             @PathParam("transactionIdentifier") @Parameter(description = "transactionIdentifier", required = true) final String transactionIdentifier,
-            @QueryParam(CurrentAccountApiConstants.COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier), commandParam, requestJson);
     }
@@ -392,9 +390,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         }
 
         if (result == null) {
-            throw new UnrecognizedQueryParamException(CurrentAccountApiConstants.COMMAND, commandParam,
-                    CurrentAccountApiConstants.COMMAND_DEPOSIT, CurrentAccountApiConstants.COMMAND_WITHDRAWAL,
-                    CurrentAccountApiConstants.COMMAND_HOLD);
+            throw new UnrecognizedQueryParamException(COMMAND, commandParam, CurrentAccountApiConstants.COMMAND_DEPOSIT,
+                    CurrentAccountApiConstants.COMMAND_WITHDRAWAL, CurrentAccountApiConstants.COMMAND_HOLD);
         }
         return result;
     }
@@ -415,8 +412,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
         }
         if (result == null) {
-            throw new UnrecognizedQueryParamException(CurrentAccountApiConstants.COMMAND, commandParam,
-                    CurrentAccountApiConstants.COMMAND_RELEASE);
+            throw new UnrecognizedQueryParamException(COMMAND, commandParam, CurrentAccountApiConstants.COMMAND_RELEASE);
         }
         return result;
     }

@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.infrastructure.core.domain;
 
-import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLE_ENTRIES_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLE_ID_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLE_NAME_PARAM;
@@ -26,6 +25,7 @@ import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiCon
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,13 +42,9 @@ public interface EntityAssembler<T extends AbstractPersistableCustom> {
 
     Map<String, Object> update(T account, JsonCommand command);
 
-    default Map<String, Object> persistDatatableEntries(EntityTables entity, Serializable entityId, JsonCommand command, boolean update,
-            ReadWriteNonCoreDataService service) {
-        if (!command.parameterExists(DATATABLES_PARAM)) {
-            return null;
-        }
+    default Map<String, Object> persistDatatableEntries(@NotNull EntityTables entity, Serializable entityId, @NotNull JsonArray datatables,
+            boolean update, @NotNull ReadWriteNonCoreDataService service) {
         final HashMap<String, Object> changes = new HashMap<>();
-        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         for (JsonElement datatable : datatables) {
             JsonObject tableObject = datatable.getAsJsonObject();
             final String tableName = tableObject.get(DATATABLE_NAME_PARAM).getAsString();

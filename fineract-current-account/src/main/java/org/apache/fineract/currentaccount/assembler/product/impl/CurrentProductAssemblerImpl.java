@@ -39,7 +39,9 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SHORT_NAME_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.WRITE_OFF_ACCOUNT_ID_PARAM;
+import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
+import com.google.gson.JsonArray;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Locale;
@@ -92,11 +94,15 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         CurrentProduct product = new CurrentProduct(externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft,
                 overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType);
 
-        product = currentProductRepository.save(product);
+        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
+        if (datatables != null && !datatables.isEmpty()) {
+            product = currentProductRepository.saveAndFlush(product);
+            persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), datatables, false, readWriteNonCoreDataService);
+        } else {
+            product = currentProductRepository.save(product);
+        }
 
-        persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, false, readWriteNonCoreDataService);
         persistAccountingRules(product, command);
-
         return product;
     }
 
@@ -186,8 +192,20 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             product.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
-        persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), command, true, readWriteNonCoreDataService);
+        if (!actualChanges.isEmpty()) {
+            currentProductRepository.save(product);
+        }
+
         updateAccountingRules(product, command, actualChanges);
+
+        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
+        if (datatables != null && !datatables.isEmpty()) {
+            Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), datatables, true,
+                    readWriteNonCoreDataService);
+            if (datatableChanges != null && !datatableChanges.isEmpty()) {
+                actualChanges.put(DATATABLES_PARAM, datatableChanges);
+            }
+        }
         return actualChanges;
     }
 

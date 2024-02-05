@@ -23,7 +23,10 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
 import static org.apache.fineract.infrastructure.core.filters.CorrelationHeaderFilter.CORRELATION_ID_KEY;
+import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
+import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_TRANSACTION;
 
+import com.google.gson.JsonArray;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
@@ -44,7 +47,6 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
-import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.jetbrains.annotations.NotNull;
@@ -113,9 +115,13 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         validateTransaction(account, transaction, currencyCode);
 
-        transaction = currentTransactionRepository.save(transaction);
-
-        persistDatatableEntries(EntityTables.CURRENT_TRANSACTION, transaction.getId(), command, false, readWriteNonCoreDataService);
+        JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
+        if (datatables != null && !datatables.isEmpty()) {
+            transaction = currentTransactionRepository.saveAndFlush(transaction);
+            persistDatatableEntries(CURRENT_TRANSACTION, transaction.getId(), datatables, false, readWriteNonCoreDataService);
+        } else {
+            transaction = currentTransactionRepository.save(transaction);
+        }
         return transaction;
     }
 
