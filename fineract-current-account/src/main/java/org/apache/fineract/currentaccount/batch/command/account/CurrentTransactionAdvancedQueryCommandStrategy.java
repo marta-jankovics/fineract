@@ -61,13 +61,14 @@ public class CurrentTransactionAdvancedQueryCommandStrategy implements CommandSt
             String identifier = pathParameters.get(2);
             if (size > 4) {
                 String subIdentifier = pathParameters.get(3);
-                response = currentTransactionsApiResource.advancedQuery(idType, identifier, subIdentifier, queryRequest, uriInfo);
+                response = currentTransactionsApiResource.advancedQueryByAccountIdTypeIdentifierSubIdentifier(idType, identifier,
+                        subIdentifier, queryRequest, uriInfo);
             } else {
-                response = currentTransactionsApiResource.advancedQuery(idType, identifier, queryRequest, uriInfo);
+                response = currentTransactionsApiResource.advancedQueryByAccountIdTypeIdentifier(idType, identifier, queryRequest, uriInfo);
             }
         } else if (size == 3) {
             String accountId = pathParameters.get(1);
-            response = currentTransactionsApiResource.advancedQuery(accountId, queryRequest, uriInfo);
+            response = currentTransactionsApiResource.advancedQueryByAccountIdentifier(accountId, queryRequest, uriInfo);
         } else {
             response = currentTransactionsApiResource.advancedQuery(queryRequest, uriInfo);
         }

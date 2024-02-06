@@ -65,13 +65,15 @@ public class CurrentAccountTransactionCommandStrategy implements CommandStrategy
             String identifier = pathParameters.get(2);
             if (size > 4) {
                 String subIdentifier = pathParameters.get(3);
-                responseBody = currentTransactionsApiResource.transaction(idType, identifier, subIdentifier, command, force, body);
+                responseBody = currentTransactionsApiResource.transactionByAccountIdTypeIdentifierSubIdentifier(idType, identifier,
+                        subIdentifier, command, force, body);
             } else {
-                responseBody = currentTransactionsApiResource.transaction(idType, identifier, command, force, body);
+                responseBody = currentTransactionsApiResource.transactionByAccountIdTypeIdentifier(idType, identifier, command, force,
+                        body);
             }
         } else {
             String accountId = pathParameters.get(1);
-            responseBody = currentTransactionsApiResource.transaction(accountId, command, force, body);
+            responseBody = currentTransactionsApiResource.transactionByAccountIdentifier(accountId, command, force, body);
         }
 
         return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK)

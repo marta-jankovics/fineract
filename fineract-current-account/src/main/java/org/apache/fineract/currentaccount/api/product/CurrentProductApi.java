@@ -30,17 +30,17 @@ public interface CurrentProductApi {
 
     Page<CurrentProductResponseData> retrieveAll(Pageable pageable);
 
-    CurrentProductResponseData retrieveOne(String productId);
+    CurrentProductResponseData retrieveOneByIdentifier(String identifier);
 
-    CurrentProductResponseData retrieveOne(String idType, String identifier);
+    CurrentProductResponseData retrieveOneByIdTypeIdentifier(String idType, String identifier);
 
     CommandProcessingResult create(String requestJson);
 
-    CommandProcessingResult update(String productId, String requestJson);
+    CommandProcessingResult updateByIdentifier(String identifier, String requestJson);
 
-    CommandProcessingResult update(String idType, String identifier, String requestJson);
+    CommandProcessingResult updateByIdTypeIdentifier(String idType, String identifier, String requestJson);
 
-    CommandProcessingResult delete(String productId);
+    CommandProcessingResult deleteByIdentifier(String identifier);
 
-    CommandProcessingResult delete(String idType, String identifier);
+    CommandProcessingResult deleteByIdTypeIdentifier(String idType, String identifier);
 }

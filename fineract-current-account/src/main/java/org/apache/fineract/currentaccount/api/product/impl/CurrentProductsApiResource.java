@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.api.product.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_AND_IDENTIFIER_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
 
@@ -101,17 +100,17 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n"
             + "Example Requests:\n" + "\n" + "current-products/1")
     @Override
-    public CurrentProductResponseData retrieveOne(
+    public CurrentProductResponseData retrieveOneByIdentifier(
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
         return retrieveOne(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @GET
-    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
-    public CurrentProductResponseData retrieveOne(
+    public CurrentProductResponseData retrieveOneByIdTypeIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
         return retrieveOne(CurrentProductResolver.resolve(idType, identifier));
@@ -137,41 +136,45 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult update(@PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
+    public CommandProcessingResult updateByIdentifier(
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentProduct(CurrentProductResolver.resolveDefault(identifier), requestJson);
     }
 
     @PUT
-    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
     @Operation(operationId = "updateCurrentProductByIdentifier", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult update(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
+    public CommandProcessingResult updateByIdTypeIdentifier(
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentProduct(CurrentProductResolver.resolve(idType, identifier), requestJson);
     }
 
     @DELETE
-    @Path(ID_TYPE_API_PARAM)
+    @Path(IDENTIFIER_API_PARAM)
     @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product", description = "Delete a Current Product")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
     @Override
-    public CommandProcessingResult delete(@PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
+    public CommandProcessingResult deleteByIdentifier(
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
         return deleteCurrentProduct(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @DELETE
-    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
     @Operation(operationId = "deleteCurrentProductByIdentifier", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
     @Override
-    public CommandProcessingResult delete(@PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
+    public CommandProcessingResult deleteByIdTypeIdentifier(
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM) final String idType,
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
         return deleteCurrentProduct(CurrentProductResolver.resolve(idType, identifier));
     }

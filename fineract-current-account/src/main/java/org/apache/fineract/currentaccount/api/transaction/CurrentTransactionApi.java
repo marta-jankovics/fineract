@@ -29,47 +29,74 @@ import org.springframework.data.domain.Pageable;
 
 public interface CurrentTransactionApi {
 
-    CurrentTransactionTemplateResponseData template(String accountId);
+    CurrentTransactionTemplateResponseData templateByIdentifier(String accountIdentifier);
 
-    CurrentTransactionTemplateResponseData template(String accountIdType, String accountIdentifier);
+    CurrentTransactionTemplateResponseData templateByIdTypeIdentifier(String accountIdType, String accountIdentifier);
 
-    CurrentTransactionTemplateResponseData template(String accountIdType, String accountIdentifier, String accountSubIdentifier);
+    CurrentTransactionTemplateResponseData templateByIdTypeIdentifierSubIdentifier(String accountIdType, String accountIdentifier,
+            String accountSubIdentifier);
 
-    Page<CurrentTransactionResponseData> retrieveAll(String accountId, Pageable pageable);
+    Page<CurrentTransactionResponseData> retrieveAllByAccountIdentifier(String accountIdentifier, Pageable pageable);
 
-    Page<CurrentTransactionResponseData> retrieveAll(String accIdType, String accIdentifier, Pageable pageable);
+    Page<CurrentTransactionResponseData> retrieveAllByAccountIdTypeIdentifier(String accountIdType, String accountIdentifier,
+            Pageable pageable);
 
-    Page<CurrentTransactionResponseData> retrieveAll(String accIdType, String accIdentifier, String accSubIdentifier, Pageable pageable);
+    Page<CurrentTransactionResponseData> retrieveAllByAccountIdTypeIdentifierSubIdentifier(String accountIdType, String accountIdentifier,
+            String accountSubIdentifier, Pageable pageable);
 
-    CurrentTransactionResponseData retrieveOne(String accountId, String transactionId);
+    CurrentTransactionResponseData retrieveOneByAccountIdentifierTransactionIdentifier(String accountIdentifier,
+            String transactionIdentifier);
 
-    CurrentTransactionResponseData retrieveOne(String accIdType, String accIdentifier, String idType, String identifier);
+    CurrentTransactionResponseData retrieveOneByAccountIdentifierTransactionIdTypeIdentifier(String accountIdentifier,
+            String transactionIdType, String transactionIdentifier);
 
-    CurrentTransactionResponseData retrieveOne(String accIdType, String accIdentifier, String accSubIdentifier, String idType,
-            String identifier);
+    CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierTransactionIdentifier(String accountIdType, String accountIdentifier,
+            String transactionIdentifier);
 
-    CommandProcessingResult transaction(String accountId, String commandParam, Boolean forceParam, String apiRequestBodyAsJson);
+    CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierTransactionIdTypeIdentifier(String accountIdType,
+            String accountIdentifier, String transactionIdType, String transactionIdentifier);
 
-    CommandProcessingResult transaction(String idType, String identifier, String commandParam, Boolean forceParam,
-            String apiRequestBodyAsJson);
+    CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdentifier);
 
-    CommandProcessingResult transaction(String idType, String identifier, String subIdentifier, String commandParam, Boolean forceParam,
-            String apiRequestBodyAsJson);
+    CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdType, String transactionIdentifier);
 
-    CommandProcessingResult action(String accountId, String transactionId, String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult transactionByAccountIdentifier(String accountIdentifier, String command, Boolean force, String requestJson);
 
-    CommandProcessingResult action(String accIdType, String accIdentifier, String idType, String identifier, String commandParam,
-            String apiRequestBodyAsJson);
+    CommandProcessingResult transactionByAccountIdTypeIdentifier(String accountIdType, String accountIdentifier, String command,
+            Boolean force, String requestJson);
 
-    CommandProcessingResult action(String accIdType, String accIdentifier, String accSubIdentifier, String idType, String identifier,
-            String commandParam, String apiRequestBodyAsJson);
+    CommandProcessingResult transactionByAccountIdTypeIdentifierSubIdentifier(String accountIdType, String accountIdentifier,
+            String accountSubIdentifier, String command, Boolean force, String requestJson);
+
+    CommandProcessingResult actionByAccountIdentifierTransactionIdentifier(String accountIdentifier, String transactionIdentifier,
+            String commandParam, String requestJson);
+
+    CommandProcessingResult actionByAccountIdentifierTransactionIdTypeIdentifier(String accountIdentifier, String transactionIdType,
+            String transactionIdentifier, String commandParam, String requestJson);
+
+    CommandProcessingResult actionByAccountIdTypeIdentifierTransactionIdentifier(String accountIdType, String accountIdentifier,
+            String transactionIdentifier, String commandParam, String requestJson);
+
+    CommandProcessingResult actionByAccountIdTypeIdentifierTransactionIdTypeIdentifier(String accountIdType, String accountIdentifier,
+            String transactionIdType, String transactionIdentifier, String commandParam, String requestJson);
+
+    CommandProcessingResult actionByAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdentifier, String commandParam, String requestJson);
+
+    CommandProcessingResult actionByAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdType, String transactionIdentifier,
+            String commandParam, String requestJson);
 
     String advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    String advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
-
-    String advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
-
-    String advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
+    String advancedQueryByAccountIdentifier(String accountIdentifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
             UriInfo uriInfo);
+
+    String advancedQueryByAccountIdTypeIdentifier(String accountIdType, String accountIdentifier,
+            PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+
+    String advancedQueryByAccountIdTypeIdentifierSubIdentifier(String accountIdType, String accountIdentifier, String accountSubIdentifier,
+            PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 }
