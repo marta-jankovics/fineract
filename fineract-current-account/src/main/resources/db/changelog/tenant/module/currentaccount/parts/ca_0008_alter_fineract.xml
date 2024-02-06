@@ -27,4 +27,20 @@
             <column name="resource_identifier" type="varchar(100)"/>
         </addColumn>
     </changeSet>
+    <changeSet author="fineract" id="2" >
+        <addColumn tableName="acc_product_mapping">
+            <column name="product_identifier" type="CHAR(21)"/>
+        </addColumn>
+        <createIndex tableName="acc_product_mapping" indexName="ind_product_identifier">
+            <column name="product_identifier"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="fineract" id="3">
+        <addColumn tableName="acc_gl_journal_entry">
+            <column name="entity_identifier" type="VARCHAR(50)"/>
+        </addColumn>
+        <createIndex tableName="acc_gl_journal_entry" indexName="ind_acc_gl_journal_entry_entity_identifier">
+            <column name="entity_identifier"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

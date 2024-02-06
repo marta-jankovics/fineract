@@ -119,8 +119,8 @@ public class GlobalConfigurationHelper {
         ArrayList<HashMap> expectedGlobalConfigurations = getAllDefaultGlobalConfigurations();
         ArrayList<HashMap> actualGlobalConfigurations = getAllGlobalConfigurations(requestSpec, responseSpec);
 
-        Assertions.assertEquals(54, expectedGlobalConfigurations.size());
-        Assertions.assertEquals(54, actualGlobalConfigurations.size());
+        Assertions.assertEquals(61, expectedGlobalConfigurations.size());
+        Assertions.assertEquals(61, actualGlobalConfigurations.size());
 
         for (int i = 0; i < expectedGlobalConfigurations.size(); i++) {
 
@@ -589,6 +589,22 @@ public class GlobalConfigurationHelper {
         nextPaymentDateConfigForLoan.put("trapDoor", false);
         nextPaymentDateConfigForLoan.put("string_value", "earliest-unpaid-date");
         defaults.add(nextPaymentDateConfigForLoan);
+
+        HashMap<String, Object> balanceCalculationDelay = new HashMap<>();
+        nextPaymentDateConfigForLoan.put("id", 60);
+        nextPaymentDateConfigForLoan.put("name", "balance_calculation_delay");
+        nextPaymentDateConfigForLoan.put("value", 20);
+        nextPaymentDateConfigForLoan.put("enabled", true);
+        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        defaults.add(balanceCalculationDelay);
+
+        HashMap<String, Object> dailyBalanceCleanupDays = new HashMap<>();
+        nextPaymentDateConfigForLoan.put("id", 61);
+        nextPaymentDateConfigForLoan.put("name", "daily_balance_cleanup_days");
+        nextPaymentDateConfigForLoan.put("value", 32);
+        nextPaymentDateConfigForLoan.put("enabled", false);
+        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        defaults.add(dailyBalanceCleanupDays);
 
         return defaults;
     }

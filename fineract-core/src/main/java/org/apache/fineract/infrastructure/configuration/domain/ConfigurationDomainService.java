@@ -143,4 +143,7 @@ public interface ConfigurationDomainService {
 
     String getNextPaymentDateConfigForLoan();
 
+    long getBalanceCalculationDelaySeconds();
+
+    Long getDailyBalanceCleanupDays();
 }
