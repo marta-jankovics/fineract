@@ -111,15 +111,15 @@ public class CurrentAccountApiConstants {
 
     // API
     public static final String SLASH = "/";
-    public static final String RESERVED_WORDS = ":^(?!transactions|query|identifiers|template).*$";
-    public static final String ID_TYPE_API_PARAM = "{" + ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String IDENTIFIER_API_PARAM = "{" + IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String SUB_IDENTIFIER_API_PARAM = "{" + SUB_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_ID_TYPE_API_PARAM = "{" + ACCOUNT_ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_IDENTIFIER_API_PARAM = "{" + ACCOUNT_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_SUB_IDENTIFIER_API_PARAM = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String TRANSACTION_ID_TYPE_API_PARAM = "{" + TRANSACTION_ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
-    public static final String TRANSACTION_IDENTIFIER_API_PARAM = "{" + TRANSACTION_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String RESERVED_WORDS = ":(?!transactions|query|identifiers|template)([a-zA-Z_0-9-]+)";
+    public static final String ID_TYPE_API_PARAM = "{" + ID_TYPE_PARAM + RESERVED_WORDS + "}";
+    public static final String IDENTIFIER_API_PARAM = "{" + IDENTIFIER_PARAM + RESERVED_WORDS + "}";
+    public static final String SUB_IDENTIFIER_API_PARAM = "{" + SUB_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_ID_TYPE_API_PARAM = "{" + ACCOUNT_ID_TYPE_PARAM + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_IDENTIFIER_API_PARAM = "{" + ACCOUNT_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_SUB_IDENTIFIER_API_PARAM = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
+    public static final String TRANSACTION_ID_TYPE_API_PARAM = "{" + TRANSACTION_ID_TYPE_PARAM + RESERVED_WORDS + "}";
+    public static final String TRANSACTION_IDENTIFIER_API_PARAM = "{" + TRANSACTION_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
     public static final String ID_TYPE_AND_IDENTIFIER_API_PARAM = ID_TYPE_API_PARAM + SLASH + IDENTIFIER_API_PARAM;
     public static final String ID_TYPE_AND_IDENTIFIER_AND_SUB_IDENTIFIER_API_PARAM = ID_TYPE_API_PARAM + SLASH + IDENTIFIER_API_PARAM
             + SLASH + SUB_IDENTIFIER_API_PARAM;
