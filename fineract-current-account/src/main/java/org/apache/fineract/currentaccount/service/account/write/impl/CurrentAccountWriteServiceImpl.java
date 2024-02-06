@@ -135,6 +135,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
         checkClientActive(account);
         final Map<String, Object> changes = currentAccountAssembler.close(account, command);
 
+        // TODO: Do sync accounting
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
         // CurrentAccountRejectApplicationBusinessEvent(currentAccount));
