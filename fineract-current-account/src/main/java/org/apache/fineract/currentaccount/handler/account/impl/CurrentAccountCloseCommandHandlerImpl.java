@@ -18,12 +18,13 @@
  */
 package org.apache.fineract.currentaccount.handler.account.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CLOSE;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
 import org.apache.fineract.currentaccount.handler.account.CurrentAccountCloseCommandHandler;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
-import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CLOSE;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.springframework.stereotype.Service;

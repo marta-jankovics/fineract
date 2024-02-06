@@ -538,7 +538,7 @@ public class ConfigurationDomainServiceJpa implements ConfigurationDomainService
 
     @Override
     public Long getDailyBalanceCleanupDays() {
-    final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData("daily_balance_cleanup_days");
+        final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData("daily_balance_cleanup_days");
         return property.isEnabled() ? property.getValue() : null;
     }
 }
