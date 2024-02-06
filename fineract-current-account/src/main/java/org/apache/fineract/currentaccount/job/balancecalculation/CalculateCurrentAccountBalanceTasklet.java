@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.infrastructure.configuration.data.GlobalConfigurationPropertyData;
+import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
@@ -37,12 +39,13 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
+    private final ConfigurationReadPlatformService configurationReadPlatformService;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            // TODO: make it configurable
-            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
+            long balanceCalculationDelay = fetchBalanceCalculationDelay();
+            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(balanceCalculationDelay);
             List<String> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
                     .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
             List<String> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
@@ -63,5 +66,15 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
                 log.warn("Updating account snapshot balance for account: {} is failed", id);
             }
         }
+    }
+
+    private long fetchBalanceCalculationDelay() {
+        long balanceCalculationDelay = 0;
+        GlobalConfigurationPropertyData balanceCalculationDelayConfiguration = configurationReadPlatformService
+                .retrieveGlobalConfiguration("balance_calculation_delay");
+        if (balanceCalculationDelayConfiguration != null && balanceCalculationDelayConfiguration.isEnabled()) {
+            balanceCalculationDelay = balanceCalculationDelayConfiguration.getValue();
+        }
+        return balanceCalculationDelay;
     }
 }

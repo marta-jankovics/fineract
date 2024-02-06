@@ -149,27 +149,27 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
                     : transactionBalance;
 
             createJournalEntries(office, accountData.getCurrencyCode(), overdraftDebitReferenceId.getId(),
-                    overdraftCreditReferenceId.getId(), accountData.getProductId(), transaction.getPaymentTypeId(), accountData.getId(),
-                    transaction.getId(), transaction.getTransactionDate(), transaction.getSubmittedOnDate(), internalTransactionBalance);
+                    overdraftCreditReferenceId.getId(), accountData.getProductId(), transaction.getPaymentTypeId(), transaction.getId(),
+                    transaction.getTransactionDate(), transaction.getSubmittedOnDate(), internalTransactionBalance);
 
             transactionBalance = transactionBalance.subtract(internalTransactionBalance);
         }
         if (MathUtil.isGreaterThanZero(transactionBalance)) {
             createJournalEntries(office, accountData.getCurrencyCode(), debitAccountReferenceId.getId(), creditAccountReferenceId.getId(),
-                    accountData.getProductId(), transaction.getPaymentTypeId(), accountData.getId(), transaction.getId(),
-                    transaction.getTransactionDate(), transaction.getSubmittedOnDate(), transactionBalance);
+                    accountData.getProductId(), transaction.getPaymentTypeId(), transaction.getId(), transaction.getTransactionDate(),
+                    transaction.getSubmittedOnDate(), transactionBalance);
         }
     }
 
     private void createJournalEntries(final Office office, final String currencyCode, final int accountTypeToDebitId,
-            final int accountTypeToCreditId, final String currentProductId, final Long paymentTypeId, final String currentAccountId,
-            final String transactionId, final LocalDate transactionDate, final LocalDate submittedOnDate, final BigDecimal amount) {
+            final int accountTypeToCreditId, final String currentProductId, final Long paymentTypeId, final String transactionId,
+            final LocalDate transactionDate, final LocalDate submittedOnDate, final BigDecimal amount) {
         final GLAccount debitAccount = getLinkedGLAccountForSavingsProduct(currentProductId, accountTypeToDebitId, paymentTypeId);
         final GLAccount creditAccount = getLinkedGLAccountForSavingsProduct(currentProductId, accountTypeToCreditId, paymentTypeId);
-        createJournalEntry(office, currencyCode, JournalEntryType.DEBIT, debitAccount, currentAccountId, transactionId, transactionDate,
-                submittedOnDate, amount);
-        createJournalEntry(office, currencyCode, JournalEntryType.CREDIT, creditAccount, currentAccountId, transactionId, transactionDate,
-                submittedOnDate, amount);
+        createJournalEntry(office, currencyCode, JournalEntryType.DEBIT, debitAccount, transactionId, transactionDate, submittedOnDate,
+                amount);
+        createJournalEntry(office, currencyCode, JournalEntryType.CREDIT, creditAccount, transactionId, transactionDate, submittedOnDate,
+                amount);
     }
 
     private GLAccount getLinkedGLAccountForSavingsProduct(final String currentProductId, final int accountMappingTypeId,
@@ -204,11 +204,11 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
     }
 
     private void createJournalEntry(final Office office, final String currencyCode, final JournalEntryType entryType,
-            final GLAccount account, final String currentAccountId, final String transactionId, final LocalDate transactionDate,
-            final LocalDate submittedOnDate, final BigDecimal amount) {
+            final GLAccount account, final String transactionId, final LocalDate transactionDate, final LocalDate submittedOnDate,
+            final BigDecimal amount) {
         final boolean manualEntry = false;
         final JournalEntry journalEntry = JournalEntry.createNewForCurrentAccount(office, account, currencyCode, transactionId, manualEntry,
-                transactionDate, entryType, amount, PortfolioProductType.CURRENT.getValue(), currentAccountId, submittedOnDate);
+                transactionDate, entryType, amount, PortfolioProductType.CURRENT.getValue(), submittedOnDate);
 
         glJournalEntryRepository.save(journalEntry);
     }

@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -43,6 +44,8 @@ public class CalculateCurrentAccountBalanceConfig {
     private CurrentAccountBalanceReadService currentAccountBalanceReadService;
     @Autowired
     private CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
+    @Autowired
+    private ConfigurationReadPlatformService configurationReadPlatformService;
 
     @Bean
     protected Step calculateSnapshotBalanceStep() {
@@ -58,6 +61,7 @@ public class CalculateCurrentAccountBalanceConfig {
 
     @Bean
     public CalculateCurrentAccountBalanceTasklet calculateCurrentAccountBalanceTasklet() {
-        return new CalculateCurrentAccountBalanceTasklet(currentAccountBalanceReadService, currentAccountBalanceWriteService);
+        return new CalculateCurrentAccountBalanceTasklet(currentAccountBalanceReadService, currentAccountBalanceWriteService,
+                configurationReadPlatformService);
     }
 }

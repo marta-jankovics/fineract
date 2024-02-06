@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.job.accounting;
 
 import org.apache.fineract.currentaccount.service.accounting.read.CurrentAccountAccountingReadService;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -43,6 +44,8 @@ public class CurrentAccountAccountingConfig {
     private CurrentAccountAccountingReadService currentAccountAccountingReadService;
     @Autowired
     private CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
+    @Autowired
+    private ConfigurationReadPlatformService configurationReadPlatformService;
 
     @Bean
     protected Step currentAccountAccountingStep() {
@@ -58,6 +61,7 @@ public class CurrentAccountAccountingConfig {
 
     @Bean
     public CurrentAccountAccountingTasklet currentAccountAccountingTasklet() {
-        return new CurrentAccountAccountingTasklet(currentAccountAccountingReadService, currentAccountAccountingWriteService);
+        return new CurrentAccountAccountingTasklet(currentAccountAccountingReadService, currentAccountAccountingWriteService,
+                configurationReadPlatformService);
     }
 }

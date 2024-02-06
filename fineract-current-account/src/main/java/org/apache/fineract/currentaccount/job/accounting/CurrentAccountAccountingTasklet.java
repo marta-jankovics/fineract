@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.service.accounting.read.CurrentAccountAccountingReadService;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.infrastructure.configuration.data.GlobalConfigurationPropertyData;
+import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
@@ -37,12 +39,13 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
 
     private final CurrentAccountAccountingReadService currentAccountAccountingReadService;
     private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
+    private final ConfigurationReadPlatformService configurationReadPlatformService;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            // TODO: make it configurable
-            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusMinutes(1);
+            long accountingCalculationDelay = fetchAccountingCalculationDelay();
+            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);
             List<String> currentAccountAccountIsBehindIds = currentAccountAccountingReadService
                     .getAccountIdsWhereAccountingIsBehind(tillDateTime);
             List<String> currentAccountAccountingNotCalculatedIds = currentAccountAccountingReadService
@@ -55,13 +58,23 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private void writeAccounting(List<String> currentAccountBalanceIsBehindIds, OffsetDateTime tillDateTime) {
-        for (String id : currentAccountBalanceIsBehindIds) {
+    private long fetchAccountingCalculationDelay() {
+        long accountingCalculationDelay = 0;
+        GlobalConfigurationPropertyData accountingCalculationDelayConfiguration = configurationReadPlatformService
+                .retrieveGlobalConfiguration("accounting_calculation_delay");
+        if (accountingCalculationDelayConfiguration != null && accountingCalculationDelayConfiguration.isEnabled()) {
+            accountingCalculationDelay = accountingCalculationDelayConfiguration.getValue();
+        }
+        return accountingCalculationDelay;
+    }
+
+    private void writeAccounting(List<String> currentAccountAccountingIsBehindIds, OffsetDateTime tillDateTime) {
+        for (String id : currentAccountAccountingIsBehindIds) {
             try {
                 currentAccountAccountingWriteService.createGLEntries(id, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
-                log.warn("Updating account snapshot balance for account: {} is failed", id);
+                log.warn("Updating current account accounting for account: {} is failed", id);
             }
         }
     }
