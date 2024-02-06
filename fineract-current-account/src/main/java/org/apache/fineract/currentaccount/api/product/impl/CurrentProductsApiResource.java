@@ -18,7 +18,10 @@
  */
 package org.apache.fineract.currentaccount.api.product.impl;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_AND_IDENTIFIER_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,16 +97,17 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Path("{identifier}")
+    @Path(IDENTIFIER_API_PARAM)
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n"
             + "Example Requests:\n" + "\n" + "current-products/1")
     @Override
-    public CurrentProductResponseData retrieveOne(@PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+    public CurrentProductResponseData retrieveOne(
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
         return retrieveOne(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @GET
-    @Path("{idType}/{identifier}")
+    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
@@ -127,19 +131,19 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @PUT
-    @Path("{identifier}")
+    @Path(IDENTIFIER_API_PARAM)
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override
-    public CommandProcessingResult update(@PathParam("identifier") @Parameter(description = "identifier") final String identifier,
+    public CommandProcessingResult update(@PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentProduct(CurrentProductResolver.resolveDefault(identifier), requestJson);
     }
 
     @PUT
-    @Path("{idType}/{identifier}")
+    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
     @Operation(operationId = "updateCurrentProductByIdentifier", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
@@ -152,17 +156,17 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @DELETE
-    @Path("{identifier}")
+    @Path(ID_TYPE_API_PARAM)
     @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product", description = "Delete a Current Product")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
     @Override
-    public CommandProcessingResult delete(@PathParam("identifier") @Parameter(description = "identifier") final String identifier) {
+    public CommandProcessingResult delete(@PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
         return deleteCurrentProduct(CurrentProductResolver.resolveDefault(identifier));
     }
 
     @DELETE
-    @Path("{idType}/{identifier}")
+    @Path(ID_TYPE_AND_IDENTIFIER_API_PARAM)
     @Operation(operationId = "deleteCurrentProductByIdentifier", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })

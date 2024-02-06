@@ -59,13 +59,6 @@ public class CurrentAccountApiConstants {
     public static final String DATATABLE_ENTRIES_PARAM = DatatableApiConstants.DATATABLE_ENTRIES_PARAM;
     public static final String DATATABLE_ID_PARAM = DatatableApiConstants.DATATABLE_ID_PARAM;
 
-    // identifier
-    public static final String ID_TYPE_PARAM = "idType";
-    public static final String ID_VALUE_PARAM = "value";
-    public static final String ID_SUBVALUE_PARAM = "subValue";
-    public static final String IDENTIFIER_PARAM = "identifier";
-    public static final String SUB_IDENTIFIER_PARAM = "subIdentifier";
-
     // current product and account parameters
     public static final String ACCOUNT_NUMBER_PARAM = "accountNumber";
     public static final String EXTERNAL_ID_PARAM = "externalId";
@@ -103,5 +96,37 @@ public class CurrentAccountApiConstants {
     public static final String TRANSACTION_DATE_PARAM = "transactionDate";
     public static final String TRANSACTION_AMOUNT_PARAM = "transactionAmount";
     public static final String REASON_FOR_BLOCK_PARAM = "reasonForBlock";
+
+    // identifier
+    public static final String ID_VALUE_PARAM = "value";
+    public static final String ID_SUBVALUE_PARAM = "subValue";
+    public static final String ID_TYPE_PARAM = "idType";
+    public static final String IDENTIFIER_PARAM = "identifier";
+    public static final String SUB_IDENTIFIER_PARAM = "subIdentifier";
+    public static final String ACCOUNT_ID_TYPE_PARAM = "accountIdType";
+    public static final String ACCOUNT_IDENTIFIER_PARAM = "accountIdentifier";
+    public static final String ACCOUNT_SUB_IDENTIFIER_PARAM = "accountSubIdentifier";
+    public static final String TRANSACTION_ID_TYPE_PARAM = "transactionIdType";
+    public static final String TRANSACTION_IDENTIFIER_PARAM = "transactionIdentifier";
+
+    // API
+    public static final String SLASH = "/";
+    public static final String RESERVED_WORDS = ":^(?!transactions|query|identifiers|template).*$";
+    public static final String ID_TYPE_API_PARAM = "{" + ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String IDENTIFIER_API_PARAM = "{" + IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String SUB_IDENTIFIER_API_PARAM = "{" + SUB_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_ID_TYPE_API_PARAM = "{" + ACCOUNT_ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_IDENTIFIER_API_PARAM = "{" + ACCOUNT_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String ACCOUNT_SUB_IDENTIFIER_API_PARAM = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String TRANSACTION_ID_TYPE_API_PARAM = "{" + TRANSACTION_ID_TYPE_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String TRANSACTION_IDENTIFIER_API_PARAM = "{" + TRANSACTION_IDENTIFIER_PARAM + ":" + RESERVED_WORDS + "}";
+    public static final String ID_TYPE_AND_IDENTIFIER_API_PARAM = ID_TYPE_API_PARAM + SLASH + IDENTIFIER_API_PARAM;
+    public static final String ID_TYPE_AND_IDENTIFIER_AND_SUB_IDENTIFIER_API_PARAM = ID_TYPE_API_PARAM + SLASH + IDENTIFIER_API_PARAM
+            + SLASH + SUB_IDENTIFIER_API_PARAM;
+    public static final String ACCOUNT_ID_TYPE_AND_IDENTIFIER_API_PARAM = ACCOUNT_ID_TYPE_API_PARAM + SLASH + ACCOUNT_IDENTIFIER_API_PARAM;
+    public static final String ACCOUNT_ID_TYPE_AND_IDENTIFIER_AND_SUB_IDENTIFIER_API_PARAM = ACCOUNT_ID_TYPE_API_PARAM + SLASH
+            + ACCOUNT_IDENTIFIER_API_PARAM + SLASH + ACCOUNT_SUB_IDENTIFIER_API_PARAM;
+    public static final String TRANSACTION_ID_TYPE_AND_IDENTIFIER_API_PARAM = TRANSACTION_ID_TYPE_API_PARAM + SLASH
+            + TRANSACTION_IDENTIFIER_API_PARAM;
 
 }
