@@ -26,14 +26,12 @@
   <include relativeToChangelogFile="true" file="parts/ca_0001_current_product.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0002_current_account.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0003_current_transaction.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0004_command_source.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0005_current_account_balance.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0006_current_account_balance_calculation_job.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0007_entity_action.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0008_account_identifier.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0009_add_permissions.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0010_add_product_identifier.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0011_current_account_accounting_job.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0012_gl_account_history.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0013_global_configuration.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0004_current_account_balance.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0005_account_identifier.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0006_entity_action.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0007_gl_account_history.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0008_alter_fineract.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0009_add_current_jobs.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0010_add_current_permissions.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0011_add_current_global_configurations.xml"/>
 </databaseChangeLog>

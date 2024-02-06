@@ -25,32 +25,26 @@
     <changeSet author="fineract" id="1">
         <insert tableName="c_configuration">
             <column name="name" value="balance_calculation_delay"/>
-            <column name="value" valueNumeric="60"/>
-            <column name="date_value"/>
-            <column name="string_value"/>
+            <column name="value" value="20"/>
             <column name="enabled" valueBoolean="true"/>
             <column name="is_trap_door" valueBoolean="false"/>
-            <column name="description" value="Specifies the time gap for which the Account balance is calculated. unit: seconds"/>
+            <column name="description" value="How many seconds earlier transactions the balance calculation is based on"/>
         </insert>
-
+        <insert tableName="c_configuration">
+            <column name="name" value="daily_balance_cleanup_days"/>
+            <column name="value" value="32"/>
+            <column name="enabled" valueBoolean="false"/>
+            <column name="is_trap_door" valueBoolean="false"/>
+            <column name="description" value="How many days earlier daily balances should be automatically deleted"/>
+        </insert>
         <insert tableName="c_configuration">
             <column name="name" value="accounting_calculation_delay"/>
-            <column name="value" valueNumeric="60"/>
+            <column name="value" valueNumeric="20"/>
             <column name="date_value"/>
             <column name="string_value"/>
             <column name="enabled" valueBoolean="true"/>
             <column name="is_trap_door" valueBoolean="false"/>
             <column name="description" value="Specifies the time gap for which the Account accounting is calculated. unit: seconds"/>
-        </insert>
-
-        <insert tableName="c_configuration">
-            <column name="name" value="daily_balance_cleanup_days"/>
-            <column name="value"/>
-            <column name="date_value"/>
-            <column name="string_value"/>
-            <column name="enabled" valueBoolean="false"/>
-            <column name="is_trap_door" valueBoolean="false"/>
-            <column name="description" value="Specifies the number of days of daily account balance retention. unit: days"/>
         </insert>
     </changeSet>
 </databaseChangeLog>
