@@ -61,13 +61,14 @@ public class CurrentAccountAdvancedQueryCommandStrategy implements CommandStrate
             String identifier = pathParameters.get(2);
             if (size > 4) {
                 String subIdentifier = pathParameters.get(3);
-                response = currentAccountsApiResource.advancedQuery(idType, identifier, subIdentifier, queryRequest, uriInfo);
+                response = currentAccountsApiResource.advancedQueryByIdTypeIdentifierSubIdentifier(idType, identifier, subIdentifier,
+                        queryRequest, uriInfo);
             } else {
-                response = currentAccountsApiResource.advancedQuery(idType, identifier, queryRequest, uriInfo);
+                response = currentAccountsApiResource.advancedQueryByIdTypeIdentifier(idType, identifier, queryRequest, uriInfo);
             }
         } else if (size == 3) {
             String accountId = pathParameters.get(1);
-            response = currentAccountsApiResource.advancedQuery(accountId, queryRequest, uriInfo);
+            response = currentAccountsApiResource.advancedQueryByIdentifier(accountId, queryRequest, uriInfo);
         } else {
             response = currentAccountsApiResource.advancedQuery(queryRequest, uriInfo);
         }

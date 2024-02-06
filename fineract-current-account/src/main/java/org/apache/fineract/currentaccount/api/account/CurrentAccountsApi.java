@@ -34,38 +34,41 @@ public interface CurrentAccountsApi {
 
     Page<CurrentAccountResponseData> retrieveAll(Pageable pageable);
 
-    CurrentAccountResponseData retrieveOne(String accountId);
+    CurrentAccountResponseData retrieveOneByIdentifier(String identifier);
 
-    CurrentAccountResponseData retrieveOne(String idType, String identifier);
+    CurrentAccountResponseData retrieveOneByIdTypeIdentifier(String idType, String identifier);
 
-    CurrentAccountResponseData retrieveOne(String idType, String identifier, String subId);
+    CurrentAccountResponseData retrieveOneByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier);
 
-    IdentifiersResponseData retrieveIdentifiers(String accountId);
+    IdentifiersResponseData retrieveIdentifiersByIdentifier(String identifier);
 
-    IdentifiersResponseData retrieveIdentifiers(String idType, String identifier);
+    IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifier(String idType, String identifier);
 
-    IdentifiersResponseData retrieveIdentifiers(String idType, String identifier, String subIdentifier);
+    IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier);
 
     CommandProcessingResult create(String requestJson);
 
-    CommandProcessingResult action(String accountId, String commandParam, String requestJson);
+    CommandProcessingResult actionByIdentifier(String identifier, String commandParam, String requestJson);
 
-    CommandProcessingResult action(String idType, String identifier, String commandParam, String requestJson);
+    CommandProcessingResult actionByIdTypeAndIdentifier(String idType, String identifier, String commandParam, String requestJson);
 
-    CommandProcessingResult action(String idType, String identifier, String subId, String commandParam, String requestJson);
+    CommandProcessingResult actionByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier,
+            String commandParam, String requestJson);
 
-    CommandProcessingResult update(String accountId, String requestJson);
+    CommandProcessingResult updateByIdentifier(String identifier, String requestJson);
 
-    CommandProcessingResult update(String idType, String identifier, String requestJson);
+    CommandProcessingResult updateByIdTypeIdentifier(String idType, String identifier, String requestJson);
 
-    CommandProcessingResult update(String idType, String identifier, String subIdentifier, String requestJson);
+    CommandProcessingResult updateByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier,
+            String requestJson);
 
     String advancedQuery(PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    String advancedQuery(String accountId, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
+    String advancedQueryByIdentifier(String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 
-    String advancedQuery(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
-
-    String advancedQuery(String idType, String identifier, String subId, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
+    String advancedQueryByIdTypeIdentifier(String idType, String identifier, PagedLocalRequest<AdvancedQueryRequest> queryRequest,
             UriInfo uriInfo);
+
+    String advancedQueryByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier,
+            PagedLocalRequest<AdvancedQueryRequest> queryRequest, UriInfo uriInfo);
 }
