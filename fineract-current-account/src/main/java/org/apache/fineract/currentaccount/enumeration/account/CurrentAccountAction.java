@@ -68,6 +68,7 @@ public enum CurrentAccountAction {
     }
 
     public boolean isTransaction() {
+        //TODO: Remove this magic...
         return ordinal() >= TRANSACTION_DEPOSIT.ordinal();
     }
 

@@ -51,7 +51,7 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
     public CurrentAccountBalanceData calculateBalance(@NotNull String accountId, @NotNull BalanceCalculationType balanceType,
             @NotNull CurrentAccountAction action, OffsetDateTime tillDateTime) {
         boolean save = balanceType.isStrict(action);
-        boolean delay = save && !balanceType.isStrict();
+        boolean delay = !balanceType.isStrict();
         CurrentAccountBalanceData balanceData = currentAccountBalanceReadService.getBalance(accountId, delay ? tillDateTime : null);
         if (save && balanceData != null && balanceData.isChanged()) {
             saveBalance(balanceData);
