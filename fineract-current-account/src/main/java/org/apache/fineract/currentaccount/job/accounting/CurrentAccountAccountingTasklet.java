@@ -26,8 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.infrastructure.configuration.data.GlobalConfigurationPropertyData;
+import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -40,12 +42,13 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
 
     private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
     private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
-    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private final ConfigurationReadPlatformService configurationReadPlatformService;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
+            long accountingCalculationDelay = fetchAccountingCalculationDelay();
+            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);
             List<CurrentAccountStatus> statuses = List.of(ACTIVE);
             List<String> accountIds = currentAccountAccountingRepository.getAccountIdsAccountingBehind(tillDateTime, statuses);
             accountIds.addAll(currentAccountAccountingRepository.getAccountIdsNoAccounting(statuses));
@@ -56,8 +59,18 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
-        for (String accountId : accountIds) {
+    private long fetchAccountingCalculationDelay() {
+        long accountingCalculationDelay = 0;
+        GlobalConfigurationPropertyData accountingCalculationDelayConfiguration = configurationReadPlatformService
+                .retrieveGlobalConfiguration("accounting_calculation_delay");
+        if (accountingCalculationDelayConfiguration != null && accountingCalculationDelayConfiguration.isEnabled()) {
+            accountingCalculationDelay = accountingCalculationDelayConfiguration.getValue();
+        }
+        return accountingCalculationDelay;
+    }
+
+    private void writeAccounting(List<String> currentAccountAccountingIsBehindIds, OffsetDateTime tillDateTime) {
+        for (String accountId : currentAccountAccountingIsBehindIds) {
             try {
                 currentAccountAccountingWriteService.createGLEntries(accountId, tillDateTime);
             } catch (Exception e) {
