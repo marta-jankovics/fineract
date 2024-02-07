@@ -75,7 +75,7 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
         boolean allStrict = currentAccountData.getBalanceCalculationType().isStrict();
         List<CurrentTransaction> transactionList;
         if (accountingHistory.isNew()) {
-            transactionList = allStrict ? currentTransactionRepository.getByAccountIdOrderByCreatedDateAndId(accountId)
+            transactionList = allStrict ? currentTransactionRepository.getByAccountIdOrderByCreatedDateAscIdAsc(accountId)
                     : currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else {
             CurrentTransaction currentTransaction = currentTransactionRepository // TODO CURRENT! no need to load the

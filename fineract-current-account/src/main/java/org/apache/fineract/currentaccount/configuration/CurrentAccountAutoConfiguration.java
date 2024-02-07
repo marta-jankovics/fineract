@@ -174,8 +174,7 @@ public class CurrentAccountAutoConfiguration {
     public CurrentTransactionWriteService currentTransactionWriteService(CurrentTransactionDataValidator currentTransactionDataValidator,
             CurrentTransactionAssembler currentTransactionAssembler, CurrentAccountRepository currentAccountRepository,
             CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
-            CurrentAccountBalanceWriteService currentAccountBalanceWriteService,
-            CurrentAccountWriteServiceImpl currentAccountWriteService) {
+            CurrentAccountBalanceWriteService currentAccountBalanceWriteService, CurrentAccountWriteService currentAccountWriteService) {
         return new CurrentTransactionWriteServiceImpl(currentTransactionDataValidator, currentTransactionAssembler,
                 currentAccountRepository, currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService,
                 currentAccountWriteService);

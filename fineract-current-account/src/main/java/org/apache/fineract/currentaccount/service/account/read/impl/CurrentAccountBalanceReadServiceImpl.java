@@ -70,7 +70,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
         List<CurrentTransaction> transactions; // TODO CURRENT! calculate data in the sql, no need to load transactions
                                                // + filter transactions by type
         if (fromDateTime == null && tillDateTime == null) {
-            transactions = currentTransactionRepository.getByAccountIdOrderByCreatedDateAndId(accountId);
+            transactions = currentTransactionRepository.getByAccountIdOrderByCreatedDateAscIdAsc(accountId);
         } else if (fromDateTime == null) {
             transactions = currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else if (tillDateTime == null) {

@@ -35,7 +35,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
-import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.currentaccount.validator.transaction.CurrentTransactionDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
@@ -58,7 +58,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     // TODO: use service eventually
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
-    private final CurrentAccountWriteServiceImpl currentAccountWriteService;
+    private final CurrentAccountWriteService currentAccountWriteService;
 
     @Transactional(timeout = 3)
     @Override
