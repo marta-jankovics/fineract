@@ -50,6 +50,12 @@
             <column name="created_by" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="last_modified_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on_utc" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
         </addColumn>
     </changeSet>
     <changeSet author="fineract" id="2" context="postgresql">
@@ -60,11 +66,21 @@
             <column name="created_by" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="last_modified_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on_utc" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
         </addColumn>
     </changeSet>
     <changeSet author="fineract" id="3">
         <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_current_account_daily_balance"
                                  constraintName="FK_current_account_daily_balance_created_by" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_appuser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_transaction"
+                                 constraintName="FK_m_current_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="m_current_account_daily_balance"
