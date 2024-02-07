@@ -31,6 +31,7 @@ import org.apache.fineract.currentaccount.assembler.transaction.impl.CurrentTran
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
@@ -42,8 +43,10 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountRea
 import org.apache.fineract.currentaccount.service.account.read.impl.CurrentAccountBalanceReadServiceImpl;
 import org.apache.fineract.currentaccount.service.account.read.impl.CurrentAccountReadServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountBalanceWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountDailyBalanceWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
 import org.apache.fineract.currentaccount.service.accounting.write.impl.CurrentAccountAccountingWriteServiceImpl;
@@ -215,5 +218,12 @@ public class CurrentAccountAutoConfiguration {
         return new CurrentAccountAccountingWriteServiceImpl(currentAccountRepository, currentTransactionRepository,
                 currentAccountAccountingRepository, financialActivityAccountRepository, accountMappingRepository, officeRepository,
                 glJournalEntryRepository);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentAccountDailyBalanceWriteService.class)
+    public CurrentAccountDailyBalanceWriteService currentAccountDailyBalanceWriteService(
+            CurrentAccountDailyBalanceRepository dailyBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentAccountDailyBalanceWriteServiceImpl(dailyBalanceRepository, currentTransactionRepository);
     }
 }

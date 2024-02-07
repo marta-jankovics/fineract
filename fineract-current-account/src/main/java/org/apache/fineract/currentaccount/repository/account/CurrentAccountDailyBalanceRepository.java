@@ -35,14 +35,12 @@ public interface CurrentAccountDailyBalanceRepository extends JpaRepository<Curr
     Optional<CurrentAccountBalance> findByAccountId(String accountId);
 
     @Query("select cadb from CurrentAccountDailyBalance cadb, "
-            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance where cadb2.accountId = :accountId and cadb2.balanceDate < :date) max "
-            + "where cadb.accountId = :accountId and cadb.balanceDate = max.maxDate")
+            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance cadb2 where cadb2.accountId = :accountId and cadb2.balanceDate < :date) maxdb "
+            + "where cadb.accountId = :accountId and cadb.balanceDate = maxdb.maxDate")
     CurrentAccountDailyBalance getLatestDailyBalanceBefore(@Param("accountId") String accountId, @Param("date") LocalDate date);
 
-    String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where " + "ca.status in :statuses "
-            + "and not exists (select cadb.id from CurrentAccountDailyBalance cadb where ca.id = cadb.accountId and cadb.balanceDate = :date)";
-
-    @Query(QUERY_ACCOUNT_IDS_FOR_BALANCE)
+    @Query("select ca.id from CurrentAccount ca where " + "ca.status in :statuses "
+            + "and not exists (select cadb.id from CurrentAccountDailyBalance cadb where ca.id = cadb.accountId and cadb.balanceDate = :date)")
     List<String> getAccountIdsForDailyBalanceCalculation(@Param("date") LocalDate date,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

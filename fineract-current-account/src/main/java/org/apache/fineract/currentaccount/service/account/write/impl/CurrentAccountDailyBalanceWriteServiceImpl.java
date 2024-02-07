@@ -30,6 +30,7 @@ import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransac
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
