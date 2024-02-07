@@ -76,7 +76,7 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
         List<CurrentTransaction> transactionList;
         // TODO CURRENT! no need to load the transactions
         if (accountingHistory.isNew()) {
-            transactionList = allStrict ? currentTransactionRepository.getByAccountIdOrderByCreatedDateAscIdAsc(accountId)
+            transactionList = allStrict ? currentTransactionRepository.getTransactions(accountId)
                     : currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else {
             CurrentTransaction currentTransaction = currentTransactionRepository

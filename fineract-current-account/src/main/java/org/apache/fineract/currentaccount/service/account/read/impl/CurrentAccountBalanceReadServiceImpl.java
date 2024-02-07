@@ -61,7 +61,6 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
         OffsetDateTime fromDateTime = null;
         BigDecimal balance = null;
         BigDecimal holdAmount = null;
-        OffsetDateTime calculatedTillDate;
         if (balanceData != null) {
             fromDateTime = balanceData.getCalculatedTill();
             balance = balanceData.getAccountBalance();
@@ -70,7 +69,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
         List<CurrentTransaction> transactions; // TODO CURRENT! calculate data in the sql, no need to load transactions
                                                // + filter transactions by type
         if (fromDateTime == null && tillDateTime == null) {
-            transactions = currentTransactionRepository.getByAccountIdOrderByCreatedDateAscIdAsc(accountId);
+            transactions = currentTransactionRepository.getTransactions(accountId);
         } else if (fromDateTime == null) {
             transactions = currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else if (tillDateTime == null) {

@@ -35,8 +35,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, String> {
 
-    List<CurrentTransaction> getByAccountIdOrderByCreatedDateAscIdAsc(String accountId);
-
     CurrentTransaction getByExternalId(ExternalId externalId);
 
     String getIdByExternalId(ExternalId externalId);
@@ -80,4 +78,7 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             + "and t.transactionType in :types order by t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsSubmittedFromTo(@Param("accountId") String accountId, @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
+
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
+    List<CurrentTransaction> getTransactions(@Param("accountId") String accountId);
 }
