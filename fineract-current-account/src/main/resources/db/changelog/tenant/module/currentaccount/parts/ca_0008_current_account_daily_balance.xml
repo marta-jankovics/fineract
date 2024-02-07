@@ -79,8 +79,8 @@
                                  constraintName="FK_current_account_daily_balance_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_account_daily_balance"
+                                 constraintName="FK_current_account_daily_balance_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="m_current_account_daily_balance"
