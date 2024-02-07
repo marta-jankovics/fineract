@@ -18,18 +18,22 @@
  */
 package org.apache.fineract.currentaccount.service.account.write;
 
+import jakarta.validation.constraints.NotNull;
+import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
 public interface CurrentAccountWriteService {
 
-    CommandProcessingResult submitApplication(JsonCommand command);
+    CommandProcessingResult submitApplication(@NotNull JsonCommand command);
 
-    CommandProcessingResult update(String accountId, JsonCommand command);
+    CommandProcessingResult update(@NotNull String accountId, @NotNull JsonCommand command);
 
-    CommandProcessingResult cancelApplication(String accountId, JsonCommand command);
+    CommandProcessingResult cancelApplication(@NotNull String accountId, @NotNull JsonCommand command);
 
-    CommandProcessingResult activate(String accountId, JsonCommand command);
+    CommandProcessingResult activate(@NotNull String accountId, @NotNull JsonCommand command);
 
-    CommandProcessingResult close(String accountId, JsonCommand command);
+    CommandProcessingResult close(@NotNull String accountId, @NotNull JsonCommand command);
+
+    void checkEnabled(@NotNull CurrentAccount account, boolean checkClient);
 }

@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
+import org.apache.fineract.commands.domain.CommandActionContext;
 import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 
 @AllArgsConstructor
@@ -38,4 +39,5 @@ public class FineractContext implements Serializable {
     private final String authTokenContext;
     private final HashMap<BusinessDateType, LocalDate> businessDateContext;
     private final ActionContext actionContext;
+    private final CommandActionContext commandContext;
 }

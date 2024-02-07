@@ -18,15 +18,16 @@
  */
 package org.apache.fineract.currentaccount.job.balancecalculation;
 
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
-import org.apache.fineract.infrastructure.configuration.data.GlobalConfigurationPropertyData;
-import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
-import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -39,42 +40,29 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
-    private final ConfigurationReadPlatformService configurationReadPlatformService;
+    private final CurrentAccountBalanceRepository currentAccountBalanceRepository;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            long balanceCalculationDelay = fetchBalanceCalculationDelay();
-            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(balanceCalculationDelay);
-            List<String> currentAccountBalanceIsBehindIds = currentAccountBalanceReadService
-                    .getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
-            List<String> currentAccountBalanceNotCalculatedIds = currentAccountBalanceReadService.getAccountIdsWhereBalanceNotCalculated();
-            currentAccountBalanceIsBehindIds.addAll(currentAccountBalanceNotCalculatedIds);
-            updateBalances(currentAccountBalanceIsBehindIds, tillDateTime);
+            OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
+            List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
+            List<String> accountIds = currentAccountBalanceRepository.getAccountIdsForBalanceCalculation(tillDateTime, statuses);
+            updateBalances(accountIds, tillDateTime);
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
     }
 
-    private void updateBalances(List<String> currentAccountBalanceIsBehindIds, OffsetDateTime tillDateTime) {
-        for (String id : currentAccountBalanceIsBehindIds) {
+    private void updateBalances(List<String> accountIds, OffsetDateTime tillDateTime) {
+        for (String accountId : accountIds) {
             try {
-                currentAccountBalanceWriteService.updateBalance(id, tillDateTime);
+                currentAccountBalanceWriteService.updateBalance(accountId, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
-                log.warn("Updating account snapshot balance for account: {} is failed", id);
+                log.warn("Updating account balance for account: {} is failed", accountId);
             }
         }
-    }
-
-    private long fetchBalanceCalculationDelay() {
-        long balanceCalculationDelay = 0;
-        GlobalConfigurationPropertyData balanceCalculationDelayConfiguration = configurationReadPlatformService
-                .retrieveGlobalConfiguration("balance_calculation_delay");
-        if (balanceCalculationDelayConfiguration != null && balanceCalculationDelayConfiguration.isEnabled()) {
-            balanceCalculationDelay = balanceCalculationDelayConfiguration.getValue();
-        }
-        return balanceCalculationDelay;
     }
 }

@@ -367,6 +367,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
         CurrentAccountData accountData = currentAccountReadService.retrieve(accountResolver);
         CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountData.getId());
+        // TODO CURRENT! move this to the service
         return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
     }
 

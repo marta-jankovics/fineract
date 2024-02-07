@@ -25,7 +25,11 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_SUB_IDENTIFIER_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_SUB_IDENTIFIER_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_DEPOSIT;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_HOLD;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_PARAM_FORCE;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_RELEASE;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_WITHDRAWAL;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_IDENTIFIER_API_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_IDENTIFIER_PARAM;
@@ -58,7 +62,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
-import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
@@ -461,7 +464,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private CurrentTransactionResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver,
             @NotNull CurrentTransactionResolver transactionResolver) {
-        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
+        context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return currentTransactionResponseDataMapper.map(currentTransactionReadService.retrieve(accountResolver, transactionResolver));
     }
 
@@ -482,21 +485,20 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
         CommandProcessingResult result = null;
         String accountIdentifier = getResolvedAccountId(accountResolver);
-        if (is(commandParam, CurrentAccountApiConstants.COMMAND_DEPOSIT)) {
+        if (is(commandParam, COMMAND_DEPOSIT)) {
             final CommandWrapper commandRequest = builder.currentAccountDeposit(accountIdentifier).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.COMMAND_WITHDRAWAL)) {
+        } else if (is(commandParam, COMMAND_WITHDRAWAL)) {
             boolean force = Boolean.TRUE.equals(forceParam);
             final CommandWrapper commandRequest = builder.currentAccountWithdrawal(accountIdentifier, force).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-        } else if (is(commandParam, CurrentAccountApiConstants.COMMAND_HOLD)) {
+        } else if (is(commandParam, COMMAND_HOLD)) {
             final CommandWrapper commandRequest = builder.currentAccountHold(accountIdentifier).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
         }
 
         if (result == null) {
-            throw new UnrecognizedQueryParamException(COMMAND, commandParam, CurrentAccountApiConstants.COMMAND_DEPOSIT,
-                    CurrentAccountApiConstants.COMMAND_WITHDRAWAL, CurrentAccountApiConstants.COMMAND_HOLD);
+            throw new UnrecognizedQueryParamException(COMMAND, commandParam, COMMAND_DEPOSIT, COMMAND_WITHDRAWAL, COMMAND_HOLD);
         }
         return result;
     }
@@ -512,12 +514,12 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         CommandProcessingResult result = null;
         String accountIdentifier = getResolvedAccountId(accountResolver);
         String transactionIdentifier = getResolvedTransactionId(accountResolver, transactionResolver);
-        if (is(commandParam, CurrentAccountApiConstants.COMMAND_RELEASE)) {
+        if (is(commandParam, COMMAND_RELEASE)) {
             final CommandWrapper commandRequest = builder.currentTransactionRelease(accountIdentifier, transactionIdentifier).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
         }
         if (result == null) {
-            throw new UnrecognizedQueryParamException(COMMAND, commandParam, CurrentAccountApiConstants.COMMAND_RELEASE);
+            throw new UnrecognizedQueryParamException(COMMAND, commandParam, COMMAND_RELEASE);
         }
         return result;
     }

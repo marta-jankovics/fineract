@@ -25,7 +25,7 @@ public interface CurrentTransactionWriteService {
 
     CommandProcessingResult deposit(String accountId, JsonCommand command);
 
-    CommandProcessingResult withdrawal(String accountId, JsonCommand command);
+    CommandProcessingResult withdrawal(String accountId, JsonCommand command, boolean force);
 
     CommandProcessingResult hold(String accountId, JsonCommand command);
 

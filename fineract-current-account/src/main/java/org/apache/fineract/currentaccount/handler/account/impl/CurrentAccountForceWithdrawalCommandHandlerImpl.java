@@ -19,13 +19,13 @@
 package org.apache.fineract.currentaccount.handler.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
-import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CLOSE;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_FORCE_WITHDRAWAL;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
 import org.apache.fineract.commands.domain.CommandActionContext;
-import org.apache.fineract.currentaccount.handler.account.CurrentAccountCloseCommandHandler;
-import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
+import org.apache.fineract.currentaccount.handler.account.CurrentAccountWithdrawalCommandHandler;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
@@ -33,16 +33,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@CommandType(entity = CURRENT_ACCOUNT_ENTITY_NAME, action = ACTION_CLOSE)
+@CommandType(entity = CURRENT_ACCOUNT_ENTITY_NAME, action = ACTION_FORCE_WITHDRAWAL)
 @RequiredArgsConstructor
-public class CurrentAccountCloseCommandHandlerImpl implements CurrentAccountCloseCommandHandler {
+public class CurrentAccountForceWithdrawalCommandHandlerImpl implements CurrentAccountWithdrawalCommandHandler {
 
-    private final CurrentAccountWriteService writePlatformService;
+    private final CurrentTransactionWriteService writePlatformService;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-        ThreadLocalContextUtil.setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, ACTION_CLOSE));
-        return this.writePlatformService.close(command.getResourceIdentifier(), command);
+        ThreadLocalContextUtil.setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, ACTION_FORCE_WITHDRAWAL));
+        return this.writePlatformService.withdrawal(command.getResourceIdentifier(), command, true);
     }
 }

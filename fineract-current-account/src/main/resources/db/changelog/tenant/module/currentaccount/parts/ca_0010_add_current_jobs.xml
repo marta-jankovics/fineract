@@ -24,14 +24,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="fineract" id="1">
         <insert tableName="job">
-            <column name="name" value="Update Snapshot Balance of Current Accounts"/>
-            <column name="display_name" value="Update Snapshot Balance of Current Accounts"/>
+            <column name="name" value="Update Balance of Current Accounts"/>
+            <column name="display_name" value="Update Balance of Current Accounts"/>
             <column name="cron_expression" value="0 0/1 * * * ?"/>
             <column name="create_time" valueDate="${current_datetime}"/>
             <column name="task_priority" valueNumeric="5"/>
             <column name="group_name"/>
             <column name="previous_run_start_time"/>
-            <column name="job_key" value="Update Snapshot Balance of Current AccountsJobDetail1 _ DEFAULT"/>
+            <column name="job_key" value="Update Balance of Current AccountsJobDetail1 _ DEFAULT"/>
             <column name="initializing_errorlog"/>
             <column name="is_active" valueBoolean="false"/>
             <column name="currently_running" valueBoolean="false"/>
@@ -52,6 +52,26 @@
             <column name="group_name"/>
             <column name="previous_run_start_time"/>
             <column name="job_key" value="Current Account AccountingJobDetail1 _ DEFAULT"/>
+            <column name="initializing_errorlog"/>
+            <column name="is_active" valueBoolean="false"/>
+            <column name="currently_running" valueBoolean="false"/>
+            <column name="updates_allowed" valueBoolean="true"/>
+            <column name="scheduler_group" valueNumeric="0"/>
+            <column name="is_misfired" valueBoolean="false"/>
+            <column name="node_id" valueNumeric="1"/>
+            <column name="is_mismatched_job" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+    <changeSet author="fineract" id="3">
+        <insert tableName="job">
+            <column name="name" value="Calculate Current Daily Balance"/>
+            <column name="display_name" value="Calculate Current Daily Balance"/>
+            <column name="cron_expression" value="0 0/1 * * * ?"/>
+            <column name="create_time" valueDate="${current_datetime}"/>
+            <column name="task_priority" valueNumeric="5"/>
+            <column name="group_name"/>
+            <column name="previous_run_start_time"/>
+            <column name="job_key" value="Calculate Current Daily BalanceJobDetail1 _ DEFAULT"/>
             <column name="initializing_errorlog"/>
             <column name="is_active" valueBoolean="false"/>
             <column name="currently_running" valueBoolean="false"/>

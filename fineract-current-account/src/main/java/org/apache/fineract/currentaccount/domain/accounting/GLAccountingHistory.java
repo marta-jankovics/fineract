@@ -27,17 +27,13 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 
 @Entity
 @Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "acc_account_history", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "account_id", "account_type" }, name = "acc_account_history_account_id_type_key") })
@@ -58,4 +54,20 @@ public class GLAccountingHistory extends AbstractAuditableWithUTCDateTimeCustom<
 
     @Version
     private Long version;
+
+    public GLAccountingHistory(String accountId, PortfolioAccountType accountType, BigDecimal accountBalance,
+            String calculatedTillTransactionId) {
+        this.accountId = accountId;
+        this.accountType = accountType;
+        this.accountBalance = accountBalance;
+        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    }
+
+    public void setAccountBalance(BigDecimal accountBalance) {
+        this.accountBalance = accountBalance;
+    }
+
+    public void setCalculatedTillTransactionId(String calculatedTillTransactionId) {
+        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    }
 }

@@ -31,7 +31,7 @@ public class CurrentAccountResolver {
 
     private final CurrentAccountIdType idType;
     private final InteropIdentifierType interopIdType;
-    private final String identifier;
+    private final String identifier; // TODO CURRENT! remove the ids
     private final String subIdentifier;
 
     @NotNull

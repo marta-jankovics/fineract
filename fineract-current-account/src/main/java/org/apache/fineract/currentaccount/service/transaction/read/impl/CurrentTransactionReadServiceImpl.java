@@ -68,7 +68,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
             @NotNull CurrentTransactionResolver transactionResolver) {
         CurrentTransactionData transactionData = switch (transactionResolver.getIdType()) {
             case ID -> currentTransactionRepository.getTransaction(accountResolver.getIdentifier(), transactionResolver.getIdentifier());
-            case EXTERNAL_ID -> currentTransactionRepository.getTransaction(accountResolver.getIdentifier(),
+            case EXTERNAL_ID -> currentTransactionRepository.getTransactionData(accountResolver.getIdentifier(),
                     new ExternalId(transactionResolver.getIdentifier()));
         };
         if (transactionData == null) {
@@ -83,13 +83,13 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
     public String retrieveId(@NotNull CurrentAccountResolver accountResolver, @NotNull CurrentTransactionResolver transactionResolver) {
         return switch (transactionResolver.getIdType()) {
             case ID -> transactionResolver.getIdentifier();
-            case EXTERNAL_ID -> currentTransactionRepository.getTransactionId(new ExternalId(transactionResolver.getIdentifier()));
+            case EXTERNAL_ID -> currentTransactionRepository.getIdByExternalId(new ExternalId(transactionResolver.getIdentifier()));
         };
     }
 
     @Override
     public Page<CurrentTransactionData> retrieveAll(@NotNull CurrentAccountResolver accountResolver, Pageable pageable) {
         String currentAccountId = currentAccountReadService.retrieveId(accountResolver);
-        return currentTransactionRepository.getTransactions(currentAccountId, pageable);
+        return currentTransactionRepository.getTransactionDataPage(currentAccountId, pageable);
     }
 }

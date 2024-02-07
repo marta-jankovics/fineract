@@ -59,8 +59,9 @@ public enum JobName {
     PURGE_PROCESSED_COMMANDS("Purge Processed Commands"), //
     GENERATE_STATEMENTS("Generate Account Statements"), //
     PUBLISH_STATEMENTS("Publish Account Statements"), //
-    CALCULATE_CURRENT_ACCOUNT_BALANCE("Update Snapshot Balance of Current Accounts"), //
+    CALCULATE_CURRENT_ACCOUNT_BALANCE("Update Balance of Current Accounts"), //
     CURRENT_ACCOUNT_ACCOUNTING("Current Account Accounting"), //
+    CALCULATE_CURRENT_DAILY_BALANCE("Calculate Current Daily Balance"), //
     ;
 
     private final String name;

@@ -18,9 +18,18 @@
  */
 package org.apache.fineract.currentaccount.service.account.write;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
+import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 
 public interface CurrentAccountBalanceWriteService {
 
-    void updateBalance(String accountId, OffsetDateTime tillDateTime);
+    void updateBalance(@NotNull String accountId, OffsetDateTime tillDateTime);
+
+    CurrentAccountBalanceData calculateBalance(@NotNull String accountId, @NotNull BalanceCalculationType balanceType,
+            CurrentAccountAction action, OffsetDateTime tillDateTime);
+
+    void saveBalance(@NotNull CurrentAccountBalanceData balanceData);
 }

@@ -30,8 +30,9 @@
   <include relativeToChangelogFile="true" file="parts/ca_0005_account_identifier.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0006_entity_action.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0007_gl_account_history.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0008_alter_fineract.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0009_add_current_jobs.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0010_add_current_permissions.xml"/>
-  <include relativeToChangelogFile="true" file="parts/ca_0011_add_current_global_configurations.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0008_current_account_daily_balance.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0009_alter_fineract.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0010_add_current_jobs.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0011_add_current_permissions.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0012_add_current_global_configurations.xml"/>
 </databaseChangeLog>

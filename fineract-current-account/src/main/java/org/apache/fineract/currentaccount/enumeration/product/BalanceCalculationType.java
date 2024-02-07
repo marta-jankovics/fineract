@@ -18,7 +18,13 @@
  */
 package org.apache.fineract.currentaccount.enumeration.product;
 
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CLOSE;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
@@ -38,5 +44,30 @@ public enum BalanceCalculationType {
 
     public StringEnumOptionData toStringEnumOptionData() {
         return new StringEnumOptionData(name(), getCode(), getDescription());
+    }
+
+    public boolean isLazy() {
+        return this == LAZY;
+    }
+
+    public boolean isStrictDebit() {
+        return this == STRICT_DEBIT;
+    }
+
+    public boolean isStrict() {
+        return this == STRICT;
+    }
+
+    public boolean isStrict(@NotNull CurrentTransactionType transactionType) {
+        return switch (this) {
+            case LAZY -> false;
+            case STRICT_DEBIT -> transactionType.isDebit();
+            case STRICT -> true;
+        };
+    }
+
+    public boolean isStrict(@NotNull CurrentAccountAction action) {
+        CurrentTransactionType transactionType = action.getTransactionType();
+        return transactionType == null ? (action == CLOSE || action == BALANCE_CALCULATION) : isStrict(transactionType);
     }
 }

@@ -55,8 +55,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountAccountingWriteService {
 
-    private static final List<CurrentTransactionType> ALLOWED_TRANSACTION_TYPES_FOR_ACCOUNTING = List.of(CurrentTransactionType.DEPOSIT,
-            CurrentTransactionType.WITHDRAWAL, CurrentTransactionType.WITHDRAWAL_FEE);
     private final CurrentAccountRepository currentAccountRepository;
     private final CurrentTransactionRepository currentTransactionRepository;
     private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
@@ -67,30 +65,37 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createGLEntries(String currenAccountId, OffsetDateTime tillDateTime) {
-        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(currenAccountId);
+    public void createGLEntries(String accountId, OffsetDateTime tillDateTime) {
+        // TODO CURRENT! create custom data to check product accountingType
+        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(accountId);
         GLAccountingHistory accountingHistory = currentAccountAccountingRepository
-                .findByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, currenAccountId)
-                .orElse(new GLAccountingHistory(currenAccountId, PortfolioAccountType.CURRENT, BigDecimal.ZERO, null, 1L));
+                .findByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, accountId)
+                .orElse(new GLAccountingHistory(accountId, PortfolioAccountType.CURRENT, BigDecimal.ZERO, null));
+
+        boolean allStrict = currentAccountData.getBalanceCalculationType().isStrict();
         List<CurrentTransaction> transactionList;
         if (accountingHistory.isNew()) {
-            transactionList = currentTransactionRepository.getTransactionsTill(currenAccountId, tillDateTime);
+            transactionList = allStrict ? currentTransactionRepository.getByAccountIdOrderByCreatedDateAndId(accountId)
+                    : currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else {
-            CurrentTransaction currentTransaction = currentTransactionRepository
+            CurrentTransaction currentTransaction = currentTransactionRepository // TODO CURRENT! no need to load the
+                                                                                 // transaction
                     .findById(accountingHistory.getCalculatedTillTransactionId())
                     .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
                             "Current transaction with id {} does not found", accountingHistory.getCalculatedTillTransactionId()));
-            transactionList = currentTransactionRepository.getTransactionsFromAndTill(currenAccountId,
-                    currentTransaction.getCreatedDateTime(), tillDateTime);
+            OffsetDateTime createdDateTime = currentTransaction.getCreatedDateTime();
+            transactionList = allStrict ? currentTransactionRepository.getTransactionsFrom(accountId, createdDateTime)
+                    : currentTransactionRepository.getTransactionsFromAndTill(accountId, createdDateTime, tillDateTime);
         }
 
         Office office = officeRepository.getReferenceById(currentAccountData.getOfficeId());
         transactionList.forEach(transaction -> {
-            if (ALLOWED_TRANSACTION_TYPES_FOR_ACCOUNTING.contains(transaction.getTransactionType())) {
+            // TODO CURRENT! could be already filtered for allowed transaction types
+            if (transaction.getTransactionType().isMonetary()) {
                 createJournalEntryForTransaction(office, currentAccountData, transaction, accountingHistory);
+                accountingHistory.setCalculatedTillTransactionId(transaction.getId());
+                accountingHistory.setAccountBalance(calculateBalance(accountingHistory, transaction));
             }
-            accountingHistory.setCalculatedTillTransactionId(transaction.getId());
-            accountingHistory.setAccountBalance(calculateBalance(accountingHistory, transaction));
         });
         if (!transactionList.isEmpty()) {
             currentAccountAccountingRepository.save(accountingHistory);
@@ -98,10 +103,15 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
     }
 
     private BigDecimal calculateBalance(GLAccountingHistory accountingHistory, CurrentTransaction transaction) {
-        return switch (transaction.getTransactionType()) {
-            case DEPOSIT, AMOUNT_RELEASE -> accountingHistory.getAccountBalance().add(transaction.getAmount());
-            case WITHDRAWAL, WITHDRAWAL_FEE, AMOUNT_HOLD -> accountingHistory.getAccountBalance().subtract(transaction.getAmount());
-        };
+        CurrentTransactionType transactionType = transaction.getTransactionType();
+        BigDecimal balance = accountingHistory.getAccountBalance();
+        if (transactionType.isMonetaryCredit()) { // TODO CURRENT! non-monetary transactions do not change the balance!
+                                                  // please check
+            return MathUtil.add(balance, transaction.getAmount());
+        } else if (transactionType.isMonetaryDebit()) {
+            return MathUtil.subtract(balance, transaction.getAmount());
+        }
+        return balance;
     }
 
     private void createJournalEntryForTransaction(Office office, CurrentAccountData accountData, CurrentTransaction transaction,

@@ -18,6 +18,10 @@
  */
 package org.apache.fineract.currentaccount.enumeration.transaction;
 
+import jakarta.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
 import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.portfolio.TransactionEntryType;
@@ -29,29 +33,33 @@ import org.apache.fineract.portfolio.TransactionEntryType;
 @Getter
 public enum CurrentTransactionType {
 
-    DEPOSIT("currentTransactionType.deposit", "Deposit transaction", TransactionEntryType.CREDIT), //
-    WITHDRAWAL("currentTransactionType.withdrawal", "Withdrawal transaction", TransactionEntryType.DEBIT), //
-    WITHDRAWAL_FEE("currentTransactionType.withdrawal_fee", "Withdrawal Fee transaction", TransactionEntryType.DEBIT), //
-    AMOUNT_HOLD("currentTransactionType.amount_hold", "Hold amount transaction", TransactionEntryType.DEBIT), //
-    AMOUNT_RELEASE("currentTransactionType.amount_release", "Release amount transaction", TransactionEntryType.CREDIT); //
+    DEPOSIT("currentTransactionType.deposit", "Deposit transaction", TransactionEntryType.CREDIT, true), //
+    WITHDRAWAL("currentTransactionType.withdrawal", "Withdrawal transaction", TransactionEntryType.DEBIT, true), //
+    WITHDRAWAL_FEE("currentTransactionType.withdrawal_fee", "Withdrawal Fee transaction", TransactionEntryType.DEBIT, true), //
+    AMOUNT_HOLD("currentTransactionType.amount_hold", "Hold amount transaction", TransactionEntryType.DEBIT, false), //
+    AMOUNT_RELEASE("currentTransactionType.amount_release", "Release amount transaction", TransactionEntryType.CREDIT, false); //
 
     private static final CurrentTransactionType[] VALUES = values();
 
+    @NotNull
     private final String code;
+    @NotNull
     private final String description;
     private final TransactionEntryType entryType;
+    private final boolean monetary;
 
-    CurrentTransactionType(final String code, final String description, TransactionEntryType entryType) {
+    CurrentTransactionType(@NotNull String code, @NotNull String description, TransactionEntryType entryType, boolean monetary) {
         this.code = code;
         this.description = description;
         this.entryType = entryType;
+        this.monetary = monetary;
     }
 
-    public boolean isCreditEntryType() {
+    public boolean isCredit() {
         return entryType != null && entryType.isCredit();
     }
 
-    public boolean isDebitEntryType() {
+    public boolean isDebit() {
         return entryType != null && entryType.isDebit();
     }
 
@@ -63,6 +71,10 @@ public enum CurrentTransactionType {
         return this == WITHDRAWAL;
     }
 
+    public boolean isWithdrawalFee() {
+        return this == WITHDRAWAL_FEE;
+    }
+
     public boolean isAmountOnHold() {
         return this == AMOUNT_HOLD;
     }
@@ -71,17 +83,19 @@ public enum CurrentTransactionType {
         return this == AMOUNT_RELEASE;
     }
 
-    public boolean isCredit() {
-        // AMOUNT_RELEASE is not credit, because the account balance is not changed
-        return isCreditEntryType() && !isAmountRelease();
+    public boolean isMonetaryCredit() {
+        return isCredit() && isMonetary();
     }
 
-    public boolean isDebit() {
-        // AMOUNT_HOLD is not debit, because the account balance is not changed
-        return isDebitEntryType() && !isAmountOnHold();
+    public boolean isMonetaryDebit() {
+        return isDebit() && isMonetary();
     }
 
     public StringEnumOptionData toStringEnumOptionData() {
         return new StringEnumOptionData(name(), getCode(), getDescription());
+    }
+
+    public static List<CurrentTransactionType> getFiltered(Predicate<? super CurrentTransactionType> predicate) {
+        return Arrays.stream(VALUES).filter(predicate).toList();
     }
 }

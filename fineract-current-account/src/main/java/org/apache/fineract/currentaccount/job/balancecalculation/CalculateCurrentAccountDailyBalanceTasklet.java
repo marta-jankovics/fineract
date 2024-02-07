@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.job.accounting;
+package org.apache.fineract.currentaccount.job.balancecalculation;
 
-import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus.ACTIVE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
-import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
-import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -36,32 +36,31 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CurrentAccountAccountingTasklet implements Tasklet {
+public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
 
-    private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
-    private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
-    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private final CurrentAccountDailyBalanceWriteService dailyBalanceWriteService;
+    private final CurrentAccountDailyBalanceRepository dailyBalanceRepository;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
-            List<CurrentAccountStatus> statuses = List.of(ACTIVE);
-            List<String> accountIds = currentAccountAccountingRepository.getAccountIdsForAccounting(tillDateTime, statuses);
-            writeAccounting(accountIds, tillDateTime);
+            LocalDate balanceDate = DateUtils.getBusinessLocalDate().minusDays(1L);
+            List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
+            List<String> accountIds = dailyBalanceRepository.getAccountIdsForDailyBalanceCalculation(balanceDate, statuses);
+            createDailyBalances(accountIds, balanceDate);
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
     }
 
-    private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
+    private void createDailyBalances(List<String> accountIds, LocalDate balanceDate) {
         for (String accountId : accountIds) {
             try {
-                currentAccountAccountingWriteService.createGLEntries(accountId, tillDateTime);
+                dailyBalanceWriteService.calculateDailyBalance(accountId, balanceDate);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
-                log.warn("Update accounting for current account: {} is failed", accountId);
+                log.warn("Calculate daily balance for account: {} is failed", accountId);
             }
         }
     }

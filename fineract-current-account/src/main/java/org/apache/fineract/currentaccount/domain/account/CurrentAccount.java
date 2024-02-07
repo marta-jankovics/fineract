@@ -29,6 +29,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AccessLevel;
@@ -38,6 +39,7 @@ import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStat
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 
 @Entity
 @Getter
@@ -146,5 +148,15 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<Strin
 
     public void setBalanceCalculationType(BalanceCalculationType balanceCalculationType) {
         this.balanceCalculationType = balanceCalculationType;
+    }
+
+    public BigDecimal getAvailableBalance(@NotNull BigDecimal available, boolean addOverdraft) {
+        BigDecimal minimumRequiredBalance = getMinimumRequiredBalance();
+        available = MathUtil.subtract(available, minimumRequiredBalance);
+        if (!addOverdraft || !isAllowOverdraft() || !MathUtil.isEmpty(minimumRequiredBalance)) {
+            return available;
+        }
+        BigDecimal overdraftLimit = getOverdraftLimit();
+        return overdraftLimit == null ? null : MathUtil.add(available, overdraftLimit);
     }
 }

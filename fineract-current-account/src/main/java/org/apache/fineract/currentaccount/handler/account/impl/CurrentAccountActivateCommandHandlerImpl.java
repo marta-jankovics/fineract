@@ -23,10 +23,12 @@ import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.
 
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.commands.annotation.CommandType;
+import org.apache.fineract.commands.domain.CommandActionContext;
 import org.apache.fineract.currentaccount.handler.account.CurrentAccountActivateCommandHandler;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class CurrentAccountActivateCommandHandlerImpl implements CurrentAccountA
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
+        ThreadLocalContextUtil.setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, ACTION_ACTIVATE));
         return this.writePlatformService.activate(command.getResourceIdentifier(), command);
     }
 }

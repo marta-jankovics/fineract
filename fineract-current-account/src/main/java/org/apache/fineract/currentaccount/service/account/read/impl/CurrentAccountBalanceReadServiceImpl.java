@@ -18,11 +18,10 @@
  */
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
@@ -30,78 +29,65 @@ import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
-import org.springframework.data.domain.Sort;
+import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalanceReadService {
 
+    private final ConfigurationDomainService configurationService;
     private final CurrentAccountBalanceRepository currentAccountBalanceRepository;
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
-    public CurrentAccountBalanceData getBalance(String accountId) {
-        return calculateBalance(accountId,
-                () -> currentTransactionRepository.getTransactions(accountId, Sort.by(Sort.Direction.ASC, "createdDate", "id")),
-                (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime));
+    public OffsetDateTime getBalanceCalculationTill() {
+        OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime();
+        long delay = configurationService.getBalanceCalculationDelaySeconds();
+        if (delay > 0) {
+            tillDateTime = tillDateTime.minusSeconds(delay);
+        }
+        return tillDateTime;
     }
 
     @Override
-    public CurrentAccountBalanceData getBalance(String accountId, OffsetDateTime tillDateTime) {
-        return calculateBalance(accountId, () -> currentTransactionRepository.getTransactionsTill(accountId, tillDateTime),
-                (OffsetDateTime fromDateTime) -> currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime,
-                        tillDateTime));
+    public CurrentAccountBalanceData getBalance(@NotNull String accountId) {
+        return getBalance(accountId, null);
     }
 
-    private CurrentAccountBalanceData calculateBalance(String accountId, Supplier<List<CurrentTransaction>> fetchTransactions,
-            Function<OffsetDateTime, List<CurrentTransaction>> fetchTransactionsFrom) {
-        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceRepository.getBalance(accountId);
-        List<CurrentTransaction> currentTransactionDataList; // TODO CURRENT! load data
-        BigDecimal accountBalance;
-        BigDecimal holdAmount;
+    @Override
+    public CurrentAccountBalanceData getBalance(@NotNull String accountId, OffsetDateTime tillDateTime) {
+        CurrentAccountBalanceData balanceData = currentAccountBalanceRepository.getBalanceData(accountId);
+        OffsetDateTime fromDateTime = null;
+        BigDecimal balance = null;
+        BigDecimal holdAmount = null;
         OffsetDateTime calculatedTillDate;
-        String calculatedTillTxnId;
-        if (currentAccountBalanceData == null) {
-            accountBalance = BigDecimal.ZERO;
-            holdAmount = BigDecimal.ZERO;
-            currentTransactionDataList = fetchTransactions.get();
-            if (currentTransactionDataList.isEmpty()) {
-                calculatedTillDate = null;
-                calculatedTillTxnId = null;
-            } else {
-                calculatedTillDate = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getCreatedDateTime();
-                calculatedTillTxnId = currentTransactionDataList.get(currentTransactionDataList.size() - 1).getId();
-            }
+        if (balanceData != null) {
+            fromDateTime = balanceData.getCalculatedTill();
+            balance = balanceData.getAccountBalance();
+            holdAmount = balanceData.getHoldAmount();
+        }
+        List<CurrentTransaction> transactions; // TODO CURRENT! calculate data in the sql, no need to load transactions
+                                               // + filter transactions by type
+        if (fromDateTime == null && tillDateTime == null) {
+            transactions = currentTransactionRepository.getByAccountIdOrderByCreatedDateAndId(accountId);
+        } else if (fromDateTime == null) {
+            transactions = currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
+        } else if (tillDateTime == null) {
+            transactions = currentTransactionRepository.getTransactionsFrom(accountId, fromDateTime);
         } else {
-            accountBalance = currentAccountBalanceData.getAccountBalance();
-            holdAmount = currentAccountBalanceData.getHoldAmount();
-            OffsetDateTime fromDateTime = currentAccountBalanceData.getCalculatedTill();
-            calculatedTillDate = currentAccountBalanceData.getCalculatedTill();
-            calculatedTillTxnId = currentAccountBalanceData.getCalculatedTillTransactionId();
-            currentTransactionDataList = fetchTransactionsFrom.apply(fromDateTime);
+            transactions = currentTransactionRepository.getTransactionsFromAndTill(accountId, fromDateTime, tillDateTime);
+        }
+        if (transactions.isEmpty()) {
+            return balanceData;
         }
 
-        for (CurrentTransaction currentTransactionData : currentTransactionDataList) {
-            switch (currentTransactionData.getTransactionType()) {
-                case DEPOSIT -> accountBalance = accountBalance.add(currentTransactionData.getAmount());
-                case WITHDRAWAL -> accountBalance = accountBalance.subtract(currentTransactionData.getAmount());
-                case AMOUNT_HOLD -> holdAmount = holdAmount.add(currentTransactionData.getAmount());
-                case AMOUNT_RELEASE -> holdAmount = holdAmount.subtract(currentTransactionData.getAmount());
-                default -> throw new UnsupportedOperationException(currentTransactionData.getTransactionType().toString());
-            }
-            calculatedTillDate = currentTransactionData.getCreatedDateTime();
-            calculatedTillTxnId = currentTransactionData.getId();
-        }
-        return new CurrentAccountBalanceData(null, accountId, accountBalance, holdAmount, calculatedTillDate, calculatedTillTxnId);
-    }
+        CurrentTransaction lastTransaction = transactions.get(transactions.size() - 1);
+        CurrentAccountBalanceData result = new CurrentAccountBalanceData(null, accountId, balance, holdAmount,
+                lastTransaction.getCreatedDateTime(), lastTransaction.getId(), true);
+        transactions.forEach(result::applyTransaction);
 
-    @Override
-    public List<String> getAccountIdsWhereBalanceRecalculationRequired(OffsetDateTime tillDateTime) {
-        return currentAccountBalanceRepository.getAccountIdsWhereBalanceRecalculationRequired(tillDateTime);
-    }
-
-    @Override
-    public List<String> getAccountIdsWhereBalanceNotCalculated() {
-        return currentAccountBalanceRepository.getAccountIdsWhereBalanceNotCalculated();
+        // TODO CURRENT! use Money to set balance data everywhere!!! set scale
+        return result;
     }
 }

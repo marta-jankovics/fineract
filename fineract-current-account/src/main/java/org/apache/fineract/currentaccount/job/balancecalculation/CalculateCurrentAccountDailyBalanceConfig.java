@@ -18,9 +18,8 @@
  */
 package org.apache.fineract.currentaccount.job.balancecalculation;
 
-import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
-import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -34,34 +33,31 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-public class CalculateCurrentAccountBalanceConfig {
+public class CalculateCurrentAccountDailyBalanceConfig {
 
     @Autowired
     private JobRepository jobRepository;
     @Autowired
     private PlatformTransactionManager transactionManager;
     @Autowired
-    private CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private CurrentAccountDailyBalanceWriteService dailyBalanceWriteService;
     @Autowired
-    private CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
-    @Autowired
-    private CurrentAccountBalanceRepository currentAccountBalanceRepository;
+    private CurrentAccountDailyBalanceRepository dailyBalanceRepository;
 
     @Bean
-    public Job calculateCurrentAccountBalanceJob() {
-        return new JobBuilder(JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE.name(), jobRepository).start(calculateCurrentAccountBalanceStep())
+    public Job calculateCurrentDailyBalanceJob() {
+        return new JobBuilder(JobName.CALCULATE_CURRENT_DAILY_BALANCE.name(), jobRepository).start(calculateDailyBalanceStep())
                 .incrementer(new RunIdIncrementer()).build();
     }
 
     @Bean
-    protected Step calculateCurrentAccountBalanceStep() {
-        return new StepBuilder(JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE.name(), jobRepository)
-                .tasklet(calculateCurrentAccountBalanceTasklet(), transactionManager).build();
+    protected Step calculateDailyBalanceStep() {
+        return new StepBuilder(JobName.CALCULATE_CURRENT_DAILY_BALANCE.name(), jobRepository)
+                .tasklet(calculateCurrentDailyBalanceTasklet(), transactionManager).build();
     }
 
     @Bean
-    public CalculateCurrentAccountBalanceTasklet calculateCurrentAccountBalanceTasklet() {
-        return new CalculateCurrentAccountBalanceTasklet(currentAccountBalanceReadService, currentAccountBalanceWriteService,
-                currentAccountBalanceRepository);
+    public CalculateCurrentAccountDailyBalanceTasklet calculateCurrentDailyBalanceTasklet() {
+        return new CalculateCurrentAccountDailyBalanceTasklet(dailyBalanceWriteService, dailyBalanceRepository);
     }
 }

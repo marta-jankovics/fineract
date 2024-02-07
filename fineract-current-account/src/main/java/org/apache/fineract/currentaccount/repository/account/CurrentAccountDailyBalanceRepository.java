@@ -18,11 +18,11 @@
  */
 package org.apache.fineract.currentaccount.repository.account;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
+import org.apache.fineract.currentaccount.domain.account.CurrentAccountDailyBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,22 +30,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAccountBalance, String> {
+public interface CurrentAccountDailyBalanceRepository extends JpaRepository<CurrentAccountDailyBalance, String> {
 
     Optional<CurrentAccountBalance> findByAccountId(String accountId);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cab.id, cab.accountId, cab.accountBalance, "
-            + "cab.holdAmount, ct.createdDate, cab.calculatedTillTransactionId) FROM CurrentAccountBalance cab, CurrentTransaction ct "
-            + "WHERE cab.calculatedTillTransactionId = ct.id AND cab.accountId = :accountId")
-    CurrentAccountBalanceData getBalanceData(@Param("accountId") String accountId);
+    @Query("select cadb from CurrentAccountDailyBalance cadb, "
+            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance where cadb2.accountId = :accountId and cadb2.balanceDate < :date) max "
+            + "where cadb.accountId = :accountId and cadb.balanceDate = max.maxDate")
+    CurrentAccountDailyBalance getLatestDailyBalanceBefore(@Param("accountId") String accountId, @Param("date") LocalDate date);
 
-    String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where "
-            + "ca.balanceCalculationType <> org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT and ca.status in :statuses"
-            + "and (not exists (select cab.id from CurrentAccountBalance cab where ca.id = cab.accountId) "
-            + "or exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = cab.accountId "
-            + "and ct.createdDate <= :tillDateTime and ct2.id = cab.calculatedTillTransactionId and ct.createdDate > ct2.createdDate))";
+    String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where " + "ca.status in :statuses"
+            + "and not exists (select cadb.id from CurrentAccountDailyBalance cadb where ca.id = cadb.accountId and cadb.balanceDate = :date)";
 
     @Query(QUERY_ACCOUNT_IDS_FOR_BALANCE)
-    List<String> getAccountIdsForBalanceCalculation(@Param("tillDateTime") OffsetDateTime tillDateTime,
+    List<String> getAccountIdsForDailyBalanceCalculation(@Param("date") LocalDate date,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

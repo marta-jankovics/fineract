@@ -20,6 +20,7 @@ package org.apache.fineract.infrastructure.core.service;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import org.apache.fineract.commands.domain.CommandActionContext;
 import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.core.domain.ActionContext;
 import org.apache.fineract.infrastructure.core.domain.FineractContext;
@@ -37,6 +38,7 @@ public final class ThreadLocalContextUtil {
     private static final ThreadLocal<String> authTokenContext = new ThreadLocal<>();
     private static final ThreadLocal<HashMap<BusinessDateType, LocalDate>> businessDateContext = new ThreadLocal<>();
     private static final ThreadLocal<ActionContext> actionContext = new ThreadLocal<>();
+    private static final ThreadLocal<CommandActionContext> commandContext = new ThreadLocal<>();
 
     private ThreadLocalContextUtil() {}
 
@@ -104,8 +106,22 @@ public final class ThreadLocalContextUtil {
         actionContext.set(context);
     }
 
+    public static CommandActionContext getCommandContext() {
+        return commandContext.get();
+    }
+
+    public static String getCommandAction() {
+        CommandActionContext context = commandContext.get();
+        return context == null ? null : context.getActionName();
+    }
+
+    public static void setCommandContext(CommandActionContext context) {
+        commandContext.set(context);
+    }
+
     public static FineractContext getContext() {
-        return new FineractContext(getDataSourceContext(), getTenant(), getAuthToken(), getBusinessDates(), getActionContext());
+        return new FineractContext(getDataSourceContext(), getTenant(), getAuthToken(), getBusinessDates(), getActionContext(),
+                getCommandContext());
     }
 
     public static void init(final FineractContext fineractContext) {
@@ -115,6 +131,7 @@ public final class ThreadLocalContextUtil {
         setAuthToken(fineractContext.getAuthTokenContext());
         setBusinessDates(fineractContext.getBusinessDateContext());
         setActionContext(fineractContext.getActionContext());
+        setActionContext(fineractContext.getActionContext());
     }
 
     public static void reset() {
@@ -122,6 +139,6 @@ public final class ThreadLocalContextUtil {
         tenantContext.remove();
         authTokenContext.remove();
         businessDateContext.remove();
-        actionContext.remove();
+        commandContext.remove();
     }
 }

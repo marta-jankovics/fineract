@@ -32,6 +32,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
+import static org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
 import com.google.gson.Gson;
@@ -58,6 +59,7 @@ import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
@@ -65,7 +67,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
@@ -74,6 +76,7 @@ import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoun
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
+import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
@@ -93,7 +96,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final CurrentAccountRepository currentAccountRepository;
     private final EntityActionRepository entityActionRepository;
     private final AccountIdentifierRepository accountIdentifierRepository;
-    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
+    private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
     private final ExternalIdFactory externalIdFactory;
     ReadWriteNonCoreDataService readWriteNonCoreDataService;
 
@@ -274,17 +277,11 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CANCEL_ACTION);
 
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-            dataValidator.throwValidationErrors();
-        }
-
         account.setStatus(CurrentAccountStatus.CANCELLED);
         actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
 
         LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
+        // TODO CURRENT! check if cancelledOnDate is not earlier than submitted date
         if (cancelledOnDate == null) {
             cancelledOnDate = DateUtils.getBusinessLocalDate();
         }
@@ -319,14 +316,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.ACTIVATE_ACTION);
 
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.SUBMITTED.hasStateOf(currentStatus)) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM)
-                    .failWithCodeNoParameterAddedToErrorCode("not.in.submitted.state");
-            dataValidator.throwValidationErrors();
-        }
-
         LocalDate activationDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
+        // TODO CURRENT! check if activationDate is not earlier than submitted date
         if (activationDate == null) {
             activationDate = DateUtils.getBusinessLocalDate();
         }
@@ -376,12 +367,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CLOSE_ACTION);
 
-        final CurrentAccountStatus currentStatus = account.getStatus();
-        if (!CurrentAccountStatus.ACTIVE.hasStateOf(currentStatus)) {
-            dataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.active.state");
-            dataValidator.throwValidationErrors();
-        }
-
         final Locale locale = command.extractLocale();
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(locale);
         final LocalDate closedDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
@@ -396,11 +381,11 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                     .failWithCode("cannot.be.a.future.date");
             dataValidator.throwValidationErrors();
         }
+        // TODO CURRENT! pessimistic lock if not strict, but what?
+        CurrentAccountAction action = CurrentAccountAction.forActionName(ThreadLocalContextUtil.getCommandAction());
+        CurrentAccountBalanceData balanceData = currentAccountBalanceWriteService.calculateBalance(account.getId(), STRICT, action, null);
 
-        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(account.getId());
-
-        if (!MathUtil.isEmpty(currentAccountBalanceData.getAccountBalance())
-                || !MathUtil.isEmpty(currentAccountBalanceData.getHoldAmount())) {
+        if (!MathUtil.isEmpty(balanceData.getAccountBalance()) || !MathUtil.isEmpty(balanceData.getHoldAmount())) {
             throw new GeneralPlatformDomainRuleException("error.msg.account.close.with.balance",
                     "Account cannot be closed. Balance is not 0.", account.getId());
         }

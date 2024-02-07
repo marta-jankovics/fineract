@@ -16,47 +16,49 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.currentaccount.domain.account;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import lombok.Data;
+import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
+import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 
-@Data
-public class CurrentAccountBalanceData implements Serializable {
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "m_current_account_balance")
+public class CurrentAccountDailyBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
-    // Current account balance data
-    private final Long id;
-    private final String accountId;
+    @Column(name = "account_id", nullable = false)
+    private String accountId;
+
+    @Column(name = "account_balance", nullable = false, precision = 6)
     private BigDecimal accountBalance;
-    private BigDecimal holdAmount;
-    private OffsetDateTime calculatedTill;
-    private String calculatedTillTransactionId;
-    private boolean changed;
 
-    public CurrentAccountBalanceData(Long id, String accountId, BigDecimal accountBalance, BigDecimal holdAmount,
-            OffsetDateTime calculatedTill, String calculatedTillTransactionId, boolean changed) {
-        this.id = id;
+    @Column(name = "hold_amount", precision = 6)
+    private BigDecimal holdAmount;
+
+    @Column(name = "balance_date", nullable = false)
+    private LocalDate balanceDate;
+
+    @Version
+    private Long version;
+
+    public CurrentAccountDailyBalance(String accountId, BigDecimal accountBalance, BigDecimal holdAmount, LocalDate balanceDate) {
         this.accountId = accountId;
         this.accountBalance = accountBalance;
         this.holdAmount = holdAmount;
-        this.calculatedTill = calculatedTill;
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
-        this.changed = changed;
-    }
-
-    public CurrentAccountBalanceData(Long id, String accountId, BigDecimal accountBalance, BigDecimal holdAmount,
-            OffsetDateTime calculatedTill, String calculatedTillTransactionId) {
-        this(id, accountId, accountBalance, holdAmount, calculatedTill, calculatedTillTransactionId, false);
-    }
-
-    public BigDecimal getAvailableBalance() {
-        return MathUtil.subtract(accountBalance, holdAmount);
+        this.balanceDate = balanceDate;
     }
 
     public void applyTransaction(@NotNull CurrentTransaction transaction) {

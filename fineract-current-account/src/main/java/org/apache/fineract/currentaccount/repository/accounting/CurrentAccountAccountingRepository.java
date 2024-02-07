@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.currentaccount.domain.accounting.GLAccountingHistory;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,13 +32,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CurrentAccountAccountingRepository extends JpaRepository<GLAccountingHistory, String> {
 
-    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentProduct cp, GLAccountingHistory glah, (SELECT ct.accountId, MAX(ct.createdDate) as createdDate "
-            + "FROM CurrentTransaction ct WHERE ct.createdDate <= :tillDateTime GROUP BY ct.accountId) lct, CurrentTransaction fct "
-            + "WHERE fct.id = glah.calculatedTillTransactionId AND ca.id = glah.accountId AND lct.accountId = ca.id AND lct.createdDate > fct.createdDate AND ca.productId = cp.id AND cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED")
-    List<String> getAccountIdsWhereAccountingIsBehind(@Param("tillDateTime") OffsetDateTime tillDateTime);
-
-    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentProduct cp WHERE ca.id NOT IN (SELECT glah.accountId FROM GLAccountingHistory glah) AND ca.productId = cp.id AND cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED")
-    List<String> getAccountIdsWhereAccountingNotCalculated();
-
     Optional<GLAccountingHistory> findByAccountTypeAndAccountId(PortfolioAccountType accountType, String accountId);
+
+    // TODO CURRENT! check not NONE instead of CASH_BASED and validate later if only CASH_BASED is supported
+    String QUERY_ACCOUNT_IDS_FOR_ACCOUNTING = "select ca.id from CurrentAccount ca, CurrentProduct cp where "
+            + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED"
+            + "and (not exists (select glah.id from GLAccountingHistory glah where ca.id = glah.accountId) "
+            + "or exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah where ct.accountId = glah.accountId "
+            + "and (ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) "
+            + "and ct2.id = glah.calculatedTillTransactionId and ct.createdDate > ct2.createdDate))";
+
+    @Query(QUERY_ACCOUNT_IDS_FOR_ACCOUNTING)
+    List<String> getAccountIdsForAccounting(@Param("tillDateTime") OffsetDateTime tillDateTime,
+            @Param("statuses") List<CurrentAccountStatus> statuses);
 }

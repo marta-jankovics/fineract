@@ -18,9 +18,18 @@
  */
 package org.apache.fineract.currentaccount.enumeration.account;
 
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.ACTIVATE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CANCEL;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CLOSE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.UPDATE;
+
+import java.util.Arrays;
+import java.util.List;
 import lombok.Getter;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
+import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 
 /**
  * Enum representation of {@link CurrentAccount} status states.
@@ -33,16 +42,14 @@ public enum CurrentAccountStatus {
     CANCELLED("currentAccountStatus.cancelled", "Current account is cancelled"), //
     CLOSED("currentAccountStatus.closed", "Current account is closed"); //
 
+    private static CurrentAccountStatus[] VALUES = values();
+
     private final String code;
     private final String description;
 
     CurrentAccountStatus(final String code, final String description) {
         this.code = code;
         this.description = description;
-    }
-
-    public boolean hasStateOf(final CurrentAccountStatus state) {
-        return this == state;
     }
 
     public boolean isSubmitted() {
@@ -63,5 +70,27 @@ public enum CurrentAccountStatus {
 
     public StringEnumOptionData toStringEnumOptionData() {
         return new StringEnumOptionData(name(), getCode(), getDescription());
+    }
+
+    public boolean isEnabled(CurrentAccountAction action) {
+        if (action == null) {
+            return false;
+        }
+        return switch (this) {
+            case SUBMITTED -> action == UPDATE || action == ACTIVATE || action == CANCEL;
+            case ACTIVE -> action == UPDATE || action == CLOSE || action == BALANCE_CALCULATION || action.isTransaction();
+            case CANCELLED, CLOSED -> false;
+        };
+    }
+
+    public static List<CurrentAccountStatus> getEnabledStatusList(CurrentAccountAction action) {
+        return Arrays.stream(VALUES).filter(e -> e.isEnabled(action)).toList();
+    }
+
+    public void checkEnabled(CurrentAccountAction action) {
+        if (!isEnabled(action)) {
+            throw new GeneralPlatformDomainRuleException("error.msg.current.action.not.allowed",
+                    "Current Account action " + action + " is not allowed on status " + this);
+        }
     }
 }
