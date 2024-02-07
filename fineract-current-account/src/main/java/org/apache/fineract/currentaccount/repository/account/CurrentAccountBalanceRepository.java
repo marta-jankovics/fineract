@@ -40,7 +40,7 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
     CurrentAccountBalanceData getBalanceData(@Param("accountId") String accountId);
 
     String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where "
-            + "ca.balanceCalculationType <> org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT and ca.status in :statuses"
+            + "ca.balanceCalculationType <> org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT and ca.status in :statuses "
             + "and (not exists (select cab.id from CurrentAccountBalance cab where ca.id = cab.accountId) "
             + "or exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = cab.accountId "
             + "and ct.createdDate <= :tillDateTime and ct2.id = cab.calculatedTillTransactionId and ct.createdDate > ct2.createdDate))";

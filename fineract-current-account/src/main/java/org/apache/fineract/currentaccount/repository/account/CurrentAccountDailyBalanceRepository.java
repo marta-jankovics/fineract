@@ -39,7 +39,7 @@ public interface CurrentAccountDailyBalanceRepository extends JpaRepository<Curr
             + "where cadb.accountId = :accountId and cadb.balanceDate = max.maxDate")
     CurrentAccountDailyBalance getLatestDailyBalanceBefore(@Param("accountId") String accountId, @Param("date") LocalDate date);
 
-    String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where " + "ca.status in :statuses"
+    String QUERY_ACCOUNT_IDS_FOR_BALANCE = "select ca.id from CurrentAccount ca where " + "ca.status in :statuses "
             + "and not exists (select cadb.id from CurrentAccountDailyBalance cadb where ca.id = cadb.accountId and cadb.balanceDate = :date)";
 
     @Query(QUERY_ACCOUNT_IDS_FOR_BALANCE)
