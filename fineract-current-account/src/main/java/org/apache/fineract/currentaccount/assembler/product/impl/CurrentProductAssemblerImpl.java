@@ -96,6 +96,8 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
+            // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
+            // caller to do it beforehand is not enough...
             product = currentProductRepository.saveAndFlush(product);
             persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), datatables, false, readWriteNonCoreDataService);
         } else {

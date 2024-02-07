@@ -72,7 +72,7 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
     private void writeAccounting(List<String> currentAccountAccountingIsBehindIds, OffsetDateTime tillDateTime) {
         for (String accountId : currentAccountAccountingIsBehindIds) {
             try {
-                currentAccountAccountingWriteService.createGLEntries(accountId, tillDateTime);
+                currentAccountAccountingWriteService.createGLEntriesInNewTransaction(accountId, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
                 log.warn("Update accounting for current account: {} is failed", accountId);

@@ -117,6 +117,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
+            // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
+            // caller to do it beforehand is not enough...
             transaction = currentTransactionRepository.saveAndFlush(transaction);
             persistDatatableEntries(CURRENT_TRANSACTION, transaction.getId(), datatables, false, readWriteNonCoreDataService);
         } else {

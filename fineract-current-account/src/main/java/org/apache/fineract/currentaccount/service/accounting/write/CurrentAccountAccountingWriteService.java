@@ -22,5 +22,7 @@ import java.time.OffsetDateTime;
 
 public interface CurrentAccountAccountingWriteService {
 
+    void createGLEntriesInNewTransaction(String accountId, OffsetDateTime tillDateTime);
+
     void createGLEntries(String accountId, OffsetDateTime tillDateTime);
 }

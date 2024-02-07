@@ -1364,6 +1364,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     @Override
     public CommandProcessingResult updateDatatableEntry(final String datatable, final Serializable appTableId, final Long datatableId,
             final String json) {
+
         final EntityTables entity = queryForApplicationEntity(datatable);
         CommandProcessingResult commandProcessingResult = checkMainResourceExistsWithinScope(entity, appTableId);
 

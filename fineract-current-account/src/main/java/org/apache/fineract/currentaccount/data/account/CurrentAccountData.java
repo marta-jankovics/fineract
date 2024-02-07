@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.Data;
+import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -40,6 +41,7 @@ public class CurrentAccountData implements Serializable {
     private final String productName;
     private final String productShortName;
     private final String productDescription;
+    private final AccountingRuleType accountingRuleType;
     private final CurrentAccountStatus status;
     private final LocalDate activatedOnDate;
     private final Boolean allowOverdraft;

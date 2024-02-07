@@ -20,14 +20,12 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
-import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_ACTIVATE;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.commands.domain.CommandActionContext;
-import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
@@ -49,7 +47,8 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-        ThreadLocalContextUtil.setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, BALANCE_CALCULATION.getActionName()));
+        ThreadLocalContextUtil
+                .setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, BALANCE_CALCULATION.getActionName()));
         try {
             OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);

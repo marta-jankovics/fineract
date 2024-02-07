@@ -19,7 +19,6 @@
 package org.apache.fineract.currentaccount.job.accounting;
 
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
-import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
 import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;

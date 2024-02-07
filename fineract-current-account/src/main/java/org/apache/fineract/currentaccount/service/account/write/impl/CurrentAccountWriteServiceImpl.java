@@ -27,11 +27,13 @@ import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
+import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
 import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
@@ -48,6 +50,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     private final CurrentAccountRepository currentAccountRepository;
     // TODO: use service eventually
     private final ClientRepository clientRepository;
+    private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
 
     @Transactional(timeout = 3)
     @Override
@@ -135,12 +138,13 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Override
     public CommandProcessingResult close(@NotNull String accountId, @NotNull JsonCommand command) {
         currentAccountDataValidator.validateClosing(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+
+        final CurrentAccount account = currentAccountRepository.findByIdWithExclusiveLock(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         checkEnabled(account, true);
         final Map<String, Object> changes = currentAccountAssembler.close(account, command);
 
-        // TODO: Do sync accounting
+        currentAccountAccountingWriteService.createGLEntries(accountId, DateUtils.getOffsetDateTimeOfTenant().plusMinutes(1));
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
         // CurrentAccountRejectApplicationBusinessEvent(currentAccount));

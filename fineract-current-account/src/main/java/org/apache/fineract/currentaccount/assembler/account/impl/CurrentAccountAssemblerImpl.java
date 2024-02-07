@@ -33,7 +33,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
 import static org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT;
-import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
 import com.google.gson.Gson;
@@ -64,6 +63,7 @@ import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountActi
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
+import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
@@ -175,6 +175,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
+            // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
+            // caller to do it beforehand is not enough...
             account = currentAccountRepository.saveAndFlush(account);
             persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, false, readWriteNonCoreDataService);
         } else {
@@ -516,10 +518,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         List<AccountIdentifier> removedIdentifiers = new ArrayList<>(existingIdentifiers.values());
         if (!removedIdentifiers.isEmpty()) {
             accountIdentifierRepository.deleteAll(removedIdentifiers);
-            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("removed", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(removedIdentifiers)));
+            ((List) actualChanges.get(IDENTIFIERS_PARAM))
+                    .add(Map.of("removed", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(removedIdentifiers)));
         }
         if (!persistedIdentifiers.isEmpty()) {
-            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("persisted", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(persistedIdentifiers)));
+            ((List) actualChanges.get(IDENTIFIERS_PARAM))
+                    .add(Map.of("persisted", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(persistedIdentifiers)));
         }
 
         validator.throwValidationErrors();

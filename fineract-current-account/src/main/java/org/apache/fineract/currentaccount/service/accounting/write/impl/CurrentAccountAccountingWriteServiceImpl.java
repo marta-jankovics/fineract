@@ -25,6 +25,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingConstants;
+import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccount;
 import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccountRepositoryWrapper;
 import org.apache.fineract.accounting.glaccount.domain.GLAccount;
@@ -65,9 +66,16 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createGLEntriesInNewTransaction(String accountId, OffsetDateTime tillDateTime) {
+        createGLEntries(accountId, tillDateTime);
+    }
+
+    @Override
     public void createGLEntries(String accountId, OffsetDateTime tillDateTime) {
-        // TODO CURRENT! create custom data to check product accountingType
         CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(accountId);
+        if (!currentAccountData.getAccountingRuleType().equals(AccountingRuleType.CASH_BASED)) {
+            return;
+        }
         GLAccountingHistory accountingHistory = currentAccountAccountingRepository
                 .findByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, accountId)
                 .orElse(new GLAccountingHistory(accountId, PortfolioAccountType.CURRENT, BigDecimal.ZERO, null));
