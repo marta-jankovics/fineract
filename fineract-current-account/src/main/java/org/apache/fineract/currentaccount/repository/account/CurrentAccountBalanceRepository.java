@@ -41,9 +41,13 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
 
     @Query("select ca.id from CurrentAccount ca where "
             + "ca.balanceCalculationType <> org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT and ca.status in :statuses "
-            + "and (not exists (select cab.id from CurrentAccountBalance cab where ca.id = cab.accountId) "
-            + "or exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = cab.accountId "
-            + "and ct.createdDate <= :tillDateTime and ct2.id = cab.calculatedTillTransactionId and ct.createdDate > ct2.createdDate))")
-    List<String> getAccountIdsForBalanceCalculation(@Param("tillDateTime") OffsetDateTime tillDateTime,
+            + "and not exists (select cab.id from CurrentAccountBalance cab where ca.id = cab.accountId)")
+    List<String> getAccountIdsNoBalance(@Param("statuses") List<CurrentAccountStatus> statuses);
+
+    @Query("select ca.id from CurrentAccount ca where "
+            + "ca.balanceCalculationType <> org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT and ca.status in :statuses "
+            + "and exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = cab.accountId "
+            + "and ct.createdDate <= :tillDateTime and ct2.id = cab.calculatedTillTransactionId and ct.createdDate > ct2.createdDate)")
+    List<String> getAccountIdsBalanceBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

@@ -18,16 +18,21 @@
  */
 package org.apache.fineract.currentaccount.job.balancecalculation;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
+import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_ACTIVATE;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.commands.domain.CommandActionContext;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -44,10 +49,12 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        ThreadLocalContextUtil.setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, BALANCE_CALCULATION.getActionName()));
         try {
             OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
-            List<String> accountIds = currentAccountBalanceRepository.getAccountIdsForBalanceCalculation(tillDateTime, statuses);
+            List<String> accountIds = currentAccountBalanceRepository.getAccountIdsBalanceBehind(tillDateTime, statuses);
+            accountIds.addAll(currentAccountBalanceRepository.getAccountIdsNoBalance(statuses));
             updateBalances(accountIds, tillDateTime);
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));

@@ -74,12 +74,12 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
 
         boolean allStrict = currentAccountData.getBalanceCalculationType().isStrict();
         List<CurrentTransaction> transactionList;
+        // TODO CURRENT! no need to load the transactions
         if (accountingHistory.isNew()) {
             transactionList = allStrict ? currentTransactionRepository.getByAccountIdOrderByCreatedDateAscIdAsc(accountId)
                     : currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
         } else {
-            CurrentTransaction currentTransaction = currentTransactionRepository // TODO CURRENT! no need to load the
-                                                                                 // transaction
+            CurrentTransaction currentTransaction = currentTransactionRepository
                     .findById(accountingHistory.getCalculatedTillTransactionId())
                     .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
                             "Current transaction with id {} does not found", accountingHistory.getCalculatedTillTransactionId()));
@@ -105,8 +105,7 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
     private BigDecimal calculateBalance(GLAccountingHistory accountingHistory, CurrentTransaction transaction) {
         CurrentTransactionType transactionType = transaction.getTransactionType();
         BigDecimal balance = accountingHistory.getAccountBalance();
-        if (transactionType.isMonetaryCredit()) { // TODO CURRENT! non-monetary transactions do not change the balance!
-                                                  // please check
+        if (transactionType.isMonetaryCredit()) { // non-monetary transactions do not change the balance
             return MathUtil.add(balance, transaction.getAmount());
         } else if (transactionType.isMonetaryDebit()) {
             return MathUtil.subtract(balance, transaction.getAmount());

@@ -95,7 +95,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         currentAccountWriteService.checkEnabled(account, true);
-        if (force && account.isAllowForceTransaction()) {
+        if (force && !account.isAllowForceTransaction()) {
             throw new GeneralPlatformDomainRuleException("error.msg.force.not.allowed", "Force withdrawal action is not allowed!");
         }
 

@@ -47,7 +47,8 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
         try {
             OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
             List<CurrentAccountStatus> statuses = List.of(ACTIVE);
-            List<String> accountIds = currentAccountAccountingRepository.getAccountIdsForAccounting(tillDateTime, statuses);
+            List<String> accountIds = currentAccountAccountingRepository.getAccountIdsAccountingBehind(tillDateTime, statuses);
+            accountIds.addAll(currentAccountAccountingRepository.getAccountIdsNoAccounting(statuses));
             writeAccounting(accountIds, tillDateTime);
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));

@@ -37,10 +37,15 @@ public interface CurrentAccountAccountingRepository extends JpaRepository<GLAcco
     // TODO CURRENT! check not NONE instead of CASH_BASED and validate later if only CASH_BASED is supported
     @Query("select ca.id from CurrentAccount ca, CurrentProduct cp where "
             + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
-            + "and (not exists (select glah.id from GLAccountingHistory glah where ca.id = glah.accountId) "
-            + "or exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah where ct.accountId = glah.accountId "
+            + "and not exists (select glah.id from GLAccountingHistory glah where ca.id = glah.accountId)")
+    List<String> getAccountIdsNoAccounting(@Param("statuses") List<CurrentAccountStatus> statuses);
+
+    // TODO CURRENT! check not NONE instead of CASH_BASED and validate later if only CASH_BASED is supported
+    @Query("select ca.id from CurrentAccount ca, CurrentProduct cp where "
+            + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
+            + "and exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah where ct.accountId = glah.accountId "
             + "and (ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) "
-            + "and ct2.id = glah.calculatedTillTransactionId and ct.createdDate > ct2.createdDate))")
-    List<String> getAccountIdsForAccounting(@Param("tillDateTime") OffsetDateTime tillDateTime,
+            + "and ct2.id = glah.calculatedTillTransactionId and ct.createdDate > ct2.createdDate)")
+    List<String> getAccountIdsAccountingBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }
