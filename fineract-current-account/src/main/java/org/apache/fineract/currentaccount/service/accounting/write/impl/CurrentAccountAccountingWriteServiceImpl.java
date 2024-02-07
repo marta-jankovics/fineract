@@ -37,7 +37,7 @@ import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGL
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.domain.accounting.GLAccountingHistory;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashAccounts;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashBasedAccount;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
@@ -123,28 +123,28 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
 
     private void createJournalEntryForTransaction(Office office, CurrentAccountData accountData, CurrentTransaction transaction,
             GLAccountingHistory accountingHistory) {
-        CurrentProductCashAccounts debitAccountReferenceId;
-        CurrentProductCashAccounts creditAccountReferenceId;
-        CurrentProductCashAccounts overdraftDebitReferenceId;
-        CurrentProductCashAccounts overdraftCreditReferenceId;
+        CurrentProductCashBasedAccount debitAccountReferenceId;
+        CurrentProductCashBasedAccount creditAccountReferenceId;
+        CurrentProductCashBasedAccount overdraftDebitReferenceId;
+        CurrentProductCashBasedAccount overdraftCreditReferenceId;
         switch (transaction.getTransactionType()) {
             case DEPOSIT -> {
-                debitAccountReferenceId = CurrentProductCashAccounts.REFERENCE;
-                creditAccountReferenceId = CurrentProductCashAccounts.CONTROL;
-                overdraftDebitReferenceId = CurrentProductCashAccounts.REFERENCE;
-                overdraftCreditReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
+                debitAccountReferenceId = CurrentProductCashBasedAccount.REFERENCE;
+                creditAccountReferenceId = CurrentProductCashBasedAccount.CONTROL;
+                overdraftDebitReferenceId = CurrentProductCashBasedAccount.REFERENCE;
+                overdraftCreditReferenceId = CurrentProductCashBasedAccount.OVERDRAFT_CONTROL;
             }
             case WITHDRAWAL -> {
-                debitAccountReferenceId = CurrentProductCashAccounts.CONTROL;
-                creditAccountReferenceId = CurrentProductCashAccounts.REFERENCE;
-                overdraftDebitReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
-                overdraftCreditReferenceId = CurrentProductCashAccounts.REFERENCE;
+                debitAccountReferenceId = CurrentProductCashBasedAccount.CONTROL;
+                creditAccountReferenceId = CurrentProductCashBasedAccount.REFERENCE;
+                overdraftDebitReferenceId = CurrentProductCashBasedAccount.OVERDRAFT_CONTROL;
+                overdraftCreditReferenceId = CurrentProductCashBasedAccount.REFERENCE;
             }
             case WITHDRAWAL_FEE -> {
-                debitAccountReferenceId = CurrentProductCashAccounts.CONTROL;
-                creditAccountReferenceId = CurrentProductCashAccounts.INCOME_FROM_FEES;
-                overdraftDebitReferenceId = CurrentProductCashAccounts.OVERDRAFT_CONTROL;
-                overdraftCreditReferenceId = CurrentProductCashAccounts.INCOME_FROM_FEES;
+                debitAccountReferenceId = CurrentProductCashBasedAccount.CONTROL;
+                creditAccountReferenceId = CurrentProductCashBasedAccount.INCOME_FROM_FEES;
+                overdraftDebitReferenceId = CurrentProductCashBasedAccount.OVERDRAFT_CONTROL;
+                overdraftCreditReferenceId = CurrentProductCashBasedAccount.INCOME_FROM_FEES;
             }
             default -> throw new UnsupportedOperationException(
                     String.format("Unhandled transaction type for Current account accounting: %s", transaction.getTransactionType()));
@@ -154,9 +154,9 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
     }
 
     private void createJournalEntryForTransactionType(Office office, CurrentAccountData accountData, CurrentTransaction transaction,
-            GLAccountingHistory accountingHistory, CurrentProductCashAccounts debitAccountReferenceId,
-            CurrentProductCashAccounts creditAccountReferenceId, CurrentProductCashAccounts overdraftDebitReferenceId,
-            CurrentProductCashAccounts overdraftCreditReferenceId) {
+            GLAccountingHistory accountingHistory, CurrentProductCashBasedAccount debitAccountReferenceId,
+            CurrentProductCashBasedAccount creditAccountReferenceId, CurrentProductCashBasedAccount overdraftDebitReferenceId,
+            CurrentProductCashBasedAccount overdraftCreditReferenceId) {
         BigDecimal overdraftAmount = MathUtil.isLessThanZero(accountingHistory.getAccountBalance())
                 ? accountingHistory.getAccountBalance().negate()
                 : BigDecimal.ZERO;

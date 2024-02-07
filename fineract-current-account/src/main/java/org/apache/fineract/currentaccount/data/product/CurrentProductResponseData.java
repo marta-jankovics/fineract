@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.Data;
-import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 
@@ -42,12 +41,6 @@ public class CurrentProductResponseData implements Serializable {
     private final Boolean allowForceTransaction;
     private final StringEnumOptionData balanceCalculationType;
 
-    private GLAccountDataForLookup controlAccountId;
-    private GLAccountDataForLookup referenceAccountId;
-    private GLAccountDataForLookup overdraftControlAccountId;
-    private GLAccountDataForLookup transfersInSuspenseAccountId;
-    private GLAccountDataForLookup writeOffAccountId;
-    private GLAccountDataForLookup incomeFromFeeAccountId;
-    private GLAccountDataForLookup incomeFromPenaltyAccountId;
+    private final List<GlAccountMapping> glAccountMappings;
     private List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
 }

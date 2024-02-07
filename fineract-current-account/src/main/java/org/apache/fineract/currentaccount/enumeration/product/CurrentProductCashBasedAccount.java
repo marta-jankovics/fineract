@@ -22,35 +22,42 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
-public enum CurrentProductCashAccounts {
+public enum CurrentProductCashBasedAccount {
 
-    REFERENCE(1, GLAccountType.ASSET), //
-    CONTROL(2, GLAccountType.LIABILITY), //
-    INCOME_FROM_FEES(3, GLAccountType.INCOME), //
-    INCOME_FROM_PENALTIES(4, GLAccountType.INCOME), //
-    TRANSFERS_SUSPENSE(5, GLAccountType.LIABILITY), //
-    OVERDRAFT_CONTROL(6, GLAccountType.ASSET), //
-    LOSSES_WRITTEN_OFF(7, GLAccountType.EXPENSE); //
+    REFERENCE(1, GLAccountType.ASSET, "referenceAccountId"), //
+    CONTROL(2, GLAccountType.LIABILITY, "controlAccountId"), //
+    INCOME_FROM_FEES(3, GLAccountType.INCOME, "incomeFromFeeAccountId"), //
+    INCOME_FROM_PENALTIES(4, GLAccountType.INCOME, "incomeFromPenaltyAccountId"), //
+    TRANSFERS_SUSPENSE(5, GLAccountType.LIABILITY, "transfersInSuspenseAccountId"), //
+    OVERDRAFT_CONTROL(6, GLAccountType.ASSET, "overdraftControlAccountId"), //
+    LOSSES_WRITTEN_OFF(7, GLAccountType.EXPENSE, "writeOffAccountId"); //
 
-    private static final Map<Integer, CurrentProductCashAccounts> intToEnumMap = new HashMap<>();
+    private static final Map<Integer, CurrentProductCashBasedAccount> intToEnumMap = new HashMap<>();
 
     static {
-        for (final CurrentProductCashAccounts type : CurrentProductCashAccounts.values()) {
+        for (final CurrentProductCashBasedAccount type : CurrentProductCashBasedAccount.values()) {
             intToEnumMap.put(type.getId(), type);
         }
     }
 
     private final Integer id;
     private final GLAccountType type;
+    private final String variableName;
 
-    CurrentProductCashAccounts(final Integer id, final GLAccountType type) {
+    CurrentProductCashBasedAccount(final Integer id, final GLAccountType type, final String variableName) {
         this.id = id;
         this.type = type;
+        this.variableName = variableName;
     }
 
-    public static CurrentProductCashAccounts fromInt(final int i) {
+    public static CurrentProductCashBasedAccount fromInt(final int i) {
         return intToEnumMap.get(i);
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getVariableName(), null);
     }
 }

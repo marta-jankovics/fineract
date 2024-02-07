@@ -141,8 +141,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductReadService.class)
     public CurrentProductReadService currentProductReadService(CurrentProductRepository currentProductRepository,
-            CurrencyReadPlatformService currencyReadPlatformService) {
-        return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService);
+            CurrencyReadPlatformService currencyReadPlatformService, CurrentProductResponseDataMapper currentProductResponseDataMapper,
+            ProductToGLAccountMappingRepository productToGLAccountMappingRepository) {
+        return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService, currentProductResponseDataMapper,
+                productToGLAccountMappingRepository);
     }
 
     @Bean

@@ -49,7 +49,6 @@ import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.product.CurrentProductApi;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
-import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.service.product.CurrentProductResolver;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.api.jersey.Pagination;
@@ -73,11 +72,10 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     private final PlatformSecurityContext context;
     private final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService;
     private final CurrentProductReadService currentProductReadService;
-    private final CurrentProductResponseDataMapper currentProductResponseDataMapper;
 
     @GET
     @Path("template")
-    @Operation(operationId = "templateCurrentProduct", summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
+    @Operation(operationId = "templateForCurrentProduct", summary = "Retrieve Current Product Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Request:\n \n" + "current-products/template \n \n")
     @Override
     public CurrentProductTemplateResponseData template() {
@@ -92,7 +90,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     public Page<CurrentProductResponseData> retrieveAll(
             @Pagination @SortDefault(sort = "createdDate") @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
-        return currentProductResponseDataMapper.map(this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable)));
+        return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
     }
 
     @GET
@@ -144,7 +142,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @PUT
     @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
-    @Operation(operationId = "updateCurrentProductByIdentifier", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
+    @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
@@ -169,7 +167,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     @DELETE
     @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
-    @Operation(operationId = "deleteCurrentProductByIdentifier", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
+    @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
     @Override
@@ -191,7 +189,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
 
     private CurrentProductResponseData retrieveOne(@NotNull CurrentProductResolver productResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
-        return currentProductResponseDataMapper.map(currentProductReadService.retrieve(productResolver));
+        return currentProductReadService.retrieve(productResolver);
     }
 
     private CommandProcessingResult updateCurrentProduct(@NotNull CurrentProductResolver productResolver, String requestJson) {

@@ -19,13 +19,19 @@
 package org.apache.fineract.currentaccount.mapper.product;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
+import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMapping;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
+import org.apache.fineract.currentaccount.data.product.GlAccountMapping;
 import org.apache.fineract.currentaccount.data.product.PaymentChannelToFundSourceData;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashBasedAccount;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
+import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -34,22 +40,39 @@ import org.springframework.data.domain.Page;
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentProductResponseDataMapper {
 
+    default Page<CurrentProductResponseData> map(Page<CurrentProductData> data,
+            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
+        return data.map(currentProductData -> map(currentProductData, glAccountMappingRetrieveFunc));
+    }
+
+    default CurrentProductResponseData map(CurrentProductData currentProductData,
+            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
+        return mapResolved(currentProductData, glAccountMappingRetrieveFunc.apply(currentProductData));
+    }
+
+    default List<CurrentProductResponseData> map(List<CurrentProductData> data,
+            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
+        return data.stream().map(currentProductData -> map(currentProductData, glAccountMappingRetrieveFunc)).toList();
+    }
+
     default Page<CurrentProductResponseData> map(Page<CurrentProductData> data) {
         return data.map(this::map);
+    }
+
+    default List<CurrentProductResponseData> map(List<CurrentProductData> data) {
+        return data.stream().map(currentProductData -> mapResolved(currentProductData, null)).toList();
+    }
+
+    default CurrentProductResponseData map(CurrentProductData currentProductData) {
+        return mapResolved(currentProductData, null);
     }
 
     @Mapping(target = "currency", source = "currentProductData", qualifiedByName = "currency")
     @Mapping(target = "accountingType", source = "currentProductData", qualifiedByName = "accountingType")
     @Mapping(target = "balanceCalculationType", source = "currentProductData", qualifiedByName = "balanceCalculationType")
-    @Mapping(target = "controlAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "referenceAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "overdraftControlAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "transfersInSuspenseAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "writeOffAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "incomeFromFeeAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "incomeFromPenaltyAccountId", source = "currentProductData", qualifiedByName = "glAccountMapping")
-    @Mapping(target = "paymentChannelToFundSourceMappings", source = "currentProductData", qualifiedByName = "paymentChannelMapping")
-    CurrentProductResponseData map(CurrentProductData currentProductData);
+    @Mapping(target = "glAccountMappings", source = "glAccountMappings", qualifiedByName = "glAccountMapping")
+    @Mapping(target = "paymentChannelToFundSourceMappings", source = "glAccountMappings", qualifiedByName = "paymentChannelMapping")
+    CurrentProductResponseData mapResolved(CurrentProductData currentProductData, List<ProductToGLAccountMapping> glAccountMappings);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentProductData currentProductData) {
@@ -68,16 +91,34 @@ public interface CurrentProductResponseDataMapper {
     }
 
     @Named("glAccountMapping")
-    default GLAccountDataForLookup glAccountMapping(CurrentProductData currentProductData) {
-        // TODO: implementation
-        return null;
+    default List<GlAccountMapping> glAccountMapping(List<ProductToGLAccountMapping> glAccountMappings) {
+        if (glAccountMappings == null) {
+            return null;
+        }
+        return glAccountMappings.stream().filter(glAccountMapping -> glAccountMapping.getPaymentType() == null).map(glAccountMapping -> {
+            GLAccountDataForLookup glAccountDataForLookup = new GLAccountDataForLookup();
+            glAccountDataForLookup.setId(glAccountMapping.getGlAccount().getId());
+            glAccountDataForLookup.setName(glAccountMapping.getGlAccount().getName());
+            glAccountDataForLookup.setGlCode(glAccountMapping.getGlAccount().getGlCode());
+            StringEnumOptionData cashAccount = CurrentProductCashBasedAccount.fromInt(glAccountMapping.getFinancialAccountType())
+                    .toStringEnumOptionData();
+            return new GlAccountMapping(cashAccount, glAccountDataForLookup);
+        }).collect(Collectors.toList());
     }
 
     @Named("paymentChannelMapping")
-    default List<PaymentChannelToFundSourceData> paymentChannelMapping(CurrentProductData currentProductData) {
-        // TODO: implementation
-        return null;
+    default List<PaymentChannelToFundSourceData> paymentChannelMapping(List<ProductToGLAccountMapping> glAccountMappings) {
+        if (glAccountMappings == null) {
+            return null;
+        }
+        return glAccountMappings.stream().filter(glAccountMapping -> glAccountMapping.getPaymentType() != null).map(glAccountMapping -> {
+            GLAccountDataForLookup glAccountDataForLookup = new GLAccountDataForLookup();
+            glAccountDataForLookup.setId(glAccountMapping.getGlAccount().getId());
+            glAccountDataForLookup.setName(glAccountMapping.getGlAccount().getName());
+            glAccountDataForLookup.setGlCode(glAccountMapping.getGlAccount().getGlCode());
+            PaymentTypeData paymentTypeData = PaymentTypeData.instance(glAccountMapping.getPaymentType().getId(),
+                    glAccountMapping.getPaymentType().getName());
+            return new PaymentChannelToFundSourceData(paymentTypeData, glAccountDataForLookup);
+        }).collect(Collectors.toList());
     }
-
-    List<CurrentProductResponseData> map(List<CurrentProductData> data);
 }

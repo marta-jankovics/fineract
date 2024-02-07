@@ -46,7 +46,7 @@ import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGL
 import org.apache.fineract.accounting.producttoaccountmapping.exception.ProductToGLAccountMappingNotFoundException;
 import org.apache.fineract.accounting.producttoaccountmapping.service.ProductToGLAccountMappingHelper;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
-import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashAccounts;
+import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashBasedAccount;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentType;
@@ -61,7 +61,7 @@ public class CurrentProductToGLAccountMappingHelper {
     private final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper;
 
     public void createCurrentProductAccountMapping(final JsonCommand command, final String paramName, final CurrentProduct product,
-            final CurrentProductCashAccounts accountType) {
+            final CurrentProductCashBasedAccount accountType) {
         final Long accountId = command.longValueOfParameterNamed(paramName);
         final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, accountType.getType(), accountId);
         final ProductToGLAccountMapping accountMapping = new ProductToGLAccountMapping().setGlAccount(glAccount)
@@ -71,7 +71,7 @@ public class CurrentProductToGLAccountMappingHelper {
     }
 
     public void updateCurrentProductAccountMappingChanges(final JsonCommand command, final String paramName, final CurrentProduct product,
-            CurrentProductCashAccounts cashAccounts, final Map<String, Object> changes) {
+            CurrentProductCashBasedAccount cashAccounts, final Map<String, Object> changes) {
         final Long accountId = command.longValueOfParameterNamed(paramName);
 
         final ProductToGLAccountMapping accountMapping = this.accountMappingRepository.findCoreProductToFinAccountMapping(product.getId(),
@@ -166,36 +166,36 @@ public class CurrentProductToGLAccountMappingHelper {
             final Map<String, Object> changes) {
         // asset
         if (command.hasParameter(REFERENCE_ACCOUNT_ID_PARAM)) {
-            updateCurrentProductAccountMappingChanges(command, REFERENCE_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.REFERENCE,
-                    changes);
+            updateCurrentProductAccountMappingChanges(command, REFERENCE_ACCOUNT_ID_PARAM, product,
+                    CurrentProductCashBasedAccount.REFERENCE, changes);
         }
         if (command.hasParameter(OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM)) {
             updateCurrentProductAccountMappingChanges(command, OVERDRAFT_CONTROL_ACCOUNT_ID_PARAM, product,
-                    CurrentProductCashAccounts.OVERDRAFT_CONTROL, changes);
+                    CurrentProductCashBasedAccount.OVERDRAFT_CONTROL, changes);
         }
 
         // income
         if (command.hasParameter(INCOME_FROM_FEE_ACCOUNT_ID_PARAM)) {
             updateCurrentProductAccountMappingChanges(command, INCOME_FROM_FEE_ACCOUNT_ID_PARAM, product,
-                    CurrentProductCashAccounts.INCOME_FROM_FEES, changes);
+                    CurrentProductCashBasedAccount.INCOME_FROM_FEES, changes);
         }
         if (command.hasParameter(INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM)) {
             updateCurrentProductAccountMappingChanges(command, INCOME_FROM_PENALTY_ACCOUNT_ID_PARAM, product,
-                    CurrentProductCashAccounts.INCOME_FROM_PENALTIES, changes);
+                    CurrentProductCashBasedAccount.INCOME_FROM_PENALTIES, changes);
         }
         // expenses
         if (command.hasParameter(WRITE_OFF_ACCOUNT_ID_PARAM)) {
             updateCurrentProductAccountMappingChanges(command, WRITE_OFF_ACCOUNT_ID_PARAM, product,
-                    CurrentProductCashAccounts.LOSSES_WRITTEN_OFF, changes);
+                    CurrentProductCashBasedAccount.LOSSES_WRITTEN_OFF, changes);
         }
         // liability
         if (command.hasParameter(CONTROL_ACCOUNT_ID_PARAM)) {
-            updateCurrentProductAccountMappingChanges(command, CONTROL_ACCOUNT_ID_PARAM, product, CurrentProductCashAccounts.CONTROL,
+            updateCurrentProductAccountMappingChanges(command, CONTROL_ACCOUNT_ID_PARAM, product, CurrentProductCashBasedAccount.CONTROL,
                     changes);
         }
         if (command.hasParameter(TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM)) {
             updateCurrentProductAccountMappingChanges(command, TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM, product,
-                    CurrentProductCashAccounts.TRANSFERS_SUSPENSE, changes);
+                    CurrentProductCashBasedAccount.TRANSFERS_SUSPENSE, changes);
         }
     }
 

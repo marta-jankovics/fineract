@@ -29,4 +29,5 @@ public class CurrentProductTemplateResponseData implements Serializable {
 
     private final List<CurrencyData> currencyOptions;
     private final List<StringEnumOptionData> accountingTypeOptions;
+    private final List<StringEnumOptionData> cashBasedAccountingOptions;
 }

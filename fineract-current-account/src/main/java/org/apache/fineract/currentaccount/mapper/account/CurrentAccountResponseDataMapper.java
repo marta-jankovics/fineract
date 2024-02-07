@@ -37,18 +37,18 @@ import org.springframework.data.domain.Page;
 public interface CurrentAccountResponseDataMapper {
 
     default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data,
-            Function<String, CurrentAccountBalanceData> balanceDataFunction) {
-        return data.map(currentAccountData -> map(currentAccountData, balanceDataFunction));
+            Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
+        return data.map(currentAccountData -> map(currentAccountData, balanceDataRetrieverFunc));
     }
 
     default List<CurrentAccountResponseData> map(List<CurrentAccountData> data,
-            Function<String, CurrentAccountBalanceData> balanceDataFunction) {
-        return data.stream().map(currentAccountData -> map(currentAccountData, balanceDataFunction)).toList();
+            Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
+        return data.stream().map(currentAccountData -> map(currentAccountData, balanceDataRetrieverFunc)).toList();
     }
 
     default CurrentAccountResponseData map(CurrentAccountData currentAccountData,
-            Function<String, CurrentAccountBalanceData> balanceDataFunction) {
-        return map(currentAccountData, balanceDataFunction.apply(currentAccountData.getId()));
+            Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
+        return map(currentAccountData, balanceDataRetrieverFunc.apply(currentAccountData.getId()));
     }
 
     @Mapping(target = "id", source = "currentAccountData.id")
