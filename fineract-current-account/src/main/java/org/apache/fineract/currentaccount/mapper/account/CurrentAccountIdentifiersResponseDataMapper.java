@@ -59,7 +59,7 @@ public interface CurrentAccountIdentifiersResponseDataMapper {
 
     default List<IdTypeValueSubValueData> mapSecondaryIdentifiers(List<AccountIdentifier> secondaryIdentifiers) {
         return secondaryIdentifiers.stream()
-                .map(o -> new IdTypeValueSubValueData(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, o.getIdentifierType().name()),
+                .map(o -> new IdTypeValueSubValueData(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, o.getIdentifierType().name()),
                         o.getValue(), o.getSubValue()))
                 .toList();
     }

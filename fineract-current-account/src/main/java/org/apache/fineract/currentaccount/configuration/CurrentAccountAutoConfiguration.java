@@ -95,9 +95,9 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountReadService.class)
     public CurrentAccountReadService currentAccountReadService(CurrentAccountRepository currentAccountRepository,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentProductReadService currentProductReadPlatformService,
-            CurrentProductResponseDataMapper currentProductResponseDataMapper,
-            CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
+                                                               AccountIdentifierRepository accountIdentifierRepository, CurrentProductReadService currentProductReadPlatformService,
+                                                               CurrentProductResponseDataMapper currentProductResponseDataMapper,
+                                                               CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
         return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentProductReadPlatformService,
                 currentAccountIdentifiersResponseDataMapper, currentProductResponseDataMapper);
     }
@@ -105,7 +105,7 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountBalanceReadService.class)
     public CurrentAccountBalanceReadService currentAccountBalanceReadService(ConfigurationDomainService configurationService,
-            CurrentAccountBalanceRepository currentAccountBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
+                                                                             CurrentAccountBalanceRepository currentAccountBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
         return new CurrentAccountBalanceReadServiceImpl(configurationService, currentAccountBalanceRepository,
                 currentTransactionRepository);
     }
@@ -113,8 +113,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountWriteService.class)
     public CurrentAccountWriteService currentAccountWriteService(CurrentAccountDataValidator currentAccountDataValidator,
-            CurrentAccountAssembler currentAccountAssembler, CurrentAccountRepository currentAccountRepository,
-            ClientRepository clientRepository) {
+                                                                 CurrentAccountAssembler currentAccountAssembler, CurrentAccountRepository currentAccountRepository,
+                                                                 ClientRepository clientRepository) {
         return new CurrentAccountWriteServiceImpl(currentAccountDataValidator, currentAccountAssembler, currentAccountRepository,
                 clientRepository);
     }
@@ -128,17 +128,19 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountAssembler.class)
     public CurrentAccountAssembler currentAccountAssembler(ClientRepository clientRepository,
-            CurrentProductRepository currentProductRepository, ExternalIdFactory externalIdFactory,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentAccountRepository currentAccountRepository,
-            CurrentAccountBalanceWriteService currentAccountBalanceWriteService, EntityActionRepository entityActionRepository) {
+                                                           CurrentProductRepository currentProductRepository, ExternalIdFactory externalIdFactory,
+                                                           AccountIdentifierRepository accountIdentifierRepository, CurrentAccountRepository currentAccountRepository,
+                                                           CurrentAccountBalanceWriteService currentAccountBalanceWriteService, EntityActionRepository entityActionRepository,
+                                                           ReadWriteNonCoreDataService readWriteNonCoreDataService,
+                                                           CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
         return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, entityActionRepository,
-                accountIdentifierRepository, currentAccountBalanceWriteService, externalIdFactory);
+                accountIdentifierRepository, currentAccountBalanceWriteService, externalIdFactory, readWriteNonCoreDataService, currentAccountIdentifiersResponseDataMapper);
     }
 
     @Bean
     @ConditionalOnMissingBean(CurrentProductReadService.class)
     public CurrentProductReadService currentProductReadService(CurrentProductRepository currentProductRepository,
-            CurrencyReadPlatformService currencyReadPlatformService) {
+                                                               CurrencyReadPlatformService currencyReadPlatformService) {
         return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService);
     }
 
@@ -151,8 +153,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductAssembler.class)
     public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory,
-            CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService,
-            CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper) {
+                                                           CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService,
+                                                           CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper) {
         return new CurrentProductAssemblerImpl(externalIdFactory, currentProductRepository, readWriteNonCoreDataService,
                 currentProductToGLAccountMappingHelper);
     }
@@ -160,14 +162,14 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentProductWriteService.class)
     public CurrentProductWriteService currentProductWriteService(CurrentProductRepository currentProductRepository,
-            CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler) {
+                                                                 CurrentProductDataValidator currentProductDataValidator, CurrentProductAssembler currentProductAssembler) {
         return new CurrentProductWriteServiceImpl(currentProductRepository, currentProductDataValidator, currentProductAssembler);
     }
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionReadService.class)
     public CurrentTransactionReadService currentTransactionReadService(CurrentAccountReadService currentAccountReadService,
-            PaymentTypeReadPlatformService paymentTypeReadPlatformService, CurrentTransactionRepository currentTransactionRepository) {
+                                                                       PaymentTypeReadPlatformService paymentTypeReadPlatformService, CurrentTransactionRepository currentTransactionRepository) {
         return new CurrentTransactionReadServiceImpl(currentAccountReadService, paymentTypeReadPlatformService,
                 currentTransactionRepository);
     }
@@ -175,9 +177,9 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionWriteService.class)
     public CurrentTransactionWriteService currentTransactionWriteService(CurrentTransactionDataValidator currentTransactionDataValidator,
-            CurrentTransactionAssembler currentTransactionAssembler, CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
-            CurrentAccountBalanceWriteService currentAccountBalanceWriteService, CurrentAccountWriteService currentAccountWriteService) {
+                                                                         CurrentTransactionAssembler currentTransactionAssembler, CurrentAccountRepository currentAccountRepository,
+                                                                         CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
+                                                                         CurrentAccountBalanceWriteService currentAccountBalanceWriteService, CurrentAccountWriteService currentAccountWriteService) {
         return new CurrentTransactionWriteServiceImpl(currentTransactionDataValidator, currentTransactionAssembler,
                 currentAccountRepository, currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService,
                 currentAccountWriteService);
@@ -186,8 +188,8 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionAssembler.class)
     public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
-            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentProductRepository currentProductRepository,
-            CurrentTransactionRepository currentTransactionRepository) {
+                                                                   ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentProductRepository currentProductRepository,
+                                                                   CurrentTransactionRepository currentTransactionRepository) {
         return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentProductRepository,
                 currentTransactionRepository);
     }
@@ -210,11 +212,11 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountAccountingWriteService.class)
     public CurrentAccountAccountingWriteService currentAccountAccountingWriteService(CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository,
-            CurrentAccountAccountingRepository currentAccountAccountingRepository,
-            FinancialActivityAccountRepositoryWrapper financialActivityAccountRepository,
-            ProductToGLAccountMappingRepository accountMappingRepository, OfficeRepository officeRepository,
-            JournalEntryRepository glJournalEntryRepository) {
+                                                                                     CurrentTransactionRepository currentTransactionRepository,
+                                                                                     CurrentAccountAccountingRepository currentAccountAccountingRepository,
+                                                                                     FinancialActivityAccountRepositoryWrapper financialActivityAccountRepository,
+                                                                                     ProductToGLAccountMappingRepository accountMappingRepository, OfficeRepository officeRepository,
+                                                                                     JournalEntryRepository glJournalEntryRepository) {
         return new CurrentAccountAccountingWriteServiceImpl(currentAccountRepository, currentTransactionRepository,
                 currentAccountAccountingRepository, financialActivityAccountRepository, accountMappingRepository, officeRepository,
                 glJournalEntryRepository);

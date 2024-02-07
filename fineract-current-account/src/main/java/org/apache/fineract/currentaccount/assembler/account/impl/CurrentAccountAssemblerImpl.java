@@ -33,6 +33,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
 import static org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT;
+import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
 import com.google.gson.Gson;
@@ -98,7 +99,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
     private final ExternalIdFactory externalIdFactory;
-    ReadWriteNonCoreDataService readWriteNonCoreDataService;
+    private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
+    private final CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper;
 
     /**
      * Assembles a new {@link CurrentAccount} from JSON details passed in request inheriting details where relevant from
@@ -514,10 +516,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         List<AccountIdentifier> removedIdentifiers = new ArrayList<>(existingIdentifiers.values());
         if (!removedIdentifiers.isEmpty()) {
             accountIdentifierRepository.deleteAll(removedIdentifiers);
-            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("removed", removedIdentifiers));
+            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("removed", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(removedIdentifiers)));
         }
         if (!persistedIdentifiers.isEmpty()) {
-            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("persisted", persistedIdentifiers));
+            ((List) actualChanges.get(IDENTIFIERS_PARAM)).add(Map.of("persisted", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(persistedIdentifiers)));
         }
 
         validator.throwValidationErrors();
