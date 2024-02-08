@@ -43,14 +43,14 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt "
-            + "WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId AND ca.productId = ca.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
+            + "WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
     CurrentTransactionData getTransaction(@Param("accountId") String accountId, @Param("transactionId") String transactionId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt "
-            + "WHERE t.accountId = :accountId AND t.externalId = :externalId AND ca.id = t.accountId AND ca.productId = ca.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
+            + "WHERE t.accountId = :accountId AND t.externalId = :externalId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
     CurrentTransactionData getTransactionData(@Param("accountId") String accountId, @Param("externalId") ExternalId externalId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
