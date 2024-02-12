@@ -111,13 +111,14 @@ public class CurrentAccountApiConstants {
 
     // API
     public static final String SLASH = "/";
-    public static final String RESERVED_WORDS = ":(?!transactions|query|identifiers|template)([a-zA-Z_0-9-]+)";
-    public static final String ID_TYPE_API_PARAM = "{" + ID_TYPE_PARAM + RESERVED_WORDS + "}";
-    public static final String IDENTIFIER_API_PARAM = "{" + IDENTIFIER_PARAM + RESERVED_WORDS + "}";
-    public static final String SUB_IDENTIFIER_API_PARAM = "{" + SUB_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_ID_TYPE_API_PARAM = "{" + ACCOUNT_ID_TYPE_PARAM + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_IDENTIFIER_API_PARAM = "{" + ACCOUNT_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
-    public static final String ACCOUNT_SUB_IDENTIFIER_API_PARAM = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
-    public static final String TRANSACTION_ID_TYPE_API_PARAM = "{" + TRANSACTION_ID_TYPE_PARAM + RESERVED_WORDS + "}";
-    public static final String TRANSACTION_IDENTIFIER_API_PARAM = "{" + TRANSACTION_IDENTIFIER_PARAM + RESERVED_WORDS + "}";
+    public static final String RESERVED_API_WORDS_REGEX = "(?!transactions|query|identifiers|template)([a-zA-Z_0-9-]+)";
+    public static final String RESERVED_API_REGEX = ":" + RESERVED_API_WORDS_REGEX;
+    public static final String ID_TYPE_API_REGEX = "{" + ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
+    public static final String IDENTIFIER_API_REGEX = "{" + IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
+    public static final String SUB_IDENTIFIER_API_REGEX = "{" + SUB_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
+    public static final String ACCOUNT_ID_TYPE_API_REGEX = "{" + ACCOUNT_ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
+    public static final String ACCOUNT_IDENTIFIER_API_REGEX = "{" + ACCOUNT_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
+    public static final String ACCOUNT_SUB_IDENTIFIER_API_REGEX = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
+    public static final String TRANSACTION_ID_TYPE_API_REGEX = "{" + TRANSACTION_ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
+    public static final String TRANSACTION_IDENTIFIER_API_REGEX = "{" + TRANSACTION_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
 }

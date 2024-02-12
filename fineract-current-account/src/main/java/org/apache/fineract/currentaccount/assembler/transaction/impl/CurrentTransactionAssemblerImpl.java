@@ -179,17 +179,19 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (!transactionType.isDebit() && !account.isBalancePersist(action)) {
             return null;
         }
-        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the new transaction is
-                                                                            // persisted
-        checkBalance(account, balance, transaction.getAmount(), transactionType, force);
+        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the transaction is persisted
+        boolean applied = balance.applyTransaction(transaction);
+        checkBalance(account, balance, transactionType, force);
         if (account.isBalancePersist(action)) {
             CurrentAccountBalanceData balanceData;
             boolean hasDelay = account.hasBalanceDelay(action);
             if (hasDelay) {
                 balanceData = balance.getDelayData();
             } else {
-                transaction = currentTransactionRepository.saveAndFlush(transaction);
-                balance.applyTransaction(transaction);
+                if (applied) {
+                    transaction = currentTransactionRepository.saveAndFlush(transaction);
+                    balance.ensureTransaction(transaction);
+                }
                 balanceData = balance.getTotalData();
             }
             if (balanceData.isChanged()) {
@@ -199,13 +201,12 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         return balance;
     }
 
-    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance, BigDecimal transactionAmount,
-            CurrentTransactionType transactionType, boolean force) {
+    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance, CurrentTransactionType transactionType, boolean force) {
         if (!transactionType.isDebit() || force) {
             return;
         }
-        // TODO CURRENT! add context information id, balance..
-        BigDecimal accountBalance = MathUtil.subtract(balance.getAccountBalance(), transactionAmount);
+        // TODO CURRENT! add error context information id, balance..
+        BigDecimal accountBalance = balance.getAccountBalance();
         if (MathUtil.isLessThanZero(accountBalance) && !account.isAllowOverdraft()) {
             throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
         }

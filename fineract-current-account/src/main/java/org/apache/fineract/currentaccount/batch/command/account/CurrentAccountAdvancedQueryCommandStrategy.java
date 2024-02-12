@@ -73,7 +73,7 @@ public class CurrentAccountAdvancedQueryCommandStrategy implements CommandStrate
             response = currentAccountsApiResource.advancedQuery(queryRequest, uriInfo);
         }
 
-        return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK).setBody(response)
-                .setHeaders(batchRequest.getHeaders());
+        return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK)
+                .setHeaders(batchRequest.getHeaders()).setBody(response);
     }
 }

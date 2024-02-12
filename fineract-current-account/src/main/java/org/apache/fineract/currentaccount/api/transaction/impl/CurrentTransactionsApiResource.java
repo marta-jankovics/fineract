@@ -18,11 +18,11 @@
  */
 package org.apache.fineract.currentaccount.api.transaction.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_IDENTIFIER_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_IDENTIFIER_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_IDENTIFIER_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_ID_TYPE_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_ID_TYPE_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_ID_TYPE_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_SUB_IDENTIFIER_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_SUB_IDENTIFIER_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_SUB_IDENTIFIER_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_DEPOSIT;
@@ -31,9 +31,9 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_RELEASE;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND_WITHDRAWAL;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_IDENTIFIER_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_IDENTIFIER_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_IDENTIFIER_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ID_TYPE_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ID_TYPE_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ID_TYPE_PARAM;
 
 import com.google.gson.JsonObject;
@@ -102,7 +102,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final DefaultToApiJsonSerializer<JsonObject> toApiJsonSerializer;
 
     @GET
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/template")
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/template")
     @Operation(operationId = "templateForCurrentTransaction", summary = "Retrieve Current Transaction Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
     @Override
@@ -113,7 +113,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/template")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/template")
     @Operation(operationId = "templateForCurrentTransaction", summary = "Retrieve Current Transaction Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
     @Override
@@ -125,7 +125,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX
             + "/transactions/template")
     @Operation(operationId = "templateForCurrentTransaction", summary = "Retrieve Current Transaction Template", description = "This is a convenience resource. It can be useful when building maintenance user interface screens for client applications. The template data returned consists of any or all of:\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
@@ -140,7 +140,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
@@ -152,7 +152,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
@@ -165,7 +165,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "retrieveAllCurrentTransactions", summary = "List current transactions/accounts", description = "Lists current transactions/accounts\n\n"
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
@@ -179,7 +179,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/1/transactions/1")
     @Override
@@ -191,7 +191,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_ID_TYPE_API_PARAM + "/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/1/transactions/1")
     @Override
@@ -204,7 +204,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/external-id/ExternalId1/transactions/1")
     @Override
@@ -217,8 +217,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_ID_TYPE_API_PARAM + "/"
-            + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/"
+            + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/external-id/ExternalId1/transactions/1")
     @Override
@@ -232,8 +232,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions/"
-            + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/iban/123456/S/transactions/1")
     @Override
@@ -247,8 +247,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @GET
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions/"
-            + TRANSACTION_ID_TYPE_API_PARAM + "/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentTransaction", summary = "Retrieve a current transaction/account", description = "Retrieves a current transaction/account\n\n"
             + "Example Requests :\n\n" + "current-accounts/iban/123456/S/transactions/1")
     @Override
@@ -263,7 +263,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "createCurrentTransaction", summary = "Deposit/Withdrawal/Hold Amount transaction API", description = "Deposit/Withdrawal/Hold Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n" + "current-accounts/1/transactions/?command=deposit\n\n"
             + "Accepted command = deposit, withdrawal, hold")
@@ -277,7 +277,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "createCurrentTransaction", summary = "Deposit/Withdrawal/Hold Amount transaction API", description = "Deposit/Withdrawal/Hold Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n" + "current-accounts/external-id/ExternalId1/transactions/?command=deposit\n\n"
             + "Accepted command = deposit, withdrawal, hold")
@@ -292,7 +292,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions")
     @Operation(operationId = "createCurrentTransaction", summary = "Deposit/Withdrawal/Hold Amount transaction API", description = "Deposit/Withdrawal/Hold Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n" + "current-accounts/external-id/ExternalId1/S/transactions/?command=deposit\n\n"
             + "Accepted command = deposit, withdrawal, hold")
@@ -309,7 +309,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n"
             + "current-accounts/{accountIdentifier}/transactions/{transactionIdentifier}?command=release\n\n"
@@ -324,7 +324,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_ID_TYPE_API_PARAM + "/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n" + "current-accounts/12345/transactions/external-id/ExternalId2?command=release\n\n"
             + "Accepted command = release")
@@ -339,7 +339,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n"
             + "current-accounts/external-id/ExternalId1/transactions/external-id/ExternalId2?command=release\n\n"
@@ -355,8 +355,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/" + TRANSACTION_ID_TYPE_API_PARAM + "/"
-            + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/"
+            + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n"
             + "current-accounts/external-id/ExternalId1/transactions/external-id/ExternalId2?command=release\n\n"
@@ -373,8 +373,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions/"
-            + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n"
             + "current-accounts/external-id/ExternalId1/S/transactions/external-id/ExternalId2?command=release\n\n"
@@ -391,8 +391,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions/"
-            + TRANSACTION_ID_TYPE_API_PARAM + "/" + TRANSACTION_IDENTIFIER_API_PARAM)
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX)
     @Operation(operationId = "actionOnCurrentTransaction", summary = "Release Amount transaction API", description = "Release Amount transaction API\n\n"
             + "Example Requests:\n\n" + "\n"
             + "current-accounts/external-id/ExternalId1/S/transactions/external-id/ExternalId2?command=release\n\n"
@@ -421,7 +421,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/query")
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/query")
     @Operation(operationId = "advancedQueryOnCurrentTransactions", summary = "Advanced search Current Account Transactions /account", description = "Example Requests:\n\n"
             + "current-accounts/1/transactions/query")
     @ApiResponses({
@@ -434,7 +434,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/transactions/query")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/query")
     @Operation(operationId = "advancedQueryOnCurrentTransactions", summary = "Advanced search Current Account Transactions /account", description = "Example Requests:\n\n"
             + "current-accounts/external-id/ExternalId1/transactions/query")
     @ApiResponses({
@@ -448,7 +448,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_PARAM + "/" + ACCOUNT_IDENTIFIER_API_PARAM + "/" + ACCOUNT_SUB_IDENTIFIER_API_PARAM + "/transactions/query")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/query")
     @Operation(operationId = "advancedQueryOnCurrentTransactions", summary = "Advanced search Current Account Transactions /account", description = "Example Requests:\n\n"
             + "current-accounts/external-id/ExternalId1/S/transactions/query")
     @ApiResponses({
