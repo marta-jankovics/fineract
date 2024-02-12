@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.currentaccount.data.account;
 
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -31,8 +30,6 @@ import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 @Data
 @AllArgsConstructor
 public class CurrentAccountBalanceData implements Serializable, ICurrentAccountBalance {
-
-    private static final long serialVersionUID = 1L;
 
     private final Long id;
     private final String accountId;
