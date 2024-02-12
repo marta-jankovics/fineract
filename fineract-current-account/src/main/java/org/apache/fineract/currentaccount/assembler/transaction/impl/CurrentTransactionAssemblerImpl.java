@@ -179,7 +179,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (!transactionType.isDebit() && !account.isBalancePersist(action)) {
             return null;
         }
-        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the transaction is persisted
+        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the transaction is
+                                                                            // persisted
         boolean applied = balance.applyTransaction(transaction);
         checkBalance(account, balance, transactionType, force);
         if (account.isBalancePersist(action)) {
@@ -201,7 +202,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         return balance;
     }
 
-    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance, CurrentTransactionType transactionType, boolean force) {
+    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance,
+            CurrentTransactionType transactionType, boolean force) {
         if (!transactionType.isDebit() || force) {
             return;
         }

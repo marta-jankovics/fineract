@@ -250,18 +250,17 @@ public class CommandStrategyProvider {
                 .resource("v1\\/datatables\\/" + ALPHANUMBERIC_WITH_UNDERSCORE_REGEX + "\\/query" + MANDATORY_QUERY_PARAM_REGEX).method(GET)
                 .build(), "getDatatableEntryByQueryCommandStrategy");
         commandStrategies.put(CommandContext.resource("v1\\/current-accounts").method(POST).build(), "createCurrentAccountCommandStrategy");
-        commandStrategies.put(
-                CommandContext.resource("v1\\/current-accounts" + MANDATORY_STRING_IDENTIFIER_PATH_PARAMS_REGEX + MANDATORY_QUERY_PARAM_REGEX).method(POST).build(),
-                "approveCurrentAccountCommandStrategy");
         commandStrategies.put(CommandContext
-                .resource(
-                        "v1\\/current-accounts" + MANDATORY_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions" + MANDATORY_QUERY_PARAM_REGEX)
+                .resource("v1\\/current-accounts" + MANDATORY_STRING_IDENTIFIER_PATH_PARAMS_REGEX + MANDATORY_QUERY_PARAM_REGEX)
+                .method(POST).build(), "approveCurrentAccountCommandStrategy");
+        commandStrategies.put(CommandContext.resource(
+                "v1\\/current-accounts" + MANDATORY_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions" + MANDATORY_QUERY_PARAM_REGEX)
                 .method(POST).build(), "currentAccountTransactionCommandStrategy");
-        commandStrategies.put(CommandContext
-                .resource("v1\\/current-accounts" + OPTIONAL_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions\\/query").method(POST).build(),
-                "currentTransactionAdvancedQueryCommandStrategy");
         commandStrategies.put(
-                CommandContext.resource("v1\\/current-accounts" + OPTIONAL_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/query").method(POST).build(),
-                "currentAccountAdvancedQueryCommandStrategy");
+                CommandContext.resource("v1\\/current-accounts" + OPTIONAL_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/transactions\\/query")
+                        .method(POST).build(),
+                "currentTransactionAdvancedQueryCommandStrategy");
+        commandStrategies.put(CommandContext.resource("v1\\/current-accounts" + OPTIONAL_STRING_IDENTIFIER_PATH_PARAMS_REGEX + "\\/query")
+                .method(POST).build(), "currentAccountAdvancedQueryCommandStrategy");
     }
 }
