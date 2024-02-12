@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.service.transaction.read.impl;
 
+import com.google.common.base.CaseFormat;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -73,9 +74,13 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
                     new ExternalId(transactionResolver.getIdentifier()));
         };
         if (transactionData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current transaction with %s: %s on account %s cannot be found",
-                    transactionResolver.getIdType(), transactionResolver.getIdType(), accountResolver.getIdType(),
-                    accountResolver.getIdentifier(), accountResolver.getSubIdentifier());
+            throw new PlatformResourceNotFoundException("current.transaction",
+                    "Current transaction with %s on account with %s cannot be found",
+                    CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, transactionResolver.getIdType().name()) + "="
+                            + transactionResolver.getIdentifier(),
+                    CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, accountResolver.getIdType().name()) + "="
+                            + accountResolver.getIdentifier()
+                            + (accountResolver.getSubIdentifier() != null ? "," + accountResolver.getSubIdentifier() : ""));
         }
         return transactionData;
     }

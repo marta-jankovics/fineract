@@ -111,7 +111,6 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     @Override
     public Map<String, Object> update(CurrentProduct product, JsonCommand command) {
         final Map<String, Object> actualChanges = new HashMap<>();
-
         final String localeAsInput = command.locale();
 
         if (command.isChangeInStringParameterNamed(NAME_PARAM, product.getName())) {

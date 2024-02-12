@@ -20,7 +20,6 @@ package org.apache.fineract.currentaccount.repository.account;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
@@ -31,8 +30,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAccountBalance, Long> {
-
-    Optional<CurrentAccountBalance> findByAccountId(String accountId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cab.id, cab.accountId, cab.accountBalance, "
             + "cab.holdAmount, cab.transactionId, ct.createdDate) FROM CurrentAccountBalance cab, CurrentTransaction ct "

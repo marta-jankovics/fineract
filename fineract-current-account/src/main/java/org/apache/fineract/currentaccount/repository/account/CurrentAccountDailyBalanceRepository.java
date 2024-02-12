@@ -20,8 +20,6 @@ package org.apache.fineract.currentaccount.repository.account;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountDailyBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,8 +29,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CurrentAccountDailyBalanceRepository extends JpaRepository<CurrentAccountDailyBalance, String> {
-
-    Optional<CurrentAccountBalance> findByAccountId(String accountId);
 
     @Query("select cadb from CurrentAccountDailyBalance cadb, "
             + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance cadb2 where cadb2.accountId = :accountId and cadb2.balanceDate < :date) maxdb "

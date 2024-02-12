@@ -60,9 +60,9 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
                     SUBMITTED_ON_DATE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
                     ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM));
 
-    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(LOCALE_PARAM,
-            ACCOUNT_NUMBER_PARAM, EXTERNAL_ID_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
-            ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM));
+    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
+            Arrays.asList(LOCALE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
+                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM));
 
     @Override
     public void validateForSubmit(final JsonCommand command) {
@@ -88,9 +88,31 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
             dataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
         }
 
-        validateExternalId(command, dataValidator);
-        validateMinimumRequiredBalanceParams(dataValidator, command);
-        validateOverdraftParams(dataValidator, command);
+        if (command.hasParameter(EXTERNAL_ID_PARAM)) {
+            final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
+            dataValidator.reset().parameter(EXTERNAL_ID_PARAM).value(externalId).notExceedingLengthOf(100);
+        }
+
+        if (command.hasParameter(ALLOW_FORCE_TRANSACTION_PARAM)) {
+            final Boolean allowForceTransactions = command.booleanObjectValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
+            dataValidator.reset().parameter(ALLOW_FORCE_TRANSACTION_PARAM).value(allowForceTransactions).notNull();
+        }
+
+        if (command.hasParameter(MINIMUM_REQUIRED_BALANCE_PARAM)) {
+            final BigDecimal minimumRequiredBalance = command
+                    .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
+        }
+
+        if (command.hasParameter(ALLOW_OVERDRAFT_PARAM)) {
+            final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+            dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
+
+            if (allowOverdraft) {
+                final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
+                dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+            }
+        }
 
         dataValidator.throwValidationErrors();
     }
@@ -105,15 +127,27 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
-        if (command.parameterExists(ACCOUNT_NUMBER_PARAM)) {
-            final String accountNumber = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
-            dataValidator.reset().parameter(ACCOUNT_NUMBER_PARAM).value(accountNumber).notBlank().notExceedingLengthOf(50);
+        if (command.isChangeInBooleanParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM, account.isAllowForceTransaction())) {
+            final Boolean allowForceTransactions = command.booleanObjectValueOfParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM);
+            dataValidator.reset().parameter(ALLOW_FORCE_TRANSACTION_PARAM).value(allowForceTransactions).notNull();
         }
 
-        validateExternalId(command, dataValidator);
+        if (command.isChangeInBigDecimalParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM, account.getMinimumRequiredBalance())) {
+            final BigDecimal minimumRequiredBalance = command
+                    .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
+        }
 
-        validateMinimumRequiredBalanceParams(dataValidator, command);
-        validateOverdraftParams(dataValidator, command);
+        boolean allowOverdraft = account.isAllowOverdraft();
+        if (command.isChangeInBooleanParameterNamed(ALLOW_OVERDRAFT_PARAM, account.isAllowOverdraft())) {
+            allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+            dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
+        }
+
+        if (allowOverdraft) {
+            final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
+            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+        }
 
         dataValidator.throwValidationErrors();
     }
@@ -133,26 +167,6 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         validateAccountAction(command);
     }
 
-    private void validateOverdraftParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
-        if (command.parameterExists(ALLOW_OVERDRAFT_PARAM)) {
-            final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
-            baseDataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
-
-            if (allowOverdraft) {
-                final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-                baseDataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
-            }
-        }
-    }
-
-    private void validateMinimumRequiredBalanceParams(final DataValidatorBuilder baseDataValidator, final JsonCommand command) {
-        if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
-            final BigDecimal minimumRequiredBalance = command
-                    .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
-            baseDataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
-        }
-    }
-
     private void validateAccountAction(JsonCommand command) {
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
@@ -164,17 +178,10 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
 
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_ACCOUNT_RESOURCE_NAME);
 
-        final LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
-        dataValidator.reset().parameter(ACTION_DATE_PARAM).value(cancelledOnDate).ignoreIfNull()
+        final LocalDate actionDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
+        dataValidator.reset().parameter(ACTION_DATE_PARAM).value(actionDate).ignoreIfNull()
                 .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
 
         dataValidator.throwValidationErrors();
-    }
-
-    private static void validateExternalId(JsonCommand command, DataValidatorBuilder baseDataValidator) {
-        if (command.parameterExists(EXTERNAL_ID_PARAM)) {
-            final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
-            baseDataValidator.reset().parameter(EXTERNAL_ID_PARAM).value(externalId).notExceedingLengthOf(100);
-        }
     }
 }

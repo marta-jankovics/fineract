@@ -71,4 +71,9 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     @QueryHints({ @QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000") })
     @Query("SELECT ca FROM CurrentAccount ca WHERE ca.id = :id")
     Optional<CurrentAccount> findAccountByIdWithExclusiveLock(@Param("id") String id);
+
+    @Query("SELECT 1 FROM CurrentAccount ca WHERE ca.productId = :productId")
+    boolean accountsExistsForProduct(@Param("productId") String productId);
+
+    boolean existsByProductId(String productId);
 }

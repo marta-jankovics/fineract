@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.repository.transaction;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
@@ -34,8 +35,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, String> {
-
-    CurrentTransaction getByExternalId(ExternalId externalId);
 
     String getIdByExternalId(ExternalId externalId);
 
@@ -67,16 +66,9 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     List<CurrentTransaction> getTransactionsFromSorted(@Param("accountId") String accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime);
 
-    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate <= :tillDateTime")
-    List<CurrentTransaction> getTransactionsTill(@Param("accountId") String accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
-
     @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate <= :tillDateTime ORDER By t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsTillSorted(@Param("accountId") String accountId,
             @Param("tillDateTime") OffsetDateTime tillDateTime);
-
-    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime")
-    List<CurrentTransaction> getTransactionsFromAndTill(@Param("accountId") String accountId,
-            @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
     @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsFromAndTillSorted(@Param("accountId") String accountId,
@@ -96,4 +88,8 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
 
     @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsSorted(@Param("accountId") String accountId);
+
+    boolean existsByTransactionTypeAndReferenceId(CurrentTransactionType currentTransactionType, String referenceId);
+
+    Optional<CurrentTransaction> findByIdAndAccountId(String id, String accountId);
 }

@@ -99,9 +99,9 @@
                                  constraintName="FK_m_current_transaction_payment_type_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_payment_type" validate="true"/>
-<!--        <addForeignKeyConstraint baseColumnNames="reference_id" baseTableName="m_current_transaction"-->
-<!--                                 constraintName="FK_m_current_transaction_reference_id" deferrable="false" initiallyDeferred="false"-->
-<!--                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"-->
-<!--                                 referencedTableName="m_current_transaction" validate="true"/>-->
+        <addForeignKeyConstraint baseColumnNames="reference_id" baseTableName="m_current_transaction"
+                                 constraintName="FK_m_current_transaction_reference_id" deferrable="false" initiallyDeferred="false"
+                                 onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
+                                 referencedTableName="m_current_transaction" validate="true"/>
     </changeSet>
 </databaseChangeLog>

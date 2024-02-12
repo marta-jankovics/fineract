@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.exception.transaction.CurrentTransactionNotFoundException;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
@@ -138,8 +137,10 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(TRANSACTION_AMOUNT_RELEASE);
 
-        final CurrentTransaction holdTransaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new CurrentTransactionNotFoundException(accountId, transactionId));
+        final CurrentTransaction holdTransaction = transactionRepository.findByIdAndAccountId(transactionId, accountId)
+                .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
+                        "Current transaction with id: %s and account id: %s", transactionId, accountId));
+
         final Map<String, Object> changes = new LinkedHashMap<>();
         final CurrentTransaction releaseTransaction = transactionAssembler.release(account, holdTransaction, changes);
 

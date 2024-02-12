@@ -23,12 +23,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.assembler.product.CurrentProductAssembler;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.product.write.CurrentProductWriteService;
 import org.apache.fineract.currentaccount.validator.product.CurrentProductDataValidator;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
+import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CurrentProductWriteServiceImpl implements CurrentProductWriteService {
 
     private final CurrentProductRepository currentProductRepository;
+    private final CurrentAccountRepository currentAccountRepository;
     private final CurrentProductDataValidator currentProductDataValidator;
     private final CurrentProductAssembler currentProductAssembler;
 
@@ -73,6 +76,11 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
         if (!this.currentProductRepository.existsById(productId)) {
             throw new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found",
                     productId);
+        }
+        boolean existsAccounts = this.currentAccountRepository.existsByProductId(productId);
+        if (existsAccounts) {
+            throw new GeneralPlatformDomainRuleException("error.msg.product.cannot.be.deleted",
+                    "Current product cannot be deleted: an account already exists");
         }
         this.currentProductRepository.deleteById(productId);
         return new CommandProcessingResultBuilder() //

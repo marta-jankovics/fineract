@@ -24,7 +24,6 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ACCOUNT_NUMBER_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
 
@@ -49,7 +48,10 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, TRANSACTION_AMOUNT_PARAM, PAYMENT_TYPE_ID_PARAM,
-                    TRANSACTION_ACCOUNT_NUMBER_PARAM, CURRENCY_CODE_PARAM, DATATABLES_PARAM));
+                    CURRENCY_CODE_PARAM, DATATABLES_PARAM));
+
+    protected static final Set<String> CURRENT_ACCOUNT_RELEASE_TRANSACTION_DATA_PARAMETERS = new HashSet<>(
+            Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM));
 
     @Override
     public void validateDeposit(JsonCommand command) {
@@ -70,8 +72,17 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
     public void validateRelease(JsonCommand command) {
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_TRANSACTION_RESOURCE_NAME);
 
+        final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
+        command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_ACCOUNT_RELEASE_TRANSACTION_DATA_PARAMETERS);
+
         final String holdTransactionId = command.getTransactionId();
         dataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
+
+        if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
+            final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);
+            dataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
+                    .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
+        }
 
         dataValidator.throwValidationErrors();
     }
@@ -89,7 +100,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
             final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);
             dataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
-                    .validateDateForEqual(DateUtils.getBusinessLocalDate());
+                    .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
         }
 
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_AMOUNT_PARAM);

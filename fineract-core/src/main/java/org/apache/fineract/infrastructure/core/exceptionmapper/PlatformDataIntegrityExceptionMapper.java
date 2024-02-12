@@ -43,17 +43,33 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMapper, ExceptionMapper<PlatformDataIntegrityException> {
 
-    @Override
-    public Response toResponse(final PlatformDataIntegrityException exception) {
-        log.warn("Exception: {}, Message: {}", exception.getClass().getName(), exception.getMessage());
-        String message = exception.getDefaultUserMessage();
-        // TODO: extract?
+    private static final String GENERIC_MESSAGE = "Something went wrong...";
+
+    private static String checkForUniqueConstraintError(PlatformDataIntegrityException exception, String originalExceptionMessage) {
+        String message = originalExceptionMessage;
         if (exception.getMessage().contains("duplicate key value violates unique constraint")) {
             String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
             String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") already exists");
             message = "Duplicate entry '" + entry + "' for key '" + key + "'";
         } else if (exception.getMessage().contains("Duplicate entry")) {
             message = "Duplicate entry" + StringUtils.substringBetween(exception.getMessage(), "Duplicate entry", "\nError Code");
+        }
+        return message;
+    }
+
+    @Override
+    public Response toResponse(final PlatformDataIntegrityException exception) {
+        log.warn("Exception: {}, Message: {}", exception.getClass().getName(), exception.getMessage());
+        String originalExceptionMessage = exception.getDefaultUserMessage();
+        // TODO: extract?
+        String message = checkForUniqueConstraintError(exception, originalExceptionMessage);
+
+        if (message.equals(originalExceptionMessage)) {
+            message = checkForForeignConstraintError(exception, originalExceptionMessage);
+        }
+        // This must be last one!
+        if (message.equals(originalExceptionMessage)) {
+            message = GENERIC_MESSAGE;
         }
         final ApiGlobalErrorResponse dataIntegrityError = ApiGlobalErrorResponse.dataIntegrityError(exception.getGlobalisationMessageCode(),
                 message, exception.getParameterName(), exception.getDefaultUserMessageArgs());
@@ -64,5 +80,15 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
     @Override
     public int errorCode() {
         return 3001;
+    }
+
+    private String checkForForeignConstraintError(PlatformDataIntegrityException exception, String originalExceptionMessage) {
+        String message = originalExceptionMessage;
+        if (exception.getMessage().contains("violates foreign key constraint")) {
+            message = "Reference entry still exists!";
+        } else if (exception.getMessage().contains("a foreign key constraint fails")) {
+            message = "Reference entry still exists!";
+        }
+        return message;
     }
 }

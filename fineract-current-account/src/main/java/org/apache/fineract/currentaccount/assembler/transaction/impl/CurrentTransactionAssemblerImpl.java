@@ -105,6 +105,18 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         ExternalId externalId = externalIdFactory.create();
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 
+        if (!holdTransaction.getTransactionType().isAmountOnHold()) {
+            throw new GeneralPlatformDomainRuleException("error.msg.release.amount.transaction",
+                    "Only a hold transaction can be released!");
+        }
+        final boolean isAlreadyReleased = currentTransactionRepository
+                .existsByTransactionTypeAndReferenceId(CurrentTransactionType.AMOUNT_RELEASE, holdTransaction.getId());
+
+        if (isAlreadyReleased) {
+            throw new GeneralPlatformDomainRuleException("error.msg.hold.transaction.is.already.released",
+                    "Release cannot be performed: It was already released");
+        }
+
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY),
                 holdTransaction.getId(), holdTransaction.getPaymentTypeId(), AMOUNT_RELEASE, actualDate, actualDate,
                 holdTransaction.getAmount());
