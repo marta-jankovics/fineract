@@ -29,17 +29,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.service.MathUtil;
 
 @Entity
 @Getter
@@ -47,7 +46,7 @@ import org.apache.fineract.infrastructure.core.service.MathUtil;
 @Table(name = "m_current_account", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "account_no" }, name = "m_current_account_account_no_key"),
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_account_external_id_key") })
-public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<String> {
+public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<String> implements ICurrentAccount {
 
     @Id
     @GeneratedValue(generator = "nanoIdSequence")
@@ -150,13 +149,8 @@ public class CurrentAccount extends AbstractAuditableWithUTCDateTimeCustom<Strin
         this.balanceCalculationType = balanceCalculationType;
     }
 
-    public BigDecimal getAvailableBalance(@NotNull BigDecimal available, boolean addOverdraft) {
-        BigDecimal minimumRequiredBalance = getMinimumRequiredBalance();
-        available = MathUtil.subtract(available, minimumRequiredBalance);
-        if (!addOverdraft || !isAllowOverdraft() || !MathUtil.isEmpty(minimumRequiredBalance)) {
-            return available;
-        }
-        BigDecimal overdraftLimit = getOverdraftLimit();
-        return overdraftLimit == null ? null : MathUtil.add(available, overdraftLimit);
+    public void setNextStatus(CurrentAccountAction action) {
+        checkEnabled(action);
+        setStatus(status.getNextStatus(action));
     }
 }

@@ -20,13 +20,17 @@ package org.apache.fineract.currentaccount.service.account.read;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import org.apache.fineract.currentaccount.data.account.BalanceCalculationData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 
 public interface CurrentAccountBalanceReadService {
 
+    @NotNull
     OffsetDateTime getBalanceCalculationTill();
 
-    CurrentAccountBalanceData getBalance(@NotNull String accountId);
+    @NotNull
+    CurrentAccountBalanceData getCurrentBalance(@NotNull String accountId);
 
-    CurrentAccountBalanceData getBalance(@NotNull String accountId, OffsetDateTime tillDateTime);
+    @NotNull
+    BalanceCalculationData calculateBalance(@NotNull String accountId, OffsetDateTime delayDateTime);
 }

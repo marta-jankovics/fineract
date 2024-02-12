@@ -58,7 +58,15 @@ public enum BalanceCalculationType {
         return this == STRICT;
     }
 
-    public boolean isStrict(@NotNull CurrentTransactionType transactionType) {
+    public boolean hasDelay(@NotNull CurrentAccountAction action) {
+        return switch (this) {
+            case LAZY -> action != CLOSE;
+            case STRICT_DEBIT -> isPersist(action);
+            case STRICT -> false;
+        };
+    }
+
+    public boolean isPersist(@NotNull CurrentTransactionType transactionType) {
         return switch (this) {
             case LAZY -> false;
             case STRICT_DEBIT -> transactionType.isDebit();
@@ -66,8 +74,11 @@ public enum BalanceCalculationType {
         };
     }
 
-    public boolean isStrict(@NotNull CurrentAccountAction action) {
+    public boolean isPersist(@NotNull CurrentAccountAction action) {
         CurrentTransactionType transactionType = action.getTransactionType();
-        return transactionType == null ? (action == CLOSE || action == BALANCE_CALCULATION) : isStrict(transactionType);
+        if (transactionType != null) {
+            return isPersist(transactionType);
+        }
+        return action == CLOSE || action == BALANCE_CALCULATION;
     }
 }

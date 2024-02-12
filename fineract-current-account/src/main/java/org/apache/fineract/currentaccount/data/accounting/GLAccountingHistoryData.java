@@ -33,5 +33,5 @@ public class GLAccountingHistoryData implements Serializable {
     private final String accountId;
     private final BigDecimal accountBalance;
     private final OffsetDateTime calculatedTill;
-    private final String calculatedTillTransactionId;
+    private final String transactionId;
 }

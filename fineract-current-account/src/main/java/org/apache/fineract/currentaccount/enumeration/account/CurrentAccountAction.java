@@ -34,7 +34,9 @@ import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.
 import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_WITHDRAWAL;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -67,9 +69,12 @@ public enum CurrentAccountAction {
         return BY_ACTION_NAME.get(actionName);
     }
 
+    public static CurrentAccountAction forTransactionType(CurrentTransactionType transactionType) {
+        return Arrays.stream(VALUES).filter(e -> e.getTransactionType() == transactionType).findFirst().orElse(null);
+    }
+
     public boolean isTransaction() {
-        // TODO: Remove this magic...
-        return ordinal() >= TRANSACTION_DEPOSIT.ordinal();
+        return getTransactionType() != null;
     }
 
     public CurrentTransactionType getTransactionType() {
@@ -84,5 +89,9 @@ public enum CurrentAccountAction {
 
     public boolean isForce() {
         return this == TRANSACTION_FORCE_WITHDRAWAL;
+    }
+
+    public static List<CurrentAccountAction> getFiltered(Predicate<? super CurrentAccountAction> predicate) {
+        return Arrays.stream(VALUES).filter(predicate).toList();
     }
 }

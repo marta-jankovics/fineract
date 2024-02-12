@@ -31,10 +31,10 @@ import org.springframework.stereotype.Repository;
 public interface AccountIdentifierRepository extends JpaRepository<AccountIdentifier, Long> {
 
     @Query("SELECT ai.accountId FROM AccountIdentifier ai WHERE ai.accountType = :accountType AND ai.identifierType = :idType AND ai.value = :id AND ai.subValue = :subId")
-    String fetchAccountIdByIdTypeAndId(@Param("accountType") PortfolioAccountType accountType,
+    String getAccountIdByIdTypeAndIdentifier(@Param("accountType") PortfolioAccountType accountType,
             @Param("idType") InteropIdentifierType idType, @Param("id") String id, @Param("subId") String subId);
 
     @Query("SELECT ai FROM AccountIdentifier ai WHERE ai.accountType = :accountType AND ai.accountId = :accountId")
-    List<AccountIdentifier> retrieveAccountIdentifiers(@Param("accountType") PortfolioAccountType accountType,
+    List<AccountIdentifier> getAccountIdentifiers(@Param("accountType") PortfolioAccountType accountType,
             @Param("accountId") String accountId);
 }

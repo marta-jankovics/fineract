@@ -77,7 +77,8 @@ public interface CurrentProductResponseDataMapper {
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentProductData currentProductData) {
         return new CurrencyData(currentProductData.getCurrencyCode(), currentProductData.getCurrencyName(),
-                currentProductData.getCurrencyDigitsAfterDecimal(), currentProductData.getCurrencyInMultiplesOf(), currentProductData.getCurrencyDisplaySymbol(), null);
+                currentProductData.getCurrencyDigitsAfterDecimal(), currentProductData.getCurrencyInMultiplesOf(),
+                currentProductData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("accountingType")

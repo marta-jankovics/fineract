@@ -22,6 +22,11 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.TRANSACTION_AMOUNT_RELEASE;
+import static org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType.AMOUNT_HOLD;
+import static org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType.AMOUNT_RELEASE;
+import static org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType.DEPOSIT;
+import static org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType.WITHDRAWAL;
 import static org.apache.fineract.infrastructure.core.filters.CorrelationHeaderFilter.CORRELATION_ID_KEY;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_TRANSACTION;
@@ -35,18 +40,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.commands.exception.UnsupportedCommandException;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.transaction.CurrentTransactionAssembler;
+import org.apache.fineract.currentaccount.data.account.BalanceCalculationData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
+import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.jetbrains.annotations.NotNull;
@@ -60,6 +72,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
     private final CurrentProductRepository currentProductRepository;
     private final CurrentTransactionRepository currentTransactionRepository;
+    private final CurrentAccountBalanceReadService accountBalanceReadService;
+    private final CurrentAccountBalanceWriteService accountBalanceWriteService;
 
     @Override
     public CurrentTransaction assemble(JsonCommand command) {
@@ -73,17 +87,17 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     @Override
     public CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
-        return assemble(command, account, CurrentTransactionType.DEPOSIT);
+        return assemble(command, account, DEPOSIT, false);
     }
 
     @Override
-    public CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
-        return assemble(command, account, CurrentTransactionType.WITHDRAWAL);
+    public CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes, boolean force) {
+        return assemble(command, account, WITHDRAWAL, force);
     }
 
     @Override
     public CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
-        return assemble(command, account, CurrentTransactionType.AMOUNT_HOLD);
+        return assemble(command, account, AMOUNT_HOLD, false);
     }
 
     @Override
@@ -92,13 +106,18 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY),
-                holdTransaction.getId(), holdTransaction.getPaymentTypeId(), CurrentTransactionType.AMOUNT_RELEASE, actualDate, actualDate,
+                holdTransaction.getId(), holdTransaction.getPaymentTypeId(), AMOUNT_RELEASE, actualDate, actualDate,
                 holdTransaction.getAmount());
+
+        account.setNextStatus(TRANSACTION_AMOUNT_RELEASE);
+        handleBalance(account, transaction, false, TRANSACTION_AMOUNT_RELEASE);
+
         return currentTransactionRepository.save(transaction);
     }
 
     @NotNull
-    private CurrentTransaction assemble(JsonCommand command, CurrentAccount account, CurrentTransactionType deposit) {
+    private CurrentTransaction assemble(JsonCommand command, CurrentAccount account, CurrentTransactionType transactionType,
+            boolean force) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
         final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
@@ -110,15 +129,22 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         LocalDate submittedOnDate = DateUtils.getBusinessLocalDate();
 
         CurrentTransaction transaction = CurrentTransaction.newInstance(account.getId(), externalId, MDC.get(CORRELATION_ID_KEY), null,
-                paymentTypeId, deposit, transactionDate, submittedOnDate, transactionAmount);
+                paymentTypeId, transactionType, transactionDate, submittedOnDate, transactionAmount);
 
         String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         validateTransaction(account, transaction, currencyCode);
 
+        CurrentAccountAction action = CurrentAccountAction.forTransactionType(transactionType);
+        if (action == null) {
+            throw new GeneralPlatformDomainRuleException("error.msg.current.action.not.allowed",
+                    "Current Account action is not allowed on transaction " + transactionType);
+        }
+
+        account.setNextStatus(action);
+        handleBalance(account, transaction, force, action);
+
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
-            // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
-            // caller to do it beforehand is not enough...
             transaction = currentTransactionRepository.saveAndFlush(transaction);
             persistDatatableEntries(CURRENT_TRANSACTION, transaction.getId(), datatables, false, readWriteNonCoreDataService);
         } else {
@@ -139,5 +165,53 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
             }
         }
         dataValidator.throwValidationErrors();
+    }
+
+    private BalanceCalculationData calculateBalance(@NotNull CurrentAccount account, @NotNull CurrentAccountAction action) {
+        boolean hasDelay = account.hasBalanceDelay(action);
+        return accountBalanceReadService.calculateBalance(account.getId(),
+                hasDelay ? accountBalanceReadService.getBalanceCalculationTill() : null);
+    }
+
+    private BalanceCalculationData handleBalance(@NotNull CurrentAccount account, @NotNull CurrentTransaction transaction, boolean force,
+            @NotNull CurrentAccountAction action) {
+        CurrentTransactionType transactionType = transaction.getTransactionType();
+        if (!transactionType.isDebit() && !account.isBalancePersist(action)) {
+            return null;
+        }
+        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the new transaction is
+                                                                            // persisted
+        checkBalance(account, balance, transaction.getAmount(), transactionType, force);
+        if (account.isBalancePersist(action)) {
+            CurrentAccountBalanceData balanceData;
+            boolean hasDelay = account.hasBalanceDelay(action);
+            if (hasDelay) {
+                balanceData = balance.getDelayData();
+            } else {
+                transaction = currentTransactionRepository.saveAndFlush(transaction);
+                balance.applyTransaction(transaction);
+                balanceData = balance.getTotalData();
+            }
+            if (balanceData.isChanged()) {
+                accountBalanceWriteService.saveBalance(balanceData);
+            }
+        }
+        return balance;
+    }
+
+    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance, BigDecimal transactionAmount,
+            CurrentTransactionType transactionType, boolean force) {
+        if (!transactionType.isDebit() || force) {
+            return;
+        }
+        // TODO CURRENT! add context information id, balance..
+        BigDecimal accountBalance = MathUtil.subtract(balance.getAccountBalance(), transactionAmount);
+        if (MathUtil.isLessThanZero(accountBalance) && !account.isAllowOverdraft()) {
+            throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
+        }
+        BigDecimal availableBalance = account.getAvailableBalance(balance.getAvailableBalance(), true);
+        if (MathUtil.isLessThanZero(availableBalance)) {
+            throw new GeneralPlatformDomainRuleException("error.msg.available.balance.violated", "Violated available balance!");
+        }
     }
 }

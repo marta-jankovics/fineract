@@ -33,6 +33,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandProcessingService;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.infrastructure.accountnumberformat.domain.AccountNumberFormat;
 import org.apache.fineract.infrastructure.accountnumberformat.domain.AccountNumberFormatRepositoryWrapper;
 import org.apache.fineract.infrastructure.accountnumberformat.domain.EntityAccountType;
@@ -124,6 +126,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
     private final BusinessEventNotifierService businessEventNotifierService;
     private final EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService;
     private final ExternalIdFactory externalIdFactory;
+    private final CurrentAccountRepository currentAccountRepository;
 
     @Transactional
     @Override
@@ -873,14 +876,17 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                 }
             }
             final List<SavingsAccount> clientSavingAccounts = this.savingsRepositoryWrapper.findSavingAccountByClientId(clientId);
-
             for (final SavingsAccount saving : clientSavingAccounts) {
                 if (saving.isActive() || saving.isSubmittedAndPendingApproval() || saving.isApproved()) {
                     final String errorMessage = "Client cannot be closed because of non-closed savings account.";
                     throw new InvalidClientStateTransitionException("close", "non-closed.savings.account", errorMessage);
                 }
             }
-
+            if (currentAccountRepository.hasAccountInStatusByClient(clientId,
+                    CurrentAccountStatus.getFiltered(CurrentAccountStatus::isOpen))) {
+                final String errorMessage = "Client cannot be closed because of non-closed current account.";
+                throw new InvalidClientStateTransitionException("close", "non-closed.current.account", errorMessage);
+            }
             client.close(currentUser, closureReason, closureDate);
             this.clientRepository.saveAndFlush(client);
             return new CommandProcessingResultBuilder() //

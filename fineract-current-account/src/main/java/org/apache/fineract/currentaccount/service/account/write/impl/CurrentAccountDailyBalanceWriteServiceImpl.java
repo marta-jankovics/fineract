@@ -46,9 +46,6 @@ public class CurrentAccountDailyBalanceWriteServiceImpl implements CurrentAccoun
                 ? currentTransactionRepository.getTransactionsSubmittedTo(accountId, balanceDate, types)
                 : currentTransactionRepository.getTransactionsSubmittedFromTo(accountId, latestBalance.getBalanceDate(), balanceDate,
                         types);
-        if (transactions.isEmpty()) {
-            return;
-        }
         BigDecimal accountBalance = latestBalance == null ? BigDecimal.ZERO : latestBalance.getAccountBalance();
         BigDecimal holdAmount = latestBalance == null ? BigDecimal.ZERO : latestBalance.getHoldAmount();
         CurrentAccountDailyBalance balance = new CurrentAccountDailyBalance(accountId, accountBalance, holdAmount, balanceDate);

@@ -23,12 +23,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.Data;
 import org.apache.fineract.accounting.common.AccountingRuleType;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccount;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
-public class CurrentAccountData implements Serializable {
+public class CurrentAccountData implements ICurrentAccount, Serializable {
 
     // Current account data
     private final String id;
@@ -44,9 +45,9 @@ public class CurrentAccountData implements Serializable {
     private final AccountingRuleType accountingRuleType;
     private final CurrentAccountStatus status;
     private final LocalDate activatedOnDate;
-    private final Boolean allowOverdraft;
+    private final boolean allowOverdraft;
     private final BigDecimal overdraftLimit;
-    private final Boolean allowForceTransaction;
+    private final boolean allowForceTransaction;
     private final BigDecimal minimumRequiredBalance;
     private final BalanceCalculationType balanceCalculationType;
 
@@ -57,5 +58,4 @@ public class CurrentAccountData implements Serializable {
     // Currency data
     private final String currencyName;
     private final String currencyDisplaySymbol;
-
 }

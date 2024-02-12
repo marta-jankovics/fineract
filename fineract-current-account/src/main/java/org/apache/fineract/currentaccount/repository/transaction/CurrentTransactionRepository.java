@@ -44,41 +44,56 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt "
             + "WHERE t.accountId = :accountId AND t.id = :transactionId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
-    CurrentTransactionData getTransaction(@Param("accountId") String accountId, @Param("transactionId") String transactionId);
+    CurrentTransactionData getTransactionDataById(@Param("accountId") String accountId, @Param("transactionId") String transactionId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt "
             + "WHERE t.accountId = :accountId AND t.externalId = :externalId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
-    CurrentTransactionData getTransactionData(@Param("accountId") String accountId, @Param("externalId") ExternalId externalId);
+    CurrentTransactionData getTransactionDataByExternalId(@Param("accountId") String accountId, @Param("externalId") ExternalId externalId);
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t, ApplicationCurrency curr, CurrentAccount ca, CurrentProduct cp, PaymentType pt "
             + "WHERE t.accountId = :accountId AND ca.id = t.accountId AND ca.productId = cp.id AND curr.code = cp.currency.code AND pt.id = t.paymentTypeId")
-    Page<CurrentTransactionData> getTransactionDataPage(@Param("accountId") String accountId, Pageable pageable);
+    Page<CurrentTransactionData> getTransactionsDataPage(@Param("accountId") String accountId, Pageable pageable);
 
-    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime ORDER BY t.createdDate, t.id")
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime")
     List<CurrentTransaction> getTransactionsFrom(@Param("accountId") String accountId, @Param("fromDateTime") OffsetDateTime fromDateTime);
 
-    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate <= :tillDateTime ORDER By t.createdDate, t.id")
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime ORDER BY t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsFromSorted(@Param("accountId") String accountId,
+            @Param("fromDateTime") OffsetDateTime fromDateTime);
+
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate <= :tillDateTime")
     List<CurrentTransaction> getTransactionsTill(@Param("accountId") String accountId, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
-    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate <= :tillDateTime ORDER By t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsTillSorted(@Param("accountId") String accountId,
+            @Param("tillDateTime") OffsetDateTime tillDateTime);
+
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime")
     List<CurrentTransaction> getTransactionsFromAndTill(@Param("accountId") String accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate <= :toDate and t.transactionType in :types order by t.createdDate, t.id")
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.createdDate > :fromDateTime AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsFromAndTillSorted(@Param("accountId") String accountId,
+            @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
+
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate <= :toDate and t.transactionType in :types")
     List<CurrentTransaction> getTransactionsSubmittedTo(@Param("accountId") String accountId, @Param("toDate") LocalDate toDate,
             @Param("types") List<CurrentTransactionType> types);
 
     @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate > :fromDate and t.submittedOnDate <= :toDate "
-            + "and t.transactionType in :types order by t.createdDate, t.id")
+            + "and t.transactionType in :types")
     List<CurrentTransaction> getTransactionsSubmittedFromTo(@Param("accountId") String accountId, @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId")
     List<CurrentTransaction> getTransactions(@Param("accountId") String accountId);
+
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsSorted(@Param("accountId") String accountId);
 }

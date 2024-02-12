@@ -72,7 +72,7 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
 
     @Override
     public void createGLEntries(String accountId, OffsetDateTime tillDateTime) {
-        CurrentAccountData currentAccountData = currentAccountRepository.findCurrentAccountDataById(accountId);
+        CurrentAccountData currentAccountData = currentAccountRepository.getAccountDataById(accountId);
         if (!currentAccountData.getAccountingRuleType().equals(AccountingRuleType.CASH_BASED)) {
             return;
         }
@@ -84,16 +84,15 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
         List<CurrentTransaction> transactionList;
         // TODO CURRENT! no need to load the transactions
         if (accountingHistory.isNew()) {
-            transactionList = allStrict ? currentTransactionRepository.getTransactions(accountId)
-                    : currentTransactionRepository.getTransactionsTill(accountId, tillDateTime);
+            transactionList = allStrict ? currentTransactionRepository.getTransactionsSorted(accountId)
+                    : currentTransactionRepository.getTransactionsTillSorted(accountId, tillDateTime);
         } else {
-            CurrentTransaction currentTransaction = currentTransactionRepository
-                    .findById(accountingHistory.getCalculatedTillTransactionId())
+            CurrentTransaction currentTransaction = currentTransactionRepository.findById(accountingHistory.getTransactionId())
                     .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
-                            "Current transaction with id {} does not found", accountingHistory.getCalculatedTillTransactionId()));
+                            "Current transaction with id {} does not found", accountingHistory.getTransactionId()));
             OffsetDateTime createdDateTime = currentTransaction.getCreatedDateTime();
-            transactionList = allStrict ? currentTransactionRepository.getTransactionsFrom(accountId, createdDateTime)
-                    : currentTransactionRepository.getTransactionsFromAndTill(accountId, createdDateTime, tillDateTime);
+            transactionList = allStrict ? currentTransactionRepository.getTransactionsFromSorted(accountId, createdDateTime)
+                    : currentTransactionRepository.getTransactionsFromAndTillSorted(accountId, createdDateTime, tillDateTime);
         }
 
         Office office = officeRepository.getReferenceById(currentAccountData.getOfficeId());
@@ -101,7 +100,7 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
             // TODO CURRENT! could be already filtered for allowed transaction types
             if (transaction.getTransactionType().isMonetary()) {
                 createJournalEntryForTransaction(office, currentAccountData, transaction, accountingHistory);
-                accountingHistory.setCalculatedTillTransactionId(transaction.getId());
+                accountingHistory.setTransactionId(transaction.getId());
                 accountingHistory.setAccountBalance(calculateBalance(accountingHistory, transaction));
             }
         });

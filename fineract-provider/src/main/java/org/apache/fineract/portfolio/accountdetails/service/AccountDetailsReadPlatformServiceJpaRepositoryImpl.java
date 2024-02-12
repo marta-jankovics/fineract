@@ -90,7 +90,7 @@ public class AccountDetailsReadPlatformServiceJpaRepositoryImpl implements Accou
 
         final List<CurrentAccountResponseData> currentAccount = currentAccountResponseDataMapper.map(
                 currentAccountReadService.retrieveAllByClientId(clientId, Sort.by("createdDate")),
-                currentAccountBalanceReadService::getBalance);
+                currentAccountBalanceReadService::getCurrentBalance);
         return new AccountSummaryCollectionData(loanAccounts, glimAccounts, savingsAccounts, shareAccounts, guarantorloanAccounts,
                 currentAccount);
     }

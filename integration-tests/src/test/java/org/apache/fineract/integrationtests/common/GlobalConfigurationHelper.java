@@ -119,11 +119,10 @@ public class GlobalConfigurationHelper {
         ArrayList<HashMap> expectedGlobalConfigurations = getAllDefaultGlobalConfigurations();
         ArrayList<HashMap> actualGlobalConfigurations = getAllGlobalConfigurations(requestSpec, responseSpec);
 
-        Assertions.assertEquals(61, expectedGlobalConfigurations.size());
-        Assertions.assertEquals(61, actualGlobalConfigurations.size());
+        Assertions.assertEquals(62, expectedGlobalConfigurations.size());
+        Assertions.assertEquals(62, actualGlobalConfigurations.size());
 
         for (int i = 0; i < expectedGlobalConfigurations.size(); i++) {
-
             HashMap expectedGlobalConfiguration = expectedGlobalConfigurations.get(i);
             HashMap actualGlobalConfiguration = actualGlobalConfigurations.get(i);
 
@@ -605,6 +604,14 @@ public class GlobalConfigurationHelper {
         nextPaymentDateConfigForLoan.put("enabled", false);
         nextPaymentDateConfigForLoan.put("trapDoor", false);
         defaults.add(dailyBalanceCleanupDays);
+
+        HashMap<String, Object> accountingCalculationDelay = new HashMap<>();
+        nextPaymentDateConfigForLoan.put("id", 62);
+        nextPaymentDateConfigForLoan.put("name", "accounting_calculation_delay");
+        nextPaymentDateConfigForLoan.put("value", 20);
+        nextPaymentDateConfigForLoan.put("enabled", true);
+        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        defaults.add(accountingCalculationDelay);
 
         return defaults;
     }

@@ -65,12 +65,12 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
 
     @Override
     public List<CurrentProductData> retrieveAll(Sort sort) {
-        return currentProductRepository.findAllSorted(sort);
+        return currentProductRepository.getProductsSorted(sort);
     }
 
     @Override
     public Page<CurrentProductResponseData> retrieveAll(Pageable pageable) {
-        return currentProductResponseDataMapper.map(currentProductRepository.findAllCurrentProductData(pageable),
+        return currentProductResponseDataMapper.map(currentProductRepository.getProductsDataPage(pageable),
                 (CurrentProductData product) -> productToGLAccountMappingRepository.findByProductIdentifierAndProductType(product.getId(),
                         PortfolioProductType.CURRENT.getValue()));
     }
@@ -78,10 +78,9 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     @Override
     public CurrentProductResponseData retrieve(@NotNull CurrentProductResolver productResolver) {
         CurrentProductData productData = switch (productResolver.getIdType()) {
-            case ID -> currentProductRepository.findCurrentProductDataById(productResolver.getIdentifier());
-            case EXTERNAL_ID ->
-                currentProductRepository.findCurrentProductDataByExternalId(new ExternalId(productResolver.getIdentifier()));
-            case SHORT_NAME -> currentProductRepository.findCurrentProductDataByShortName(productResolver.getIdentifier());
+            case ID -> currentProductRepository.getProductDataById(productResolver.getIdentifier());
+            case EXTERNAL_ID -> currentProductRepository.getProductDataByExternalId(new ExternalId(productResolver.getIdentifier()));
+            case SHORT_NAME -> currentProductRepository.getProductDataByShortName(productResolver.getIdentifier());
         };
         if (productData == null) {
             throw new PlatformResourceNotFoundException("current.product", "Current product with %s: %s cannot be found",
@@ -95,8 +94,8 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     public String retrieveId(@NotNull CurrentProductResolver productResolver) {
         return switch (productResolver.getIdType()) {
             case ID -> productResolver.getIdentifier();
-            case EXTERNAL_ID -> currentProductRepository.findIdByExternalId(new ExternalId(productResolver.getIdentifier()));
-            case SHORT_NAME -> currentProductRepository.findIdByShortName(productResolver.getIdentifier());
+            case EXTERNAL_ID -> currentProductRepository.getIdByExternalId(new ExternalId(productResolver.getIdentifier()));
+            case SHORT_NAME -> currentProductRepository.getIdByShortName(productResolver.getIdentifier());
         };
     }
 }

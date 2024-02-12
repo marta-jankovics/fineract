@@ -117,7 +117,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
         return currentAccountResponseDataMapper.map(currentAccountReadService.retrieveAll(pageable),
-                currentAccountBalanceReadService::getBalance);
+                currentAccountBalanceReadService::getCurrentBalance);
     }
 
     @GET
@@ -366,7 +366,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     private CurrentAccountResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
         CurrentAccountData accountData = currentAccountReadService.retrieve(accountResolver);
-        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getBalance(accountData.getId());
+        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getCurrentBalance(accountData.getId());
         // TODO CURRENT! move this to the service
         return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
     }

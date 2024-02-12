@@ -111,11 +111,6 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             dataValidator.reset().parameter(DESCRIPTION_PARAM).value(description).ignoreIfNull().notExceedingLengthOf(500);
         }
 
-        // accounting related data validation
-        final String accountingRuleType = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
-        dataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleType).notNull()
-                .isOneOfEnumValues(AccountingRuleType.class);
-
         if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
             final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
             dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
@@ -133,7 +128,15 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         dataValidator.reset().parameter(BALANCE_CALCULATION_TYPE_PARAM).value(balanceCalculationType).notNull()
                 .isOneOfEnumValues(BalanceCalculationType.class);
 
-        if (AccountingRuleType.valueOf(accountingRuleType).equals(AccountingRuleType.CASH_BASED)) {
+        // accounting related data validation
+        final String accountingRuleType = command.stringValueOfParameterNamedAllowingNull(ACCOUNTING_TYPE_PARAM);
+        dataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleType).notNull()
+                .isOneOfEnumValues(AccountingRuleType.class);
+        boolean cashBased = AccountingRuleType.CASH_BASED.name().equals(accountingRuleType);
+        if (!(cashBased || AccountingRuleType.NONE.name().equals(accountingRuleType))) {
+            dataValidator.failWithCode("is.not.one.of.supported.enumerations");
+        }
+        if (cashBased) {
             final Long controlAccountId = command.longValueOfParameterNamed(CONTROL_ACCOUNT_ID_PARAM);
             dataValidator.reset().parameter(CONTROL_ACCOUNT_ID_PARAM).value(controlAccountId).notNull().integerGreaterThanZero();
 

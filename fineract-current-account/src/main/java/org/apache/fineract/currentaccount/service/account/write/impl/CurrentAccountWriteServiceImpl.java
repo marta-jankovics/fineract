@@ -18,13 +18,17 @@
  */
 package org.apache.fineract.currentaccount.service.account.write.impl;
 
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.ACTIVATE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CANCEL;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CLOSE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.UPDATE;
+
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
-import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
@@ -34,29 +38,23 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
-import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
-import org.apache.fineract.portfolio.client.domain.Client;
-import org.apache.fineract.portfolio.client.domain.ClientRepository;
-import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
-import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteService {
 
-    private final CurrentAccountDataValidator currentAccountDataValidator;
-    private final CurrentAccountAssembler currentAccountAssembler;
-    private final CurrentAccountRepository currentAccountRepository;
+    private final CurrentAccountDataValidator accountDataValidator;
+    private final CurrentAccountAssembler accountAssembler;
+    private final CurrentAccountRepository accountRepository;
     // TODO: use service eventually
-    private final ClientRepository clientRepository;
-    private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
+    private final CurrentAccountAccountingWriteService accountAccountingWriteService;
 
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult submitApplication(@NotNull JsonCommand command) {
-        currentAccountDataValidator.validateForSubmit(command);
-        final CurrentAccount account = currentAccountAssembler.assemble(command);
+        accountDataValidator.validateForSubmit(command);
+        final CurrentAccount account = accountAssembler.assemble(command);
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new CurrentAccountCreateBusinessEvent(account));
@@ -72,12 +70,12 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult update(@NotNull String accountId, @NotNull JsonCommand command) {
-
-        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+        final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
-        currentAccountDataValidator.validateForUpdate(command, account);
-        checkEnabled(account, true);
-        Map<String, Object> changes = currentAccountAssembler.update(account, command);
+        accountDataValidator.validateForUpdate(command, account);
+        account.checkEnabled(UPDATE);
+
+        Map<String, Object> changes = accountAssembler.update(account, command);
 
         return new CommandProcessingResultBuilder() //
                 .withCommandId(command.commandId()) //
@@ -91,12 +89,12 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult cancelApplication(@NotNull String accountId, @NotNull JsonCommand command) {
-        currentAccountDataValidator.validateCancellation(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+        accountDataValidator.validateCancellation(command);
+        final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
-        checkEnabled(account, true);
+        account.checkEnabled(CANCEL);
 
-        final Map<String, Object> changes = currentAccountAssembler.cancelApplication(account, command);
+        final Map<String, Object> changes = accountAssembler.cancelApplication(account, command);
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
@@ -114,12 +112,12 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult activate(@NotNull String accountId, @NotNull JsonCommand command) {
-        currentAccountDataValidator.validateActivation(command);
-        final CurrentAccount account = currentAccountRepository.findById(accountId).orElseThrow(
+        accountDataValidator.validateActivation(command);
+        final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
-        checkEnabled(account, true);
+        account.checkEnabled(ACTIVATE);
 
-        final Map<String, Object> changes = currentAccountAssembler.activate(account, command);
+        final Map<String, Object> changes = accountAssembler.activate(account, command);
 
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
@@ -137,14 +135,14 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult close(@NotNull String accountId, @NotNull JsonCommand command) {
-        currentAccountDataValidator.validateClosing(command);
-
-        final CurrentAccount account = currentAccountRepository.findByIdWithExclusiveLock(accountId).orElseThrow(
+        accountDataValidator.validateClosing(command);
+        final CurrentAccount account = accountRepository.findAccountByIdWithExclusiveLock(accountId).orElseThrow(
                 () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
-        checkEnabled(account, true);
-        final Map<String, Object> changes = currentAccountAssembler.close(account, command);
+        account.checkEnabled(CLOSE);
 
-        currentAccountAccountingWriteService.createGLEntries(accountId, DateUtils.getOffsetDateTimeOfTenant().plusMinutes(1));
+        final Map<String, Object> changes = accountAssembler.close(account, command);
+
+        accountAccountingWriteService.createGLEntries(accountId, DateUtils.getOffsetDateTimeOfTenant().plusMinutes(1));
         // TODO: Business event handling
         // businessEventNotifierService.notifyPostBusinessEvent(new
         // CurrentAccountRejectApplicationBusinessEvent(currentAccount));
@@ -156,22 +154,5 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
                 .withClientId(account.getClientId()) //
                 .with(changes) //
                 .build();
-    }
-
-    @Override
-    public void checkEnabled(@NotNull CurrentAccount account, boolean checkClient) {
-        CurrentAccountAction action = CurrentAccountAction.forActionName(ThreadLocalContextUtil.getCommandAction());
-        account.getStatus().checkEnabled(action);
-        if (checkClient) {
-            checkClientActive(account);
-        }
-    }
-
-    private void checkClientActive(@NotNull CurrentAccount account) {
-        final Client client = clientRepository.findById(account.getClientId())
-                .orElseThrow(() -> new ClientNotFoundException(account.getClientId()));
-        if (client.isNotActive()) {
-            throw new ClientNotActiveException(client.getId());
-        }
     }
 }

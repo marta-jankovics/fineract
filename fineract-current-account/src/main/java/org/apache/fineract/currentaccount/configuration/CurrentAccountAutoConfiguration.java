@@ -86,10 +86,11 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentAccountBalanceWriteService.class)
-    public CurrentAccountBalanceWriteService currentAccountBalanceWriteService(
+    public CurrentAccountBalanceWriteService currentAccountBalanceWriteService(CurrentAccountRepository currentAccountRepository,
             CurrentAccountBalanceRepository currentAccountBalanceRepository,
             CurrentAccountBalanceReadService currentAccountBalanceReadService) {
-        return new CurrentAccountBalanceWriteServiceImpl(currentAccountBalanceRepository, currentAccountBalanceReadService);
+        return new CurrentAccountBalanceWriteServiceImpl(currentAccountRepository, currentAccountBalanceRepository,
+                currentAccountBalanceReadService);
     }
 
     @Bean
@@ -114,9 +115,9 @@ public class CurrentAccountAutoConfiguration {
     @ConditionalOnMissingBean(CurrentAccountWriteService.class)
     public CurrentAccountWriteService currentAccountWriteService(CurrentAccountDataValidator currentAccountDataValidator,
             CurrentAccountAssembler currentAccountAssembler, CurrentAccountRepository currentAccountRepository,
-            ClientRepository clientRepository, CurrentAccountAccountingWriteService currentAccountAccountingWriteService) {
+            CurrentAccountAccountingWriteService currentAccountAccountingWriteService) {
         return new CurrentAccountWriteServiceImpl(currentAccountDataValidator, currentAccountAssembler, currentAccountRepository,
-                clientRepository, currentAccountAccountingWriteService);
+                currentAccountAccountingWriteService);
     }
 
     @Bean
@@ -128,14 +129,15 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountAssembler.class)
     public CurrentAccountAssembler currentAccountAssembler(ClientRepository clientRepository,
-            CurrentProductRepository currentProductRepository, ExternalIdFactory externalIdFactory,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentAccountRepository currentAccountRepository,
+            CurrentProductRepository currentProductRepository, CurrentAccountRepository currentAccountRepository,
+            ExternalIdFactory externalIdFactory, CurrentAccountBalanceReadService currentAccountBalanceReadService,
             CurrentAccountBalanceWriteService currentAccountBalanceWriteService, EntityActionRepository entityActionRepository,
-            ReadWriteNonCoreDataService readWriteNonCoreDataService,
-            CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
-        return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, entityActionRepository,
-                accountIdentifierRepository, currentAccountBalanceWriteService, externalIdFactory, readWriteNonCoreDataService,
-                currentAccountIdentifiersResponseDataMapper);
+            AccountIdentifierRepository accountIdentifierRepository,
+            CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper,
+            ReadWriteNonCoreDataService readWriteNonCoreDataService) {
+        return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, externalIdFactory,
+                currentAccountBalanceReadService, currentAccountBalanceWriteService, entityActionRepository, accountIdentifierRepository,
+                currentAccountIdentifiersResponseDataMapper, readWriteNonCoreDataService);
     }
 
     @Bean
@@ -180,21 +182,20 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionWriteService.class)
     public CurrentTransactionWriteService currentTransactionWriteService(CurrentTransactionDataValidator currentTransactionDataValidator,
-            CurrentTransactionAssembler currentTransactionAssembler, CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
-            CurrentAccountBalanceWriteService currentAccountBalanceWriteService, CurrentAccountWriteService currentAccountWriteService) {
+            CurrentTransactionAssembler currentTransactionAssembler, CurrentTransactionRepository currentTransactionRepository,
+            CurrentAccountRepository currentAccountRepository) {
         return new CurrentTransactionWriteServiceImpl(currentTransactionDataValidator, currentTransactionAssembler,
-                currentAccountRepository, currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService,
-                currentAccountWriteService);
+                currentTransactionRepository, currentAccountRepository);
     }
 
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionAssembler.class)
     public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
             ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentProductRepository currentProductRepository,
-            CurrentTransactionRepository currentTransactionRepository) {
+            CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
+            CurrentAccountBalanceWriteService currentAccountBalanceWriteService) {
         return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentProductRepository,
-                currentTransactionRepository);
+                currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService);
     }
 
     @Bean

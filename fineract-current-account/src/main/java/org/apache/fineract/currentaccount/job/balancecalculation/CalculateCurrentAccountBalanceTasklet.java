@@ -54,21 +54,17 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
             List<String> accountIds = currentAccountBalanceRepository.getAccountIdsBalanceBehind(tillDateTime, statuses);
             accountIds.addAll(currentAccountBalanceRepository.getAccountIdsNoBalance(statuses));
-            updateBalances(accountIds, tillDateTime);
+            for (String accountId : accountIds) {
+                try {
+                    currentAccountBalanceWriteService.updateBalance(accountId, tillDateTime);
+                } catch (Exception e) {
+                    // We don't care if it failed, the job can continue
+                    log.warn("Updating account balance for account: {} is failed", accountId);
+                }
+            }
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
-    }
-
-    private void updateBalances(List<String> accountIds, OffsetDateTime tillDateTime) {
-        for (String accountId : accountIds) {
-            try {
-                currentAccountBalanceWriteService.updateBalance(accountId, tillDateTime);
-            } catch (Exception e) {
-                // We don't care if it failed, the job can continue
-                log.warn("Updating account balance for account: {} is failed", accountId);
-            }
-        }
     }
 }

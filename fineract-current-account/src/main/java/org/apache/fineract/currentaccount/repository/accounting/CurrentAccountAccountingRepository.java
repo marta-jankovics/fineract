@@ -45,7 +45,7 @@ public interface CurrentAccountAccountingRepository extends JpaRepository<GLAcco
             + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
             + "and exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah where ct.accountId = glah.accountId "
             + "and (ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) "
-            + "and ct2.id = glah.calculatedTillTransactionId and ct.createdDate > ct2.createdDate)")
+            + "and ct2.id = glah.transactionId and ct.createdDate > ct2.createdDate)")
     List<String> getAccountIdsAccountingBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

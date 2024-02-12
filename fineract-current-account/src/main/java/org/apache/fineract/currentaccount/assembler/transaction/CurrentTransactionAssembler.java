@@ -28,7 +28,7 @@ public interface CurrentTransactionAssembler extends EntityAssembler<CurrentTran
 
     CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 
-    CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
+    CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes, boolean force);
 
     CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes);
 

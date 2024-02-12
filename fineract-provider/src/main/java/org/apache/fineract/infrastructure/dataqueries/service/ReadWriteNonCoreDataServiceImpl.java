@@ -1489,7 +1489,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
         this.jdbcTemplate.update(sql); // NOSONAR
         return new CommandProcessingResultBuilder() //
-                .withCommandId(command.commandId()) //
+                .withCommandId(command == null ? null : command.commandId()) //
                 .withResource(whereValue) //
                 .withOfficeId(commandProcessingResult.getOfficeId()) //
                 .withGroupId(commandProcessingResult.getGroupId()) //

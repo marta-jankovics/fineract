@@ -24,7 +24,13 @@ import lombok.Data;
 @Data
 public class IdTypeValueSubValueData implements Serializable {
 
-    private final String idType;
+    private String idType;
     private final String value;
     private final String subValue;
+
+    public IdTypeValueSubValueData(String idType, String value, String subValue) {
+        this.idType = idType;
+        this.value = value;
+        this.subValue = subValue;
+    }
 }

@@ -18,43 +18,44 @@
  */
 package org.apache.fineract.currentaccount.data.account;
 
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.apache.fineract.currentaccount.domain.account.ICurrentAccountBalance;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 
 @Data
-@AllArgsConstructor
-public class CurrentAccountBalanceData implements Serializable, ICurrentAccountBalance {
-
-    private static final long serialVersionUID = 1L;
+public class BalanceCalculationData implements Serializable {
 
     private final Long id;
+    @NotNull
     private final String accountId;
-    private BigDecimal accountBalance;
-    private BigDecimal holdAmount;
-    private String transactionId;
-    private OffsetDateTime calculatedTill;
-    private boolean changed;
+    private final CurrentAccountBalanceData delayData;
+    @NotNull
+    private final CurrentAccountBalanceData totalData;
 
-    public CurrentAccountBalanceData(Long id, String accountId, BigDecimal accountBalance, BigDecimal holdAmount, String transactionId,
-            OffsetDateTime calculatedTill) {
-        this(id, accountId, accountBalance, holdAmount, transactionId, calculatedTill, false);
+    public BigDecimal getAccountBalance() {
+        return totalData.getAccountBalance();
     }
 
-    @Override
-    public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
-        boolean changed = ICurrentAccountBalance.super.applyTransaction(transaction);
-        if (changed) {
-            transactionId = transaction.getId();
-            calculatedTill = transaction.getCreatedDateTime();
-            this.changed = true;
-        }
-        return changed;
+    public BigDecimal getHoldAmount() {
+        return totalData.getHoldAmount();
+    }
+
+    public OffsetDateTime getCalculatedTill() {
+        return totalData.getCalculatedTill();
+    }
+
+    public String getTransactionId() {
+        return totalData.getTransactionId();
+    }
+
+    public BigDecimal getAvailableBalance() {
+        return totalData.getAvailableBalance();
+    }
+
+    public void applyTransaction(@NotNull CurrentTransaction transaction) {
+        totalData.applyTransaction(transaction);
     }
 }

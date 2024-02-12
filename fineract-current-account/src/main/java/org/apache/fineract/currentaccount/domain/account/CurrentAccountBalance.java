@@ -32,7 +32,7 @@ import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDa
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_account_balance")
-public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> {
+public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> implements ICurrentAccountBalance {
 
     @Column(name = "account_id", nullable = false)
     private String accountId;
@@ -43,28 +43,30 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
     @Column(name = "hold_amount", precision = 6)
     private BigDecimal holdAmount;
 
-    @Column(name = "calculated_till_transaction_id", nullable = false)
-    private String calculatedTillTransactionId;
+    @Column(name = "transaction_id", nullable = false)
+    private String transactionId;
 
     @Version
     private Long version;
 
-    public CurrentAccountBalance(String accountId, BigDecimal accountBalance, BigDecimal holdAmount, String calculatedTillTransactionId) {
+    public CurrentAccountBalance(String accountId, BigDecimal accountBalance, BigDecimal holdAmount, String transactionId) {
         this.accountId = accountId;
         this.accountBalance = accountBalance;
         this.holdAmount = holdAmount;
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
+        this.transactionId = transactionId;
     }
 
+    @Override
     public void setAccountBalance(BigDecimal accountBalance) {
         this.accountBalance = accountBalance;
     }
 
+    @Override
     public void setHoldAmount(BigDecimal holdAmount) {
         this.holdAmount = holdAmount;
     }
 
-    public void setCalculatedTillTransactionId(String calculatedTillTransactionId) {
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 }

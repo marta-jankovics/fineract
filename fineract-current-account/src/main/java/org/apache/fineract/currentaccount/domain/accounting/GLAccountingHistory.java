@@ -49,25 +49,24 @@ public class GLAccountingHistory extends AbstractAuditableWithUTCDateTimeCustom<
     @Column(name = "account_balance", precision = 6, nullable = false)
     private BigDecimal accountBalance;
 
-    @Column(name = "calculated_till_transaction_id", nullable = false)
-    private String calculatedTillTransactionId;
+    @Column(name = "transaction_id", nullable = false)
+    private String transactionId;
 
     @Version
     private Long version;
 
-    public GLAccountingHistory(String accountId, PortfolioAccountType accountType, BigDecimal accountBalance,
-            String calculatedTillTransactionId) {
+    public GLAccountingHistory(String accountId, PortfolioAccountType accountType, BigDecimal accountBalance, String transactionId) {
         this.accountId = accountId;
         this.accountType = accountType;
         this.accountBalance = accountBalance;
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
+        this.transactionId = transactionId;
     }
 
     public void setAccountBalance(BigDecimal accountBalance) {
         this.accountBalance = accountBalance;
     }
 
-    public void setCalculatedTillTransactionId(String calculatedTillTransactionId) {
-        this.calculatedTillTransactionId = calculatedTillTransactionId;
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 }

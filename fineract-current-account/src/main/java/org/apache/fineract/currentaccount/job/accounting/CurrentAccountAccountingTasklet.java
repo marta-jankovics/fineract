@@ -27,8 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
-import org.apache.fineract.infrastructure.configuration.data.GlobalConfigurationPropertyData;
-import org.apache.fineract.infrastructure.configuration.service.ConfigurationReadPlatformService;
+import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.springframework.batch.core.StepContribution;
@@ -42,12 +41,12 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
 
     private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
     private final CurrentAccountAccountingWriteService currentAccountAccountingWriteService;
-    private final ConfigurationReadPlatformService configurationReadPlatformService;
+    private final ConfigurationDomainService configurationService;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
-            long accountingCalculationDelay = fetchAccountingCalculationDelay();
+            long accountingCalculationDelay = configurationService.getAccountingCalculationDelaySeconds();
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);
             List<CurrentAccountStatus> statuses = List.of(ACTIVE);
             List<String> accountIds = currentAccountAccountingRepository.getAccountIdsAccountingBehind(tillDateTime, statuses);
@@ -57,16 +56,6 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
-    }
-
-    private long fetchAccountingCalculationDelay() {
-        long accountingCalculationDelay = 0;
-        GlobalConfigurationPropertyData accountingCalculationDelayConfiguration = configurationReadPlatformService
-                .retrieveGlobalConfiguration("accounting_calculation_delay");
-        if (accountingCalculationDelayConfiguration != null && accountingCalculationDelayConfiguration.isEnabled()) {
-            accountingCalculationDelay = accountingCalculationDelayConfiguration.getValue();
-        }
-        return accountingCalculationDelay;
     }
 
     private void writeAccounting(List<String> currentAccountAccountingIsBehindIds, OffsetDateTime tillDateTime) {

@@ -19,20 +19,27 @@
 package org.apache.fineract.currentaccount.assembler.account.impl;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACCOUNT_NUMBER_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ACTION_DATE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_FORCE_TRANSACTION_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ALLOW_OVERDRAFT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.BALANCE_CALCULATION_TYPE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CLIENT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.EXTERNAL_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIERS_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_VALUE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.STATUS_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
-import static org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.ACTIVATE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CANCEL;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.UPDATE;
+import static org.apache.fineract.currentaccount.enumeration.account.EntityActionType.CLOSE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
 
 import com.google.gson.Gson;
@@ -45,7 +52,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +59,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.assembler.account.CurrentAccountAssembler;
+import org.apache.fineract.currentaccount.data.account.BalanceCalculationData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.IdTypeValueSubValueData;
 import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
@@ -60,7 +67,6 @@ import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.domain.account.EntityAction;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction;
-import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
@@ -68,6 +74,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
@@ -77,7 +84,6 @@ import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoun
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
-import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
@@ -87,20 +93,22 @@ import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
 import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
+import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 @Slf4j
 public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
     private final ClientRepository clientRepository;
-    private final CurrentProductRepository currentProductRepository;
-    private final CurrentAccountRepository currentAccountRepository;
+    private final CurrentProductRepository productRepository;
+    private final CurrentAccountRepository accountRepository;
+    private final ExternalIdFactory externalIdFactory;
+    private final CurrentAccountBalanceReadService accountBalanceReadService;
+    private final CurrentAccountBalanceWriteService accountBalanceWriteService;
     private final EntityActionRepository entityActionRepository;
     private final AccountIdentifierRepository accountIdentifierRepository;
-    private final CurrentAccountBalanceWriteService currentAccountBalanceWriteService;
-    private final ExternalIdFactory externalIdFactory;
+    private final CurrentAccountIdentifiersResponseDataMapper accountIdentifiersResponseDataMapper;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
-    private final CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper;
 
     /**
      * Assembles a new {@link CurrentAccount} from JSON details passed in request inheriting details where relevant from
@@ -112,20 +120,16 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
         final String productId = command.stringValueOfParameterNamedAllowingNull(PRODUCT_ID_PARAM);
 
-        final CurrentProduct product = this.currentProductRepository.findById(productId)
+        final CurrentProduct product = this.productRepository.findById(productId)
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
                         "Current product with provided id: %s cannot be found", productId));
 
-        Client client;
         final Long clientId = command.longValueOfParameterNamed(CLIENT_ID_PARAM);
-        if (clientId != null) {
-            client = this.clientRepository.findById(clientId).orElseThrow(() -> new ClientNotFoundException(clientId));
-            if (client.isNotActive()) {
-                throw new ClientNotActiveException(clientId);
-            }
-        } else {
+        if (clientId == null) {
             throw new ClientNotFoundException(clientId);
         }
+        Client client = checkClientActive(clientId);
+
         LocalDate submittedOnDate = command.localDateValueOfParameterNamed(SUBMITTED_ON_DATE_PARAM);
         if (submittedOnDate == null) {
             submittedOnDate = DateUtils.getBusinessLocalDate();
@@ -177,10 +181,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         if (datatables != null && !datatables.isEmpty()) {
             // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
             // caller to do it beforehand is not enough...
-            account = currentAccountRepository.saveAndFlush(account);
+            account = accountRepository.saveAndFlush(account);
             persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, false, readWriteNonCoreDataService);
         } else {
-            account = currentAccountRepository.save(account);
+            account = accountRepository.save(account);
         }
 
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
@@ -193,9 +197,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         Map<String, Object> actualChanges = new HashMap<>();
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
                 .resource(CurrentAccountApiConstants.CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.MODIFY_ACTION);
-
         final String localeAsInput = command.locale();
-
         if (command.isChangeInStringParameterNamed(ACCOUNT_NUMBER_PARAM, account.getAccountNumber())) {
             final String newValue = command.stringValueOfParameterNamedAllowingNull(ACCOUNT_NUMBER_PARAM);
             actualChanges.put(ACCOUNT_NUMBER_PARAM, newValue);
@@ -219,7 +221,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         if (account.isAllowOverdraft() && command.isChangeInBigDecimalParameterNamed(OVERDRAFT_LIMIT_PARAM, account.getOverdraftLimit())) {
             final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
             actualChanges.put(OVERDRAFT_LIMIT_PARAM, newValue);
-            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             account.setOverdraftLimit(newValue);
         }
 
@@ -232,14 +234,14 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         if (command.isChangeInBigDecimalParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM, account.getMinimumRequiredBalance())) {
             final BigDecimal newValue = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
             actualChanges.put(MINIMUM_REQUIRED_BALANCE_PARAM, newValue);
-            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             account.setMinimumRequiredBalance(newValue);
         }
 
         if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, account.getBalanceCalculationType().name())) {
             final String newValue = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
-            actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, localeAsInput);
+            actualChanges.put(LOCALE_PARAM, localeAsInput);
             account.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
@@ -249,18 +251,18 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
             actualChanges.put("locale", localeAsInput);
         }
-
-        updateIdentifiers(account, command, actualChanges);
-
         dataValidator.throwValidationErrors();
 
-        final CurrentProduct product = currentProductRepository.findById(account.getProductId())
+        updateIdentifiers(account, command, actualChanges);
+        account.setNextStatus(UPDATE);
+
+        final CurrentProduct product = productRepository.findById(account.getProductId())
                 .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
                         "Current product with provided id: %s cannot be found", account.getProductId()));
         validateAccountValuesWithProduct(product, account);
 
         if (!actualChanges.isEmpty()) {
-            currentAccountRepository.save(account);
+            accountRepository.save(account);
         }
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
@@ -276,63 +278,55 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
     @Override
     public Map<String, Object> cancelApplication(CurrentAccount account, JsonCommand command) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CANCEL_ACTION);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CANCEL.getActionName());
 
-        account.setStatus(CurrentAccountStatus.CANCELLED);
-        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        account.setNextStatus(CANCEL);
 
-        LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
+        LocalDate cancelledOnDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
         // TODO CURRENT! check if cancelledOnDate is not earlier than submitted date
         if (cancelledOnDate == null) {
             cancelledOnDate = DateUtils.getBusinessLocalDate();
         }
-        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-
-        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, fmt.format(cancelledOnDate));
 
         final LocalDate submittalDate = fetchSubmittedOnDate(account);
         if (DateUtils.isBefore(cancelledOnDate, submittalDate)) {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String submittalDateAsString = formatter.format(submittalDate);
 
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(submittalDateAsString)
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(submittalDateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submittal.date");
             dataValidator.throwValidationErrors();
         }
         if (DateUtils.isAfterBusinessDate(cancelledOnDate)) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(cancelledOnDate)
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(cancelledOnDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
             dataValidator.throwValidationErrors();
         }
+
         persistEntityAction(account, EntityActionType.CANCEL, cancelledOnDate);
+
+        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
+        final Map<String, Object> actualChanges = new LinkedHashMap<>();
+        actualChanges.put(STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(LOCALE_PARAM, command.locale());
+        actualChanges.put(DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(ACTION_DATE_PARAM, fmt.format(cancelledOnDate));
         return actualChanges;
     }
 
     @Override
     public Map<String, Object> activate(CurrentAccount account, JsonCommand command) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.ACTIVATE_ACTION);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + ACTIVATE.getActionName());
 
-        LocalDate activationDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
+        LocalDate activationDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
         // TODO CURRENT! check if activationDate is not earlier than submitted date
         if (activationDate == null) {
             activationDate = DateUtils.getBusinessLocalDate();
         }
 
-        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
-        account.setStatus(CurrentAccountStatus.ACTIVE);
-        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
-        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, fmt.format(activationDate));
-
+        account.setNextStatus(ACTIVATE);
         account.setActivatedOnDate(activationDate);
 
         Client client = clientRepository.findById(account.getClientId())
@@ -342,67 +336,85 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.client.activation.date");
             dataValidator.throwValidationErrors();
         }
-
         final LocalDate submittedOnDate = fetchSubmittedOnDate(account);
         if (DateUtils.isBefore(activationDate, submittedOnDate)) {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
             final String dateAsString = formatter.format(submittedOnDate);
 
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(dateAsString)
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(dateAsString)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.before.submitted.date");
             dataValidator.throwValidationErrors();
         }
-
         if (DateUtils.isAfterBusinessDate(activationDate)) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(activationDate)
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(activationDate)
                     .failWithCodeNoParameterAddedToErrorCode("cannot.be.a.future.date");
             dataValidator.throwValidationErrors();
         }
 
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
 
+        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
+        final Map<String, Object> actualChanges = new LinkedHashMap<>();
+        actualChanges.put(STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(LOCALE_PARAM, command.locale());
+        actualChanges.put(DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(ACTION_DATE_PARAM, fmt.format(activationDate));
         return actualChanges;
     }
 
     @Override
     public Map<String, Object> close(CurrentAccount account, JsonCommand command) {
-        final Map<String, Object> actualChanges = new LinkedHashMap<>();
-
         final DataValidatorBuilder dataValidator = new DataValidatorBuilder()
-                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountApiConstants.CLOSE_ACTION);
+                .resource(CURRENT_ACCOUNT_RESOURCE_NAME + CurrentAccountAction.CLOSE.getActionName());
 
-        final Locale locale = command.extractLocale();
-        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(locale);
-        final LocalDate closedDate = command.localDateValueOfParameterNamed(CurrentAccountApiConstants.ACTION_DATE_PARAM);
+        LocalDate closedDate = command.localDateValueOfParameterNamed(ACTION_DATE_PARAM);
+        if (closedDate == null) {
+            closedDate = DateUtils.getBusinessLocalDate();
+        }
 
         if (DateUtils.isBefore(closedDate, account.getActivatedOnDate())) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
-                    .failWithCode("must.be.after.activation.date");
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(closedDate).failWithCode("must.be.after.activation.date");
             dataValidator.throwValidationErrors();
         }
         if (DateUtils.isAfterBusinessDate(closedDate)) {
-            dataValidator.reset().parameter(CurrentAccountApiConstants.ACTION_DATE_PARAM).value(closedDate)
-                    .failWithCode("cannot.be.a.future.date");
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(closedDate).failWithCode("cannot.be.a.future.date");
             dataValidator.throwValidationErrors();
         }
-        // TODO CURRENT! pessimistic lock if not strict, but what?
-        CurrentAccountAction action = CurrentAccountAction.forActionName(ThreadLocalContextUtil.getCommandAction());
-        CurrentAccountBalanceData balanceData = currentAccountBalanceWriteService.calculateBalance(account.getId(), STRICT, action, null);
-
+        BalanceCalculationData balanceData = calculateBalance(account, CurrentAccountAction.CLOSE);
         if (!MathUtil.isEmpty(balanceData.getAccountBalance()) || !MathUtil.isEmpty(balanceData.getHoldAmount())) {
             throw new GeneralPlatformDomainRuleException("error.msg.account.close.with.balance",
                     "Account cannot be closed. Balance is not 0.", account.getId());
         }
 
-        account.setStatus(CurrentAccountStatus.CLOSED);
-        actualChanges.put(CurrentAccountApiConstants.STATUS_PARAM, account.getStatus().toStringEnumOptionData());
-        actualChanges.put(CurrentAccountApiConstants.LOCALE_PARAM, command.locale());
-        actualChanges.put(CurrentAccountApiConstants.DATE_FORMAT_PARAM, command.dateFormat());
-        actualChanges.put(CurrentAccountApiConstants.ACTION_DATE_PARAM, closedDate.format(fmt));
+        account.setNextStatus(CurrentAccountAction.CLOSE);
+        persistAccountBalance(account, balanceData, CurrentAccountAction.CLOSE);
+        persistEntityAction(account, CLOSE, closedDate);
 
-        persistEntityAction(account, EntityActionType.CLOSE, closedDate);
-
+        final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
+        final Map<String, Object> actualChanges = new LinkedHashMap<>();
+        actualChanges.put(STATUS_PARAM, account.getStatus().toStringEnumOptionData());
+        actualChanges.put(LOCALE_PARAM, command.locale());
+        actualChanges.put(DATE_FORMAT_PARAM, command.dateFormat());
+        actualChanges.put(ACTION_DATE_PARAM, closedDate.format(fmt));
         return actualChanges;
+    }
+
+    @NotNull
+    private BalanceCalculationData calculateBalance(CurrentAccount account, CurrentAccountAction action) {
+        boolean hasDelay = account.hasBalanceDelay(action);
+        return accountBalanceReadService.calculateBalance(account.getId(),
+                hasDelay ? accountBalanceReadService.getBalanceCalculationTill() : null);
+    }
+
+    private void persistAccountBalance(CurrentAccount account, BalanceCalculationData balanceData, CurrentAccountAction action) {
+        if (!account.isBalancePersist(action)) {
+            return;
+        }
+        boolean hasDelay = account.hasBalanceDelay(action);
+        CurrentAccountBalanceData balance = hasDelay ? balanceData.getDelayData() : balanceData.getTotalData();
+        if (balance.isChanged()) {
+            accountBalanceWriteService.saveBalance(balance);
+        }
     }
 
     private void persistEntityAction(CurrentAccount account, EntityActionType actionType, LocalDate actionDate) {
@@ -486,15 +498,16 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         Map<IdTypeValueSubValueData, AccountIdentifier> existingIdentifiers = accountIdentifierRepository
-                .retrieveAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
+                .getAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
                 .collect(Collectors.toMap(ai -> new IdTypeValueSubValueData(ai.getIdentifierType().name(), ai.getValue(), ai.getSubValue()),
                         Function.identity()));
 
         List<AccountIdentifier> persistedIdentifiers = new ArrayList<>();
         for (JsonElement identifierElement : identifierArray) {
             IdTypeValueSubValueData identifierObject = new Gson().fromJson(identifierElement, IdTypeValueSubValueData.class);
-            String idType = identifierObject.getIdType();
-            InteropIdentifierType identifierType = InteropIdentifierType.resolveName(IdTypeResolver.formatIdType(idType));
+            String idType = IdTypeResolver.formatIdType(identifierObject.getIdType());
+            identifierObject.setIdType(idType);
+            InteropIdentifierType identifierType = InteropIdentifierType.resolveName(idType);
             if (identifierType == null) {
                 validator.reset().parameter(ID_TYPE_PARAM).value(idType).failWithCode("unknown.identifier");
                 continue;
@@ -519,13 +532,21 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         if (!removedIdentifiers.isEmpty()) {
             accountIdentifierRepository.deleteAll(removedIdentifiers);
             ((List) actualChanges.get(IDENTIFIERS_PARAM))
-                    .add(Map.of("removed", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(removedIdentifiers)));
+                    .add(Map.of("removed", accountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(removedIdentifiers)));
         }
         if (!persistedIdentifiers.isEmpty()) {
             ((List) actualChanges.get(IDENTIFIERS_PARAM))
-                    .add(Map.of("persisted", currentAccountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(persistedIdentifiers)));
+                    .add(Map.of("persisted", accountIdentifiersResponseDataMapper.mapSecondaryIdentifiers(persistedIdentifiers)));
         }
 
         validator.throwValidationErrors();
+    }
+
+    public Client checkClientActive(@NotNull Long clientId) {
+        final Client client = clientRepository.findById(clientId).orElseThrow(() -> new ClientNotFoundException(clientId));
+        if (client.isNotActive()) {
+            throw new ClientNotActiveException(client.getId());
+        }
+        return client;
     }
 }

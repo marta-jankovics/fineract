@@ -137,7 +137,7 @@
             <column name="code" value="DEPOSIT_CURRENTACCOUNT"/>
             <column name="entity_name" value="CURRENTACCOUNT"/>
             <column name="action_name" value="DEPOSIT"/>
-            <column name="can_maker_checker" valueBoolean="false"/>
+            <column name="can_maker_checker" valueBoolean="true"/>
         </insert>
         <insert tableName="m_permission">
             <column name="grouping" value="transaction_current"/>
