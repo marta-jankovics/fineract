@@ -246,9 +246,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (!actualChanges.isEmpty()) {
-            if (!account.getStatus().isSubmitted()) {
-                dataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-            }
             actualChanges.put("locale", localeAsInput);
         }
         dataValidator.throwValidationErrors();
