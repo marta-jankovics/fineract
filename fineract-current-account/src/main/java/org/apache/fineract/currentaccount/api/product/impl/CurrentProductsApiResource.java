@@ -18,9 +18,9 @@
  */
 package org.apache.fineract.currentaccount.api.product.impl;
 
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIER_PARAM;
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_API_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_API_REGEX;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,7 +94,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Path(IDENTIFIER_API_PARAM)
+    @Path(IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product", description = "Retrieves a Current Product \n \n"
             + "Example Requests:\n" + "\n" + "current-products/1")
     @Override
@@ -104,7 +104,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @GET
-    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX)
     @Operation(operationId = "retrieveOneCurrentProduct", summary = "Retrieve a Current Product by alternative id", description = "Retrieves a Current Product by alternative id \n \n"
             + "Example Requests:\n" + "\n" + "current-products/external-id/randomExtId1")
     @Override
@@ -128,7 +128,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @PUT
-    @Path(IDENTIFIER_API_PARAM)
+    @Path(IDENTIFIER_API_REGEX)
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product", description = "Updates a Current Product")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
@@ -141,7 +141,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @PUT
-    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX)
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
     @ApiResponses({
@@ -155,7 +155,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @DELETE
-    @Path(IDENTIFIER_API_PARAM)
+    @Path(IDENTIFIER_API_REGEX)
     @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product", description = "Delete a Current Product")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })
@@ -166,7 +166,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     }
 
     @DELETE
-    @Path(ID_TYPE_API_PARAM + "/" + IDENTIFIER_API_PARAM)
+    @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX)
     @Operation(operationId = "deleteCurrentProduct", summary = "Delete a Current Product by alternative id", description = "Delete a Current Product by alternative id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductDeleteCommandResponse.class))) })

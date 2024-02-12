@@ -54,4 +54,11 @@ public class CurrentAccountBalanceData implements Serializable, ICurrentAccountB
         }
         return changed;
     }
+
+    public void ensureTransaction(@NotNull CurrentTransaction transaction) {
+        if (changed) {
+            transactionId = transaction.getId();
+            calculatedTill = transaction.getCreatedDateTime();
+        }
+    }
 }

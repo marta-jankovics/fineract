@@ -19,61 +19,61 @@
 package org.apache.fineract.currentaccount.batch.command.account;
 
 import static org.apache.fineract.batch.command.CommandStrategyUtils.relativeUrlWithoutVersion;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.COMMAND;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import jakarta.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.batch.command.CommandStrategy;
+import org.apache.fineract.batch.command.CommandStrategyUtils;
 import org.apache.fineract.batch.domain.BatchRequest;
 import org.apache.fineract.batch.domain.BatchResponse;
-import org.apache.fineract.currentaccount.api.transaction.impl.CurrentTransactionsApiResource;
-import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
-import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
+import org.apache.fineract.currentaccount.api.account.impl.CurrentAccountsApiResource;
+import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
+import org.apache.fineract.portfolio.savings.data.SavingsAccountTransactionData;
 import org.apache.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CurrentTransactionAdvancedQueryCommandStrategy implements CommandStrategy {
+public class ApproveCurrentAccountCommandStrategy implements CommandStrategy {
 
-    private final CurrentTransactionsApiResource currentTransactionsApiResource;
+    private final CurrentAccountsApiResource currentAccountsApiResource;
+    private final DefaultToApiJsonSerializer<SavingsAccountTransactionData> jsonSerializer;
 
     @Override
     public BatchResponse execute(BatchRequest batchRequest, UriInfo uriInfo) {
         String relativeUrl = relativeUrlWithoutVersion(batchRequest);
-        String body = batchRequest.getBody();
-        PagedLocalRequest<AdvancedQueryRequest> queryRequest;
-        try {
-            queryRequest = new ObjectMapper().readValue(body, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new InvalidJsonException(e);
+        String command = null;
+        int idx = relativeUrl.indexOf('?');
+        if (idx > 0) {
+            final Map<String, String> queryParameters = CommandStrategyUtils.getQueryParameters(relativeUrl);
+            command = queryParameters.get(COMMAND);
+            relativeUrl = relativeUrl.substring(0, idx);
         }
         final List<String> pathParameters = Splitter.on('/').splitToList(relativeUrl);
         int size = pathParameters.size();
-        String response;
-        if (size > 3) {
+        String body = batchRequest.getBody();
+        CommandProcessingResult responseBody;
+        if (size > 2) {
             String idType = pathParameters.get(1);
             String identifier = pathParameters.get(2);
-            if (size > 4) {
+            if (size > 3) {
                 String subIdentifier = pathParameters.get(3);
-                response = currentTransactionsApiResource.advancedQueryByAccountIdTypeIdentifierSubIdentifier(idType, identifier,
-                        subIdentifier, queryRequest, uriInfo);
+                responseBody = currentAccountsApiResource.actionByIdTypeIdentifierSubIdentifier(idType, identifier, subIdentifier, command,
+                        body);
             } else {
-                response = currentTransactionsApiResource.advancedQueryByAccountIdTypeIdentifier(idType, identifier, queryRequest, uriInfo);
+                responseBody = currentAccountsApiResource.actionByIdTypeAndIdentifier(idType, identifier, command, body);
             }
-        } else if (size == 3) {
-            String accountId = pathParameters.get(1);
-            response = currentTransactionsApiResource.advancedQueryByAccountIdentifier(accountId, queryRequest, uriInfo);
         } else {
-            response = currentTransactionsApiResource.advancedQuery(queryRequest, uriInfo);
+            String accountId = pathParameters.get(1);
+            responseBody = currentAccountsApiResource.actionByIdentifier(accountId, command, body);
         }
 
         return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK)
-                .setHeaders(batchRequest.getHeaders()).setBody(response);
+                .setHeaders(batchRequest.getHeaders()).setBody(jsonSerializer.serialize(responseBody));
     }
 }

@@ -50,11 +50,13 @@ public class CurrentAccountTransactionCommandStrategy implements CommandStrategy
         String relativeUrl = relativeUrlWithoutVersion(batchRequest);
         String command = null;
         Boolean force = null;
-        if (relativeUrl.indexOf('?') > 0) {
+        int idx = relativeUrl.indexOf('?');
+        if (idx > 0) {
             final Map<String, String> queryParameters = CommandStrategyUtils.getQueryParameters(relativeUrl);
             command = queryParameters.get(COMMAND);
             String forceParam = queryParameters.get(COMMAND_PARAM_FORCE);
             force = forceParam == null ? null : Boolean.parseBoolean(forceParam);
+            relativeUrl = relativeUrl.substring(0, idx);
         }
         final List<String> pathParameters = Splitter.on('/').splitToList(relativeUrl);
         int size = pathParameters.size();
@@ -77,6 +79,6 @@ public class CurrentAccountTransactionCommandStrategy implements CommandStrategy
         }
 
         return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK)
-                .setBody(jsonSerializer.serialize(responseBody)).setHeaders(batchRequest.getHeaders());
+                .setHeaders(batchRequest.getHeaders()).setBody(jsonSerializer.serialize(responseBody));
     }
 }
