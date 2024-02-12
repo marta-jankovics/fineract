@@ -146,4 +146,6 @@ public interface ConfigurationDomainService {
     long getBalanceCalculationDelaySeconds();
 
     Long getDailyBalanceCleanupDays();
+
+    long getAccountingCalculationDelaySeconds();
 }

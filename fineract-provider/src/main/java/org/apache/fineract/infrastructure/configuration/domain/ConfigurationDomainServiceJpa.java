@@ -541,4 +541,11 @@ public class ConfigurationDomainServiceJpa implements ConfigurationDomainService
         final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData("daily_balance_cleanup_days");
         return property.isEnabled() ? property.getValue() : null;
     }
+
+    @Override
+    public long getAccountingCalculationDelaySeconds() {
+        final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData("accounting_calculation_delay");
+        Long seconds = property.getValue();
+        return !property.isEnabled() || seconds == null ? 0L : seconds;
+    }
 }
