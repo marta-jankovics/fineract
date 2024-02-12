@@ -55,7 +55,11 @@ public class BalanceCalculationData implements Serializable {
         return totalData.getAvailableBalance();
     }
 
-    public void applyTransaction(@NotNull CurrentTransaction transaction) {
-        totalData.applyTransaction(transaction);
+    public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
+        return totalData.applyTransaction(transaction);
+    }
+
+    public void ensureTransaction(@NotNull CurrentTransaction transaction) {
+        totalData.ensureTransaction(transaction);
     }
 }

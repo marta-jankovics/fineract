@@ -90,7 +90,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
                 totalTransactions = Collections.emptyList();
             } else {
                 delayTransactions = transactions.subList(0, idx);
-                totalTransactions = transactions.subList(idx, transactions.size() - 1);
+                totalTransactions = transactions.subList(idx, transactions.size());
             }
             delayData = calculateData(id, accountId, delayTransactions, accountBalance, calculatedTill);
             totalData = calculateData(id, accountId, totalTransactions, delayData, delayDateTime);
