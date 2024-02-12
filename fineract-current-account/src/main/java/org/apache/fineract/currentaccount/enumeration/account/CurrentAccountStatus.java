@@ -24,8 +24,10 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CLOSE;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.UPDATE;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import lombok.Getter;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
@@ -37,8 +39,32 @@ import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRu
 @Getter
 public enum CurrentAccountStatus {
 
-    SUBMITTED("currentAccountStatus.submitted", "Current account is submitted"), //
-    ACTIVE("currentAccountStatus.active", "Current account is active"), //
+    SUBMITTED("currentAccountStatus.submitted", "Current account is submitted") {
+
+        @Override
+        public CurrentAccountStatus getNextStatus(@NotNull CurrentAccountAction action) {
+            return switch (action) {
+                case UPDATE -> this;
+                case ACTIVATE -> ACTIVE;
+                case CANCEL -> CANCELLED;
+                default -> null;
+            };
+        }
+    }, //
+    ACTIVE("currentAccountStatus.active", "Current account is active") {
+
+        @Override
+        public CurrentAccountStatus getNextStatus(@NotNull CurrentAccountAction action) {
+            if (action.isTransaction()) {
+                return this;
+            }
+            return switch (action) {
+                case UPDATE, BALANCE_CALCULATION -> this;
+                case CLOSE -> CLOSED;
+                default -> null;
+            };
+        }
+    }, //
     CANCELLED("currentAccountStatus.cancelled", "Current account is cancelled"), //
     CLOSED("currentAccountStatus.closed", "Current account is closed"); //
 
@@ -65,22 +91,24 @@ public enum CurrentAccountStatus {
     }
 
     public boolean isClosed() {
-        return this == CurrentAccountStatus.CLOSED || isCancelled();
+        return this == CurrentAccountStatus.CLOSED;
+    }
+
+    public boolean isOpen() {
+        return isSubmitted() || isActive();
     }
 
     public StringEnumOptionData toStringEnumOptionData() {
         return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 
+    public static List<CurrentAccountStatus> getFiltered(Predicate<? super CurrentAccountStatus> predicate) {
+        return Arrays.stream(VALUES).filter(predicate).toList();
+    }
+
+    // ----- Lifecycle -----
     public boolean isEnabled(CurrentAccountAction action) {
-        if (action == null) {
-            return false;
-        }
-        return switch (this) {
-            case SUBMITTED -> action == UPDATE || action == ACTIVATE || action == CANCEL;
-            case ACTIVE -> action == UPDATE || action == CLOSE || action == BALANCE_CALCULATION || action.isTransaction();
-            case CANCELLED, CLOSED -> false;
-        };
+        return action != null && getNextStatus(action) != null;
     }
 
     public static List<CurrentAccountStatus> getEnabledStatusList(CurrentAccountAction action) {
@@ -92,5 +120,9 @@ public enum CurrentAccountStatus {
             throw new GeneralPlatformDomainRuleException("error.msg.current.action.not.allowed",
                     "Current Account action " + action + " is not allowed on status " + this);
         }
+    }
+
+    public CurrentAccountStatus getNextStatus(@NotNull CurrentAccountAction action) {
+        return null;
     }
 }
