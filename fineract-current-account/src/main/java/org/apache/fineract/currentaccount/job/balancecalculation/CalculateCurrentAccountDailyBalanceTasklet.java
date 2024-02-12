@@ -47,21 +47,17 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
             LocalDate balanceDate = DateUtils.getBusinessLocalDate().minusDays(1L);
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
             List<String> accountIds = dailyBalanceRepository.getAccountIdsForDailyBalanceCalculation(balanceDate, statuses);
-            createDailyBalances(accountIds, balanceDate);
+            for (String accountId : accountIds) {
+                try {
+                    dailyBalanceWriteService.calculateDailyBalance(accountId, balanceDate);
+                } catch (Exception e) {
+                    // We don't care if it failed, the job can continue
+                    log.warn("Calculate daily balance for account: {} is failed", accountId);
+                }
+            }
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
         return RepeatStatus.FINISHED;
-    }
-
-    private void createDailyBalances(List<String> accountIds, LocalDate balanceDate) {
-        for (String accountId : accountIds) {
-            try {
-                dailyBalanceWriteService.calculateDailyBalance(accountId, balanceDate);
-            } catch (Exception e) {
-                // We don't care if it failed, the job can continue
-                log.warn("Calculate daily balance for account: {} is failed", accountId);
-            }
-        }
     }
 }

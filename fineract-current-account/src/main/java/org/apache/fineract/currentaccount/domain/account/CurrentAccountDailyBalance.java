@@ -36,7 +36,7 @@ import org.apache.fineract.infrastructure.core.service.MathUtil;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_current_account_balance")
+@Table(name = "m_current_account_daily_balance")
 public class CurrentAccountDailyBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     @Column(name = "account_id", nullable = false)
