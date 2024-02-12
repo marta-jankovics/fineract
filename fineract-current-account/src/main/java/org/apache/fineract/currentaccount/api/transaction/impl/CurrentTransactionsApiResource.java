@@ -107,7 +107,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
     @Override
     public CurrentTransactionTemplateResponseData templateByIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTemplate(CurrentAccountResolver.resolveDefault(accountIdentifier));
     }
@@ -118,8 +118,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
     @Override
     public CurrentTransactionTemplateResponseData templateByIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService.retrieveTemplate(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null));
     }
@@ -131,9 +131,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions/template\n\n")
     @Override
     public CurrentTransactionTemplateResponseData templateByIdTypeIdentifierSubIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier) {
         this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return this.currentTransactionReadService
                 .retrieveTemplate(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier));
@@ -145,7 +145,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
     public Page<CurrentTransactionResponseData> retrieveAllByAccountIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
                     @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolveDefault(accountIdentifier), pageable);
@@ -157,8 +157,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
     public Page<CurrentTransactionResponseData> retrieveAllByAccountIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
                     @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), pageable);
@@ -170,9 +170,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests:\n\n" + "current-accounts/1/transactions\n\n")
     @Override
     public Page<CurrentTransactionResponseData> retrieveAllByAccountIdTypeIdentifierSubIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
                     @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), pageable);
@@ -184,8 +184,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/1/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneByAccountIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolveDefault(accountIdentifier),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier));
     }
@@ -196,9 +196,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/1/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneByAccountIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolveDefault(accountIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
     }
@@ -209,9 +209,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/external-id/ExternalId1/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier));
     }
@@ -223,10 +223,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/external-id/ExternalId1/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
     }
@@ -238,10 +238,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/iban/123456/S/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier));
     }
@@ -253,11 +253,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Example Requests :\n\n" + "current-accounts/iban/123456/S/transactions/1")
     @Override
     public CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
     }
@@ -270,9 +270,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult transactionByAccountIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
-            @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "deposit | withdrawal | hold") final String command,
+            @QueryParam(COMMAND_PARAM_FORCE) final Boolean force, @Parameter(hidden = true) final String requestJson) {
         return handleTransaction(CurrentAccountResolver.resolveDefault(accountIdentifier), command, force, requestJson);
     }
 
@@ -284,10 +284,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult transactionByAccountIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
-            @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "deposit | withdrawal | hold") final String command,
+            @QueryParam(COMMAND_PARAM_FORCE) final Boolean force, @Parameter(hidden = true) final String requestJson) {
         return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), command, force, requestJson);
     }
 
@@ -299,11 +299,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentTransactionsApiResourceSwagger.PostCurrentTransactionsRequest.class)))
     @Override
     public CommandProcessingResult transactionByAccountIdTypeIdentifierSubIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
-            @QueryParam(COMMAND) final String command, @QueryParam(COMMAND_PARAM_FORCE) final Boolean force,
-            @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "deposit | withdrawal | hold") final String command,
+            @QueryParam(COMMAND_PARAM_FORCE) final Boolean force, @Parameter(hidden = true) final String requestJson) {
         return handleTransaction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), command, force,
                 requestJson);
     }
@@ -316,9 +316,10 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolveDefault(accountIdentifier),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier), commandParam, requestJson);
     }
@@ -330,10 +331,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolveDefault(accountIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier), commandParam, requestJson);
     }
@@ -346,10 +348,11 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdTypeIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier), commandParam, requestJson);
     }
@@ -363,11 +366,12 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdTypeIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier), commandParam, requestJson);
     }
@@ -381,11 +385,12 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolveDefault(transactionIdentifier), commandParam, requestJson);
     }
@@ -399,12 +404,13 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + "Accepted command = release")
     @Override
     public CommandProcessingResult actionByAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
-            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = TRANSACTION_ID_TYPE_PARAM, required = true) final String transactionIdType,
-            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = TRANSACTION_IDENTIFIER_PARAM, required = true) final String transactionIdentifier,
-            @QueryParam(COMMAND) final String commandParam, @Parameter(hidden = true) final String requestJson) {
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "release") final String commandParam,
+            @Parameter(hidden = true) final String requestJson) {
         return handleAction(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier), commandParam, requestJson);
     }
@@ -428,7 +434,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
     public String advancedQueryByAccountIdentifier(
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM) final String accountIdentifier,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolveDefault(accountIdentifier), queryRequest);
     }
@@ -441,8 +447,8 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
     public String advancedQueryByAccountIdTypeIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), queryRequest);
     }
@@ -455,9 +461,9 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
     public String advancedQueryByAccountIdTypeIdentifierSubIdentifier(
-            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = ACCOUNT_ID_TYPE_PARAM, required = true) final String accountIdType,
-            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_IDENTIFIER_PARAM, required = true) final String accountIdentifier,
-            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = ACCOUNT_SUB_IDENTIFIER_PARAM, required = true) final String accountSubIdentifier,
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), queryRequest);
     }

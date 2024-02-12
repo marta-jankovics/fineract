@@ -246,9 +246,6 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (!actualChanges.isEmpty()) {
-            if (!account.getStatus().isSubmitted()) {
-                dataValidator.reset().failWithCodeNoParameterAddedToErrorCode("not.in.submittedandpendingapproval.state");
-            }
             actualChanges.put("locale", localeAsInput);
         }
         dataValidator.throwValidationErrors();
@@ -373,7 +370,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         if (DateUtils.isBefore(closedDate, account.getActivatedOnDate())) {
-            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(closedDate).failWithCode("must.be.after.activation.date");
+            dataValidator.reset().parameter(ACTION_DATE_PARAM).value(closedDate).failWithCode("cannot.be.earlier.than.activation.date");
             dataValidator.throwValidationErrors();
         }
         if (DateUtils.isAfterBusinessDate(closedDate)) {
