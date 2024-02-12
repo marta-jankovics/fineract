@@ -126,7 +126,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/1")
     @Override
     public CurrentAccountResponseData retrieveOneByIdentifier(
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
         return retrieveOne(CurrentAccountResolver.resolveDefault(identifier));
     }
 
@@ -136,8 +136,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
     public CurrentAccountResponseData retrieveOneByIdTypeIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
         return retrieveOne(CurrentAccountResolver.resolve(idType, identifier, null));
     }
 
@@ -147,9 +147,9 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1")
     @Override
     public CurrentAccountResponseData retrieveOneByIdTypeIdentifierSubIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier) {
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
     }
 
@@ -159,7 +159,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/1/identifiers")
     @Override
     public IdentifiersResponseData retrieveIdentifiersByIdentifier(
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier) {
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
         return retrieveIdentifiers(CurrentAccountResolver.resolveDefault(identifier));
     }
 
@@ -169,8 +169,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/identifiers")
     @Override
     public IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier) {
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
         return retrieveIdentifiers(CurrentAccountResolver.resolve(idType, identifier, null));
     }
 
@@ -180,16 +180,15 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/identifiers")
     @Override
     public IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifierSubIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier) {
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier) {
         return retrieveIdentifiers(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
     }
 
     @POST
     @Operation(operationId = "createCurrentAccount", summary = "Create new current application", description = "Creates new current application\n\n"
-            + "Mandatory Fields: clientId, productId, accountNumber, submittedOnDate\n\n"
-            + "Optional Fields: externalId, submittedOnDate\n\n"
+            + "Mandatory Fields: clientId, productId, accountNumber\n\n" + "Optional Fields: externalId, submittedOnDate\n\n"
             + "Inherited from Product (if not provided): minimumRequiredBalance, allowOverdraft, overdraftLimit\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountSubmitRequest.class)))
     @ApiResponses({
@@ -207,15 +206,14 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Activate a current account:\n\n"
             + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
-            + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
-            + "closedOnDate is closure date of current account\n\n")
+            + "Results in an Activated current application being converted into an 'closed' current account.\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult actionByIdentifier(
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
-            @QueryParam(COMMAND) @Parameter(description = COMMAND) final String commandParam,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "cancel | activate | close") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
         return handleCommands(CurrentAccountResolver.resolveDefault(identifier), commandParam, requestJson);
     }
@@ -227,16 +225,15 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Activate a current account:\n\n"
             + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
-            + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
-            + "closedOnDate is closure date of current account\n\n")
+            + "Results in an Activated current application being converted into an 'closed' current account.\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult actionByIdTypeAndIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @QueryParam(COMMAND) @Parameter(description = COMMAND) final String commandParam,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "cancel | activate | close") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
         return handleCommands(CurrentAccountResolver.resolve(idType, identifier, null), commandParam, requestJson);
     }
@@ -248,17 +245,16 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Activate a current account:\n\n"
             + "Results in an submitted current application being converted into an 'active' current account.\n\n"
             + "Close a current account:\n\n"
-            + "Results in an Activated current application being converted into an 'closed' current account.\n" + "\n"
-            + "closedOnDate is closure date of current account\n\n")
+            + "Results in an Activated current application being converted into an 'closed' current account.\n\n")
     @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.PostCurrentAccountActionRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult actionByIdTypeIdentifierSubIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
-            @QueryParam(COMMAND) @Parameter(description = COMMAND) final String commandParam,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier,
+            @QueryParam(COMMAND) @Parameter(description = COMMAND, required = true, example = "cancel | activate | close") final String commandParam,
             @Parameter(hidden = true) final String requestJson) {
         return handleCommands(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), commandParam, requestJson);
     }
@@ -273,7 +269,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateByIdentifier(
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentAccount(CurrentAccountResolver.resolveDefault(identifier), requestJson);
     }
@@ -288,8 +284,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateByIdTypeIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentAccount(CurrentAccountResolver.resolve(idType, identifier, null), requestJson);
     }
@@ -304,9 +300,9 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateByIdTypeIdentifierSubIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier,
             @Parameter(hidden = true) final String requestJson) {
         return updateCurrentAccount(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), requestJson);
     }
@@ -329,7 +325,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
-    public String advancedQueryByIdentifier(@PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM) final String identifier,
+    public String advancedQueryByIdentifier(
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolveDefault(identifier), queryRequest);
     }
@@ -342,8 +339,8 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
     public String advancedQueryByIdTypeIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolve(idType, identifier, null), queryRequest);
     }
@@ -356,9 +353,9 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = List.class))) })
     @Override
     public String advancedQueryByIdTypeIdentifierSubIdentifier(
-            @PathParam(ID_TYPE_PARAM) @Parameter(description = ID_TYPE_PARAM, required = true) final String idType,
-            @PathParam(IDENTIFIER_PARAM) @Parameter(description = IDENTIFIER_PARAM, required = true) final String identifier,
-            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = SUB_IDENTIFIER_PARAM, required = true) final String subIdentifier,
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier,
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         return query(CurrentAccountResolver.resolve(idType, identifier, subIdentifier), queryRequest);
     }
