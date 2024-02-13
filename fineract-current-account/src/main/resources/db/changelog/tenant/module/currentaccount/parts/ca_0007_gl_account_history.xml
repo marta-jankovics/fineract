@@ -90,4 +90,12 @@
         <addUniqueConstraint columnNames="account_type, account_id" tableName="acc_account_history" deferrable="false"
                              initiallyDeferred="false" constraintName="acc_account_history_account_id_type_key"/>
     </changeSet>
+    <changeSet id="4" author="fineract">
+        <createIndex tableName="acc_account_history" indexName="ind_acc_account_history_account_type">
+            <column name="account_type"/>
+        </createIndex>
+        <createIndex tableName="acc_account_history" indexName="ind_acc_account_history_account_id">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

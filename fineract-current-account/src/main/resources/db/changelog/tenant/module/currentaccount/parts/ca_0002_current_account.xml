@@ -109,4 +109,15 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_product" validate="true"/>
     </changeSet>
+    <changeSet id="4" author="fineract">
+        <createIndex tableName="m_current_account" indexName="ind_m_current_account_client_id">
+            <column name="client_id"/>
+        </createIndex>
+        <createIndex tableName="m_current_account" indexName="ind_m_current_account_product_id">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex tableName="m_current_account" indexName="ind_m_current_account_status">
+            <column name="status_type"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

@@ -83,4 +83,12 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
     </changeSet>
+    <changeSet id="4" author="fineract">
+        <createIndex tableName="m_entity_action" indexName="ind_m_entity_action_entity_type">
+            <column name="entity_type"/>
+        </createIndex>
+        <createIndex tableName="m_entity_action" indexName="ind_m_entity_action_entity_id">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

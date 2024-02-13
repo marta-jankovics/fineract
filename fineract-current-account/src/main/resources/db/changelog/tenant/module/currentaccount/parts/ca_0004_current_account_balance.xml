@@ -92,4 +92,9 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_transaction" validate="true"/>
     </changeSet>
+    <changeSet id="4" author="fineract">
+        <createIndex tableName="m_current_account_balance" indexName="ind_m_current_account_balance_account_id">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
