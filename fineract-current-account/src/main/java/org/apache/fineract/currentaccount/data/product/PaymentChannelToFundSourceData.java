@@ -20,12 +20,12 @@ package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
 import lombok.Data;
-import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
+import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
 @Data
 public class PaymentChannelToFundSourceData implements Serializable {
 
     public final PaymentTypeData paymentType;
-    public final GLAccountDataForLookup fundSourceAccount;
+    public final GLAccountDetailsData fundSourceAccount;
 }

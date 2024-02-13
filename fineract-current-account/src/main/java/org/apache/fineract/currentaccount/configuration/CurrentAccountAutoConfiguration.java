@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.configuration;
 
 import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialActivityAccountRepositoryWrapper;
+import org.apache.fineract.accounting.glaccount.domain.GLAccountRepository;
 import org.apache.fineract.accounting.journalentry.domain.JournalEntryRepository;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
 import org.apache.fineract.accounting.producttoaccountmapping.service.ProductToGLAccountMappingHelper;
@@ -144,9 +145,11 @@ public class CurrentAccountAutoConfiguration {
     @ConditionalOnMissingBean(CurrentProductReadService.class)
     public CurrentProductReadService currentProductReadService(CurrentProductRepository currentProductRepository,
             CurrencyReadPlatformService currencyReadPlatformService, CurrentProductResponseDataMapper currentProductResponseDataMapper,
-            ProductToGLAccountMappingRepository productToGLAccountMappingRepository) {
+            ProductToGLAccountMappingRepository productToGLAccountMappingRepository,
+            PaymentTypeReadPlatformService paymentTypeReadPlatformService, ConfigurationDomainService configurationDomainService,
+            GLAccountRepository glAccountRepository) {
         return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService, currentProductResponseDataMapper,
-                productToGLAccountMappingRepository);
+                productToGLAccountMappingRepository, paymentTypeReadPlatformService, configurationDomainService, glAccountRepository);
     }
 
     @Bean

@@ -21,8 +21,9 @@ package org.apache.fineract.currentaccount.mapper.product;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.fineract.accounting.glaccount.data.GLAccountDataForLookup;
+import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMapping;
+import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.GlAccountMapping;
@@ -97,13 +98,13 @@ public interface CurrentProductResponseDataMapper {
             return null;
         }
         return glAccountMappings.stream().filter(glAccountMapping -> glAccountMapping.getPaymentType() == null).map(glAccountMapping -> {
-            GLAccountDataForLookup glAccountDataForLookup = new GLAccountDataForLookup();
-            glAccountDataForLookup.setId(glAccountMapping.getGlAccount().getId());
-            glAccountDataForLookup.setName(glAccountMapping.getGlAccount().getName());
-            glAccountDataForLookup.setGlCode(glAccountMapping.getGlAccount().getGlCode());
+            GLAccountDetailsData glAccountDetailsData = new GLAccountDetailsData(glAccountMapping.getGlAccount().getId(),
+                    glAccountMapping.getGlAccount().getName(), glAccountMapping.getGlAccount().getGlCode(),
+                    GLAccountType.fromInt(glAccountMapping.getGlAccount().getType()).name());
+
             StringEnumOptionData cashAccount = CurrentProductCashBasedAccount.fromInt(glAccountMapping.getFinancialAccountType())
-                    .toStringEnumOptionData();
-            return new GlAccountMapping(cashAccount, glAccountDataForLookup);
+                    .toGLStringEnumOptionData();
+            return new GlAccountMapping(cashAccount, glAccountDetailsData);
         }).collect(Collectors.toList());
     }
 
@@ -113,13 +114,13 @@ public interface CurrentProductResponseDataMapper {
             return null;
         }
         return glAccountMappings.stream().filter(glAccountMapping -> glAccountMapping.getPaymentType() != null).map(glAccountMapping -> {
-            GLAccountDataForLookup glAccountDataForLookup = new GLAccountDataForLookup();
-            glAccountDataForLookup.setId(glAccountMapping.getGlAccount().getId());
-            glAccountDataForLookup.setName(glAccountMapping.getGlAccount().getName());
-            glAccountDataForLookup.setGlCode(glAccountMapping.getGlAccount().getGlCode());
+            GLAccountDetailsData glAccountDetailsData = new GLAccountDetailsData(glAccountMapping.getGlAccount().getId(),
+                    glAccountMapping.getGlAccount().getName(), glAccountMapping.getGlAccount().getGlCode(),
+                    GLAccountType.fromInt(glAccountMapping.getGlAccount().getType()).name());
+
             PaymentTypeData paymentTypeData = PaymentTypeData.instance(glAccountMapping.getPaymentType().getId(),
                     glAccountMapping.getPaymentType().getName());
-            return new PaymentChannelToFundSourceData(paymentTypeData, glAccountDataForLookup);
+            return new PaymentChannelToFundSourceData(paymentTypeData, glAccountDetailsData);
         }).collect(Collectors.toList());
     }
 }

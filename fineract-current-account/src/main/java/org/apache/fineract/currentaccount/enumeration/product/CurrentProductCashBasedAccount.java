@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
-import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
+import org.apache.fineract.infrastructure.core.data.GLStringEnumOptionData;
 
 @Getter
 public enum CurrentProductCashBasedAccount {
@@ -57,7 +57,7 @@ public enum CurrentProductCashBasedAccount {
         return intToEnumMap.get(i);
     }
 
-    public StringEnumOptionData toStringEnumOptionData() {
-        return new StringEnumOptionData(name(), getVariableName(), null);
+    public GLStringEnumOptionData toGLStringEnumOptionData() {
+        return new GLStringEnumOptionData(name(), getVariableName(), getType().name(), null);
     }
 }

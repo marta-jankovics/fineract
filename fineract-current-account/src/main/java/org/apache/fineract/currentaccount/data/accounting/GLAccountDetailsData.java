@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.product;
+package org.apache.fineract.currentaccount.data.accounting;
 
 import java.io.Serializable;
 import lombok.Data;
-import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
-import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Data
-public class GlAccountMapping implements Serializable {
+public class GLAccountDetailsData implements Serializable {
 
-    private final StringEnumOptionData accountType;
-    private final GLAccountDetailsData glAccount;
+    private final Long id;
+    private final String name;
+    private final String glCode;
+    private final String type;
 }

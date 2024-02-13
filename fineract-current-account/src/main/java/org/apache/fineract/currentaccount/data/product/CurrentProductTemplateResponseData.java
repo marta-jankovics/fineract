@@ -20,14 +20,21 @@ package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import lombok.Data;
+import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
+import org.apache.fineract.infrastructure.core.data.GLStringEnumOptionData;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
+import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
 @Data
 public class CurrentProductTemplateResponseData implements Serializable {
 
     private final List<CurrencyData> currencyOptions;
     private final List<StringEnumOptionData> accountingTypeOptions;
-    private final List<StringEnumOptionData> cashBasedAccountingOptions;
+    private final Map<String, List<GLStringEnumOptionData>> accountingOptions;
+    private final Map<String, List<GLAccountDetailsData>> accountingMappingOptions;
+    private final List<PaymentTypeData> paymentTypeOptions;
+    private final String accountTypeForPaymentTypeMapping;
 }
