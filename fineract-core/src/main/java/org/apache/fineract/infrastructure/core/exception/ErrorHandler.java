@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.infrastructure.core.exception;
 
+import org.eclipse.persistence.exceptions.OptimisticLockException;
 import static org.springframework.core.ResolvableType.forClassWithGenerics;
 
 import com.google.gson.Gson;
@@ -177,6 +178,8 @@ public final class ErrorHandler {
             if (nre instanceof NonTransientDataAccessException) {
                 msgCode = msgCode == null ? codePfx + ".data.integrity.issue" : msgCode;
                 return new PlatformDataIntegrityException(msgCode, msg, param, args);
+            } else if(cause instanceof OptimisticLockException) {
+                return (RuntimeException) cause;
             }
         }
         if (t instanceof ValidationException) {
