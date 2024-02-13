@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.infrastructure.core.exception;
 
-import org.eclipse.persistence.exceptions.OptimisticLockException;
 import static org.springframework.core.ResolvableType.forClassWithGenerics;
 
 import com.google.gson.Gson;
@@ -45,6 +44,7 @@ import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.exceptionmapper.DefaultExceptionMapper;
 import org.apache.fineract.infrastructure.core.exceptionmapper.FineractExceptionMapper;
 import org.apache.fineract.infrastructure.core.serialization.GoogleGsonSerializerHelper;
+import org.eclipse.persistence.exceptions.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.NestedRuntimeException;
@@ -178,7 +178,7 @@ public final class ErrorHandler {
             if (nre instanceof NonTransientDataAccessException) {
                 msgCode = msgCode == null ? codePfx + ".data.integrity.issue" : msgCode;
                 return new PlatformDataIntegrityException(msgCode, msg, param, args);
-            } else if(cause instanceof OptimisticLockException) {
+            } else if (cause instanceof OptimisticLockException) {
                 return (RuntimeException) cause;
             }
         }
