@@ -44,10 +44,6 @@ public interface ICurrentAccountBalance {
         return false;
     }
 
-    default BigDecimal getAvailableBalance() {
-        return MathUtil.subtract(getAccountBalance(), getHoldAmount());
-    }
-
     default boolean applyTransaction(@NotNull CurrentTransaction transaction) {
         CurrentTransactionType transactionType = transaction.getTransactionType();
         BigDecimal amount = transaction.getAmount();

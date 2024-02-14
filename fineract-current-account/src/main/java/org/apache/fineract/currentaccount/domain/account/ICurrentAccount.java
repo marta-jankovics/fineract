@@ -55,7 +55,8 @@ public interface ICurrentAccount {
     @NotNull
     BalanceCalculationType getBalanceCalculationType();
 
-    default BigDecimal getAvailableBalance(@NotNull BigDecimal available, boolean addOverdraft) {
+    default BigDecimal getAvailableBalance(@NotNull ICurrentAccountBalance balance, boolean addOverdraft) {
+        BigDecimal available = MathUtil.subtract(balance.getAccountBalance(), balance.getHoldAmount());
         BigDecimal minimumRequiredBalance = getMinimumRequiredBalance();
         available = MathUtil.subtract(available, minimumRequiredBalance);
         if (!addOverdraft || !isAllowOverdraft() || !MathUtil.isEmpty(minimumRequiredBalance)) {

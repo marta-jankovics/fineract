@@ -222,11 +222,11 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         // TODO CURRENT! add error context information id, balance..
         BigDecimal accountBalance = balance.getAccountBalance();
         if (MathUtil.isLessThanZero(accountBalance) && !account.isAllowOverdraft()) {
-            throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Overdraft is not allowed!");
+            throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed", "Insufficient founds! Current balance: " + accountBalance);
         }
-        BigDecimal availableBalance = account.getAvailableBalance(balance.getAvailableBalance(), true);
+        BigDecimal availableBalance = account.getAvailableBalance(balance, true);
         if (MathUtil.isLessThanZero(availableBalance)) {
-            throw new GeneralPlatformDomainRuleException("error.msg.available.balance.violated", "Violated available balance!");
+            throw new GeneralPlatformDomainRuleException("error.msg.available.balance.violated", "The requested amount exceeds the available balance " + availableBalance + "!");
         }
     }
 }

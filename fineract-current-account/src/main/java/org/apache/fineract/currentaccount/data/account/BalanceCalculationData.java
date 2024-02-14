@@ -23,10 +23,11 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Data;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccountBalance;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 
 @Data
-public class BalanceCalculationData implements Serializable {
+public class BalanceCalculationData implements ICurrentAccountBalance, Serializable {
 
     private final Long id;
     @NotNull
@@ -39,8 +40,18 @@ public class BalanceCalculationData implements Serializable {
         return totalData.getAccountBalance();
     }
 
+    @Override
+    public void setAccountBalance(BigDecimal accountBalance) {
+        totalData.setAccountBalance(accountBalance);
+    }
+
     public BigDecimal getHoldAmount() {
         return totalData.getHoldAmount();
+    }
+
+    @Override
+    public void setHoldAmount(BigDecimal holdAmount) {
+        totalData.setHoldAmount(holdAmount);
     }
 
     public OffsetDateTime getCalculatedTill() {
@@ -49,10 +60,6 @@ public class BalanceCalculationData implements Serializable {
 
     public String getTransactionId() {
         return totalData.getTransactionId();
-    }
-
-    public BigDecimal getAvailableBalance() {
-        return totalData.getAvailableBalance();
     }
 
     public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
