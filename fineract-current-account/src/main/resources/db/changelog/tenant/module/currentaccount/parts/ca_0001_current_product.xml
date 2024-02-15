@@ -97,11 +97,11 @@
     </changeSet>
     <changeSet author="fineract" id="3">
         <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_current_product"
-                                 constraintName="FK_m_current_product_created_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_product_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_product"
-                                 constraintName="FK_m_current_product_last_modified_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_product_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
     </changeSet>

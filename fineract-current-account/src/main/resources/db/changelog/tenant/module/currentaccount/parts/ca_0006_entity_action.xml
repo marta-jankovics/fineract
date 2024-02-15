@@ -75,19 +75,19 @@
     </changeSet>
     <changeSet author="fineract" id="3">
         <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_entity_action"
-                                 constraintName="FK_m_entity_action_created_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_entity_action_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_product"
-                                 constraintName="FK_m_entity_action_last_modified_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_entity_action_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
     </changeSet>
     <changeSet id="4" author="fineract">
-        <createIndex tableName="m_entity_action" indexName="ind_m_entity_action_entity_type">
+        <createIndex tableName="m_entity_action" indexName="idx_entity_action_entity_type">
             <column name="entity_type"/>
         </createIndex>
-        <createIndex tableName="m_entity_action" indexName="ind_m_entity_action_entity_id">
+        <createIndex tableName="m_entity_action" indexName="idx_entity_action_entity_id">
             <column name="entity_id"/>
         </createIndex>
     </changeSet>

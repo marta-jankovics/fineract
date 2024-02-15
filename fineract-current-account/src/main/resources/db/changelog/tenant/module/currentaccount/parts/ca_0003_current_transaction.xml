@@ -35,7 +35,7 @@
                 </column>
                 <column name="correlation_id" type="VARCHAR(100)"/>
                 <column name="reference_id" type="CHAR(21)"/>
-                <column defaultValueComputed="NULL" name="payment_type_id" type="INT"/>
+                <column name="payment_type_id" type="INT"/>
                 <column name="transaction_type_enum" type="VARCHAR(50)">
                     <constraints nullable="false"/>
                 </column>
@@ -84,46 +84,46 @@
     </changeSet>
     <changeSet author="fineract" id="3">
         <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_created_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_transaction_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_transaction_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_account_id" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_transaction_account_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_account" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="payment_type_id" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_payment_type_id" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_transaction_payment_type_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_payment_type" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="reference_id" baseTableName="m_current_transaction"
-                                 constraintName="FK_m_current_transaction_reference_id" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_current_transaction_reference_id" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_transaction" validate="true"/>
     </changeSet>
     <changeSet id="4" author="fineract">
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_account_id">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_account_id">
             <column name="account_id"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_correlation_id">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_correlation_id">
             <column name="correlation_id"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_transaction_type_enum">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_transaction_type_enum">
             <column name="transaction_type_enum"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_transaction_date">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_transaction_date">
             <column name="transaction_date"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_submitted_on_date">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_submitted_on_date">
             <column name="submitted_on_date"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_transaction_reference_id">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_reference_id">
             <column name="reference_id"/>
         </createIndex>
-        <createIndex tableName="m_current_transaction" indexName="ind_m_current_created_on_utc">
+        <createIndex tableName="m_current_transaction" indexName="idx_current_created_on_utc">
             <column name="created_on_utc"/>
         </createIndex>
     </changeSet>

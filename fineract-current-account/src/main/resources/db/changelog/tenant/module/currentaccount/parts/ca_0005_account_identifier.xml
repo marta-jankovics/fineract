@@ -81,20 +81,20 @@
     </changeSet>
     <changeSet author="fineract" id="3">
         <addForeignKeyConstraint baseColumnNames="created_by" baseTableName="m_account_identifier"
-                                 constraintName="FK_m_account_identifier_created_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_account_identifier_created_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="last_modified_by" baseTableName="m_current_product"
-                                 constraintName="FK_m_account_identifier_last_modified_by" deferrable="false" initiallyDeferred="false"
+                                 constraintName="fk_account_identifier_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
         <addUniqueConstraint tableName="m_account_identifier" columnNames="identifier_type, value, sub_value" />
     </changeSet>
     <changeSet id="4" author="fineract">
-        <createIndex tableName="m_account_identifier" indexName="ind_m_account_identifier_account_id">
+        <createIndex tableName="m_account_identifier" indexName="idx_account_identifier_account_id">
             <column name="account_id"/>
         </createIndex>
-        <createIndex tableName="m_account_identifier" indexName="ind_m_current_account_balance_account_type">
+        <createIndex tableName="m_account_identifier" indexName="idx_current_account_balance_account_type">
             <column name="account_type"/>
         </createIndex>
     </changeSet>
