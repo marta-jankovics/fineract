@@ -84,10 +84,20 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
 
     private String checkForForeignConstraintError(PlatformDataIntegrityException exception, String originalExceptionMessage) {
         String message = originalExceptionMessage;
-        if (exception.getMessage().contains("violates foreign key constraint")) {
-            message = "Reference entry still exists!";
-        } else if (exception.getMessage().contains("a foreign key constraint fails")) {
-            message = "Reference entry still exists!";
+        //POSTGRES
+        if (exception.getMessage().contains("is still referenced from table")) {
+            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
+            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") is still referenced from table");
+            message = "Foreign key constraint fails: Entry with " + key + ": " + entry + " is still referenced!";
+        } else if (exception.getMessage().contains("is not present in table")) {
+            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
+            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") is not present in table");
+            message = "Foreign key constraint fails: Entry with " + key + ": " + entry + " does not exists";
+        }
+        //MYSQL / MARIADB
+        else if (exception.getMessage().contains("a foreign key constraint fails")) {
+            String key = StringUtils.substringBetween(exception.getMessage(), "FOREIGN KEY (", ") REFERENCES");
+            message = "Foreign key constraint fails for " + key;
         }
         return message;
     }
