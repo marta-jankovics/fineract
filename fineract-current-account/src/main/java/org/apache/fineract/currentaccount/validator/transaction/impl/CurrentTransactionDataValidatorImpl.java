@@ -106,20 +106,15 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         final BigDecimal transactionAmount = command.bigDecimalValueOfParameterNamed(TRANSACTION_AMOUNT_PARAM);
         dataValidator.reset().parameter(TRANSACTION_AMOUNT_PARAM).value(transactionAmount).notNull().positiveAmount();
 
-        final Integer paymentType = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
-        dataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentType).notNull();
-
-        validatePaymentTypeDetails(dataValidator, command);
+        if (command.hasParameter(PAYMENT_TYPE_ID_PARAM)) {
+            final Integer paymentType = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
+            dataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentType).notNull().integerGreaterThanZero();
+        }
 
         if (command.hasParameter(CURRENCY_CODE_PARAM)) {
             final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
             dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
         }
         dataValidator.throwValidationErrors();
-    }
-
-    private void validatePaymentTypeDetails(final DataValidatorBuilder baseDataValidator, JsonCommand command) {
-        final Integer paymentTypeId = command.integerValueOfParameterNamed(PAYMENT_TYPE_ID_PARAM);
-        baseDataValidator.reset().parameter(PAYMENT_TYPE_ID_PARAM).value(paymentTypeId).ignoreIfNull().integerGreaterThanZero();
     }
 }

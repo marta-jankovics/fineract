@@ -35,7 +35,7 @@
                 </column>
                 <column name="correlation_id" type="VARCHAR(100)"/>
                 <column name="reference_id" type="CHAR(21)"/>
-                <column name="payment_type_id" type="INT"/>
+                <column name="payment_type_id" type="BIGINT"/>
                 <column name="transaction_type_enum" type="VARCHAR(50)">
                     <constraints nullable="false"/>
                 </column>
