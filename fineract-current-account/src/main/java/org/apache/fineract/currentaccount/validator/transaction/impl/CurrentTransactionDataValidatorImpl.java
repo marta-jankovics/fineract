@@ -26,6 +26,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_ID_PARAM;
 
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -76,7 +77,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_ACCOUNT_RELEASE_TRANSACTION_DATA_PARAMETERS);
 
         final String holdTransactionId = command.getTransactionId();
-        dataValidator.reset().parameter("transactionId").value(holdTransactionId).notNull().notBlank();
+        dataValidator.reset().parameter(TRANSACTION_ID_PARAM).value(holdTransactionId).notNull().notBlank();
 
         if (command.hasParameter(TRANSACTION_DATE_PARAM)) {
             final LocalDate transactionDate = command.localDateValueOfParameterNamed(TRANSACTION_DATE_PARAM);

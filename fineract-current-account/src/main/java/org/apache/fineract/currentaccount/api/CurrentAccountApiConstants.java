@@ -96,6 +96,7 @@ public class CurrentAccountApiConstants {
     public static final String TRANSACTION_DATE_PARAM = "transactionDate";
     public static final String TRANSACTION_AMOUNT_PARAM = "transactionAmount";
     public static final String REASON_FOR_BLOCK_PARAM = "reasonForBlock";
+    public static final String TRANSACTION_ID_PARAM = "transactionId";
 
     // identifier
     public static final String ID_VALUE_PARAM = "value";

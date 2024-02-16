@@ -207,9 +207,6 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             dataValidator.reset().parameter(ACCOUNTING_TYPE_PARAM).value(accountingRuleTypeStr).notNull()
                     .isOneOfEnumValues(AccountingRuleType.class);
             accountingRuleType = AccountingRuleType.valueOf(accountingRuleTypeStr);
-        } else {
-            dataValidator.reset().failWithCode("current.product.accounting.cannot.be.updated",
-                    "Accounts are already exists for this product");
         }
 
         if (command.isChangeInBooleanParameterNamed(ALLOW_FORCE_TRANSACTION_PARAM, product.isAllowForceTransaction())) {
