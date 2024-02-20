@@ -202,6 +202,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
                 balanceData = balance.getDelayData();
             } else {
                 if (applied) {
+                    // Balance has a FK reference on transaction, but we don't have reference on entity level,
+                    // so JPA cannot be sure about the order of saving balance and transaction
                     transaction = currentTransactionRepository.saveAndFlush(transaction);
                     balance.ensureTransaction(transaction);
                 }
