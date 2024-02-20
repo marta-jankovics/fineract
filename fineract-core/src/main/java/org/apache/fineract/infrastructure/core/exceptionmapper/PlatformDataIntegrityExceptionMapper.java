@@ -59,7 +59,7 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
 
     @Override
     public Response toResponse(final PlatformDataIntegrityException exception) {
-        log.warn("Exception: {}, Message: {}", exception.getClass().getName(), exception.getMessage());
+        log.warn("Exception occurred", exception);
         String originalExceptionMessage = exception.getDefaultUserMessage();
         // TODO: extract?
         String message = checkForUniqueConstraintError(exception, originalExceptionMessage);

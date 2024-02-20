@@ -16,20 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.loanaccount.domain;
+package org.apache.fineract.integrationtests.common.error;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import lombok.Getter;
+import lombok.Data;
 
-/**
- * Stores details of {@link LoanTransaction}'s that were reversed or newly created
- */
-@Getter
-public class ChangedTransactionDetail {
+@Data
+public class ErrorResponse {
 
-    private final Map<Long, LoanTransaction> newTransactionMappings = new LinkedHashMap<>();
-
-    private final Map<LoanTransaction, Long> currentTransactionToOldId = new LinkedHashMap<>();
-
+    private String httpStatusCode;
 }

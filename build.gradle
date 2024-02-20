@@ -76,9 +76,9 @@ buildscript {
 
 plugins {
     id 'me.qoomon.git-versioning' version '6.4.3'
-    id "org.barfuin.gradle.taskinfo" version "2.1.0"
+    id "org.barfuin.gradle.taskinfo" version "2.2.0"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'com.diffplug.spotless' version '6.24.0' apply false
+    id 'com.diffplug.spotless' version '6.25.0' apply false
     id 'org.nosphere.apache.rat' version '0.8.1' apply false
     id 'com.github.hierynomus.license' version '0.16.1' apply false
     id 'com.github.jk1.dependency-license-report' version '2.5' apply false
@@ -442,7 +442,7 @@ configure(project.fineractJavaProjects) {
     // Configuration for the Checkstyle plugin
     // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
     dependencies {
-        checkstyle 'com.puppycrawl.tools:checkstyle:10.12.7'
+        checkstyle 'com.puppycrawl.tools:checkstyle:10.13.0'
         checkstyle 'com.github.sevntu-checkstyle:sevntu-checks:1.44.1'
     }
 

@@ -29,11 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.internal.RequestSpecificationImpl;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +44,10 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.apache.fineract.batch.domain.BatchRequest;
+import org.apache.fineract.batch.domain.BatchResponse;
 import org.apache.fineract.client.models.AdvancedPaymentData;
 import org.apache.fineract.client.models.AllowAttributeOverrides;
 import org.apache.fineract.client.models.BusinessDateRequest;
@@ -56,9 +61,12 @@ import org.apache.fineract.client.models.PostLoansLoanIdChargesResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
+import org.apache.fineract.client.models.PostLoansLoanIdTransactionsTransactionIdRequest;
 import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
+import org.apache.fineract.integrationtests.common.BatchHelper;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
@@ -67,10 +75,14 @@ import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.accounting.JournalEntryHelper;
 import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
+import org.apache.fineract.integrationtests.common.error.ErrorResponse;
+import org.apache.fineract.integrationtests.common.loans.LoanAccountLockHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanProductHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTestLifecycleExtension;
 import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
+import org.apache.fineract.integrationtests.inlinecob.InlineLoanCOBHelper;
+import org.apache.fineract.integrationtests.useradministration.users.UserHelper;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleProcessingType;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
 import org.apache.fineract.portfolio.loanproduct.domain.PaymentAllocationType;
@@ -89,15 +101,23 @@ public abstract class BaseLoanIntegrationTest {
     protected static final String DATETIME_PATTERN = "dd MMMM yyyy";
 
     protected final ResponseSpecification responseSpec = createResponseSpecification(Matchers.is(200));
-    protected final RequestSpecification requestSpec = createRequestSpecification();
+
+    private final String fullAdminAuthKey = getFullAdminAuthKey();
+
+    protected final RequestSpecification requestSpec = createRequestSpecification(fullAdminAuthKey);
+    private final String nonByPassUserAuthKey = getNonByPassUserAuthKey(requestSpec, responseSpec);
 
     protected final AccountHelper accountHelper = new AccountHelper(requestSpec, responseSpec);
     protected final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
     protected final LoanProductHelper loanProductHelper = new LoanProductHelper();
     protected JournalEntryHelper journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
     protected ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
+    protected final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
 
     protected BusinessDateHelper businessDateHelper = new BusinessDateHelper();
+
+    protected final LoanAccountLockHelper loanAccountLockHelper = new LoanAccountLockHelper(requestSpec,
+            createResponseSpecification(Matchers.is(202)));
     protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN);
 
     // asset
@@ -118,6 +138,16 @@ public abstract class BaseLoanIntegrationTest {
     protected final Account creditLossBadDebtFraudAccount = accountHelper.createExpenseAccount();
     protected final Account writtenOffAccount = accountHelper.createExpenseAccount();
     protected final Account goodwillExpenseAccount = accountHelper.createExpenseAccount();
+
+    private String getNonByPassUserAuthKey(RequestSpecification requestSpec, ResponseSpecification responseSpec) {
+        // creates the user
+        UserHelper.getSimpleUserWithoutBypassPermission(requestSpec, responseSpec);
+        return Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(UserHelper.SIMPLE_USER_NAME, UserHelper.SIMPLE_USER_PASSWORD);
+    }
+
+    private String getFullAdminAuthKey() {
+        return Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey();
+    }
 
     // Loan product with proper accounting setup
     protected PostLoanProductsRequest createOnePeriod30DaysLongNoInterestPeriodicAccrualProduct() {
@@ -256,14 +286,14 @@ public abstract class BaseLoanIntegrationTest {
                 .amortizationType(amortizationType);
     }
 
-    private static RequestSpecification createRequestSpecification() {
-        RequestSpecification request = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        request.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        request.header("Fineract-Platform-TenantId", "default");
-        return request;
+    private RequestSpecification createRequestSpecification(String authKey) {
+        RequestSpecification requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
+        requestSpec.header("Authorization", "Basic " + authKey);
+        requestSpec.header("Fineract-Platform-TenantId", "default");
+        return requestSpec;
     }
 
-    protected static ResponseSpecification createResponseSpecification(Matcher<Integer> statusCodeMatcher) {
+    protected ResponseSpecification createResponseSpecification(Matcher<Integer> statusCodeMatcher) {
         return new ResponseSpecBuilder().expectStatusCode(statusCodeMatcher).build();
     }
 
@@ -312,9 +342,23 @@ public abstract class BaseLoanIntegrationTest {
                         && Objects.equals(item.getPenaltyChargesPortion(), tr.penaltyPortion) //
                         && Objects.equals(item.getUnrecognizedIncomePortion(), tr.unrecognizedPortion) //
                 );
-                Assertions.assertTrue(found, "Required transaction  not found: " + tr);
+                Assertions.assertTrue(found, "Required transaction not found: " + tr);
             });
         }
+    }
+
+    protected void placeHardLockOnLoan(Long loanId) {
+        loanAccountLockHelper.placeSoftLockOnLoanAccount(loanId.intValue(), "LOAN_COB_CHUNK_PROCESSING");
+    }
+
+    protected void executeInlineCOB(Long loanId) {
+        inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
+    }
+
+    protected void verifyLastClosedBusinessDate(Long loanId, String lastClosedBusinessDate) {
+        GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
+        Assertions.assertNotNull(loanDetails.getLastClosedBusinessDate());
+        Assertions.assertEquals(lastClosedBusinessDate, loanDetails.getLastClosedBusinessDate().format(dateTimeFormatter));
     }
 
     protected void disburseLoan(Long loanId, BigDecimal amount, String date) {
@@ -381,6 +425,14 @@ public abstract class BaseLoanIntegrationTest {
                             "%d. installment's fee charges due is different, expected: %.2f, actual: %.2f".formatted(i, feeAmount, feeDue));
                 }
 
+                Double penaltyAmount = installments[i].penaltyAmount;
+                Double penaltyDue = period.getPenaltyChargesDue();
+                if (penaltyAmount != null) {
+                    Assertions.assertEquals(penaltyAmount, penaltyDue,
+                            "%d. installment's penalty charges due is different, expected: %.2f, actual: %.2f".formatted(i, penaltyAmount,
+                                    penaltyDue));
+                }
+
                 Double outstandingAmount = installments[i].totalOutstandingAmount;
                 Double totalOutstanding = period.getTotalOutstandingForPeriod();
                 if (outstandingAmount != null) {
@@ -405,6 +457,16 @@ public abstract class BaseLoanIntegrationTest {
         } finally {
             GlobalConfigurationHelper.updateIsBusinessDateEnabled(requestSpec, responseSpec, FALSE);
             GlobalConfigurationHelper.updateEnabledFlagForGlobalConfiguration(requestSpec, responseSpec, 42, false);
+        }
+    }
+
+    protected void runAsNonByPass(Runnable runnable) {
+        RequestSpecificationImpl requestSpecImpl = (RequestSpecificationImpl) requestSpec;
+        try {
+            requestSpecImpl.replaceHeader("Authorization", "Basic " + nonByPassUserAuthKey);
+            runnable.run();
+        } finally {
+            requestSpecImpl.replaceHeader("Authorization", "Basic " + fullAdminAuthKey);
         }
     }
 
@@ -454,10 +516,17 @@ public abstract class BaseLoanIntegrationTest {
         return applyAndApproveLoan(clientId, loanProductId, loanDisbursementDate, amount, 1);
     }
 
-    protected void addRepaymentForLoan(Long loanId, Double amount, String date) {
+    protected Long addRepaymentForLoan(Long loanId, Double amount, String date) {
         String firstRepaymentUUID = UUID.randomUUID().toString();
-        loanTransactionHelper.makeLoanRepayment(loanId, new PostLoansLoanIdTransactionsRequest().dateFormat(DATETIME_PATTERN)
-                .transactionDate(date).locale("en").transactionAmount(amount).externalId(firstRepaymentUUID));
+        PostLoansLoanIdTransactionsResponse response = loanTransactionHelper.makeLoanRepayment(loanId,
+                new PostLoansLoanIdTransactionsRequest().dateFormat(DATETIME_PATTERN).transactionDate(date).locale("en")
+                        .transactionAmount(amount).externalId(firstRepaymentUUID));
+        return response.getResourceId();
+    }
+
+    protected void addChargebackForLoan(Long loanId, Long transactionId, Double amount) {
+        loanTransactionHelper.chargebackLoanTransaction(loanId, transactionId,
+                new PostLoansLoanIdTransactionsTransactionIdRequest().locale("en").transactionAmount(amount).paymentTypeId(1L));
     }
 
     protected PostChargesResponse createCharge(Double amount) {
@@ -489,23 +558,96 @@ public abstract class BaseLoanIntegrationTest {
     }
 
     protected TransactionExt transaction(double amount, String type, String date, double outstandingAmount, double principalPortion,
-            double interestPortion, double feePortion, double penaltyPortion, double unrecognizedIncomePortion) {
+            double interestPortion, double feePortion, double penaltyPortion, double unrecognizedIncomePortion, double overpaymentPortion) {
         return new TransactionExt(amount, type, date, outstandingAmount, principalPortion, interestPortion, feePortion, penaltyPortion,
-                unrecognizedIncomePortion);
+                unrecognizedIncomePortion, overpaymentPortion);
     }
 
     protected Installment installment(double principalAmount, Boolean completed, String dueDate) {
-        return new Installment(principalAmount, null, null, null, completed, dueDate);
+        return new Installment(principalAmount, null, null, null, null, completed, dueDate);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double totalOutstandingAmount, Boolean completed,
             String dueDate) {
-        return new Installment(principalAmount, interestAmount, null, totalOutstandingAmount, completed, dueDate);
+        return new Installment(principalAmount, interestAmount, null, null, totalOutstandingAmount, completed, dueDate);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double totalOutstandingAmount,
             Boolean completed, String dueDate) {
-        return new Installment(principalAmount, interestAmount, feeAmount, totalOutstandingAmount, completed, dueDate);
+        return new Installment(principalAmount, interestAmount, feeAmount, null, totalOutstandingAmount, completed, dueDate);
+    }
+
+    protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double penaltyAmount,
+            double totalOutstandingAmount, Boolean completed, String dueDate) {
+        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, totalOutstandingAmount, completed, dueDate);
+    }
+
+    protected BatchRequestBuilder batchRequest() {
+        return new BatchRequestBuilder(requestSpec, responseSpec);
+    }
+
+    @RequiredArgsConstructor
+    public static class BatchRequestBuilder {
+
+        private final RequestSpecification requestSpec;
+        private final ResponseSpecification responseSpec;
+        private List<BatchRequest> requests = new ArrayList<>();
+
+        public BatchRequestBuilder rescheduleLoan(Long requestId, Long loanId, String submittedOnDate, String rescheduleFromDate,
+                String adjustedDueDate) {
+            BatchRequest bRequest = new BatchRequest();
+            bRequest.setRequestId(requestId);
+            bRequest.setRelativeUrl("rescheduleloans");
+            bRequest.setMethod("POST");
+
+            bRequest.setBody("""
+                        {
+                            "loanId": %d,
+                            "rescheduleFromDate": "%s",
+                            "rescheduleReasonId": 1,
+                            "submittedOnDate": "%s",
+                            "rescheduleReasonComment": "",
+                            "adjustedDueDate": "%s",
+                            "graceOnPrincipal": "",
+                            "graceOnInterest": "",
+                            "extraTerms": "",
+                            "newInterestRate": "",
+                            "dateFormat": "%s",
+                            "locale": "en"
+                        }
+                    """.formatted(loanId, rescheduleFromDate, submittedOnDate, adjustedDueDate, DATETIME_PATTERN));
+
+            requests.add(bRequest);
+            return this;
+        }
+
+        public BatchRequestBuilder approveRescheduleLoan(Long requestId, Long rescheduleBatchRequestId, String approvedOnDate) {
+            BatchRequest bRequest = new BatchRequest();
+            bRequest.setRequestId(requestId);
+            bRequest.setRelativeUrl("rescheduleloans/$.resourceId?command=approve");
+            bRequest.setMethod("POST");
+            bRequest.setReference(rescheduleBatchRequestId);
+
+            bRequest.setBody("""
+                        {
+                            "approvedOnDate": "%s",
+                            "dateFormat": "%s",
+                            "locale": "en"
+                        }
+                    """.formatted(approvedOnDate, DATETIME_PATTERN));
+
+            requests.add(bRequest);
+            return this;
+        }
+
+        public List<BatchResponse> executeEnclosingTransaction() {
+            return BatchHelper.postBatchRequestsWithEnclosingTransaction(requestSpec, responseSpec, BatchHelper.toJsonString(requests));
+        }
+
+        public ErrorResponse executeEnclosingTransactionError(ResponseSpecification responseSpec) {
+            return BatchHelper.postBatchRequestsWithoutEnclosingTransactionError(requestSpec, responseSpec,
+                    BatchHelper.toJsonString(requests));
+        }
     }
 
     @ToString
@@ -530,6 +672,7 @@ public abstract class BaseLoanIntegrationTest {
         Double feePortion;
         Double penaltyPortion;
         Double unrecognizedPortion;
+        Double overpaymentPortion;
     }
 
     @ToString
@@ -548,6 +691,7 @@ public abstract class BaseLoanIntegrationTest {
         Double principalAmount;
         Double interestAmount;
         Double feeAmount;
+        Double penaltyAmount;
         Double totalOutstandingAmount;
         Boolean completed;
         String dueDate;
