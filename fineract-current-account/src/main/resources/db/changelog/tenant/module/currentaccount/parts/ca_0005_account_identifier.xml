@@ -88,7 +88,7 @@
                                  constraintName="fk_account_identifier_last_modified_by" deferrable="false" initiallyDeferred="false"
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_appuser" validate="true"/>
-        <addUniqueConstraint tableName="m_account_identifier" columnNames="identifier_type, value, sub_value" />
+        <addUniqueConstraint tableName="m_account_identifier" columnNames="identifier_type, value, sub_value" constraintName="acc_identifier_id_type_value_sub_value_key"/>
     </changeSet>
     <changeSet id="4" author="fineract">
         <createIndex tableName="m_account_identifier" indexName="idx_account_identifier_account_id">

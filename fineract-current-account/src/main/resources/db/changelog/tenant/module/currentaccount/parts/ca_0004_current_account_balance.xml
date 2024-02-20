@@ -28,7 +28,7 @@
                     <constraints nullable="false" primaryKey="true"/>
                 </column>
                 <column name="account_id" type="CHAR(21)">
-                    <constraints nullable="false"/>
+                    <constraints nullable="false" unique="true"/>
                 </column>
                 <column name="account_balance" type="DECIMAL(19, 6)">
                     <constraints nullable="false"/>
