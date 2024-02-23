@@ -21,9 +21,10 @@ package org.apache.fineract.infrastructure.jobs.filter;
 import static org.apache.fineract.batch.command.CommandStrategyUtils.isRelativeUrlVersioned;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.collect.Lists;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -72,7 +73,8 @@ public class LoanCOBFilterHelper {
     private final RetrieveLoanIdService retrieveLoanIdService;
 
     private final LoanRescheduleRequestRepository loanRescheduleRequestRepository;
-    private final ObjectMapper objectMapper;
+
+    public static JsonMapper JSON_MAPPER = JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
 
     private static final List<HttpMethod> HTTP_METHODS = List.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE);
 
@@ -136,7 +138,7 @@ public class LoanCOBFilterHelper {
     }
 
     private List<BatchRequest> getBatchRequests(HttpServletRequest request) throws IOException {
-        List<BatchRequest> batchRequests = objectMapper.readValue(request.getInputStream(), new TypeReference<>() {});
+        List<BatchRequest> batchRequests = JSON_MAPPER.readValue(request.getInputStream(), new TypeReference<>() {});
         for (BatchRequest batchRequest : batchRequests) {
             String pathInfo = "/" + batchRequest.getRelativeUrl();
             if (!isRelativeUrlVersioned(batchRequest.getRelativeUrl())) {
@@ -226,7 +228,7 @@ public class LoanCOBFilterHelper {
     private Long getTopLevelLoanIdFromBatchRequest(BatchRequest batchRequest) throws JsonProcessingException {
         String body = batchRequest.getBody();
         if (StringUtils.isNotBlank(body)) {
-            JsonNode jsonNode = objectMapper.readTree(body);
+            JsonNode jsonNode = JSON_MAPPER.readTree(body);
             if (jsonNode.has("loanId")) {
                 return jsonNode.get("loanId").asLong();
             }
