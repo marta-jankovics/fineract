@@ -23,7 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementGenerationData;
+import org.apache.fineract.statement.data.dao.AccountStatementGenerationData;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
 

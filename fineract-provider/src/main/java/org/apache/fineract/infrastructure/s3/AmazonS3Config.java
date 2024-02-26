@@ -23,8 +23,6 @@ import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDoma
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadReportingService;
 import org.apache.fineract.infrastructure.dataqueries.service.export.S3DatatableReportExportServiceImpl;
-import org.apache.fineract.statement.domain.AccountStatementResultRepository;
-import org.apache.fineract.statement.service.AccountStatementS3Publisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -63,12 +61,4 @@ public class AmazonS3Config {
             ConfigurationDomainService configurationDomainService, S3Client s3Client, FineractProperties fineractProperties) {
         return new S3DatatableReportExportServiceImpl(reportServiceImpl, configurationDomainService, s3Client, fineractProperties);
     }
-
-    @Bean
-    @ConditionalOnBean(S3Client.class)
-    public AccountStatementS3Publisher accountStatementS3Publisher(AccountStatementResultRepository accountStatementResultRepository,
-            FineractProperties properties, S3Client s3Client) {
-        return new AccountStatementS3Publisher(accountStatementResultRepository, properties, s3Client);
-    }
-
 }

@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementGenerationData;
+import org.apache.fineract.statement.data.dao.AccountStatementGenerationData;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
 import org.apache.fineract.statement.provider.AccountStatementServiceProvider;

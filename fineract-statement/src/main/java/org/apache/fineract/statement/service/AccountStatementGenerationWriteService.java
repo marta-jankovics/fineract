@@ -18,21 +18,15 @@
  */
 package org.apache.fineract.statement.service;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementGenerationData;
+import org.apache.fineract.statement.data.dao.AccountStatementGenerationData;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
 
 public interface AccountStatementGenerationWriteService {
-
-    JsonMapper JSON_MAPPER = JsonMapper.builder().serializationInclusion(NON_NULL).addModule(new JavaTimeModule()).build();
 
     boolean isSupport(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType);

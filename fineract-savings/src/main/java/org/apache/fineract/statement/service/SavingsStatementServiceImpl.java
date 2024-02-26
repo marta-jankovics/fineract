@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.savings.statement.service;
+package org.apache.fineract.statement.service;
+
+import static org.apache.fineract.portfolio.PortfolioProductType.SAVING;
 
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,14 +39,10 @@ import org.apache.fineract.portfolio.savings.SavingsAccountTransactionType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
-import org.apache.fineract.statement.data.AccountStatementData;
 import org.apache.fineract.statement.data.StatementParser;
 import org.apache.fineract.statement.domain.AccountStatement;
 import org.apache.fineract.statement.domain.AccountStatementRepository;
 import org.apache.fineract.statement.domain.ProductStatementRepository;
-import org.apache.fineract.statement.service.AccountStatementServiceImpl;
-import org.apache.fineract.statement.service.SavingsStatementService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,16 +50,12 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SavingsStatementServiceImpl extends AccountStatementServiceImpl implements SavingsStatementService {
 
-    private static final String DEFAULT_PREFIX_CONVERSION = "K";
-    private static final String DEFAULT_PREFIX_DISPOSAL = "R";
-
     private final ReadWriteNonCoreDataService nonCoreDataService;
     private final GenericDataService genericDataService;
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final JdbcTemplate jdbcTemplate;
     private final SavingsAccountRepositoryWrapper savingsAccountRepository;
 
-    @Autowired
     public SavingsStatementServiceImpl(StatementParser statementParser, ProductStatementRepository productStatementRepository,
             AccountStatementRepository statementRepository, ReadWriteNonCoreDataService nonCoreDataService,
             GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, JdbcTemplate jdbcTemplate,
@@ -75,43 +68,52 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
         this.savingsAccountRepository = savingsAccountRepositoryWrapper;
     }
 
+    // ----- AccountStatementServiceImpl -----
+
     @Override
-    @NotNull
-    protected AccountStatementData createDefaultAccountStatementData(Serializable accountId) {
-        // TODO CURRENT!
-        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection((Long) accountId);
-        HashMap<String, Object> accountDetails = retrieveAccountDetails(account.clientId(), (Long) accountId);
-        String prefix = null;
+    public boolean isSupport(PortfolioProductType productType) {
+        return productType == SAVING;
+    }
+
+    @Override
+    protected String getAccountDiscriminator(@NotNull String accountId) {
+        Long lAccountId = Long.valueOf(accountId);
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(lAccountId);
+        HashMap<String, Object> accountDetails = getAccountDetails(account.clientId(), lAccountId);
         if (accountDetails != null) {
-            boolean isConversionAccount = String.valueOf(accountId).equals(accountDetails.get("conversion_account_id"));
-            prefix = isConversionAccount ? DEFAULT_PREFIX_CONVERSION : DEFAULT_PREFIX_DISPOSAL;
+            if (accountId.equals(accountDetails.get("conversion_account_id"))) {
+                return CONVERSION_ACCOUNT_DISCRIMINATOR;
+            }
+            if (accountId.equals(accountDetails.get("disposal_account_id"))) {
+                return DISPOSAL_ACCOUNT_DISCRIMINATOR;
+            }
         }
-        return new AccountStatementData(accountId, null, null, prefix);
+        return null;
     }
 
     @Override
-    protected List<Serializable> getAccountIds(Serializable productId, PortfolioProductType productType) {
-        // TODO CURRENT!
-        return (List) savingsAccountRepository.findByProductId((Long) productId).stream().map(SavingsAccount::getId).toList();
+    protected List<String> getStatementAccountIds(@NotNull String productId, @NotNull PortfolioProductType productType) {
+        return savingsAccountRepository.findIdsForStatement(Long.valueOf(productId)).stream().map(Object::toString).toList();
     }
 
     @Override
-    protected boolean preStatementCreate(@NotNull Serializable accountId) {
-        // TODO CURRENT!
-        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection((Long) accountId);
+    protected boolean preStatementCreate(@NotNull String accountId) {
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(Long.valueOf(accountId));
         return !account.isClosed();
     }
 
     @Override
     protected void postStatementCreate(@NotNull AccountStatement statement) {
-        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(statement.getAccountId());
+        SavingsAccount account = savingsAccountRepository.findOneWithNotFoundDetection(Long.valueOf(statement.getAccountId()));
         if (account.isActive()) {
             statement.activate();
         }
     }
 
+    // ----- SavingsStatementService -----
+
     @Override
-    public HashMap<String, Object> retrieveClientDetails(@NotNull Long clientId) {
+    public HashMap<String, Object> getClientDetails(@NotNull Long clientId) {
         String dataTableName = "dt_client_details";
         GenericResultsetData clientDetails = nonCoreDataService.retrieveDatatableGenericResultSet(dataTableName, clientId, null, null);
         if (clientDetails == null || clientDetails.getData().isEmpty()) {
@@ -125,7 +127,7 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     }
 
     @Override
-    public HashMap<String, Object> retrieveAccountDetails(@NotNull Long clientId, @NotNull Long accountId) {
+    public HashMap<String, Object> getAccountDetails(@NotNull Long clientId, @NotNull Long accountId) {
         String dataTableName = "dt_client_account_mapping";
         final List<ResultsetColumnHeaderData> columnHeaders = genericDataService.fillResultsetColumnHeaders(dataTableName);
         Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil.mapHeadersToName(columnHeaders);
@@ -178,7 +180,7 @@ public class SavingsStatementServiceImpl extends AccountStatementServiceImpl imp
     }
 
     @Override
-    public Map<Long, Map<String, Object>> retrieveTransactionDetails(List<Long> transactionIds) {
+    public Map<Long, Map<String, Object>> getTransactionDetails(List<Long> transactionIds) {
         Map<Long, Map<String, Object>> result = new HashMap<>();
         if (transactionIds == null || transactionIds.isEmpty()) {
             return result;

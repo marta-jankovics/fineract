@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementPublishData;
+import org.apache.fineract.statement.data.dao.AccountStatementPublishData;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
 

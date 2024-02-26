@@ -21,7 +21,7 @@ package org.apache.fineract.statement.service;
 import static jakarta.transaction.Transactional.TxType.REQUIRES_NEW;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.apache.fineract.statement.domain.StatementPublishType.S3;
-import static org.apache.fineract.statement.service.AccountStatementGenerationWriteService.JSON_MAPPER;
+import static org.apache.fineract.statement.service.Camt053StatementGenerator.JSON_MAPPER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,16 +39,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementPublishData;
+import org.apache.fineract.statement.data.dao.AccountStatementPublishData;
 import org.apache.fineract.statement.domain.AccountStatementResult;
 import org.apache.fineract.statement.domain.AccountStatementResultRepository;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnBean(S3Client.class)
 public class AccountStatementS3Publisher implements AccountStatementPublisher {
 
     private final AccountStatementResultRepository statementResultRepository;
