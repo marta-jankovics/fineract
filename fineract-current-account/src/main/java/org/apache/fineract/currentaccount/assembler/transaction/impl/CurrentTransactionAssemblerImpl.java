@@ -214,16 +214,17 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (!transactionType.isDebit() || force) {
             return;
         }
-        // TODO CURRENT! add error context information id, balance..
         BigDecimal accountBalance = balance.getAccountBalance();
         if (MathUtil.isLessThanZero(accountBalance) && !account.isAllowOverdraft()) {
-            throw new GeneralPlatformDomainRuleException("error.msg.overdraft.not.allowed",
+            throw new GeneralPlatformDomainRuleException("error.msg.current.insufficient.funds.balance",
                     "Insufficient founds! Current balance: " + accountBalance);
         }
         BigDecimal availableBalance = account.getAvailableBalance(balance, true);
         if (MathUtil.isLessThanZero(availableBalance)) {
-            throw new GeneralPlatformDomainRuleException("error.msg.available.balance.violated",
-                    "The requested amount exceeds the available balance " + availableBalance + "!");
+            String code = !MathUtil.isEmpty(account.getMinimumRequiredBalance()) ? "error.msg.current.insufficient.funds.minrequiredbalance"
+                    : "error.msg.current.insufficient.funds.maxoverdraft";
+            throw new GeneralPlatformDomainRuleException(code,
+                    "Insufficient funds! Current balance: " + accountBalance + ", available balance: " + availableBalance);
         }
     }
 }
