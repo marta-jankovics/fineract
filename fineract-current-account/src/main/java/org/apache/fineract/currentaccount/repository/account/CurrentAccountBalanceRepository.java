@@ -32,8 +32,8 @@ import org.springframework.stereotype.Repository;
 public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAccountBalance, Long> {
 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData(cab.id, cab.accountId, cab.accountBalance, "
-            + "cab.holdAmount, cab.transactionId, ct.createdDate) FROM CurrentAccountBalance cab, CurrentTransaction ct "
-            + "WHERE cab.transactionId = ct.id AND cab.accountId = :accountId")
+            + "cab.holdAmount, cab.transactionId, ct.createdDate) FROM CurrentAccountBalance cab "
+            + "LEFT JOIN CurrentTransaction ct on ct.id = cab.transactionId WHERE cab.accountId = :accountId")
     CurrentAccountBalanceData getBalanceDataByAccountId(@Param("accountId") String accountId);
 
     @Query("select ca.id from CurrentAccount ca where ca.status in :statuses and not exists (select cab.id from CurrentAccountBalance cab where cab.accountId = ca.id)")
@@ -42,7 +42,7 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
     @Query("select ca.id from CurrentAccount ca where ca.status in :statuses and "
             + "exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = ca.id and ct.accountId = cab.accountId and "
             + "(ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) and "
-            + "ct2.id = cab.transactionId and ct.createdDate > ct2.createdDate)")
+            + "(cab.transactionId is null or (ct2.id = cab.transactionId and ct.createdDate > ct2.createdDate)))")
     List<String> getAccountIdsBalanceBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

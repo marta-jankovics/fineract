@@ -47,7 +47,7 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
     private BigDecimal holdAmount;
 
     @Setter()
-    @Column(name = "transaction_id", nullable = false)
+    @Column(name = "transaction_id", nullable = true)
     private String transactionId;
 
     @Version

@@ -23,7 +23,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <!--  add statement tables -->
-    <changeSet author="fineract" id="001">
+    <changeSet author="fineract" id="1">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="m_product_statement"/>
@@ -57,7 +57,7 @@
         <addUniqueConstraint columnNames="product_id, product_type, statement_code" constraintName="uk_product_statement"
                              tableName="m_product_statement"/>
     </changeSet>
-    <changeSet author="fineract" id="002">
+    <changeSet author="fineract" id="2">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="m_account_statement_result"/>
@@ -109,7 +109,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="fineract" id="003">
+    <changeSet author="fineract" id="3">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="m_account_statement"/>
@@ -164,7 +164,7 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_account_statement_result" validate="true"/>
     </changeSet>
-    <changeSet author="fineract" id="004">
+    <changeSet author="fineract" id="4">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT count(*) FROM job WHERE name = 'Generate Account Statements';
@@ -207,7 +207,7 @@
             <column name="is_mismatched_job" valueBoolean="false"/>
         </insert>
     </changeSet>
-    <changeSet author="fineract" id="005">
+    <changeSet author="fineract" id="5">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT count(*) FROM job_parameters WHERE job_id = (select j.id from job j where j.name = 'Generate Account Statements');
@@ -219,7 +219,7 @@
             <column name="parameter_value" valueNumeric="true"/>
         </insert>
     </changeSet>
-    <changeSet author="fineract" id="006">
+    <changeSet author="fineract" id="6">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT count(*) FROM m_permission WHERE code = 'READ_PRODUCTSTATEMENT';
@@ -289,11 +289,11 @@
             <column name="can_maker_checker" valueBoolean="false"/>
         </insert>
     </changeSet>
-    <changeSet author="fineract" id="007">
+    <changeSet author="fineract" id="7">
         <dropUniqueConstraint constraintName="uk_product_statement" tableName="m_product_statement"/>
         <addUniqueConstraint columnNames="statement_code" constraintName="uk_product_statement" tableName="m_product_statement"/>
     </changeSet>
-    <changeSet author="fineract" id="008">
+    <changeSet author="fineract" id="8">
         <modifyDataType tableName="m_product_statement" columnName="product_id" newDataType="VARCHAR(21)"/>
         <modifyDataType tableName="m_account_statement" columnName="account_id" newDataType="VARCHAR(21)"/>
     </changeSet>

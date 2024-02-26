@@ -116,7 +116,6 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
             CurrentTransaction lastTransaction = transactions.get(transactions.size() - 1);
             calculatedTill = lastTransaction.getCreatedDateTime();
             transactionId = lastTransaction.getId();
-            changed = true;
         }
         CurrentAccountBalanceData nextData = new CurrentAccountBalanceData(balanceId, accountId, accountBalance, holdAmount, transactionId,
                 calculatedTill, changed);

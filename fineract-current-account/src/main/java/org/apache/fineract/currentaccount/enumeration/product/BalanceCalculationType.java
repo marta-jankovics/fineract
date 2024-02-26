@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.enumeration.product;
 
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CLOSE;
+import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.CREATE;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -60,7 +61,7 @@ public enum BalanceCalculationType {
 
     public boolean hasDelay(@NotNull CurrentAccountAction action) {
         return switch (this) {
-            case LAZY -> action != CLOSE;
+            case LAZY -> action != CREATE && action != CLOSE;
             case STRICT_DEBIT -> isPersist(action);
             case STRICT -> false;
         };
@@ -79,6 +80,6 @@ public enum BalanceCalculationType {
         if (transactionType != null) {
             return isPersist(transactionType);
         }
-        return action == CLOSE || action == BALANCE_CALCULATION;
+        return action == CREATE || action == CLOSE || action == BALANCE_CALCULATION;
     }
 }

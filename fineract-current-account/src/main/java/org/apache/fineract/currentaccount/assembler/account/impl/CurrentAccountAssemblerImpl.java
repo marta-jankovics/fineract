@@ -349,9 +349,13 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             dataValidator.throwValidationErrors();
         }
 
+        String accountId = account.getId();
+        CurrentAccountBalanceData balance = new CurrentAccountBalanceData(null, accountId, BigDecimal.ZERO, BigDecimal.ZERO, null, null);
+        accountBalanceWriteService.saveBalance(balance);
+
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
 
-        accountStatementService.activateAccountStatements(account.getId(), PortfolioProductType.CURRENT);
+        accountStatementService.activateAccountStatements(accountId, PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
