@@ -74,7 +74,7 @@ public class LoanCOBFilterHelper {
 
     private final LoanRescheduleRequestRepository loanRescheduleRequestRepository;
 
-    public static JsonMapper JSON_MAPPER = JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
+    public static final JsonMapper JSON_MAPPER = JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
 
     private static final List<HttpMethod> HTTP_METHODS = List.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE);
 
