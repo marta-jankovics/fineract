@@ -31,6 +31,10 @@
     <include file="tenant-store/changelog-tenant-store.xml" relativeToChangelogFile="true" context="tenant_store_db AND !initial_switch"/>
     <include file="tenant/initial-switch-changelog-tenant.xml" relativeToChangelogFile="true" context="tenant_db AND initial_switch"/>
     <include file="tenant/changelog-tenant.xml" relativeToChangelogFile="true" context="tenant_db AND !initial_switch"/>
-    <includeAll path="db/changelog/tenant/module" errorIfMissingOrEmpty="false" context="tenant_db AND custom_changelog" filter="org.apache.fineract.infrastructure.core.service.migration.TenantModuleRootFilter" />
+    <!-- Add new module master changelog file at the end of this list (to keep existing identifiers on adding new module) -->
+    <include file="db/changelog/tenant/module/loan/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
+    <include file="db/changelog/tenant/module/investor/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
+    <include file="db/changelog/tenant/module/statement/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
+    <include file="db/changelog/tenant/module/currentaccount/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
     <includeAll path="db/custom-changelog" errorIfMissingOrEmpty="false" context="tenant_db AND custom_changelog" />
 </databaseChangeLog>
