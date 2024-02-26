@@ -22,15 +22,16 @@ import org.springframework.beans.BeansException;
 
 public class ResourceNotFoundException extends AbstractPlatformResourceNotFoundException {
 
-    public ResourceNotFoundException(String globalisationMessageCode, String defaultUserMessage, Object... defaultUserMessageArgs) {
-        super(globalisationMessageCode, defaultUserMessage, defaultUserMessageArgs);
+    public ResourceNotFoundException(String resource, String defaultUserMessage, Object... defaultUserMessageArgs) {
+        super(String.format("error.msg.%s.not.found", resource), String.format(defaultUserMessage, defaultUserMessageArgs),
+                defaultUserMessageArgs);
     }
 
-    public ResourceNotFoundException(String resource, String id) {
-        this("error.msg." + resource + ".id.invalid", "Resource '" + resource + "' with id '" + id + "' does not exist.", id);
+    public ResourceNotFoundException(String resource, String identifier) {
+        this(resource, "Resource '%s' with id '%s' cannot be found.", resource, identifier);
     }
 
     public ResourceNotFoundException(BeansException e) {
-        this("error.msg.resource.invalid", "Resource does not exist.", e);
+        this("resource", "Resource does not exist.", e);
     }
 }

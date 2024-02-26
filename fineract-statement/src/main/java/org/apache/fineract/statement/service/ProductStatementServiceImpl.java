@@ -24,6 +24,7 @@ import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENT
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.ProductStatementData;
 import org.apache.fineract.statement.data.StatementParser;
+import org.apache.fineract.statement.data.dto.ProductStatementData;
 import org.apache.fineract.statement.domain.ProductStatement;
 import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.provider.AccountStatementServiceProvider;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProductStatementServiceImpl implements ProductStatementService {
@@ -52,7 +51,8 @@ public class ProductStatementServiceImpl implements ProductStatementService {
 
     @Transactional
     @Override
-    public void createProductStatements(Long productId, PortfolioProductType productType, JsonCommand command) {
+    public void createProductStatements(@NotNull String productId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command) {
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statements = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statements != null) {
@@ -69,7 +69,8 @@ public class ProductStatementServiceImpl implements ProductStatementService {
 
     @Transactional
     @Override
-    public Map<String, Object> updateProductStatements(Long productId, PortfolioProductType productType, JsonCommand command) {
+    public Map<String, Object> updateProductStatements(@NotNull String productId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command) {
         HashMap<String, HashMap<String, String>> changes = null;
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);

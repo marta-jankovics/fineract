@@ -55,7 +55,7 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -170,7 +170,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
                 .resource(CurrentAccountApiConstants.CURRENT_TRANSACTION_RESOURCE_NAME);
         if (currencyCode != null) {
             final CurrentProduct product = currentProductRepository.findById(account.getProductId())
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
+                    .orElseThrow(() -> new ResourceNotFoundException("current.product",
                             "Current product with provided id: %s cannot be found", account.getProductId()));
             if (!currencyCode.equals(product.getCurrency().getCode())) {
                 dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).failWithCode("should.match.product.value");
@@ -191,24 +191,17 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (!transactionType.isDebit() && !account.isBalancePersist(action)) {
             return null;
         }
-        BalanceCalculationData balance = calculateBalance(account, action); // calculated before the transaction is
-                                                                            // persisted
-        boolean applied = balance.applyTransaction(transaction);
+        // calculated before the transaction is persisted
+        BalanceCalculationData balance = calculateBalance(account, action);
+
+        // Balance has a FK reference on transaction, but we don't have reference on entity level,
+        // so JPA cannot be sure about the order of saving balance and transaction
+        transaction = currentTransactionRepository.saveAndFlush(transaction);
+        balance.applyTransaction(transaction);
         checkBalance(account, balance, transactionType, force);
         if (account.isBalancePersist(action)) {
-            CurrentAccountBalanceData balanceData;
             boolean hasDelay = account.hasBalanceDelay(action);
-            if (hasDelay) {
-                balanceData = balance.getDelayData();
-            } else {
-                if (applied) {
-                    // Balance has a FK reference on transaction, but we don't have reference on entity level,
-                    // so JPA cannot be sure about the order of saving balance and transaction
-                    transaction = currentTransactionRepository.saveAndFlush(transaction);
-                    balance.ensureTransaction(transaction);
-                }
-                balanceData = balance.getTotalData();
-            }
+            CurrentAccountBalanceData balanceData = hasDelay ? balance.getDelayData() : balance.getTotalData();
             if (balanceData.isChanged()) {
                 accountBalanceWriteService.saveBalance(balanceData);
             }

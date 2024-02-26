@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.api;
 import static org.apache.fineract.infrastructure.configuration.api.ApiConstants.ACTION_CREATE;
 
 import org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants;
+import org.apache.fineract.statement.data.StatementParser;
 
 @SuppressWarnings({ "HideUtilityClassConstructor" })
 public class CurrentAccountApiConstants {
@@ -82,6 +83,7 @@ public class CurrentAccountApiConstants {
     public static final String BALANCE_CALCULATION_TYPE_PARAM = "balanceCalculationType";
     public static final String OVERDRAFT_LIMIT_PARAM = "overdraftLimit";
     public static final String MINIMUM_REQUIRED_BALANCE_PARAM = "minimumRequiredBalance";
+    public static final String STATEMENTS_PARAM = StatementParser.PARAM_STATEMENTS;
     // Accounting
     public static final String CONTROL_ACCOUNT_ID_PARAM = "controlAccountId";
     public static final String REFERENCE_ACCOUNT_ID_PARAM = "referenceAccountId";

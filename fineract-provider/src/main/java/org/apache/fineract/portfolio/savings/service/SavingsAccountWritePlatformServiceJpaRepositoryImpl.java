@@ -114,7 +114,6 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountAssembler;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountCharge;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountChargeRepositoryWrapper;
-import org.apache.fineract.portfolio.savings.domain.SavingsAccountDomainService;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
@@ -263,7 +262,7 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
         account.validateAccountBalanceDoesNotBecomeNegative(SavingsAccountTransactionType.PAY_CHARGE.name(),
                 depositAccountOnHoldTransactions, false);
 
-        accountStatementService.activateAccountStatements(account.getId(), PortfolioProductType.SAVING);
+        accountStatementService.activateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
     }
 
     @Transactional
@@ -970,7 +969,7 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
         businessEventNotifierService.notifyPostBusinessEvent(new SavingsCloseBusinessEvent(account));
         // disable all standing orders linked to the savings account
         disableStandingInstructionsLinkedToClosedSavings(account);
-        accountStatementService.inactivateAccountStatements(account.getId(), PortfolioProductType.SAVING);
+        accountStatementService.inactivateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
 
         return new CommandProcessingResultBuilder() //
                 .withEntityId(savingsId) //

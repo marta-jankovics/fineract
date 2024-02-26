@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.statement.service;
 
+import static lombok.AccessLevel.PROTECTED;
 import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENTS;
 import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENT_CODE;
 
@@ -25,21 +26,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.AccountStatementData;
 import org.apache.fineract.statement.data.StatementParser;
+import org.apache.fineract.statement.data.dto.AccountStatementData;
 import org.apache.fineract.statement.domain.AccountStatement;
 import org.apache.fineract.statement.domain.AccountStatementRepository;
 import org.apache.fineract.statement.domain.ProductStatement;
@@ -47,7 +47,7 @@ import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor(access = PROTECTED)
 public class AccountStatementServiceImpl implements AccountStatementService {
 
     protected final StatementParser statementParser;
@@ -55,14 +55,14 @@ public class AccountStatementServiceImpl implements AccountStatementService {
     protected final AccountStatementRepository statementRepository;
 
     @Override
-    public boolean isSupport(PortfolioProductType productType) {
+    public boolean isSupport(@NotNull PortfolioProductType productType) {
         return false;
     }
 
     @Transactional
     @Override
-    public void createAccountStatements(Serializable accountId, Serializable productId, PortfolioProductType productType,
-            JsonCommand command) {
+    public void createAccountStatements(@NotNull String accountId, @NotNull String productId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command) {
         if (!preStatementCreate(accountId)) {
             throw new PlatformDataIntegrityException("error.msg.account.statement.create",
                     "Statement can not be created on Account " + accountId, accountId);
@@ -88,27 +88,41 @@ public class AccountStatementServiceImpl implements AccountStatementService {
         }
     }
 
-    protected void createDefaultAccountStatements(Serializable accountId, Serializable productId, PortfolioProductType productType) {
-        // TODO CURRENT!
-        List<ProductStatement> prodStatements = productStatementRepository.findByProductIdAndProductType((Long) productId, productType);
+    protected void createDefaultAccountStatements(@NotNull String accountId, @NotNull String productId,
+            @NotNull PortfolioProductType productType) {
+        List<ProductStatement> prodStatements = productStatementRepository.findByProductIdAndProductType(productId, productType);
         if (prodStatements.isEmpty()) {
             return;
         }
-        AccountStatementData statementData = createDefaultAccountStatementData(accountId);
+        String defaultRecurrence = getDefaultRecurrence(accountId);
+        String defaultSequencePrefix = getAccountDiscriminator(accountId);
         for (ProductStatement prodStatement : prodStatements) {
-            AccountStatement statement = AccountStatement.create(prodStatement, statementData);
+            String recurrence = null;
+            if (prodStatement.getRecurrence() == null) {
+                recurrence = defaultRecurrence;
+            }
+            String sequencePrefix = null;
+            if (prodStatement.getSequencePrefix() == null) {
+                sequencePrefix = defaultSequencePrefix;
+            }
+            AccountStatement statement = AccountStatement.create(prodStatement,
+                    new AccountStatementData(accountId, null, recurrence, sequencePrefix));
             statementRepository.save(statement);
         }
     }
 
-    @NotNull
-    protected AccountStatementData createDefaultAccountStatementData(Serializable accountId) {
-        return new AccountStatementData(accountId, null, null, null);
+    protected String getDefaultRecurrence(@NotNull String accountId) {
+        return null;
+    }
+
+    protected String getAccountDiscriminator(@NotNull String accountId) {
+        return null;
     }
 
     @Transactional
     @Override
-    public Map<String, Object> updateAccountStatements(Serializable accountId, PortfolioProductType productType, JsonCommand command) {
+    public Map<String, Object> updateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command) {
         if (!preStatementCreate(accountId)) {
             throw new PlatformDataIntegrityException("error.msg.account.statement.update",
                     "Statement can not be updated on Account " + accountId, accountId);
@@ -117,16 +131,14 @@ public class AccountStatementServiceImpl implements AccountStatementService {
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statementArray != null) {
-                // TODO CURRENT!
-                List<AccountStatement> existingStatements = statementRepository
-                        .findByAccountIdAndProductStatementProductType((Long) accountId, productType);
+                List<AccountStatement> existingStatements = statementRepository.findByAccountIdAndProductStatementProductType(accountId,
+                        productType);
                 Map<String, AccountStatement> statementsByCode = existingStatements.stream()
                         .collect(Collectors.toMap(AccountStatement::getStatementCode, v -> v));
                 changes = new HashMap<>();
                 for (JsonElement statementElement : statementArray) {
                     final JsonObject statementObject = statementElement.getAsJsonObject();
-                    // TODO CURRENT!
-                    AccountStatementData statementData = statementParser.parseAccountStatementForUpdate(statementObject, (Long) accountId);
+                    AccountStatementData statementData = statementParser.parseAccountStatementForUpdate(statementObject, accountId);
                     final String code = statementData.getStatementCode();
                     AccountStatement statement = statementsByCode.get(code);
                     if (statement == null) {
@@ -158,21 +170,17 @@ public class AccountStatementServiceImpl implements AccountStatementService {
 
     @Transactional
     @Override
-    public void inheritProductStatement(Serializable productId, PortfolioProductType productType, String statementCode) {
+    public void inheritProductStatement(@NotNull String productId, @NotNull PortfolioProductType productType,
+            @NotNull String statementCode) {
         ProductStatement prodStatement = productStatementRepository.findByStatementCode(statementCode)
                 .orElseThrow(() -> new ResourceNotFoundException("product.statement", statementCode));
-        List<Serializable> accountIds = getAccountIds(productId, productType);
-        for (Serializable accountId : accountIds) {
-            if (!preStatementCreate(accountId)) {
-                continue;
-            }
-            // TODO CURRENT!
-            Optional<AccountStatement> exisingStatement = statementRepository
-                    .findByAccountIdAndProductStatementStatementCode((Long) accountId, statementCode);
+        List<String> accountIds = getStatementAccountIds(productId, productType);
+        for (String accountId : accountIds) {
+            Optional<AccountStatement> exisingStatement = statementRepository.findByAccountIdAndProductStatementStatementCode(accountId,
+                    statementCode);
             AccountStatement statement;
             if (exisingStatement.isEmpty()) {
-                // TODO CURRENT!
-                statement = AccountStatement.create(prodStatement, (Long) accountId);
+                statement = AccountStatement.create(prodStatement, accountId);
                 postStatementCreate(statement);
             } else {
                 statement = exisingStatement.get();
@@ -182,11 +190,11 @@ public class AccountStatementServiceImpl implements AccountStatementService {
         }
     }
 
-    protected List<Serializable> getAccountIds(Serializable productId, PortfolioProductType productType) {
+    protected List<String> getStatementAccountIds(@NotNull String productId, @NotNull PortfolioProductType productType) {
         return Collections.emptyList();
     }
 
-    protected boolean preStatementCreate(@NotNull Serializable accountId) {
+    protected boolean preStatementCreate(@NotNull String accountId) {
         return true;
     }
 
@@ -195,20 +203,16 @@ public class AccountStatementServiceImpl implements AccountStatementService {
     }
 
     @Override
-    public void activateAccountStatements(Serializable accountId, PortfolioProductType productType) {
-        // TODO CURRENT!
-        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType((Long) accountId,
-                productType);
+    public void activateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType) {
+        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
         for (AccountStatement statement : statements) {
             statement.activate();
         }
     }
 
     @Override
-    public void inactivateAccountStatements(Serializable accountId, PortfolioProductType productType) {
-        // TODO CURRENT!
-        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType((Long) accountId,
-                productType);
+    public void inactivateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType) {
+        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
         for (AccountStatement statement : statements) {
             statement.inactivate();
         }

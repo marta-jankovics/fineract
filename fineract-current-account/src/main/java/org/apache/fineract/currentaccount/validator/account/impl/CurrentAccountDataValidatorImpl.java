@@ -33,6 +33,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.STATEMENTS_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.SUBMITTED_ON_DATE_PARAM;
 
 import com.google.gson.reflect.TypeToken;
@@ -58,11 +59,11 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, ACCOUNT_NUMBER_PARAM, EXTERNAL_ID_PARAM, CLIENT_ID_PARAM, PRODUCT_ID_PARAM,
                     SUBMITTED_ON_DATE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
-                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM));
+                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
 
     public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
-                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM));
+                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
 
     @Override
     public void validateForSubmit(final JsonCommand command) {

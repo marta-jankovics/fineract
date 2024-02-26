@@ -22,7 +22,6 @@ import com.google.common.base.Enums;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,8 @@ import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.statement.data.dto.AccountStatementData;
+import org.apache.fineract.statement.data.dto.ProductStatementData;
 import org.apache.fineract.statement.domain.StatementBatchType;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
@@ -75,7 +76,7 @@ public final class StatementParser {
     }
 
     @NotNull
-    public ProductStatementData parseProductStatementForCreate(String json, Long productId, PortfolioProductType productType) {
+    public ProductStatementData parseProductStatementForCreate(String json, String productId, PortfolioProductType productType) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -84,7 +85,7 @@ public final class StatementParser {
     }
 
     @NotNull
-    public ProductStatementData parseProductStatementForCreate(JsonObject element, Long productId, PortfolioProductType productType) {
+    public ProductStatementData parseProductStatementForCreate(JsonObject element, String productId, PortfolioProductType productType) {
         fromJsonHelper.checkForUnsupportedParameters(element, PRODUCT_STATEMENT_CREATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder().resource(PRODUCT_STATEMENT_RESOURCE);
@@ -105,18 +106,21 @@ public final class StatementParser {
         return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix, false);
     }
 
-    public ProductStatementData parseProductStatementForUpdate(String json, Long productId, PortfolioProductType productType) {
+    public ProductStatementData parseProductStatementForUpdate(String json, String productId, PortfolioProductType productType) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
-        final JsonElement element = fromJsonHelper.parse(json);
+        final JsonObject element = fromJsonHelper.parse(json).getAsJsonObject();
         return parseProductStatementForUpdate(element, productId, productType);
     }
 
-    public ProductStatementData parseProductStatementForUpdate(JsonElement element, Long productId, PortfolioProductType productType) {
-        fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), PRODUCT_STATEMENT_UPDATE_PARAMETERS);
+    public ProductStatementData parseProductStatementForUpdate(JsonObject element, String productId, PortfolioProductType productType) {
+        fromJsonHelper.checkForUnsupportedParameters(element, PRODUCT_STATEMENT_UPDATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder().resource(PRODUCT_STATEMENT_RESOURCE);
+
+        validator.parameter(PARAM_PRODUCT_ID).value(productId).notBlank();
+        validator.parameter(PARAM_PRODUCT_TYPE).value(productType).notNull();
 
         String code = parseStatementCode(element, validator);
         StatementType statementType = null;
@@ -150,7 +154,7 @@ public final class StatementParser {
         return new ProductStatementData(productId, productType, code, statementType, publishType, batchType, recurrence, prefix, inherit);
     }
 
-    public AccountStatementData parseAccountStatementForCreate(String json, Serializable accountId) {
+    public AccountStatementData parseAccountStatementForCreate(String json, String accountId) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -158,8 +162,8 @@ public final class StatementParser {
         return parseAccountStatementForCreate(element, accountId);
     }
 
-    public AccountStatementData parseAccountStatementForCreate(JsonObject element, Serializable accountId) {
-        fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), ACCOUNT_STATEMENT_CREATE_PARAMETERS);
+    public AccountStatementData parseAccountStatementForCreate(JsonObject element, String accountId) {
+        fromJsonHelper.checkForUnsupportedParameters(element, ACCOUNT_STATEMENT_CREATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder().resource(ACCOUNT_STATEMENT_RESOURCE);
 
@@ -174,7 +178,7 @@ public final class StatementParser {
         return new AccountStatementData(accountId, code, recurrence, prefix);
     }
 
-    public AccountStatementData parseAccountStatementForUpdate(String json, Long accountId) {
+    public AccountStatementData parseAccountStatementForUpdate(String json, String accountId) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -182,10 +186,12 @@ public final class StatementParser {
         return parseAccountStatementForUpdate(element, accountId);
     }
 
-    public AccountStatementData parseAccountStatementForUpdate(JsonObject element, Long accountId) {
+    public AccountStatementData parseAccountStatementForUpdate(JsonObject element, String accountId) {
         fromJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), ACCOUNT_STATEMENT_UPDATE_PARAMETERS);
 
         final DataValidatorBuilder validator = new DataValidatorBuilder().resource(ACCOUNT_STATEMENT_RESOURCE);
+
+        validator.parameter(PARAM_ACCOUNT_ID).value(accountId).notBlank();
 
         String code = null;
         if (fromJsonHelper.parameterExists(PARAM_STATEMENT_CODE, element)) {

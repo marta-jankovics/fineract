@@ -77,10 +77,11 @@ import org.apache.fineract.currentaccount.repository.product.CurrentProductRepos
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
+import org.apache.fineract.currentaccount.statement.service.CurrentStatementService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -109,6 +110,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentAccountIdentifiersResponseDataMapper accountIdentifiersResponseDataMapper;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
+    private final CurrentStatementService accountStatementService;
 
     /**
      * Assembles a new {@link CurrentAccount} from JSON details passed in request inheriting details where relevant from
@@ -120,9 +122,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         final String externalId = command.stringValueOfParameterNamedAllowingNull(EXTERNAL_ID_PARAM);
         final String productId = command.stringValueOfParameterNamedAllowingNull(PRODUCT_ID_PARAM);
 
-        final CurrentProduct product = this.productRepository.findById(productId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
-                        "Current product with provided id: %s cannot be found", productId));
+        final CurrentProduct product = this.productRepository.findById(productId).orElseThrow(
+                () -> new ResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId));
 
         final Long clientId = command.longValueOfParameterNamed(CLIENT_ID_PARAM);
         if (clientId == null) {
@@ -176,19 +177,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         validateDates(client, submittedOnDate);
         validateAccountValuesWithProduct(product, account);
+        account = accountRepository.saveAndFlush(account);
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
             // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
             // caller to do it beforehand is not enough...
-            account = accountRepository.saveAndFlush(account);
             persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, false, readWriteNonCoreDataService);
-        } else {
-            account = accountRepository.save(account);
         }
-
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
         persistAccountIdentifiers(account, command);
+        accountStatementService.createAccountStatements(account.getId(), product.getId(), PortfolioProductType.CURRENT, command);
         return account;
     }
 
@@ -250,13 +249,12 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
         dataValidator.throwValidationErrors();
 
-        updateIdentifiers(account, command, actualChanges);
-        account.setNextStatus(UPDATE);
-
         final CurrentProduct product = productRepository.findById(account.getProductId())
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
-                        "Current product with provided id: %s cannot be found", account.getProductId()));
+                .orElseThrow(() -> new ResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found",
+                        account.getProductId()));
         validateAccountValuesWithProduct(product, account);
+
+        account.setNextStatus(UPDATE);
 
         if (!actualChanges.isEmpty()) {
             accountRepository.save(account);
@@ -270,6 +268,9 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
                 actualChanges.put(DATATABLES_PARAM, datatableChanges);
             }
         }
+        updateIdentifiers(account, command, actualChanges);
+        accountStatementService.updateAccountStatements(account.getId(), PortfolioProductType.CURRENT, command);
+
         return actualChanges;
     }
 
@@ -350,6 +351,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
 
+        accountStatementService.activateAccountStatements(account.getId(), PortfolioProductType.CURRENT);
+
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
         actualChanges.put(STATUS_PARAM, account.getStatus().toStringEnumOptionData());
@@ -386,6 +389,8 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         account.setNextStatus(CurrentAccountAction.CLOSE);
         persistAccountBalance(account, balanceData, CurrentAccountAction.CLOSE);
         persistEntityAction(account, CLOSE, closedDate);
+
+        accountStatementService.inactivateAccountStatements(account.getId(), PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
@@ -495,7 +500,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         Map<IdTypeValueSubValueData, AccountIdentifier> existingIdentifiers = accountIdentifierRepository
-                .getAccountIdentifiers(PortfolioAccountType.CURRENT, account.getId()).stream()
+                .getByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, account.getId()).stream()
                 .collect(Collectors.toMap(ai -> new IdTypeValueSubValueData(ai.getIdentifierType().name(), ai.getValue(), ai.getSubValue()),
                         Function.identity()));
 

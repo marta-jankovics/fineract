@@ -18,13 +18,15 @@
  */
 package org.apache.fineract.statement.service;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
 
 public interface ProductStatementService {
 
-    void createProductStatements(Long productId, PortfolioProductType productType, JsonCommand command);
+    void createProductStatements(@NotNull String productId, @NotNull PortfolioProductType productType, @NotNull JsonCommand command);
 
-    Map<String, Object> updateProductStatements(Long productId, PortfolioProductType productType, JsonCommand command);
+    Map<String, Object> updateProductStatements(@NotNull String productId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command);
 }

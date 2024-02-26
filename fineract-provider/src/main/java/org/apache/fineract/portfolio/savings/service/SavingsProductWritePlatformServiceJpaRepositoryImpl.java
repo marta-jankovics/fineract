@@ -110,7 +110,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             // save accounting mappings
             this.accountMappingWritePlatformService.createSavingProductToGLAccountMapping(product.getId(), command, SAVINGS_DEPOSIT);
 
-            productStatementService.createProductStatements(product.getId(), SAVING, command);
+            productStatementService.createProductStatements(product.getId().toString(), SAVING, command);
 
             // check if the office specific products are enabled. If yes, then
             // save this savings product against a specific office
@@ -168,11 +168,11 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             // accounting related changes
             final boolean accountingTypeChanged = changes.containsKey(accountingRuleParamName);
             final Map<String, Object> accountingMappingChanges = this.accountMappingWritePlatformService
-                    .updateSavingsProductToGLAccountMapping(product.getId(), command, accountingTypeChanged, product.getAccountingType(),
+                    .updateSavingsProductToGLAccountMapping(productId, command, accountingTypeChanged, product.getAccountingType(),
                             SAVINGS_DEPOSIT);
-            changes.putAll(accountingMappingChanges);
 
-            Map<String, Object> statementChanges = productStatementService.updateProductStatements(product.getId(), SAVING, command);
+            changes.putAll(accountingMappingChanges);
+            Map<String, Object> statementChanges = productStatementService.updateProductStatements(productId.toString(), SAVING, command);
             if (statementChanges != null) {
                 changes.put(PARAM_STATEMENTS, statementChanges);
             }
@@ -182,7 +182,7 @@ public class SavingsProductWritePlatformServiceJpaRepositoryImpl implements Savi
             }
 
             return new CommandProcessingResultBuilder() //
-                    .withEntityId(product.getId()) //
+                    .withEntityId(productId) //
                     .with(changes).build();
         } catch (final DataAccessException e) {
             handleDataIntegrityIssues(command, e.getMostSpecificCause(), e);

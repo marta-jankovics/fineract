@@ -56,7 +56,15 @@ public class CurrentAccountResolver {
         return new CurrentAccountResolver(currentType, interopType, identifier, subIdentifier);
     }
 
+    public static CurrentAccountResolver resolveInternal(@NotNull InteropIdentifierType idType, String identifier, String subIdentifier) {
+        return identifier == null ? null : new CurrentAccountResolver(null, idType, identifier, subIdentifier);
+    }
+
     public boolean isSecondaryIdentifier() {
         return interopIdType != null;
+    }
+
+    public String getTypeName() {
+        return idType == null ? interopIdType.name() : idType.name();
     }
 }

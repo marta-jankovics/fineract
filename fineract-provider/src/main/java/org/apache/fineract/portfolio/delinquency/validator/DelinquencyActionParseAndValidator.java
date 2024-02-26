@@ -183,8 +183,8 @@ public class DelinquencyActionParseAndValidator extends ParseAndValidator {
                 || (parsed.getStartDate().isEqual(existing.getStartDate()) && parsed.getEndDate().isEqual(existing.getEndDate()));
     }
 
-    @org.jetbrains.annotations.NotNull
-    private LoanDelinquencyAction parseCommand(@org.jetbrains.annotations.NotNull JsonCommand command) {
+    @NotNull
+    private LoanDelinquencyAction parseCommand(@NotNull JsonCommand command) {
         LoanDelinquencyAction parsedDelinquencyAction = new LoanDelinquencyAction();
         parsedDelinquencyAction.setAction(extractAction(command.parsedJson()));
         parsedDelinquencyAction.setStartDate(extractStartDate(command.parsedJson()));

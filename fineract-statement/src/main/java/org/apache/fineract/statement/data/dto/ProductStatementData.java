@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.data;
+package org.apache.fineract.statement.data.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +29,7 @@ import org.apache.fineract.statement.domain.StatementType;
 @AllArgsConstructor
 public class ProductStatementData {
 
-    private final Long productId;
+    private final String productId;
     private final PortfolioProductType productType;
     private final String statementCode;
     private final StatementType statementType;

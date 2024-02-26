@@ -82,7 +82,6 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountAssembler;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountCharge;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountChargeAssembler;
-import org.apache.fineract.portfolio.savings.domain.SavingsAccountDomainService;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
@@ -237,7 +236,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CREATE, EntityTables.SAVINGS, savingsId,
                     account.productId());
 
-            accountStatementService.createAccountStatements(savingsId, account.getSavingsProductId(), PortfolioProductType.SAVING, command);
+            accountStatementService.createAccountStatements(savingsId.toString(), account.getSavingsProductId().toString(),
+                    PortfolioProductType.SAVING, command);
 
             businessEventNotifierService.notifyPostBusinessEvent(new SavingsCreateBusinessEvent(account));
 
@@ -297,8 +297,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             account.modifyApplication(command, changes);
             account.validateNewApplicationState(SAVINGS_ACCOUNT_RESOURCE_NAME);
             account.validateAccountValuesWithProduct();
-            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId, PortfolioProductType.SAVING,
-                    command);
+            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId.toString(),
+                    PortfolioProductType.SAVING, command);
 
             if (!changes.isEmpty()) {
                 if (changes.containsKey(SavingsApiConstants.clientIdParamName)) {

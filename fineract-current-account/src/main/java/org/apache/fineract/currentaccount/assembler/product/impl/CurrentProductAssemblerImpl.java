@@ -40,6 +40,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSFERS_IN_SUSPENSE_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.WRITE_OFF_ACCOUNT_ID_PARAM;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
+import static org.apache.fineract.portfolio.PortfolioProductType.CURRENT;
 
 import com.google.gson.JsonArray;
 import java.math.BigDecimal;
@@ -61,6 +62,7 @@ import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
+import org.apache.fineract.statement.service.ProductStatementService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -70,6 +72,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     private final CurrentProductRepository currentProductRepository;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
     private final CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper;
+    private final ProductStatementService productStatementService;
 
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
@@ -94,17 +97,15 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         CurrentProduct product = new CurrentProduct(externalId, name, shortName, description, currency, accountingRuleType, allowOverdraft,
                 overdraftLimit, allowForceTransaction, minimumRequiredBalance, balanceCalculationType);
 
+        product = currentProductRepository.saveAndFlush(product);
+
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
-            // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
-            // caller to do it beforehand is not enough...
-            product = currentProductRepository.saveAndFlush(product);
             persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), datatables, false, readWriteNonCoreDataService);
-        } else {
-            product = currentProductRepository.save(product);
         }
 
         persistAccountingRules(product, command);
+        productStatementService.createProductStatements(product.getId(), CURRENT, command);
         return product;
     }
 
@@ -197,8 +198,6 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             currentProductRepository.save(product);
         }
 
-        updateAccountingRules(product, command, actualChanges);
-
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
             Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT_PRODUCT, product.getId(), datatables, true,
@@ -207,6 +206,9 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
                 actualChanges.put(DATATABLES_PARAM, datatableChanges);
             }
         }
+
+        productStatementService.updateProductStatements(product.getId(), CURRENT, command);
+        updateAccountingRules(product, command, actualChanges);
         return actualChanges;
     }
 

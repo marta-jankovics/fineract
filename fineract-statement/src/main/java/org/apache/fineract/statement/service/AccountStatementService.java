@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.statement.service;
 
-import java.io.Serializable;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.portfolio.PortfolioProductType;
@@ -30,15 +30,17 @@ public interface AccountStatementService {
     String ACTION_NAME_CREATE = "CREATE";
     String ACTION_NAME_PUBLISH = "PUBLISH";
 
-    boolean isSupport(PortfolioProductType productType);
+    boolean isSupport(@NotNull PortfolioProductType productType);
 
-    void createAccountStatements(Serializable accountId, Serializable productId, PortfolioProductType productType, JsonCommand command);
+    void createAccountStatements(@NotNull String accountId, @NotNull String productId, PortfolioProductType productType,
+            @NotNull JsonCommand command);
 
-    Map<String, Object> updateAccountStatements(Serializable accountId, PortfolioProductType productType, JsonCommand command);
+    Map<String, Object> updateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType,
+            @NotNull JsonCommand command);
 
-    void inheritProductStatement(Serializable productId, PortfolioProductType productType, String statementCode);
+    void inheritProductStatement(@NotNull String productId, @NotNull PortfolioProductType productType, @NotNull String statementCode);
 
-    void activateAccountStatements(Serializable accountId, PortfolioProductType productType);
+    void activateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType);
 
-    void inactivateAccountStatements(Serializable accountId, PortfolioProductType productType);
+    void inactivateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType);
 }

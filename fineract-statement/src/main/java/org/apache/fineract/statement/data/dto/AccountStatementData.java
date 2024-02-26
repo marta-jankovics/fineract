@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.data;
+package org.apache.fineract.statement.data.dto;
 
-import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,7 +25,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AccountStatementData {
 
-    private final Serializable accountId;
+    private final String accountId;
     private final String statementCode;
     private final String recurrence;
     private final String sequencePrefix;
