@@ -43,10 +43,9 @@ import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.portfolio.calendar.service.CalendarUtils;
-import org.apache.fineract.statement.data.AccountStatementData;
+import org.apache.fineract.statement.data.dto.AccountStatementData;
 
 @Getter
-@Setter(AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "m_account_statement", uniqueConstraints = {
@@ -60,12 +59,14 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     @JoinColumn(name = "product_statement_id", nullable = false)
     private ProductStatement productStatement;
 
-    @Column(name = "account_id", nullable = false)
-    private Long accountId;
+    @Column(name = "account_id", nullable = false, length = 21)
+    private String accountId;
 
+    @Setter(AccessLevel.PROTECTED)
     @Column(name = "recurrence", nullable = true, length = 100)
     private String recurrence;
 
+    @Setter(AccessLevel.PROTECTED)
     @Column(name = "sequence_prefix", nullable = true, length = 10)
     private String sequencePrefix;
 
@@ -79,6 +80,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     @Column(name = "statement_date", nullable = true)
     private LocalDate statementDate; // date for which the last statement was generated (not the date of generation)
 
+    @Setter()
     @Column(name = "statement_balance", nullable = true)
     private BigDecimal statementBalance;
 
@@ -89,7 +91,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     @Column(name = "next_statement_date", nullable = true)
     private LocalDate nextStatementDate;
 
-    protected AccountStatement(@NotNull ProductStatement productStatement, @NotNull Long accountId, String recurrence,
+    protected AccountStatement(@NotNull ProductStatement productStatement, @NotNull String accountId, String recurrence,
             String sequencePrefix) {
         this.productStatement = productStatement;
         this.accountId = accountId;
@@ -100,13 +102,12 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     }
 
     public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull AccountStatementData statementData) {
-        // TODO CURRENT!
-        return new AccountStatement(productStatement, (Long) statementData.getAccountId(),
+        return new AccountStatement(productStatement, statementData.getAccountId(),
                 Optional.ofNullable(statementData.getRecurrence()).orElse(productStatement.getRecurrence()),
                 Optional.ofNullable(statementData.getSequencePrefix()).orElse(productStatement.getSequencePrefix()));
     }
 
-    public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull Long accountId) {
+    public static AccountStatement create(@NotNull ProductStatement productStatement, @NotNull String accountId) {
         return new AccountStatement(productStatement, accountId, productStatement.getRecurrence(), productStatement.getSequencePrefix());
     }
 
@@ -146,20 +147,16 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
         return productStatement.getStatementCode();
     }
 
-    public void setStatementBalance(BigDecimal balance) {
-        this.statementBalance = balance;
-    }
-
     public void activate() {
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
-        setNextStatementDate(calcNextDate(transactionDate));
-        setSequenceNo(calcNextSequence());
-        setStatementStatus(statementStatus.activate());
+        nextStatementDate = calcNextDate(transactionDate);
+        sequenceNo = calcNextSequence();
+        statementStatus = statementStatus.activate();
     }
 
     public void inactivate() {
-        setNextStatementDate(null);
-        setStatementStatus(statementStatus.inactivate());
+        nextStatementDate = null;
+        statementStatus = statementStatus.inactivate();
     }
 
     public boolean canGenerate() {
@@ -171,11 +168,11 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     }
 
     public void generated(AccountStatementResult result) {
-        setStatementResult(result);
-        setStatementDate(nextStatementDate);
-        setNextStatementDate(calcNextDate(nextStatementDate));
-        setSequenceNo(calcNextSequence());
-        setStatementStatus(statementStatus.generate());
+        statementResult = result;
+        statementDate = nextStatementDate;
+        nextStatementDate = calcNextDate(nextStatementDate);
+        sequenceNo = calcNextSequence();
+        statementStatus = statementStatus.generate();
     }
 
     public LocalDate calcNextDate(@NotNull LocalDate startDate) {

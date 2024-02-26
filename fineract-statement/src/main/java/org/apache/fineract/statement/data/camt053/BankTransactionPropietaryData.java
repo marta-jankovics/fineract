@@ -39,4 +39,8 @@ public class BankTransactionPropietaryData {
         this.code = StatementUtils.ensureSize(code, "Code", 1, 35, false);
         this.issuer = StatementUtils.ensureSize(issuer, "Issuer", 1, 35);
     }
+
+    public static BankTransactionPropietaryData create(String code, String issuer) {
+        return code == null ? null : new BankTransactionPropietaryData(code, issuer);
+    }
 }

@@ -16,32 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.savings.statement.data;
+package org.apache.fineract.statement.data.camt053;
 
 import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMAT;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.google.common.base.Strings;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.fineract.statement.data.camt053.StatementMetaData;
 
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class SavingsMetaData extends StatementMetaData {
-
-    public static final String CONVERSION_ACCOUNT = "conversion";
-    public static final String DISPOSAL_ACCOUNT = "disposal";
+public abstract class StatementMetadata {
 
     @JsonProperty("Customer-Id")
     private String[] customerIds;
@@ -60,28 +46,27 @@ public class SavingsMetaData extends StatementMetaData {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DEFAULT_DATE_FORMAT)
     private LocalDate[] toDates;
 
-    public void add(Map<String, Object> clientDetails, @NotNull Map<String, Object> accountDetails, boolean isConversionAccount,
-            @NotNull String currency, @NotNull LocalDate fromDate, @NotNull LocalDate toDate) {
-        customerIds = ArrayUtils.add(customerIds,
-                Strings.nullToEmpty(clientDetails == null ? null : (String) clientDetails.get("customer_id")));
-        accountIds = ArrayUtils.add(accountIds, Strings.nullToEmpty((String) accountDetails.get("internal_account_id")));
-        ibans = ArrayUtils.add(ibans, Strings.nullToEmpty((String) accountDetails.get("iban")));
-        accountTypes = ArrayUtils.add(accountTypes, isConversionAccount ? CONVERSION_ACCOUNT : DISPOSAL_ACCOUNT);
+    public void add(String customerId, String accountId, String iban, String accountType, @NotNull String currency,
+            @NotNull LocalDate fromDate, @NotNull LocalDate toDate) {
+        customerIds = ArrayUtils.add(customerIds, customerId);
+        accountIds = ArrayUtils.add(accountIds, accountId);
+        ibans = ArrayUtils.add(ibans, iban);
+        accountTypes = ArrayUtils.add(accountTypes, accountType);
         currencies = ArrayUtils.add(currencies, currency);
         fromDates = ArrayUtils.add(fromDates, fromDate);
         toDates = ArrayUtils.add(toDates, toDate);
     }
 
-    public String mapToString(JsonMapper mapper) throws JsonProcessingException {
+    public void emptyToNull() {
         customerIds = emptyToNull(customerIds);
         accountIds = emptyToNull(accountIds);
         ibans = emptyToNull(ibans);
-        return mapper.writeValueAsString(this);
     }
 
-    private String[] emptyToNull(String[] values) {
+    protected String[] emptyToNull(String[] values) {
         return values == null || values.length == 0 || Arrays.stream(values).filter(e -> e != null && !e.isBlank()).findAny().isEmpty()
                 ? null
                 : values;
     }
+
 }

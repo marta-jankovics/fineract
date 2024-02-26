@@ -26,5 +26,5 @@ public interface CurrentAccountBalanceWriteService {
 
     void updateBalance(@NotNull String accountId, OffsetDateTime tillDateTime);
 
-    void saveBalance(@NotNull ICurrentAccountBalance balanceData);
+    void saveBalance(@NotNull ICurrentAccountBalance iBalance);
 }

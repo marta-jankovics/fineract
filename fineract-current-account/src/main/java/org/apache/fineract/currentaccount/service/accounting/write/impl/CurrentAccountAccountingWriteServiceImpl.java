@@ -43,7 +43,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepos
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.office.domain.Office;
 import org.apache.fineract.organisation.office.domain.OfficeRepository;
@@ -88,8 +88,8 @@ public class CurrentAccountAccountingWriteServiceImpl implements CurrentAccountA
                     : currentTransactionRepository.getTransactionsTillSorted(accountId, tillDateTime);
         } else {
             CurrentTransaction currentTransaction = currentTransactionRepository.findById(accountingHistory.getTransactionId())
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
-                            "Current transaction with id {} does not found", accountingHistory.getTransactionId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("current.transaction", "Current transaction with id {} does not found",
+                            accountingHistory.getTransactionId()));
             OffsetDateTime createdDateTime = currentTransaction.getCreatedDateTime();
             transactionList = allStrict ? currentTransactionRepository.getTransactionsFromSorted(accountId, createdDateTime)
                     : currentTransactionRepository.getTransactionsFromAndTillSorted(accountId, createdDateTime, tillDateTime);

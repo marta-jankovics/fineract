@@ -16,22 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.data.camt053;
+package org.apache.fineract.currentaccount.statement.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.statement.data.camt053.StatementMetadata;
 
 @Getter
 @AllArgsConstructor
-public class BalanceTypeData {
+public class CurrentMetadata extends StatementMetadata {
 
-    @NotNull
-    @JsonProperty(value = "CodeOrProprietary", required = true)
-    private final CodeOrProprietaryData codeOrProprietary;
-
-    public static BalanceTypeData create(@NotNull String code) {
-        return new BalanceTypeData(CodeOrProprietaryData.create(code, null));
-    }
+    public static final String CONVERSION_ACCOUNT = "conversion";
+    public static final String DISPOSAL_ACCOUNT = "disposal";
 }

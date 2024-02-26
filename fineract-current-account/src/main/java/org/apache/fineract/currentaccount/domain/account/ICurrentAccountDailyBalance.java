@@ -20,11 +20,12 @@ package org.apache.fineract.currentaccount.domain.account;
 
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 
-public interface ICurrentAccountBalance {
+public interface ICurrentAccountDailyBalance {
 
     Long getId();
 
@@ -38,36 +39,21 @@ public interface ICurrentAccountBalance {
 
     void setHoldAmount(BigDecimal holdAmount);
 
-    String getTransactionId();
+    LocalDate getBalanceDate();
 
-    void setTransactionId(String transactionId);
-
-    default boolean isChanged() {
-        return false;
-    }
-
-    default boolean applyTransaction(@NotNull CurrentTransaction transaction) {
+    default void applyTransaction(@NotNull CurrentTransaction transaction) {
         CurrentTransactionType transactionType = transaction.getTransactionType();
         BigDecimal amount = transaction.getAmount();
         BigDecimal accountBalance = getAccountBalance();
         BigDecimal holdAmount = getHoldAmount();
-        boolean changed = false;
         if (transactionType.isMonetaryCredit()) {
             setAccountBalance(MathUtil.add(accountBalance, amount));
-            changed = true;
         } else if (transactionType.isMonetaryDebit()) {
             setAccountBalance(MathUtil.subtract(accountBalance, amount));
-            changed = true;
         } else if (transactionType.isAmountOnHold()) {
             setHoldAmount(MathUtil.add(holdAmount, amount));
-            changed = true;
         } else if (transactionType.isAmountRelease()) {
             setHoldAmount(MathUtil.subtract(holdAmount, amount));
-            changed = true;
         }
-        if (changed) {
-            setTransactionId(transaction.getId());
-        }
-        return changed;
     }
 }

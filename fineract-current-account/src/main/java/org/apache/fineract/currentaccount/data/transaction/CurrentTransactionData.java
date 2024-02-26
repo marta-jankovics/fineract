@@ -22,11 +22,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
+@AllArgsConstructor
 public class CurrentTransactionData implements Serializable {
 
     // Current product data
@@ -52,4 +54,11 @@ public class CurrentTransactionData implements Serializable {
     private final String paymentTypeDescription;
     private final Boolean paymentTypeIsCashPayment;
     private final String paymentTypeCodeName;
+
+    public CurrentTransactionData(String id, String accountId, ExternalId externalId, CurrentTransactionType transactionType,
+            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
+            Long paymentTypeId, String paymentTypeName) {
+        this(id, accountId, externalId, transactionType, transactionDate, submittedOnDate, transactionAmount, createdDateTime, null, null,
+                null, null, null, paymentTypeId, paymentTypeName, null, null, null);
+    }
 }

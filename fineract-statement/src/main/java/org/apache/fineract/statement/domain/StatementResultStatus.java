@@ -19,7 +19,9 @@
 package org.apache.fineract.statement.domain;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +66,9 @@ public enum StatementResultStatus {
                     "Can not perform action: statement publish", this);
         }
         return PUBLISHED;
+    }
+
+    public static List<StatementResultStatus> getFiltered(Predicate<? super StatementResultStatus> predicate) {
+        return Arrays.stream(VALUES).filter(predicate).toList();
     }
 }

@@ -16,28 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.data;
+package org.apache.fineract.currentaccount.data.account;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.domain.StatementBatchType;
-import org.apache.fineract.statement.domain.StatementPublishType;
-import org.apache.fineract.statement.domain.StatementType;
+import lombok.Data;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccountDailyBalance;
 
-@Getter
+@Data
 @AllArgsConstructor
-public class AccountStatementGenerationData {
+public class CurrentAccountDailyBalanceData implements Serializable, ICurrentAccountDailyBalance {
 
-    private final Long accountStatementId;
-    private final Long accountId;
-    private final LocalDate generationDate;
-    private final Long productId;
-    private final String clientId;
-    private final PortfolioProductType productType;
-    private final String statementCode;
-    private final StatementType statementType;
-    private final StatementPublishType publishType;
-    private final StatementBatchType batchType;
+    private final Long id;
+    private final String accountId;
+    private BigDecimal accountBalance;
+    private BigDecimal holdAmount;
+    private LocalDate balanceDate;
 }

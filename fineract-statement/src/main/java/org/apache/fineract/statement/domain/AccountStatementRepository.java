@@ -26,7 +26,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface AccountStatementRepository extends JpaRepository<AccountStatement, Long>, JpaSpecificationExecutor<AccountStatement> {
 
-    Optional<AccountStatement> findByAccountIdAndProductStatementStatementCode(Long accountId, String statementCode);
+    Optional<AccountStatement> findByAccountIdAndProductStatementStatementCode(String accountId, String statementCode);
 
-    List<AccountStatement> findByAccountIdAndProductStatementProductType(Long accountId, PortfolioProductType productType);
+    List<AccountStatement> findByAccountIdAndProductStatementProductType(String accountId, PortfolioProductType productType);
 }

@@ -22,7 +22,6 @@ import static org.apache.fineract.statement.data.StatementParser.PARAM_BATCH_TYP
 import static org.apache.fineract.statement.data.StatementParser.PARAM_PUBLISH_TYPE;
 import static org.apache.fineract.statement.data.StatementParser.PARAM_RECURRENCE;
 import static org.apache.fineract.statement.data.StatementParser.PARAM_SEQUENCE_PREFIX;
-import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENT_CODE;
 import static org.apache.fineract.statement.data.StatementParser.PARAM_STATEMENT_TYPE;
 
 import jakarta.persistence.Column;
@@ -42,10 +41,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.data.ProductStatementData;
+import org.apache.fineract.statement.data.dto.ProductStatementData;
 
 @Getter
-@Setter(AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -53,8 +51,8 @@ import org.apache.fineract.statement.data.ProductStatementData;
         @UniqueConstraint(columnNames = { "statement_code" }, name = "uk_product_statement") })
 public class ProductStatement extends AbstractPersistableCustom<Long> {
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
+    @Column(name = "product_id", nullable = false, length = 21)
+    private String productId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_type", nullable = false, length = 100)
@@ -63,21 +61,26 @@ public class ProductStatement extends AbstractPersistableCustom<Long> {
     @Column(name = "statement_code", nullable = false, length = 40)
     private String statementCode;
 
+    @Setter(AccessLevel.PROTECTED)
     @Enumerated(EnumType.STRING)
     @Column(name = "statement_type", nullable = false, length = 100)
     private StatementType statementType;
 
+    @Setter(AccessLevel.PROTECTED)
     @Enumerated(EnumType.STRING)
     @Column(name = "publish_type", nullable = false, length = 100)
     private StatementPublishType publishType;
 
+    @Setter(AccessLevel.PROTECTED)
     @Enumerated(EnumType.STRING)
     @Column(name = "batch_type", nullable = false, length = 100)
     private StatementBatchType batchType;
 
+    @Setter(AccessLevel.PROTECTED)
     @Column(name = "recurrence", nullable = true, length = 100)
     private String recurrence;
 
+    @Setter(AccessLevel.PROTECTED)
     @Column(name = "sequence_prefix", nullable = true, length = 10)
     private String sequencePrefix;
 
@@ -91,12 +94,6 @@ public class ProductStatement extends AbstractPersistableCustom<Long> {
 
     public boolean update(@NotNull ProductStatementData statementData, @NotNull Map<String, Object> changes) {
         boolean changed = false;
-        String statementCode = statementData.getStatementCode();
-        if (statementCode != null && !Objects.equals(this.statementCode, statementCode)) {
-            setStatementCode(statementCode);
-            changes.put(PARAM_STATEMENT_CODE, statementCode);
-            changed = true;
-        }
         StatementType statementType = statementData.getStatementType();
         if (statementType != null && this.statementType != statementType) {
             setStatementType(statementType);

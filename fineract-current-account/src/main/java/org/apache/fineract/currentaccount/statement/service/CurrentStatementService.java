@@ -18,31 +18,24 @@
  */
 package org.apache.fineract.currentaccount.statement.service;
 
-import static org.apache.fineract.portfolio.PortfolioProductType.CURRENT;
-
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.portfolio.savings.SavingsAccountTransactionType;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.statement.service.AccountStatementService;
 
 public interface CurrentStatementService extends AccountStatementService {
 
-    @Override
-    default boolean isSupport(PortfolioProductType productType) {
-        return productType == CURRENT;
-    }
+    String CONVERSION_ACCOUNT_DISCRIMINATOR = "K";
+    String DISPOSAL_ACCOUNT_DISCRIMINATOR = "R";
 
     Map<String, Object> retrieveClientDetails(@NotNull Long clientId);
 
-    Map<String, Object> retrieveAccountDetails(@NotNull Long clientId, @NotNull String accountId);
-
     @NotNull
-    List<Long> getPendingTransactionIds(@NotNull String accountId, List<String> transactionIds);
+    List<String> getPendingTransactionIds(@NotNull String accountId, List<String> transactionIds);
 
-    Map<String, Map<String, Object>> retrieveTransactionDetails(List<String> transactionIds);
+    Map<String, Map<String, Object>> getTransactionDetails(List<String> transactionIds);
 
     boolean hasTransaction(@NotNull String accountId, @NotNull String transactionId, @NotNull String internalCorrelationId,
-            String categoryPurposeCode, @NotNull List<SavingsAccountTransactionType> types);
+            String categoryPurposeCode, @NotNull List<CurrentTransactionType> types);
 }

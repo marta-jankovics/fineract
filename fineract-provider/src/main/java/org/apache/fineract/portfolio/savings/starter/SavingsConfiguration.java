@@ -85,7 +85,6 @@ import org.apache.fineract.portfolio.savings.domain.RecurringDepositProductRepos
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountAssembler;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountChargeAssembler;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountChargeRepositoryWrapper;
-import org.apache.fineract.portfolio.savings.domain.SavingsAccountDomainService;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransactionRepository;
 import org.apache.fineract.portfolio.savings.domain.SavingsHelper;
@@ -118,6 +117,7 @@ import org.apache.fineract.portfolio.savings.service.RecurringDepositProductWrit
 import org.apache.fineract.portfolio.savings.service.SavingsAccountApplicationTransitionApiJsonValidator;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountChargeReadPlatformService;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountChargeReadPlatformServiceImpl;
+import org.apache.fineract.portfolio.savings.service.SavingsAccountDomainService;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountInterestPostingService;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountInterestPostingServiceImpl;
 import org.apache.fineract.portfolio.savings.service.SavingsAccountReadPlatformService;

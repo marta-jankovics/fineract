@@ -48,17 +48,9 @@ public class CurrentAccountBalanceData implements Serializable, ICurrentAccountB
     public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
         boolean changed = ICurrentAccountBalance.super.applyTransaction(transaction);
         if (changed) {
-            transactionId = transaction.getId();
             calculatedTill = transaction.getCreatedDateTime();
             this.changed = true;
         }
         return changed;
-    }
-
-    public void ensureTransaction(@NotNull CurrentTransaction transaction) {
-        if (changed) {
-            transactionId = transaction.getId();
-            calculatedTill = transaction.getCreatedDateTime();
-        }
     }
 }

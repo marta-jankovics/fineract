@@ -27,8 +27,6 @@ public class TransactionDetailsData {
 
     @JsonProperty("References")
     private final TransactionReferencesData references;
-    @JsonProperty("Amount")
-    private final BalanceAmountData amount;
     @JsonProperty("RelatedParties")
     private final TransactionPartiesData relatedParties;
     @JsonProperty("RemittanceInformation")
@@ -39,10 +37,9 @@ public class TransactionDetailsData {
     @JsonProperty("SupplementaryData")
     private SupplementaryData[] supplementaryDatas;
 
-    public TransactionDetailsData(TransactionReferencesData references, BalanceAmountData amount, TransactionPartiesData relatedParties,
+    public TransactionDetailsData(TransactionReferencesData references, TransactionPartiesData relatedParties,
             RemittanceInfoData remittanceInfo, String additionalInfo, SupplementaryData[] supplementaryDatas) {
         this.references = references;
-        this.amount = amount;
         this.relatedParties = relatedParties;
         this.remittanceInfo = remittanceInfo;
         this.additionalInfo = StatementUtils.ensureSize(additionalInfo, "AdditionalTransactionInformation", 1, 35);

@@ -83,6 +83,14 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     List<CurrentTransaction> getTransactionsSubmittedFromTo(@Param("accountId") String accountId, @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
+    @Query("select new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
+            + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, pt.id, pt.name) "
+            + "from CurrentTransaction t, PaymentType pt "
+            + "where t.paymentTypeId = pt.id and t.accountId = :accountId and t.submittedOnDate >= :fromDate and t.submittedOnDate <= :toDate "
+            + "and t.transactionType in :types order by t.createdDate, t.id")
+    List<CurrentTransactionData> getTransactionsDataForStatement(@Param("accountId") String accountId,
+            @Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
+
     @Query("select t from CurrentTransaction t where t.accountId = :accountId")
     List<CurrentTransaction> getTransactions(@Param("accountId") String accountId);
 

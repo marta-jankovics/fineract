@@ -67,10 +67,13 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData(ca.id, ca.accountNumber, ca.externalId) FROM CurrentAccount ca WHERE ca.id = :accountId")
     Optional<CurrentAccountIdentifiersData> findIdentifiersByAccountId(@Param("accountId") String accountId);
 
+    @Query("SELECT ca FROM CurrentAccount ca WHERE ca.productId = :productId and ca.status in :statuses")
+    List<String> getIdsByProductIdAndStatus(@Param("productId") String productId, @Param("statuses") List<CurrentAccountStatus> statuses);
+
+    boolean existsByProductId(String productId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({ @QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000") })
     @Query("SELECT ca FROM CurrentAccount ca WHERE ca.id = :id")
     Optional<CurrentAccount> findAccountByIdWithExclusiveLock(@Param("id") String id);
-
-    boolean existsByProductId(String productId);
 }

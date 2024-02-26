@@ -37,7 +37,7 @@ import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.springframework.data.domain.Page;
@@ -89,7 +89,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
             case ACCOUNT_NUMBER -> currentAccountRepository.getAccountDataByAccountNumber(accountIdentifier);
         };
         if (accountData == null) {
-            throw new PlatformResourceNotFoundException("current.account", "Current account with %s: %s cannot be found", currentType,
+            throw new ResourceNotFoundException("current.account", "Current account with %s: %s cannot be found", currentType,
                     accountIdentifier);
         }
 
@@ -104,10 +104,10 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         return switch (accountResolver.getIdType()) {
             case ID -> accountResolver.getIdentifier();
             case EXTERNAL_ID -> currentAccountRepository.findIdByExternalId(new ExternalId(accountResolver.getIdentifier()))
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
+                    .orElseThrow(() -> new ResourceNotFoundException("current.account",
                             "Current account with external id: %s cannot be found", accountResolver.getIdentifier()));
             case ACCOUNT_NUMBER -> currentAccountRepository.findIdByAccountNumber(accountResolver.getIdentifier())
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account",
+                    .orElseThrow(() -> new ResourceNotFoundException("current.account",
                             "Current account with account number: %s cannot be found", accountResolver.getIdentifier()));
         };
     }
@@ -116,10 +116,10 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     public IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {
         String accountId = retrieveId(accountResolver);
         CurrentAccountIdentifiersData currentAccountIdentifiersData = currentAccountRepository.findIdentifiersByAccountId(accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found",
-                        accountId));
-        List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository.getAccountIdentifiers(PortfolioAccountType.CURRENT,
-                accountId);
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+        List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository
+                .getByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, accountId);
         return currentAccountIdentifiersResponseDataMapper.map(currentAccountIdentifiersData, extraSecondaryIdentifiers);
     }
 
@@ -129,11 +129,11 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
                 accountResolver.getIdentifier(), accountResolver.getSubIdentifier());
         if (accountId == null) {
             if (accountResolver.getSubIdentifier() == null) {
-                throw new PlatformResourceNotFoundException("current.account",
+                throw new ResourceNotFoundException("current.account",
                         "Current account with secondary identifier: %s and value: %s cannot be found", secondaryType,
                         accountResolver.getIdentifier());
             } else {
-                throw new PlatformResourceNotFoundException("current.account",
+                throw new ResourceNotFoundException("current.account",
                         "Current account with secondary identifier: %s and value: %s and sub value: %s cannot be found", secondaryType,
                         accountResolver.getIdentifier(), accountResolver.getSubIdentifier());
             }

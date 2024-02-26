@@ -23,15 +23,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @RequiredArgsConstructor
 @Getter
 public enum StatementBatchType {
 
-    SINGLE(0, "statementBatchType.single"), //
-    ACCOUNT(1, "statementBatchType.product"), //
-    PRODUCT(2, "statementBatchType.product"), //
-    CLIENT(3, "statementBatchType.client"), //
+    SINGLE(0, "statementBatchType.single", "Single"), //
+    ACCOUNT(1, "statementBatchType.product", "Account"), //
+    PRODUCT(2, "statementBatchType.product", "Product"), //
+    CLIENT(3, "statementBatchType.client", "Client"), //
     ;
 
     public static final StatementBatchType[] VALUES = values();
@@ -41,6 +42,7 @@ public enum StatementBatchType {
 
     private final int id;
     private final String code;
+    private final String description;
 
     public static StatementBatchType fromId(final Integer id) {
         return BY_ID.get(id);
@@ -52,5 +54,9 @@ public enum StatementBatchType {
 
     public static StatementBatchType getDefault() {
         return SINGLE;
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

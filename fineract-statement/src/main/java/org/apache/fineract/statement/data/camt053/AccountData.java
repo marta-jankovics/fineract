@@ -39,8 +39,9 @@ public class AccountData {
     @JsonProperty("Owner")
     private final PartyIdentificationData owner;
 
-    public static AccountData create(String iban, String identification, Map<String, Object> clientDetails, String currency) {
-        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification);
+    public static AccountData create(String iban, String identification, String schemeProprietary, Map<String, Object> clientDetails,
+            String currency) {
+        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification, schemeProprietary);
         if (idData == null) {
             return null;
         }

@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.repository.account;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountDailyBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountDailyBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,12 +29,22 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CurrentAccountDailyBalanceRepository extends JpaRepository<CurrentAccountDailyBalance, String> {
+public interface CurrentAccountDailyBalanceRepository extends JpaRepository<CurrentAccountDailyBalance, Long> {
+
+    CurrentAccountDailyBalance getByAccountIdAndBalanceDate(String accountId, LocalDate date);
+
+    boolean existsByAccountIdAndBalanceDate(String accountId, LocalDate date);
 
     @Query("select cadb from CurrentAccountDailyBalance cadb, "
-            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance cadb2 where cadb2.accountId = :accountId and cadb2.balanceDate < :date) maxdb "
+            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance cadb2 where cadb2.accountId = :accountId and cadb2.balanceDate <= :date) maxdb "
             + "where cadb.accountId = :accountId and cadb.balanceDate = maxdb.maxDate")
-    CurrentAccountDailyBalance getLatestDailyBalanceBefore(@Param("accountId") String accountId, @Param("date") LocalDate date);
+    CurrentAccountDailyBalance getLatestDailyBalanceTill(@Param("accountId") String accountId, @Param("date") LocalDate date);
+
+    @Query("select new org.apache.fineract.currentaccount.data.account.CurrentAccountDailyBalanceData(cadb.id, cadb.accountId, cadb.accountBalance, cadb.holdAmount, cadb.balanceDate) "
+            + "from CurrentAccountDailyBalance cadb, "
+            + "(select max(cadb2.balanceDate) as maxDate from CurrentAccountDailyBalance cadb2 where cadb2.accountId = :accountId and cadb2.balanceDate <= :date) maxdb "
+            + "where cadb.accountId = :accountId and cadb.balanceDate = maxdb.maxDate")
+    CurrentAccountDailyBalanceData getLatestDailyBalanceTillData(@Param("accountId") String accountId, @Param("date") LocalDate date);
 
     @Query("select ca.id from CurrentAccount ca where ca.status in :statuses "
             + "and not exists (select cadb.id from CurrentAccountDailyBalance cadb where cadb.accountId = ca.id and cadb.balanceDate = :date)")

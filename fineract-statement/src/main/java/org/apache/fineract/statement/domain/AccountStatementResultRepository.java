@@ -19,6 +19,9 @@
 package org.apache.fineract.statement.domain;
 
 import java.util.Collection;
+import java.util.List;
+import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.statement.data.dao.AccountStatementPublishData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -27,9 +30,11 @@ import org.springframework.data.repository.query.Param;
 public interface AccountStatementResultRepository
         extends JpaRepository<AccountStatementResult, Long>, JpaSpecificationExecutor<AccountStatementResult> {
 
-    String HAS_ACCOUNT_REFERENCE = "select case when (count(st) > 0) then 'true' else 'false' end from AccountStatement st where st.statementResult.id = :resultId and st.id not in :statementIds";
-
-    @Query(HAS_ACCOUNT_REFERENCE)
+    @Query("select case when (count(st) > 0) then 'true' else 'false' end from AccountStatement st where st.statementResult.id = :resultId and st.id not in :statementIds")
     boolean hasAccountReference(@Param("resultId") Long resultId, @Param("statementIds") Collection<Long> statementIds);
 
+    @Query("select new org.apache.fineract.statement.data.dao.AccountStatementPublishData(asr.id, asr.resultCode, asr.productType, asr.statementType, asr.publishType) "
+            + "from AccountStatementResult asr where asr.productType = :productType and asr.resultStatus in :statuses")
+    List<AccountStatementPublishData> getStatementsDataToPublish(@Param("productType") PortfolioProductType productType,
+            @Param("statuses") List<StatementResultStatus> statuses);
 }

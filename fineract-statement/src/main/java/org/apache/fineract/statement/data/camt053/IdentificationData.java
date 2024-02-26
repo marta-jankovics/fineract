@@ -32,9 +32,11 @@ public class IdentificationData {
     @JsonProperty("Identification")
     @Size(min = 1, max = 34)
     private final String identification;
+    @JsonProperty("SchemeName")
+    private final CodeOrProprietaryData scheme;
 
-    public static IdentificationData create(String identification) {
+    public static IdentificationData create(String identification, CodeOrProprietaryData scheme) {
         identification = StatementUtils.ensureSize(identification, "Identification", 1, 34);
-        return identification == null ? null : new IdentificationData(identification);
+        return identification == null ? null : new IdentificationData(identification, scheme);
     }
 }

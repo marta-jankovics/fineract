@@ -33,7 +33,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalan
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +50,7 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
     public void updateBalance(@NotNull String accountId, OffsetDateTime tillDateTime) {
         final CurrentAccountData account = accountRepository.getAccountDataById(accountId);
         if (account == null) {
-            throw new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId);
+            throw new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId);
         }
         if (!account.isEnabled(BALANCE_CALCULATION)) {
             return;
@@ -65,19 +65,22 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void saveBalance(@NotNull ICurrentAccountBalance currentBalance) {
+    public void saveBalance(@NotNull ICurrentAccountBalance iBalance) {
         CurrentAccountBalance balance;
-        Long id = currentBalance.getId();
-        if (id != null) {
-            balance = accountBalanceRepository.findById(id)
-                    .orElseThrow(() -> new PlatformResourceNotFoundException("current.account.balance",
-                            "Current account balance with id: %s cannot be found", id));
-            balance.setAccountBalance(currentBalance.getAccountBalance());
-            balance.setHoldAmount(currentBalance.getHoldAmount());
-            balance.setTransactionId(currentBalance.getTransactionId());
+        if (iBalance instanceof CurrentAccountBalance) {
+            balance = (CurrentAccountBalance) iBalance;
         } else {
-            balance = new CurrentAccountBalance(currentBalance.getAccountId(), currentBalance.getAccountBalance(),
-                    currentBalance.getHoldAmount(), currentBalance.getTransactionId());
+            Long id = iBalance.getId();
+            if (id == null) {
+                balance = new CurrentAccountBalance(iBalance.getAccountId(), iBalance.getAccountBalance(), iBalance.getHoldAmount(),
+                        iBalance.getTransactionId());
+            } else {
+                balance = accountBalanceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("current.account.balance",
+                        "Current account balance with id: %s cannot be found", id));
+                balance.setAccountBalance(iBalance.getAccountBalance());
+                balance.setHoldAmount(iBalance.getHoldAmount());
+                balance.setTransactionId(iBalance.getTransactionId());
+            }
         }
         accountBalanceRepository.save(balance);
     }

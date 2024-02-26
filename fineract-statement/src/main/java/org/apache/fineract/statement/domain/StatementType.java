@@ -23,12 +23,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @RequiredArgsConstructor
 @Getter
 public enum StatementType {
 
-    CAMT053(0, "statementType.camt053"), //
+    CAMT053(0, "statementType.camt053", "Camt053"), //
     ;
 
     public static final StatementType[] VALUES = values();
@@ -37,6 +38,7 @@ public enum StatementType {
 
     private final int id;
     private final String code;
+    private final String description;
 
     public static StatementType fromId(final Integer id) {
         return BY_ID.get(id);
@@ -48,5 +50,9 @@ public enum StatementType {
 
     public static StatementType getDefault() {
         return CAMT053;
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

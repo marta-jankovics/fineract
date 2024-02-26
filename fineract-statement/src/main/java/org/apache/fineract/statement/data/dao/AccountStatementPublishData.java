@@ -16,15 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.core.exception;
+package org.apache.fineract.statement.data.dao;
 
-/**
- * A {@link RuntimeException} thrown when resources that are queried for are not found.
- */
-public class PlatformResourceNotFoundException extends AbstractPlatformResourceNotFoundException {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.statement.domain.StatementPublishType;
+import org.apache.fineract.statement.domain.StatementType;
 
-    public PlatformResourceNotFoundException(String resourceId, String defaultUserMessage, Object... defaultUserMessageArgs) {
-        super(String.format("error.msg.%s.not.found", resourceId), String.format(defaultUserMessage, defaultUserMessageArgs),
-                defaultUserMessageArgs);
-    }
+@Getter
+@AllArgsConstructor
+public class AccountStatementPublishData {
+
+    private final Long accountStatementResultId;
+    private final String resultCode;
+    private final PortfolioProductType productType;
+    private final StatementType statementType;
+    private final StatementPublishType publishType;
 }

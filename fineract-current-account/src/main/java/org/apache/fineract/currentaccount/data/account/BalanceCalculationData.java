@@ -36,6 +36,7 @@ public class BalanceCalculationData implements ICurrentAccountBalance, Serializa
     @NotNull
     private final CurrentAccountBalanceData totalData;
 
+    @Override
     public BigDecimal getAccountBalance() {
         return totalData.getAccountBalance();
     }
@@ -45,6 +46,7 @@ public class BalanceCalculationData implements ICurrentAccountBalance, Serializa
         totalData.setAccountBalance(accountBalance);
     }
 
+    @Override
     public BigDecimal getHoldAmount() {
         return totalData.getHoldAmount();
     }
@@ -58,15 +60,18 @@ public class BalanceCalculationData implements ICurrentAccountBalance, Serializa
         return totalData.getCalculatedTill();
     }
 
+    @Override
     public String getTransactionId() {
         return totalData.getTransactionId();
     }
 
-    public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
-        return totalData.applyTransaction(transaction);
+    @Override
+    public void setTransactionId(String transactionId) {
+        totalData.setTransactionId(transactionId);
     }
 
-    public void ensureTransaction(@NotNull CurrentTransaction transaction) {
-        totalData.ensureTransaction(transaction);
+    @Override
+    public boolean applyTransaction(@NotNull CurrentTransaction transaction) {
+        return totalData.applyTransaction(transaction);
     }
 }

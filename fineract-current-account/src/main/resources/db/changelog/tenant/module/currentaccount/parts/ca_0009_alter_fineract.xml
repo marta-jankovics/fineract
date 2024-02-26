@@ -31,7 +31,7 @@
         <addColumn tableName="acc_product_mapping">
             <column name="product_identifier" type="CHAR(21)"/>
         </addColumn>
-        <createIndex tableName="acc_product_mapping" indexName="ind_product_identifier">
+        <createIndex tableName="acc_product_mapping" indexName="idx_acc_product_mapping_identifier">
             <column name="product_identifier"/>
         </createIndex>
     </changeSet>

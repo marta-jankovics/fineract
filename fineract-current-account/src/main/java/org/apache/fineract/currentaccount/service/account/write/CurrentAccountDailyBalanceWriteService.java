@@ -20,8 +20,12 @@ package org.apache.fineract.currentaccount.service.account.write;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccountDailyBalance;
 
 public interface CurrentAccountDailyBalanceWriteService {
 
-    void calculateDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate);
+    void createDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate);
+
+    @NotNull
+    ICurrentAccountDailyBalance calculateDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate);
 }

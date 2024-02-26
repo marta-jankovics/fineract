@@ -18,19 +18,28 @@
  */
 package org.apache.fineract.statement.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.statement.domain.StatementPublishType;
-import org.apache.fineract.statement.domain.StatementType;
+import org.apache.fineract.statement.data.camt053.EnvelopeData;
 
 @Getter
 @AllArgsConstructor
-public class AccountStatementPublishData {
+public class SavingsEnvelopeData extends EnvelopeData {
 
-    private final Long accountStatementResultId;
-    private final String resultCode;
-    private final PortfolioProductType productType;
-    private final StatementType statementType;
-    private final StatementPublishType publishType;
+    @JsonProperty("SubscriptionPackage")
+    private final String subscriptionPackage;
+    @JsonProperty("CustomerShortName")
+    private final String customerShortName;
+    @JsonProperty("CustomerAddress")
+    private final String customerAddress;
+
+    public static SavingsEnvelopeData create(Map<String, Object> clientDetails) {
+        if (clientDetails == null || clientDetails.isEmpty()) {
+            return null;
+        }
+        return new SavingsEnvelopeData((String) clientDetails.get("subscription_package"), (String) clientDetails.get("short_name"),
+                (String) clientDetails.get("address"));
+    }
 }

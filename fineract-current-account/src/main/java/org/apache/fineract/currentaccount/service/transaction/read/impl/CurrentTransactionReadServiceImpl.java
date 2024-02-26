@@ -32,7 +32,7 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountRea
 import org.apache.fineract.currentaccount.service.transaction.CurrentTransactionResolver;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
@@ -74,8 +74,7 @@ public class CurrentTransactionReadServiceImpl implements CurrentTransactionRead
                     new ExternalId(transactionResolver.getIdentifier()));
         };
         if (transactionData == null) {
-            throw new PlatformResourceNotFoundException("current.transaction",
-                    "Current transaction with %s on account with %s cannot be found",
+            throw new ResourceNotFoundException("current.transaction", "Current transaction with %s on account with %s cannot be found",
                     CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, transactionResolver.getIdType().name()) + "="
                             + transactionResolver.getIdentifier(),
                     CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, accountResolver.getIdType().name()) + "="

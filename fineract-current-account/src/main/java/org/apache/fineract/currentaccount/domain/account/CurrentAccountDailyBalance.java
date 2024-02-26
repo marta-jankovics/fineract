@@ -18,33 +18,35 @@
  */
 package org.apache.fineract.currentaccount.domain.account;
 
+import static lombok.AccessLevel.PROTECTED;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
-import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
+import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
-import org.apache.fineract.infrastructure.core.service.MathUtil;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_current_account_daily_balance")
-public class CurrentAccountDailyBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> {
+@NoArgsConstructor(access = PROTECTED)
+@Table(name = "m_current_account_daily_balance", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "account_id", "balance_date" }, name = "uk_current_account_daily_balance_id_date") })
+public class CurrentAccountDailyBalance extends AbstractAuditableWithUTCDateTimeCustom<Long> implements ICurrentAccountDailyBalance {
 
     @Column(name = "account_id", nullable = false)
     private String accountId;
 
+    @Setter
     @Column(name = "account_balance", nullable = false, precision = 6)
     private BigDecimal accountBalance;
 
+    @Setter
     @Column(name = "hold_amount", precision = 6)
     private BigDecimal holdAmount;
 
@@ -59,19 +61,5 @@ public class CurrentAccountDailyBalance extends AbstractAuditableWithUTCDateTime
         this.accountBalance = accountBalance;
         this.holdAmount = holdAmount;
         this.balanceDate = balanceDate;
-    }
-
-    public void applyTransaction(@NotNull CurrentTransaction transaction) {
-        CurrentTransactionType transactionType = transaction.getTransactionType();
-        BigDecimal amount = transaction.getAmount();
-        if (transactionType.isMonetaryCredit()) {
-            accountBalance = MathUtil.add(accountBalance, amount);
-        } else if (transactionType.isMonetaryDebit()) {
-            accountBalance = MathUtil.subtract(accountBalance, amount);
-        } else if (transactionType.isAmountOnHold()) {
-            holdAmount = MathUtil.add(holdAmount, amount);
-        } else if (transactionType.isAmountRelease()) {
-            holdAmount = MathUtil.subtract(holdAmount, amount);
-        }
     }
 }

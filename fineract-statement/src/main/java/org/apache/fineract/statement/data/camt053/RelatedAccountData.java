@@ -36,8 +36,8 @@ public class RelatedAccountData {
     @JsonProperty("Currency")
     private final String currency;
 
-    public static RelatedAccountData create(String iban, String identification, String currency) {
-        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification);
+    public static RelatedAccountData create(String iban, String identification, String schemeProprietary, String currency) {
+        AccountIdentificationData idData = AccountIdentificationData.create(iban, identification, schemeProprietary);
         return idData == null ? null : new RelatedAccountData(idData, currency);
     }
 }

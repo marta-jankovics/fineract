@@ -34,7 +34,8 @@ public interface AccountIdentifierRepository extends JpaRepository<AccountIdenti
     String getAccountIdByIdTypeAndIdentifier(@Param("accountType") PortfolioAccountType accountType,
             @Param("idType") InteropIdentifierType idType, @Param("id") String id, @Param("subId") String subId);
 
-    @Query("SELECT ai FROM AccountIdentifier ai WHERE ai.accountType = :accountType AND ai.accountId = :accountId")
-    List<AccountIdentifier> getAccountIdentifiers(@Param("accountType") PortfolioAccountType accountType,
-            @Param("accountId") String accountId);
+    List<AccountIdentifier> getByAccountTypeAndAccountId(PortfolioAccountType accountType, String accountId);
+
+    AccountIdentifier getByAccountTypeAndAccountIdAndIdentifierType(PortfolioAccountType accountType, String accountId,
+            InteropIdentifierType idType);
 }

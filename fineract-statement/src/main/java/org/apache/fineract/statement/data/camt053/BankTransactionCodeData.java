@@ -19,15 +19,20 @@
 package org.apache.fineract.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class BankTransactionCodeData {
 
     @JsonProperty("Domain")
     private final BankTransactionDomainData domain;
     @JsonProperty("Proprietary")
     private final BankTransactionPropietaryData proprietary;
+
+    public static BankTransactionCodeData create(String transactionCode) {
+        return new BankTransactionCodeData(null, BankTransactionPropietaryData.create(transactionCode, null));
+    }
 }

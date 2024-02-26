@@ -38,7 +38,7 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -55,7 +55,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     public CommandProcessingResult deposit(String accountId, JsonCommand command) {
         transactionDataValidator.validateDeposit(command);
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(TRANSACTION_DEPOSIT);
 
         final Map<String, Object> changes = new LinkedHashMap<>();
@@ -80,7 +80,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     public CommandProcessingResult withdrawal(String accountId, JsonCommand command, boolean force) {
         transactionDataValidator.validateWithdrawal(command);
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(TRANSACTION_WITHDRAWAL);
         if (force && !account.isAllowForceTransaction()) {
             throw new GeneralPlatformDomainRuleException("error.msg.force.not.allowed", "Force withdrawal action is not allowed!");
@@ -108,7 +108,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
     public CommandProcessingResult hold(String accountId, JsonCommand command) {
         transactionDataValidator.validateHold(command);
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(TRANSACTION_AMOUNT_HOLD);
 
         final Map<String, Object> changes = new LinkedHashMap<>();
@@ -134,11 +134,11 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
         transactionDataValidator.validateRelease(command);
         final String transactionId = command.getTransactionId();
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(TRANSACTION_AMOUNT_RELEASE);
 
         final CurrentTransaction holdTransaction = transactionRepository.findByIdAndAccountId(transactionId, accountId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.transaction",
+                .orElseThrow(() -> new ResourceNotFoundException("current.transaction",
                         "Current transaction with id: %s and account id: %s", transactionId, accountId));
 
         final Map<String, Object> changes = new LinkedHashMap<>();

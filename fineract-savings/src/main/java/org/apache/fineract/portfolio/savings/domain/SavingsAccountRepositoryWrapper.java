@@ -183,4 +183,8 @@ public class SavingsAccountRepositoryWrapper {
     public List<SavingsAccount> findByProductId(Long productId) {
         return this.repository.findByProductId(productId);
     }
+
+    public List<Long> findIdsForStatement(Long productId) {
+        return this.repository.findIdsForStatement(productId);
+    }
 }

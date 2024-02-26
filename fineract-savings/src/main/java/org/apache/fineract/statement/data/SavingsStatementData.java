@@ -16,20 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.savings.statement.data;
+package org.apache.fineract.statement.data;
 
+import static org.apache.fineract.interoperation.domain.InteropIdentifierType.ALIAS;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_BEGIN_OF_PERIOD;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_END_OF_PERIOD;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_FULL_OF_PERIOD;
+import static org.apache.fineract.statement.service.SavingsStatementService.CONVERSION_ACCOUNT_DISCRIMINATOR;
+import static org.apache.fineract.statement.service.SavingsStatementService.DISPOSAL_ACCOUNT_DISCRIMINATOR;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -40,38 +43,56 @@ import org.apache.fineract.statement.data.camt053.AccountBalanceData;
 import org.apache.fineract.statement.data.camt053.AccountData;
 import org.apache.fineract.statement.data.camt053.DateTimePeriodData;
 import org.apache.fineract.statement.data.camt053.StatementData;
-import org.apache.fineract.statement.data.camt053.TransactionData;
+import org.apache.fineract.statement.data.camt053.TransactionStatementData;
 import org.apache.fineract.statement.data.camt053.TransactionsSummaryData;
 import org.apache.fineract.statement.domain.AccountStatement;
 
 public final class SavingsStatementData extends StatementData {
 
-    public static final int STATEMENT_TYPE_ALL = 0;
-    public static final int STATEMENT_TYPE_BOOKED = 1;
-    public static final int STATEMENT_TYPE_PENDING = 2;
-
     @Transient
     @JsonIgnore
-    private transient boolean isConversionAccount;
+    private final transient String accountDiscriminator;
+    @Transient
+    @JsonIgnore
+    private final transient String customerId;
+    @Transient
+    @JsonIgnore
+    private final transient String internalAccountId;
+    @Transient
+    @JsonIgnore
+    private final transient String iban;
+    @Transient
+    @JsonIgnore
+    private final transient LocalDate fromDate;
+    @Transient
+    @JsonIgnore
+    private final transient LocalDate toDate;
 
     private SavingsStatementData(String identification, OffsetDateTime creationDateTime, DateTimePeriodData fromToDate, AccountData account,
-            AccountBalanceData[] balances, TransactionsSummaryData transactionsSummary, TransactionData[] transactions,
-            String additionalStatementInformation, boolean isConversionAccount) {
+            AccountBalanceData[] balances, TransactionsSummaryData transactionsSummary, TransactionStatementData[] transactions,
+            String additionalStatementInformation, String accountDiscriminator, String customerId, String internalAccountId, String iban,
+            LocalDate fromDate, LocalDate toDate) {
         super(identification, creationDateTime, fromToDate, account, balances, transactionsSummary, transactions,
                 additionalStatementInformation);
-        this.isConversionAccount = isConversionAccount;
+        this.accountDiscriminator = accountDiscriminator;
+        this.customerId = customerId;
+        this.internalAccountId = internalAccountId;
+        this.iban = iban;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
     }
 
     public static SavingsStatementData create(@NotNull AccountStatement statement, @NotNull SavingsAccount account,
             Map<String, Object> clientDetails, @NotNull Map<String, Object> accountDetails, @NotNull LocalDate fromDate,
             @NotNull LocalDate toDate, @NotNull String identification, @NotNull OffsetDateTime creationDateTime, int statementType,
-            boolean isConversionAccount, @NotNull List<SavingsAccountTransaction> transactions,
+            String accountDiscriminator, @NotNull List<SavingsAccountTransaction> transactions,
             @NotNull Map<Long, Map<String, Object>> transactionDetails) {
         DateTimePeriodData fromToDate = DateTimePeriodData.create(fromDate, toDate);
-        String iban = null; // (String) accountDetails.get("iban"); only one of the identifiers can be stored here
+        String iban = (String) accountDetails.get("iban");
         String otherId = (String) accountDetails.get("internal_account_id");
         String currency = account.getCurrency().getCode();
-        AccountData accountData = AccountData.create(iban, otherId, clientDetails, currency);
+        // only one of the identifiers can be stored here
+        AccountData accountData = AccountData.create(null, otherId, ALIAS.name(), clientDetails, currency);
         AccountBalanceData opening = AccountBalanceData.create(BALANCE_CODE_BEGIN_OF_PERIOD,
                 MathUtil.nullToZero(statement.getStatementBalance()), currency, fromDate);
         BigDecimal balance = account.getSummaryOnDate(toDate).getAccountBalance();
@@ -82,44 +103,63 @@ public final class SavingsStatementData extends StatementData {
         SavingsAccountSummary sum = account.getSummaryForTransactions(transactions);
         TransactionsSummaryData trSum = TransactionsSummaryData.create(sum.getTotalCredit(), sum.getTotalDebit());
         int size = transactions.size();
-        ArrayList<SavingsTransactionData> entries = new ArrayList<>(size);
+        ArrayList<SavingsTransactionStatementData> entries = new ArrayList<>(size);
         for (SavingsAccountTransaction transaction : transactions) {
-            entries.add(SavingsTransactionData.create(transaction, clientDetails, currency, statementType,
+            entries.add(SavingsTransactionStatementData.create(transaction, clientDetails, currency, statementType,
                     transactionDetails.get(transaction.getId())));
         }
 
+        String customerId = Strings.nullToEmpty(clientDetails == null ? null : (String) clientDetails.get("customer_id"));
         return new SavingsStatementData(identification, creationDateTime, fromToDate, accountData,
-                new AccountBalanceData[] { opening, closure, total }, trSum, entries.toArray(new SavingsTransactionData[size]),
-                calcAdditionalInfo(statementType), isConversionAccount);
+                new AccountBalanceData[] { opening, closure, total }, trSum, entries.toArray(new SavingsTransactionStatementData[size]),
+                calcAdditionalInfo(statementType), accountDiscriminator, customerId, otherId, iban, fromDate, toDate);
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getAccountDiscriminator() {
+        return accountDiscriminator;
     }
 
     @Transient
     @JsonIgnore
     public boolean isConversionAccount() {
-        return isConversionAccount;
+        return CONVERSION_ACCOUNT_DISCRIMINATOR.equals(accountDiscriminator);
     }
 
     @Transient
     @JsonIgnore
-    public BigDecimal getClosureBalance() {
-        return Arrays.stream(getBalances()).filter(e -> BALANCE_CODE_END_OF_PERIOD.equals(e.getType().getCodeOrProprietary().getCode()))
-                .findFirst().map(accountBalanceData -> accountBalanceData.getAmount().getAmount()).orElse(BigDecimal.ZERO);
+    public boolean isDisposalAccount() {
+        return DISPOSAL_ACCOUNT_DISCRIMINATOR.equals(accountDiscriminator);
     }
 
-    private static String calcAdditionalInfo(int statementType) {
-        switch (statementType) {
-            case STATEMENT_TYPE_ALL -> {
-                return null;
-            }
-            case STATEMENT_TYPE_BOOKED -> {
-                return "BOOKED";
-            }
-            case STATEMENT_TYPE_PENDING -> {
-                return "PENDING";
-            }
-            default -> {
-                return null;
-            }
-        }
+    @Transient
+    @JsonIgnore
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getInternalAccountId() {
+        return internalAccountId;
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getIban() {
+        return iban;
+    }
+
+    @Transient
+    @JsonIgnore
+    public LocalDate getFromDate() {
+        return fromDate;
+    }
+
+    @Transient
+    @JsonIgnore
+    public LocalDate getToDate() {
+        return toDate;
     }
 }

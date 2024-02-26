@@ -33,12 +33,14 @@ public class SavingsTransactionEnvelopeData extends EnvelopeData {
     @JsonProperty("OtherIdentification")
     private final TransactionPartiesData relatedParties;
 
-    public static SavingsTransactionEnvelopeData create(String debtorIdentification, String creditorIdentification) {
+    public static SavingsTransactionEnvelopeData create(String debtorIdentification, String debtorScheme, String creditorIdentification,
+            String creditorScheme) {
         if (Strings.isEmpty(debtorIdentification) && Strings.isEmpty(creditorIdentification)) {
             return null;
         }
-        TransactionPartiesData parties = new TransactionPartiesData(null, RelatedAccountData.create(null, debtorIdentification, null), null,
-                RelatedAccountData.create(null, creditorIdentification, null));
+        TransactionPartiesData parties = new TransactionPartiesData(null,
+                RelatedAccountData.create(null, debtorIdentification, debtorScheme, null), null,
+                RelatedAccountData.create(null, creditorIdentification, creditorScheme, null));
         return new SavingsTransactionEnvelopeData(parties);
     }
 }

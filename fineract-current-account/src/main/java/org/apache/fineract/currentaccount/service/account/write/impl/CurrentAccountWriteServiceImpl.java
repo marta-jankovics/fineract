@@ -36,7 +36,7 @@ import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataVa
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,7 +71,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     @Override
     public CommandProcessingResult update(@NotNull String accountId, @NotNull JsonCommand command) {
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         accountDataValidator.validateForUpdate(command, account);
         account.checkEnabled(UPDATE);
 
@@ -91,7 +91,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     public CommandProcessingResult cancelApplication(@NotNull String accountId, @NotNull JsonCommand command) {
         accountDataValidator.validateCancellation(command);
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(CANCEL);
 
         final Map<String, Object> changes = accountAssembler.cancelApplication(account, command);
@@ -114,7 +114,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     public CommandProcessingResult activate(@NotNull String accountId, @NotNull JsonCommand command) {
         accountDataValidator.validateActivation(command);
         final CurrentAccount account = accountRepository.findById(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(ACTIVATE);
 
         final Map<String, Object> changes = accountAssembler.activate(account, command);
@@ -137,7 +137,7 @@ public class CurrentAccountWriteServiceImpl implements CurrentAccountWriteServic
     public CommandProcessingResult close(@NotNull String accountId, @NotNull JsonCommand command) {
         accountDataValidator.validateClosing(command);
         final CurrentAccount account = accountRepository.findAccountByIdWithExclusiveLock(accountId).orElseThrow(
-                () -> new PlatformResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
+                () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         account.checkEnabled(CLOSE);
 
         final Map<String, Object> changes = accountAssembler.close(account, command);

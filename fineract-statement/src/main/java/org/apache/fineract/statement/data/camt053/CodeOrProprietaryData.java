@@ -24,7 +24,7 @@ import lombok.Getter;
 import org.apache.fineract.statement.StatementUtils;
 
 @Getter
-public class CodeOrProprietaryData {
+public final class CodeOrProprietaryData {
 
     @JsonProperty("Code")
     @Size(min = 1, max = 4)
@@ -33,8 +33,12 @@ public class CodeOrProprietaryData {
     @Size(min = 1, max = 35)
     private final String proprietary;
 
-    public CodeOrProprietaryData(String code, String proprietary) {
+    private CodeOrProprietaryData(String code, String proprietary) {
         this.code = StatementUtils.ensureSize(code, "Code", 1, 4);
         this.proprietary = StatementUtils.ensureSize(proprietary, "Proprietary", 1, 35);
+    }
+
+    public static CodeOrProprietaryData create(String code, String proprietary) {
+        return (code == null && proprietary == null) ? null : new CodeOrProprietaryData(code, proprietary);
     }
 }

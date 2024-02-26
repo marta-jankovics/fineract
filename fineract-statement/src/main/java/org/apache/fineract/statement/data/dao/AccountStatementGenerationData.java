@@ -16,30 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.savings.statement.data;
+package org.apache.fineract.statement.data.dao;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.statement.data.camt053.EnvelopeData;
+import org.apache.fineract.statement.domain.StatementBatchType;
+import org.apache.fineract.statement.domain.StatementPublishType;
+import org.apache.fineract.statement.domain.StatementType;
 
 @Getter
 @AllArgsConstructor
-public class SavingsEnvelopeData extends EnvelopeData {
+public class AccountStatementGenerationData {
 
-    @JsonProperty("SubscriptionPackage")
-    private final String subscriptionPackage;
-    @JsonProperty("CustomerShortName")
-    private final String customerShortName;
-    @JsonProperty("CustomerAddress")
-    private final String customerAddress;
-
-    public static SavingsEnvelopeData create(Map<String, Object> clientDetails) {
-        if (clientDetails == null || clientDetails.isEmpty()) {
-            return null;
-        }
-        return new SavingsEnvelopeData((String) clientDetails.get("subscription_package"), (String) clientDetails.get("short_name"),
-                (String) clientDetails.get("address"));
-    }
+    private final Long accountStatementId;
+    private final String accountId;
+    private final LocalDate generationDate;
+    private final String productId;
+    private final String clientId;
+    private final String statementCode;
+    private final StatementType statementType;
+    private final StatementPublishType publishType;
+    private final StatementBatchType batchType;
 }

@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 
 @Entity
@@ -37,12 +38,15 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
     @Column(name = "account_id", nullable = false)
     private String accountId;
 
+    @Setter()
     @Column(name = "account_balance", nullable = false, precision = 6)
     private BigDecimal accountBalance;
 
+    @Setter()
     @Column(name = "hold_amount", precision = 6)
     private BigDecimal holdAmount;
 
+    @Setter()
     @Column(name = "transaction_id", nullable = false)
     private String transactionId;
 
@@ -53,20 +57,6 @@ public class CurrentAccountBalance extends AbstractAuditableWithUTCDateTimeCusto
         this.accountId = accountId;
         this.accountBalance = accountBalance;
         this.holdAmount = holdAmount;
-        this.transactionId = transactionId;
-    }
-
-    @Override
-    public void setAccountBalance(BigDecimal accountBalance) {
-        this.accountBalance = accountBalance;
-    }
-
-    @Override
-    public void setHoldAmount(BigDecimal holdAmount) {
-        this.holdAmount = holdAmount;
-    }
-
-    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 }

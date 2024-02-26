@@ -20,18 +20,27 @@ package org.apache.fineract.statement.data.camt053;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_END_OF_PERIOD;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class StatementData {
+
+    public static final int STATEMENT_TYPE_ALL = 0;
+    public static final int STATEMENT_TYPE_BOOKED = 1;
+    public static final int STATEMENT_TYPE_PENDING = 2;
 
     @NotNull
     @JsonProperty(value = "Identification", required = true)
@@ -51,7 +60,37 @@ public class StatementData {
     private final TransactionsSummaryData transactionsSummary;
     @JsonInclude(NON_EMPTY)
     @JsonProperty("Entry")
-    private final TransactionData[] transactions;
+    private final TransactionStatementData[] transactions;
     @JsonProperty("AdditionalStatementInformation")
     private final String additionalStatementInformation;
+
+    @Transient
+    @JsonIgnore
+    public BigDecimal getClosureBalance() {
+        return Arrays.stream(getBalances()).filter(e -> BALANCE_CODE_END_OF_PERIOD.equals(e.getType().getCodeOrProprietary().getCode()))
+                .findFirst().map(accountBalanceData -> accountBalanceData.getAmount().getAmount()).orElse(BigDecimal.ZERO);
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isPendingType() {
+        return "PENDING".equals(getAdditionalStatementInformation());
+    }
+
+    public static String calcAdditionalInfo(int statementType) {
+        switch (statementType) {
+            case STATEMENT_TYPE_ALL -> {
+                return null;
+            }
+            case STATEMENT_TYPE_BOOKED -> {
+                return "BOOKED";
+            }
+            case STATEMENT_TYPE_PENDING -> {
+                return "PENDING";
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
 }

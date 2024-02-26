@@ -31,7 +31,7 @@ import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -58,9 +58,8 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     @Transactional(timeout = 3)
     @Override
     public CommandProcessingResult update(final String productId, final JsonCommand command) {
-        final CurrentProduct product = this.currentProductRepository.findById(productId)
-                .orElseThrow(() -> new PlatformResourceNotFoundException("current.product",
-                        "Current product with provided id: %s cannot be found", productId));
+        final CurrentProduct product = this.currentProductRepository.findById(productId).orElseThrow(
+                () -> new ResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId));
         this.currentProductDataValidator.validateForUpdate(command, product);
         final Map<String, Object> changes = currentProductAssembler.update(product, command);
 
@@ -74,8 +73,7 @@ public class CurrentProductWriteServiceImpl implements CurrentProductWriteServic
     @Override
     public CommandProcessingResult delete(final String productId) {
         if (!this.currentProductRepository.existsById(productId)) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found",
-                    productId);
+            throw new ResourceNotFoundException("current.product", "Current product with provided id: %s cannot be found", productId);
         }
         boolean existsAccounts = this.currentAccountRepository.existsByProductId(productId);
         if (existsAccounts) {

@@ -28,8 +28,11 @@ import lombok.Getter;
 import org.apache.fineract.statement.StatementUtils;
 
 @Getter
-public class TransactionData {
+public class TransactionStatementData {
 
+    @JsonProperty(value = "EntryReference")
+    @Size(min = 1, max = 35)
+    private final String entryReference;
     @NotNull
     @JsonProperty(value = "Amount", required = true)
     private final BalanceAmountData amount;
@@ -49,13 +52,17 @@ public class TransactionData {
     private final DateAndTimeData bookingDate;
     @JsonProperty("ValueDate")
     private final DateAndTimeData valueDate;
+    @JsonProperty("TechnicalInputChannel")
+    private final CodeOrProprietaryData technicalInputChannel;
     @JsonInclude(NON_EMPTY)
     @JsonProperty("EntryDetails")
     private final EntryDetailsData[] details;
 
-    public TransactionData(@NotNull BalanceAmountData amount, @NotNull CreditDebitIndicator creditDebitIndicator,
-            @NotNull CodeOrProprietaryData status, String accountServicerReference, @NotNull BankTransactionCodeData transactionCode,
-            DateAndTimeData bookingDate, DateAndTimeData valueDate, EntryDetailsData[] details) {
+    public TransactionStatementData(String entryReference, @NotNull BalanceAmountData amount,
+            @NotNull CreditDebitIndicator creditDebitIndicator, @NotNull CodeOrProprietaryData status, String accountServicerReference,
+            @NotNull BankTransactionCodeData transactionCode, DateAndTimeData bookingDate, DateAndTimeData valueDate,
+            CodeOrProprietaryData technicalInputChannel, EntryDetailsData[] details) {
+        this.entryReference = StatementUtils.ensureSize(entryReference, "EntryReference", 1, 35);
         this.amount = amount;
         this.creditDebitIndicator = creditDebitIndicator;
         this.status = status;
@@ -63,6 +70,7 @@ public class TransactionData {
         this.transactionCode = transactionCode;
         this.bookingDate = bookingDate;
         this.valueDate = valueDate;
+        this.technicalInputChannel = technicalInputChannel;
         this.details = details;
     }
 

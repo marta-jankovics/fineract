@@ -23,6 +23,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -38,7 +39,9 @@ import org.eclipse.persistence.annotations.Converter;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "m_account_identifier")
+@Table(name = "m_account_identifier", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "identifier_type", "value", "sub_value" }, name = "uk_acc_identifier_id_type_value_sub_value"),
+        @UniqueConstraint(columnNames = { "account_type", "account_id", "identifier_type" }, name = "uk_acc_identifier_account_id_type") })
 @Converter(name = "EmptyStringIfNullConverter", converterClass = EmptyStringIfNullConverter.class)
 public class AccountIdentifier extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 

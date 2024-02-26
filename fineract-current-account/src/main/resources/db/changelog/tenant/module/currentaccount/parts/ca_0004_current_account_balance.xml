@@ -34,9 +34,7 @@
                     <constraints nullable="false"/>
                 </column>
                 <column name="hold_amount" type="DECIMAL(19, 6)"/>
-                <column name="transaction_id" type="CHAR(21)">
-                    <constraints nullable="false"/>
-                </column>
+                <column name="transaction_id" type="CHAR(21)"/>
                 <column defaultValueNumeric="1" name="version" type="BIGINT">
                     <constraints nullable="false"/>
                 </column>

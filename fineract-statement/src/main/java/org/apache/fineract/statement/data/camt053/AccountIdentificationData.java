@@ -34,8 +34,9 @@ public class AccountIdentificationData {
     @JsonProperty("Other")
     private final IdentificationData other;
 
-    public static AccountIdentificationData create(String iban, String other) {
-        IdentificationData idData = iban != null ? null : IdentificationData.create(other);
+    public static AccountIdentificationData create(String iban, String other, String schemeProprietary) {
+        IdentificationData idData = iban != null ? null
+                : IdentificationData.create(other, CodeOrProprietaryData.create(null, schemeProprietary));
         if (iban == null && idData == null) {
             return null;
         }

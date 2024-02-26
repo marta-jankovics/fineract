@@ -59,7 +59,7 @@ public enum CurrentAccountStatus {
                 return this;
             }
             return switch (action) {
-                case UPDATE, BALANCE_CALCULATION -> this;
+                case UPDATE, BALANCE_CALCULATION, STATEMENT_GENERATION -> this;
                 case CLOSE -> CLOSED;
                 default -> null;
             };

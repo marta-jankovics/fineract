@@ -24,12 +24,17 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountDailyBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountDailyBalance;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccountDailyBalance;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,8 +44,22 @@ public class CurrentAccountDailyBalanceWriteServiceImpl implements CurrentAccoun
     private final CurrentTransactionRepository currentTransactionRepository;
 
     @Override
-    public void calculateDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate) {
-        CurrentAccountDailyBalance latestBalance = dailyBalanceRepository.getLatestDailyBalanceBefore(accountId, balanceDate);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate) {
+        ICurrentAccountDailyBalance balance = calculateDailyBalance(accountId, balanceDate);
+        if (balance instanceof CurrentAccountDailyBalanceData) {
+            saveBalance((CurrentAccountDailyBalanceData) balance);
+        }
+    }
+
+    @Override
+    @Transactional()
+    @NotNull
+    public ICurrentAccountDailyBalance calculateDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate) {
+        CurrentAccountDailyBalance latestBalance = dailyBalanceRepository.getLatestDailyBalanceTill(accountId, balanceDate);
+        if (latestBalance != null && DateUtils.isEqual(balanceDate, latestBalance.getBalanceDate())) {
+            return latestBalance;
+        }
         List<CurrentTransactionType> types = CurrentTransactionType.getFiltered(t -> t.isDebit() || t.isCredit());
         List<CurrentTransaction> transactions = latestBalance == null
                 ? currentTransactionRepository.getTransactionsSubmittedTo(accountId, balanceDate, types)
@@ -48,8 +67,15 @@ public class CurrentAccountDailyBalanceWriteServiceImpl implements CurrentAccoun
                         types);
         BigDecimal accountBalance = latestBalance == null ? BigDecimal.ZERO : latestBalance.getAccountBalance();
         BigDecimal holdAmount = latestBalance == null ? BigDecimal.ZERO : latestBalance.getHoldAmount();
-        CurrentAccountDailyBalance balance = new CurrentAccountDailyBalance(accountId, accountBalance, holdAmount, balanceDate);
+        CurrentAccountDailyBalanceData balance = new CurrentAccountDailyBalanceData(null, accountId, accountBalance, holdAmount,
+                balanceDate);
         transactions.forEach(balance::applyTransaction);
+        return balance;
+    }
+
+    private void saveBalance(@NotNull CurrentAccountDailyBalanceData balanceData) {
+        CurrentAccountDailyBalance balance = new CurrentAccountDailyBalance(balanceData.getAccountId(), balanceData.getAccountBalance(),
+                balanceData.getHoldAmount(), balanceData.getBalanceDate());
         dailyBalanceRepository.save(balance);
     }
 }

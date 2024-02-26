@@ -16,8 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.data.camt053;
+package org.apache.fineract.statement.data;
 
-public abstract class StatementMetaData {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.statement.data.camt053.StatementMetadata;
 
+@Getter
+@AllArgsConstructor
+public class SavingsMetadata extends StatementMetadata {
+
+    public static final String CONVERSION_ACCOUNT = "conversion";
+    public static final String DISPOSAL_ACCOUNT = "disposal";
 }

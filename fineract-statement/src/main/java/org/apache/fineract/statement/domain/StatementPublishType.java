@@ -23,12 +23,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @RequiredArgsConstructor
 @Getter
 public enum StatementPublishType {
 
-    S3(0, "statementPublishType.s3"), //
+    S3(0, "statementPublishType.s3", "S3 Publisher"), //
     ;
 
     public static final StatementPublishType[] VALUES = values();
@@ -38,6 +39,7 @@ public enum StatementPublishType {
 
     private final int id;
     private final String code;
+    private final String description;
 
     public static StatementPublishType fromId(final Integer id) {
         return BY_ID.get(id);
@@ -49,5 +51,9 @@ public enum StatementPublishType {
 
     public static StatementPublishType getDefault() {
         return S3;
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

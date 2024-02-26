@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.statement.data;
+package org.apache.fineract.statement.data;
 
-import static org.apache.fineract.currentaccount.statement.service.CurrentStatementService.CONVERSION_ACCOUNT_DISCRIMINATOR;
-import static org.apache.fineract.currentaccount.statement.service.CurrentStatementService.DISPOSAL_ACCOUNT_DISCRIMINATOR;
+import static org.apache.fineract.statement.service.SavingsStatementService.CONVERSION_ACCOUNT_DISCRIMINATOR;
+import static org.apache.fineract.statement.service.SavingsStatementService.DISPOSAL_ACCOUNT_DISCRIMINATOR;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Transient;
@@ -30,9 +30,9 @@ import org.apache.fineract.statement.data.camt053.GroupHeaderData;
 import org.apache.fineract.statement.data.camt053.StatementData;
 
 @Getter
-public class CurrentCamt053Data extends Camt053Data {
+public class SavingsCamt053Data extends Camt053Data {
 
-    public CurrentCamt053Data(@NotNull GroupHeaderData groupHeader) {
+    public SavingsCamt053Data(@NotNull GroupHeaderData groupHeader) {
         super(groupHeader);
     }
 
@@ -41,7 +41,7 @@ public class CurrentCamt053Data extends Camt053Data {
     public String getAccountDiscriminator() {
         String result = null;
         for (StatementData statement : getStatements()) {
-            String accountDiscriminator = ((CurrentStatementData) statement).getAccountDiscriminator();
+            String accountDiscriminator = ((SavingsStatementData) statement).getAccountDiscriminator();
             if (result == null) {
                 result = accountDiscriminator;
             } else if (!result.equals(accountDiscriminator)) {
