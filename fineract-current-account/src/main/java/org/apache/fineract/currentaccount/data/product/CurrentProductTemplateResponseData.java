@@ -27,6 +27,7 @@ import org.apache.fineract.infrastructure.core.data.GLStringEnumOptionData;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
+import org.apache.fineract.statement.data.dto.ProductStatementTemplateData;
 
 @Data
 public class CurrentProductTemplateResponseData implements Serializable {
@@ -37,4 +38,5 @@ public class CurrentProductTemplateResponseData implements Serializable {
     private final Map<String, List<GLAccountDetailsData>> accountingMappingOptions;
     private final List<PaymentTypeData> paymentTypeOptions;
     private final String accountTypeForPaymentTypeMapping;
+    private final ProductStatementTemplateData statement;
 }

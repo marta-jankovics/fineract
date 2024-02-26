@@ -43,12 +43,16 @@ import org.apache.fineract.currentaccount.service.product.read.CurrentProductRea
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
-import org.apache.fineract.infrastructure.core.exception.PlatformResourceNotFoundException;
+import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
+import org.apache.fineract.statement.data.dto.ProductStatementTemplateData;
+import org.apache.fineract.statement.domain.StatementBatchType;
+import org.apache.fineract.statement.domain.StatementPublishType;
+import org.apache.fineract.statement.domain.StatementType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -82,10 +86,19 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
 
         final List<PaymentTypeData> paymentTypeOptions = paymentTypeReadPlatformService.retrieveAllPaymentTypes();
         final String accountMappingForPayment = configurationDomainService.getAccountMappingForPaymentType();
+        final List<StringEnumOptionData> statementTypeOptions = Arrays.stream(StatementType.VALUES)
+                .map(StatementType::toStringEnumOptionData).toList();
+        final List<StringEnumOptionData> publishTypeOptions = Arrays.stream(StatementPublishType.VALUES)
+                .map(StatementPublishType::toStringEnumOptionData).toList();
+        final List<StringEnumOptionData> batchTypeOptions = Arrays.stream(StatementBatchType.VALUES)
+                .map(StatementBatchType::toStringEnumOptionData).toList();
+        ProductStatementTemplateData statementTemplate = new ProductStatementTemplateData(statementTypeOptions, publishTypeOptions,
+                batchTypeOptions);
+
         return new CurrentProductTemplateResponseData(currencyOptions, accountingRuleOptions,
                 Map.of(AccountingRuleType.CASH_BASED.name(), Stream.of(CurrentProductCashBasedAccount.values())
                         .map(CurrentProductCashBasedAccount::toGLStringEnumOptionData).toList()),
-                accountingMappingOptions, paymentTypeOptions, accountMappingForPayment);
+                accountingMappingOptions, paymentTypeOptions, accountMappingForPayment, statementTemplate);
     }
 
     @Override
@@ -108,7 +121,7 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
             case SHORT_NAME -> currentProductRepository.getProductDataByShortName(productResolver.getIdentifier());
         };
         if (productData == null) {
-            throw new PlatformResourceNotFoundException("current.product", "Current product with %s: %s cannot be found",
+            throw new ResourceNotFoundException("current.product", "Current product with %s: %s cannot be found",
                     productResolver.getIdType(), productResolver.getIdentifier());
         }
         return currentProductResponseDataMapper.map(productData, (CurrentProductData product) -> productToGLAccountMappingRepository
