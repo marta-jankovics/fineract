@@ -24,12 +24,13 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
 @AllArgsConstructor
-public class CurrentTransactionData implements Serializable {
+public class CurrentTransactionData implements ICurrentTransaction, Serializable {
 
     // Current product data
     private final String id;
@@ -38,7 +39,7 @@ public class CurrentTransactionData implements Serializable {
     private final CurrentTransactionType transactionType;
     private final LocalDate transactionDate;
     private final LocalDate submittedOnDate;
-    private final BigDecimal transactionAmount;
+    private final BigDecimal amount;
     private final OffsetDateTime createdDateTime;
 
     // Currency data
@@ -56,9 +57,9 @@ public class CurrentTransactionData implements Serializable {
     private final String paymentTypeCodeName;
 
     public CurrentTransactionData(String id, String accountId, ExternalId externalId, CurrentTransactionType transactionType,
-            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal transactionAmount, OffsetDateTime createdDateTime,
-            Long paymentTypeId, String paymentTypeName) {
-        this(id, accountId, externalId, transactionType, transactionDate, submittedOnDate, transactionAmount, createdDateTime, null, null,
-                null, null, null, paymentTypeId, paymentTypeName, null, null, null);
+            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount, OffsetDateTime createdDateTime, Long paymentTypeId,
+            String paymentTypeName) {
+        this(id, accountId, externalId, transactionType, transactionDate, submittedOnDate, amount, createdDateTime, null, null, null, null,
+                null, paymentTypeId, paymentTypeName, null, null, null);
     }
 }

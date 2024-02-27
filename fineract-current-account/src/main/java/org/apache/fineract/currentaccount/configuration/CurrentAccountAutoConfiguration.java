@@ -44,9 +44,11 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountRea
 import org.apache.fineract.currentaccount.service.account.read.impl.CurrentAccountBalanceReadServiceImpl;
 import org.apache.fineract.currentaccount.service.account.read.impl.CurrentAccountReadServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountWriteService;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountBalanceWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountDailyBalanceReadServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountDailyBalanceWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.account.write.impl.CurrentAccountWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccountAccountingWriteService;
@@ -109,9 +111,10 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentAccountBalanceReadService.class)
     public CurrentAccountBalanceReadService currentAccountBalanceReadService(ConfigurationDomainService configurationService,
-            CurrentAccountBalanceRepository currentAccountBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentAccountBalanceReadServiceImpl(configurationService, currentAccountBalanceRepository,
-                currentTransactionRepository);
+            CurrentAccountBalanceRepository currentAccountBalanceRepository, CurrentTransactionRepository currentTransactionRepository,
+            CurrentAccountDailyBalanceReadService currentAccountDailyBalanceReadService) {
+        return new CurrentAccountBalanceReadServiceImpl(configurationService, currentAccountBalanceRepository, currentTransactionRepository,
+                currentAccountDailyBalanceReadService);
     }
 
     @Bean
@@ -235,9 +238,18 @@ public class CurrentAccountAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(CurrentAccountDailyBalanceWriteService.class)
-    public CurrentAccountDailyBalanceWriteService currentAccountDailyBalanceWriteService(
+    @ConditionalOnMissingBean(CurrentAccountDailyBalanceReadService.class)
+    public CurrentAccountDailyBalanceReadService currentAccountDailyBalanceReadService(
             CurrentAccountDailyBalanceRepository dailyBalanceRepository, CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentAccountDailyBalanceWriteServiceImpl(dailyBalanceRepository, currentTransactionRepository);
+        return new CurrentAccountDailyBalanceReadServiceImpl(dailyBalanceRepository, currentTransactionRepository);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentAccountDailyBalanceWriteService.class)
+    public CurrentAccountDailyBalanceWriteService currentAccountDailyBalanceWriteService(CurrentAccountRepository currentAccountRepository,
+            CurrentAccountDailyBalanceRepository dailyBalanceRepository,
+            CurrentAccountDailyBalanceReadService currentAccountDailyBalanceReadService) {
+        return new CurrentAccountDailyBalanceWriteServiceImpl(currentAccountRepository, dailyBalanceRepository,
+                currentAccountDailyBalanceReadService);
     }
 }

@@ -68,10 +68,9 @@ public final class CurrentTransactionStatementData extends TransactionStatementD
         CurrentEntryDetailsData entryDetails = CurrentEntryDetailsData.create(transaction, identifiers, clientDetails, currency,
                 transactionDetails, paymentTypeCode);
 
-        return new CurrentTransactionStatementData(null, transaction.getTransactionAmount(), currency,
-                transaction.getTransactionType().getEntryType(), calcTransactionStatus(statementType), transaction.getId(),
-                transaction.getSubmittedOnDate(), transaction.getTransactionDate(), entryDetails, paymentTypeCode, inputChannel,
-                structuredData);
+        return new CurrentTransactionStatementData(null, transaction.getAmount(), currency, transaction.getTransactionType().getEntryType(),
+                calcTransactionStatus(statementType), transaction.getId(), transaction.getSubmittedOnDate(),
+                transaction.getTransactionDate(), entryDetails, paymentTypeCode, inputChannel, structuredData);
     }
 
     @NotNull

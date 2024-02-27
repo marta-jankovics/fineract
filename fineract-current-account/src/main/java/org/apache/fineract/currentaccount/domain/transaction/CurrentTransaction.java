@@ -42,7 +42,7 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "m_current_transaction", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "external_id" }, name = "m_current_transaction_external_id_key") })
-public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<String> {
+public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<String> implements ICurrentTransaction {
 
     @Id
     @GeneratedValue(generator = "nanoIdSequence")

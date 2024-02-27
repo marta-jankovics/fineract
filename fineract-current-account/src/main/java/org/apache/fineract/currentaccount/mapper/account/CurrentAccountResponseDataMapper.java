@@ -38,28 +38,45 @@ public interface CurrentAccountResponseDataMapper {
 
     default Page<CurrentAccountResponseData> map(Page<CurrentAccountData> data,
             Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
-        return data.map(currentAccountData -> map(currentAccountData, balanceDataRetrieverFunc));
+        return data.map(currentAccountData -> mapAll(currentAccountData, balanceDataRetrieverFunc));
     }
 
     default List<CurrentAccountResponseData> map(List<CurrentAccountData> data,
             Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
-        return data.stream().map(currentAccountData -> map(currentAccountData, balanceDataRetrieverFunc)).toList();
+        return data.stream().map(currentAccountData -> mapAll(currentAccountData, balanceDataRetrieverFunc)).toList();
     }
 
     default CurrentAccountResponseData map(CurrentAccountData currentAccountData,
             Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
-        return map(currentAccountData, balanceDataRetrieverFunc.apply(currentAccountData.getId()));
+        return mapOne(currentAccountData, balanceDataRetrieverFunc.apply(currentAccountData.getId()));
     }
 
-    @Mapping(target = "id", source = "currentAccountData.id")
-    @Mapping(target = "currency", source = "currentAccountData", qualifiedByName = "currency")
-    @Mapping(target = "status", source = "currentAccountData", qualifiedByName = "status")
-    @Mapping(target = "product", source = "currentAccountData", qualifiedByName = "product")
-    @Mapping(target = "client", source = "currentAccountData", qualifiedByName = "client")
-    @Mapping(target = "balanceCalculationType", source = "currentAccountData", qualifiedByName = "balanceCalculationType")
+    default CurrentAccountResponseData mapAll(CurrentAccountData currentAccountData,
+            Function<String, CurrentAccountBalanceData> balanceDataRetrieverFunc) {
+        return mapAll(currentAccountData, balanceDataRetrieverFunc.apply(currentAccountData.getId()));
+    }
+
+    @Mapping(target = "id", source = "accountData.id")
+    @Mapping(target = "currency", source = "accountData", qualifiedByName = "currency")
+    @Mapping(target = "status", source = "accountData", qualifiedByName = "status")
+    @Mapping(target = "product", source = "accountData", qualifiedByName = "product")
+    @Mapping(target = "client", source = "accountData", qualifiedByName = "client")
+    @Mapping(target = "balanceCalculationType", source = "accountData", qualifiedByName = "balanceCalculationType")
+    @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
+    @Mapping(target = "holdAmount", ignore = true)
+    @Mapping(target = "availableBalance", ignore = true)
+    CurrentAccountResponseData mapAll(CurrentAccountData accountData, CurrentAccountBalanceData balanceData);
+
+    @Mapping(target = "id", source = "accountData.id")
+    @Mapping(target = "currency", source = "accountData", qualifiedByName = "currency")
+    @Mapping(target = "status", source = "accountData", qualifiedByName = "status")
+    @Mapping(target = "product", source = "accountData", qualifiedByName = "product")
+    @Mapping(target = "client", source = "accountData", qualifiedByName = "client")
+    @Mapping(target = "balanceCalculationType", source = "accountData", qualifiedByName = "balanceCalculationType")
     @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
     @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
-    CurrentAccountResponseData map(CurrentAccountData currentAccountData, CurrentAccountBalanceData balanceData);
+    @Mapping(target = "availableBalance", expression = "java(accountData.getAvailableBalance(balanceData, false))")
+    CurrentAccountResponseData mapOne(CurrentAccountData accountData, CurrentAccountBalanceData balanceData);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentAccountData currentAccountData) {

@@ -16,25 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.account.read;
+package org.apache.fineract.currentaccount.service.account.write;
 
 import jakarta.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import org.apache.fineract.currentaccount.data.account.BalanceCalculationData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
-import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
+import java.time.LocalDate;
+import org.apache.fineract.currentaccount.domain.account.ICurrentAccountDailyBalance;
 
-public interface CurrentAccountBalanceReadService {
+public interface CurrentAccountDailyBalanceReadService {
 
     @NotNull
-    OffsetDateTime getBalanceCalculationTill();
-
-    @NotNull
-    CurrentAccountBalanceData getCurrentBalance(@NotNull String accountId);
-
-    @NotNull
-    CurrentAccountBalanceData getTransactionBalance(@NotNull ICurrentTransaction transaction);
-
-    @NotNull
-    BalanceCalculationData calculateBalance(@NotNull String accountId, OffsetDateTime delayDateTime);
+    ICurrentAccountDailyBalance getDailyBalance(@NotNull String accountId, @NotNull LocalDate balanceDate);
 }

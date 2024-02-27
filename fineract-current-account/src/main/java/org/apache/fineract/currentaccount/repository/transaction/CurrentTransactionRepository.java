@@ -74,6 +74,10 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     List<CurrentTransaction> getTransactionsFromAndTillSorted(@Param("accountId") String accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
+    @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.submittedOnDate > :fromDate AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsSubmittedFromAndTillSorted(@Param("accountId") String accountId,
+            @Param("fromDate") LocalDate fromDate, @Param("tillDateTime") OffsetDateTime tillDateTime);
+
     @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate <= :toDate and t.transactionType in :types")
     List<CurrentTransaction> getTransactionsSubmittedTo(@Param("accountId") String accountId, @Param("toDate") LocalDate toDate,
             @Param("types") List<CurrentTransactionType> types);

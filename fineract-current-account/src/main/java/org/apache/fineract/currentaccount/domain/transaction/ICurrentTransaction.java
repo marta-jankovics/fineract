@@ -16,25 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.account.read;
+package org.apache.fineract.currentaccount.domain.transaction;
 
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import org.apache.fineract.currentaccount.data.account.BalanceCalculationData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
-import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
-public interface CurrentAccountBalanceReadService {
+public interface ICurrentTransaction {
 
-    @NotNull
-    OffsetDateTime getBalanceCalculationTill();
+    String getId();
 
     @NotNull
-    CurrentAccountBalanceData getCurrentBalance(@NotNull String accountId);
+    String getAccountId();
+
+    ExternalId getExternalId();
 
     @NotNull
-    CurrentAccountBalanceData getTransactionBalance(@NotNull ICurrentTransaction transaction);
+    CurrentTransactionType getTransactionType();
 
     @NotNull
-    BalanceCalculationData calculateBalance(@NotNull String accountId, OffsetDateTime delayDateTime);
+    LocalDate getTransactionDate();
+
+    @NotNull
+    LocalDate getSubmittedOnDate();
+
+    @NotNull
+    BigDecimal getAmount();
+
+    OffsetDateTime getCreatedDateTime();
+
+    @NotNull
+    Long getPaymentTypeId();
 }

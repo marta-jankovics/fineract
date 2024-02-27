@@ -47,4 +47,5 @@ public class CurrentAccountResponseData implements Serializable {
     private final StringEnumOptionData balanceCalculationType;
     private final BigDecimal accountBalance;
     private final BigDecimal holdAmount;
+    private final BigDecimal availableBalance;
 }

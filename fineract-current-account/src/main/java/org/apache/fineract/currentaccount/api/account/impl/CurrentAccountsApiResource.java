@@ -59,7 +59,6 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.CurrentAccountApiConstants;
 import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
@@ -363,9 +362,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     private CurrentAccountResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
         CurrentAccountData accountData = currentAccountReadService.retrieve(accountResolver);
-        CurrentAccountBalanceData currentAccountBalanceData = currentAccountBalanceReadService.getCurrentBalance(accountData.getId());
-        // TODO CURRENT! move this to the service
-        return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceData);
+        return currentAccountResponseDataMapper.map(accountData, currentAccountBalanceReadService::getCurrentBalance);
     }
 
     private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {

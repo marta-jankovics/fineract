@@ -109,10 +109,10 @@ public final class CurrentStatementData extends StatementData {
         BigDecimal holdAmount = dailyBalance.getHoldAmount(); // onHoldFunds is not calculated
         AccountBalanceData total = AccountBalanceData.create(BALANCE_CODE_FULL_OF_PERIOD, MathUtil.subtract(balance, holdAmount), currency,
                 toDate);
-        BigDecimal totalCredit = transactions.stream().filter(t -> t.getTransactionType().isCredit())
-                .map(CurrentTransactionData::getTransactionAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalDebit = transactions.stream().filter(t -> t.getTransactionType().isDebit())
-                .map(CurrentTransactionData::getTransactionAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalCredit = transactions.stream().filter(t -> t.getTransactionType().isCredit()).map(CurrentTransactionData::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalDebit = transactions.stream().filter(t -> t.getTransactionType().isDebit()).map(CurrentTransactionData::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         TransactionsSummaryData trSum = TransactionsSummaryData.create(totalCredit, totalDebit);
         int size = transactions.size();
         ArrayList<CurrentTransactionStatementData> entries = new ArrayList<>(size);

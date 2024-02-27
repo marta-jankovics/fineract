@@ -50,7 +50,7 @@ import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransac
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
-import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
+import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceReadService;
 import org.apache.fineract.currentaccount.statement.data.CurrentCamt053Data;
 import org.apache.fineract.currentaccount.statement.data.CurrentMetadata;
 import org.apache.fineract.currentaccount.statement.data.CurrentStatementData;
@@ -75,7 +75,7 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
     private final CurrentAccountRepository accountRepository;
     private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentTransactionRepository transactionRepository;
-    private final CurrentAccountDailyBalanceWriteService dailyBalanceWriteService;
+    private final CurrentAccountDailyBalanceReadService dailyBalanceReadService;
     private final CurrentStatementService accountStatementService;
 
     @Override
@@ -100,7 +100,7 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
                 : statement.getStatementDate().plusDays(1);
         LocalDate toDate = statement.getNextStatementDate();
 
-        ICurrentAccountDailyBalance dailyBalance = dailyBalanceWriteService.calculateDailyBalance(accountId, toDate);
+        ICurrentAccountDailyBalance dailyBalance = dailyBalanceReadService.getDailyBalance(accountId, toDate);
 
         AccountIdentifier iban = identifiersByType.get(IBAN);
         boolean isConversionAccount = false;

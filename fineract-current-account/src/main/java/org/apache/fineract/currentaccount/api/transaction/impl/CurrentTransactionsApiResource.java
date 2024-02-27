@@ -67,6 +67,7 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionRes
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
+import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
 import org.apache.fineract.currentaccount.service.transaction.CurrentTransactionResolver;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
@@ -97,6 +98,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
     private final CurrentTransactionReadService currentTransactionReadService;
     private final CurrentAccountReadService currentAccountReadService;
+    private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
     private final AdvancedQueryService advancedQueryService;
     private final DefaultToApiJsonSerializer<JsonObject> toApiJsonSerializer;
@@ -468,10 +470,16 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         return query(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), queryRequest);
     }
 
+    private Page<CurrentTransactionResponseData> retrieveAll(@NotNull CurrentAccountResolver accountResolver, Pageable pageable) {
+        this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
+        return currentTransactionResponseDataMapper.map(this.currentTransactionReadService.retrieveAll(accountResolver, pageable));
+    }
+
     private CurrentTransactionResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver,
             @NotNull CurrentTransactionResolver transactionResolver) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
-        return currentTransactionResponseDataMapper.map(currentTransactionReadService.retrieve(accountResolver, transactionResolver));
+        return currentTransactionResponseDataMapper.map(currentTransactionReadService.retrieve(accountResolver, transactionResolver),
+                currentAccountReadService::retrieve, currentAccountBalanceReadService::getTransactionBalance);
     }
 
     private String query(CurrentAccountResolver accountResolver, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
@@ -541,10 +549,5 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
 
     private boolean is(final String commandParam, final String commandValue) {
         return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
-    }
-
-    private Page<CurrentTransactionResponseData> retrieveAll(@NotNull CurrentAccountResolver accountResolver, Pageable pageable) {
-        this.context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
-        return currentTransactionResponseDataMapper.map(this.currentTransactionReadService.retrieveAll(accountResolver, pageable));
     }
 }

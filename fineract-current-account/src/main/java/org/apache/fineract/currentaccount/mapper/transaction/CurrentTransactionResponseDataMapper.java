@@ -19,8 +19,13 @@
 package org.apache.fineract.currentaccount.mapper.transaction;
 
 import java.util.List;
+import java.util.function.Function;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
+import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
+import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -34,14 +39,39 @@ import org.springframework.data.domain.Page;
 public interface CurrentTransactionResponseDataMapper {
 
     default Page<CurrentTransactionResponseData> map(Page<CurrentTransactionData> data) {
-        return data.map(this::map);
+        return data.map(this::mapAll);
+    }
+
+    default CurrentTransactionResponseData map(CurrentTransactionData transactionData,
+            Function<CurrentAccountResolver, CurrentAccountData> accountRetrieverFunc,
+            Function<ICurrentTransaction, CurrentAccountBalanceData> balanceRetrieverFunc) {
+        return mapOne(transactionData, accountRetrieverFunc.apply(CurrentAccountResolver.resolveDefault(transactionData.getAccountId())),
+                balanceRetrieverFunc.apply(transactionData));
     }
 
     @Mapping(target = "currency", source = "data", qualifiedByName = "currency")
     @Mapping(target = "transactionType", source = "data", qualifiedByName = "transactionType")
     @Mapping(target = "transactionEntryType", source = "data", qualifiedByName = "transactionEntryType")
     @Mapping(target = "paymentTypeData", source = "data", qualifiedByName = "mapPaymentTypeData")
-    CurrentTransactionResponseData map(CurrentTransactionData data);
+    @Mapping(target = "transactionAmount", source = "data.amount")
+    @Mapping(target = "accountBalance", ignore = true)
+    @Mapping(target = "holdAmount", ignore = true)
+    @Mapping(target = "availableBalance", ignore = true)
+    CurrentTransactionResponseData mapAll(CurrentTransactionData data);
+
+    @Mapping(target = "id", source = "transactionData.id")
+    @Mapping(target = "accountId", source = "transactionData.accountId")
+    @Mapping(target = "externalId", source = "transactionData.externalId")
+    @Mapping(target = "currency", source = "transactionData", qualifiedByName = "currency")
+    @Mapping(target = "transactionType", source = "transactionData", qualifiedByName = "transactionType")
+    @Mapping(target = "transactionEntryType", source = "transactionData", qualifiedByName = "transactionEntryType")
+    @Mapping(target = "paymentTypeData", source = "transactionData", qualifiedByName = "mapPaymentTypeData")
+    @Mapping(target = "transactionAmount", source = "transactionData.amount")
+    @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
+    @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
+    @Mapping(target = "availableBalance", expression = "java(accountData.getAvailableBalance(balanceData, false))")
+    CurrentTransactionResponseData mapOne(CurrentTransactionData transactionData, CurrentAccountData accountData,
+            CurrentAccountBalanceData balanceData);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentTransactionData data) {
@@ -64,5 +94,5 @@ public interface CurrentTransactionResponseDataMapper {
         return PaymentTypeData.instance(data.getPaymentTypeId(), data.getPaymentTypeName());
     }
 
-    List<CurrentTransactionResponseData> map(List<CurrentTransactionData> data);
+    List<CurrentTransactionResponseData> mapAll(List<CurrentTransactionData> data);
 }

@@ -211,7 +211,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     private void checkAndApplyBalance(@NotNull CurrentAccount account, @NotNull CurrentTransaction transaction,
             @NotNull BalanceCalculationData balance, boolean force) {
         BigDecimal origBalance = balance.getAccountBalance();
-        BigDecimal origAvailableBalance = account.getAvailableBalance(balance, true);
+        BigDecimal origAvailableBalance = account.getAvailableBalance(balance, false);
 
         balance.applyTransaction(transaction);
         if (!transaction.getTransactionType().isDebit() || force) {
