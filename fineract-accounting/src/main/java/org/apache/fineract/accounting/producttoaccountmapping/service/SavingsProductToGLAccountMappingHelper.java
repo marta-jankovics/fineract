@@ -18,34 +18,29 @@
  */
 package org.apache.fineract.accounting.producttoaccountmapping.service;
 
+import static org.apache.fineract.accounting.common.AccountingConstants.AccrualAccountsForSavings;
+import static org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForSavings;
+import static org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams;
+import static org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams.INTEREST_ON_SAVINGS;
+
 import com.google.gson.JsonElement;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.fineract.accounting.common.AccountingConstants.AccrualAccountsForSavings;
-import org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForSavings;
-import org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams;
+import lombok.RequiredArgsConstructor;
+import org.apache.fineract.accounting.common.AccountingConstants;
 import org.apache.fineract.accounting.common.AccountingRuleType;
-import org.apache.fineract.accounting.glaccount.domain.GLAccountRepository;
-import org.apache.fineract.accounting.glaccount.domain.GLAccountRepositoryWrapper;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
-import org.apache.fineract.accounting.producttoaccountmapping.domain.PortfolioProductType;
-import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
-import org.apache.fineract.portfolio.charge.domain.ChargeRepositoryWrapper;
-import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SavingsProductToGLAccountMappingHelper extends ProductToGLAccountMappingHelper {
+@RequiredArgsConstructor
+public class SavingsProductToGLAccountMappingHelper {
 
-    public SavingsProductToGLAccountMappingHelper(final GLAccountRepository glAccountRepository,
-            final ProductToGLAccountMappingRepository glAccountMappingRepository, final FromJsonHelper fromApiJsonHelper,
-            final ChargeRepositoryWrapper chargeRepositoryWrapper, final GLAccountRepositoryWrapper accountRepositoryWrapper,
-            final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper) {
-        super(glAccountRepository, glAccountMappingRepository, fromApiJsonHelper, chargeRepositoryWrapper, accountRepositoryWrapper,
-                paymentTypeRepositoryWrapper);
-    }
+    private final FromJsonHelper fromApiJsonHelper;
+    private final ProductToGLAccountMappingHelper productToGLAccountMappingHelper;
 
     /***
      * Set of abstractions for saving Saving Products to GL Account Mappings
@@ -53,22 +48,26 @@ public class SavingsProductToGLAccountMappingHelper extends ProductToGLAccountMa
 
     public void saveSavingsToAssetAccountMapping(final JsonElement element, final String paramName, final Long productId,
             final int placeHolderTypeId) {
-        saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.ASSET, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.ASSET,
+                PortfolioProductType.SAVING);
     }
 
     public void saveSavingsToIncomeAccountMapping(final JsonElement element, final String paramName, final Long productId,
             final int placeHolderTypeId) {
-        saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.INCOME, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.INCOME,
+                PortfolioProductType.SAVING);
     }
 
     public void saveSavingsToExpenseAccountMapping(final JsonElement element, final String paramName, final Long productId,
             final int placeHolderTypeId) {
-        saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.EXPENSE, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.EXPENSE,
+                PortfolioProductType.SAVING);
     }
 
     public void saveSavingsToLiabilityAccountMapping(final JsonElement element, final String paramName, final Long productId,
             final int placeHolderTypeId) {
-        saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId, GLAccountType.LIABILITY, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.saveProductToAccountMapping(element, paramName, productId, placeHolderTypeId,
+                GLAccountType.LIABILITY, PortfolioProductType.SAVING);
     }
 
     /***
@@ -77,58 +76,64 @@ public class SavingsProductToGLAccountMappingHelper extends ProductToGLAccountMa
 
     public void mergeSavingsToAssetAccountMappingChanges(final JsonElement element, final String paramName, final Long productId,
             final int accountTypeId, final String accountTypeName, final Map<String, Object> changes) {
-        mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName, changes, GLAccountType.ASSET,
-                PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName,
+                changes, GLAccountType.ASSET, PortfolioProductType.SAVING);
     }
 
     public void mergeSavingsToIncomeAccountMappingChanges(final JsonElement element, final String paramName, final Long productId,
             final int accountTypeId, final String accountTypeName, final Map<String, Object> changes) {
-        mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName, changes, GLAccountType.INCOME,
-                PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName,
+                changes, GLAccountType.INCOME, PortfolioProductType.SAVING);
     }
 
     public void mergeSavingsToExpenseAccountMappingChanges(final JsonElement element, final String paramName, final Long productId,
             final int accountTypeId, final String accountTypeName, final Map<String, Object> changes) {
-        mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName, changes, GLAccountType.EXPENSE,
-                PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName,
+                changes, GLAccountType.EXPENSE, PortfolioProductType.SAVING);
     }
 
     public void mergeSavingsToLiabilityAccountMappingChanges(final JsonElement element, final String paramName, final Long productId,
             final int accountTypeId, final String accountTypeName, final Map<String, Object> changes) {
-        mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName, changes, GLAccountType.LIABILITY,
-                PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.mergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, accountTypeName,
+                changes, GLAccountType.LIABILITY, PortfolioProductType.SAVING);
     }
 
     public void createOrmergeSavingsToLiabilityAccountMappingChanges(final JsonElement element, final String paramName,
             final Long productId, final int accountTypeId, final Map<String, Object> changes) {
-        createOrmergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, changes, GLAccountType.LIABILITY,
-                PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.createOrmergeProductToAccountMappingChanges(element, paramName, productId, accountTypeId, changes,
+                GLAccountType.LIABILITY, PortfolioProductType.SAVING);
     }
 
     /*** Abstractions for payments channel related to savings products ***/
 
     public void savePaymentChannelToFundSourceMappings(final JsonCommand command, final JsonElement element, final Long productId,
             final Map<String, Object> changes) {
-        savePaymentChannelToFundSourceMappings(command, element, productId, changes, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.savePaymentChannelToFundSourceMappings(command, element, productId, changes,
+                PortfolioProductType.SAVING);
     }
 
     public void updatePaymentChannelToFundSourceMappings(final JsonCommand command, final JsonElement element, final Long productId,
             final Map<String, Object> changes) {
-        updatePaymentChannelToFundSourceMappings(command, element, productId, changes, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.updatePaymentChannelToFundSourceMappings(command, element, productId, changes,
+                PortfolioProductType.SAVING);
     }
 
     public void saveChargesToIncomeAccountMappings(final JsonCommand command, final JsonElement element, final Long productId,
             final Map<String, Object> changes) {
         // save both fee and penalty charges
-        saveChargesToGLAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING, true);
-        saveChargesToGLAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING, false);
+        productToGLAccountMappingHelper.saveChargesToGLAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING,
+                true);
+        productToGLAccountMappingHelper.saveChargesToGLAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING,
+                false);
     }
 
     public void updateChargesToIncomeAccountMappings(final JsonCommand command, final JsonElement element, final Long productId,
             final Map<String, Object> changes) {
         // update both fee and penalty charges
-        updateChargeToIncomeAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING, true);
-        updateChargeToIncomeAccountMappings(command, element, productId, changes, PortfolioProductType.SAVING, false);
+        productToGLAccountMappingHelper.updateChargeToIncomeAccountMappings(command, element, productId, changes,
+                PortfolioProductType.SAVING, true);
+        productToGLAccountMappingHelper.updateChargeToIncomeAccountMappings(command, element, productId, changes,
+                PortfolioProductType.SAVING, false);
     }
 
     public Map<String, Object> populateChangesForNewSavingsProductToGLAccountMappingCreation(final JsonElement element,
@@ -141,10 +146,9 @@ public class SavingsProductToGLAccountMappingHelper extends ProductToGLAccountMa
                 element);
         final Long incomeFromPenaltiesId = this.fromApiJsonHelper
                 .extractLongNamed(SavingProductAccountingParams.INCOME_FROM_PENALTIES.getValue(), element);
-        final Long interestOnSavingsId = this.fromApiJsonHelper
-                .extractLongNamed(SavingProductAccountingParams.INTEREST_ON_SAVINGS.getValue(), element);
-        final Long savingsControlId = this.fromApiJsonHelper.extractLongNamed(SavingProductAccountingParams.SAVINGS_CONTROL.getValue(),
-                element);
+        final Long interestOnSavingsId = this.fromApiJsonHelper.extractLongNamed(INTEREST_ON_SAVINGS.getValue(), element);
+        final Long savingsControlId = this.fromApiJsonHelper
+                .extractLongNamed(AccountingConstants.SavingProductAccountingParams.SAVINGS_CONTROL.getValue(), element);
         final Long transfersInSuspenseAccountId = this.fromApiJsonHelper
                 .extractLongNamed(SavingProductAccountingParams.TRANSFERS_SUSPENSE.getValue(), element);
         final Long overdraftControlId = this.fromApiJsonHelper
@@ -311,6 +315,6 @@ public class SavingsProductToGLAccountMappingHelper extends ProductToGLAccountMa
     }
 
     public void deleteSavingsProductToGLAccountMapping(final Long savingsProductId) {
-        deleteProductToGLAccountMapping(savingsProductId, PortfolioProductType.SAVING);
+        productToGLAccountMappingHelper.deleteProductToGLAccountMapping(savingsProductId, PortfolioProductType.SAVING);
     }
 }
