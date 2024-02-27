@@ -197,8 +197,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         // Balance has a FK reference on transaction, but we don't have reference on entity level,
         // so JPA cannot be sure about the order of saving balance and transaction
         transaction = currentTransactionRepository.saveAndFlush(transaction);
-        balance.applyTransaction(transaction);
-        checkBalance(account, balance, transactionType, force);
+        checkAndApplyBalance(account, transaction, balance, force);
         if (account.isBalancePersist(action)) {
             boolean hasDelay = account.hasBalanceDelay(action);
             CurrentAccountBalanceData balanceData = hasDelay ? balance.getDelayData() : balance.getTotalData();
@@ -209,22 +208,27 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         return balance;
     }
 
-    private void checkBalance(@NotNull CurrentAccount account, @NotNull BalanceCalculationData balance,
-            CurrentTransactionType transactionType, boolean force) {
-        if (!transactionType.isDebit() || force) {
+    private void checkAndApplyBalance(@NotNull CurrentAccount account, @NotNull CurrentTransaction transaction,
+            @NotNull BalanceCalculationData balance, boolean force) {
+        BigDecimal origBalance = balance.getAccountBalance();
+        BigDecimal origAvailableBalance = account.getAvailableBalance(balance, true);
+
+        balance.applyTransaction(transaction);
+        if (!transaction.getTransactionType().isDebit() || force) {
             return;
         }
-        BigDecimal accountBalance = balance.getAccountBalance();
-        if (MathUtil.isLessThanZero(accountBalance) && !account.isAllowOverdraft()) {
-            throw new GeneralPlatformDomainRuleException("error.msg.current.insufficient.funds.balance",
-                    "Insufficient founds! Current balance: " + accountBalance);
+
+        BigDecimal newBalance = balance.getAccountBalance();
+        String pfx = "error.msg.current.insufficient.funds.";
+        if (MathUtil.isLessThanZero(newBalance) && !account.isAllowOverdraft()) {
+            throw new GeneralPlatformDomainRuleException(pfx + "balance", "Insufficient founds! Current balance: " + origBalance);
         }
-        BigDecimal availableBalance = account.getAvailableBalance(balance, true);
-        if (MathUtil.isLessThanZero(availableBalance)) {
-            String code = !MathUtil.isEmpty(account.getMinimumRequiredBalance()) ? "error.msg.current.insufficient.funds.minrequiredbalance"
-                    : "error.msg.current.insufficient.funds.maxoverdraft";
+        BigDecimal newAvailableBalance = account.getAvailableBalance(balance, true);
+        ;
+        if (MathUtil.isLessThanZero(newAvailableBalance)) {
+            String code = pfx + (!MathUtil.isEmpty(account.getMinimumRequiredBalance()) ? "minrequiredbalance" : "maxoverdraft");
             throw new GeneralPlatformDomainRuleException(code,
-                    "Insufficient funds! Current balance: " + accountBalance + ", available balance: " + availableBalance);
+                    "Insufficient funds! Current balance: " + origBalance + ", available balance: " + origAvailableBalance);
         }
     }
 }
