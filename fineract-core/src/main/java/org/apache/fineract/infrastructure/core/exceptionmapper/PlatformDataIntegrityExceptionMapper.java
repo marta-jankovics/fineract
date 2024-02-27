@@ -24,8 +24,8 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.data.ApiGlobalErrorResponse;
+import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -43,36 +43,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMapper, ExceptionMapper<PlatformDataIntegrityException> {
 
-    private static final String GENERIC_MESSAGE = "Something went wrong...";
-
-    private static String checkForUniqueConstraintError(PlatformDataIntegrityException exception, String originalExceptionMessage) {
-        String message = originalExceptionMessage;
-        if (exception.getMessage().contains("duplicate key value violates unique constraint")) {
-            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
-            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") already exists");
-            message = "Duplicate entry '" + entry + "' for key '" + key + "'";
-        } else if (exception.getMessage().contains("Duplicate entry")) {
-            message = "Duplicate entry" + StringUtils.substringBetween(exception.getMessage(), "Duplicate entry", "\nError Code");
-        }
-        return message;
-    }
-
     @Override
     public Response toResponse(final PlatformDataIntegrityException exception) {
-        log.warn("Exception occurred", exception);
-        String originalExceptionMessage = exception.getDefaultUserMessage();
-        // TODO: extract?
-        String message = checkForUniqueConstraintError(exception, originalExceptionMessage);
-
-        if (message.equals(originalExceptionMessage)) {
-            message = checkForForeignConstraintError(exception, originalExceptionMessage);
-        }
-        // This must be last one!
-        if (message.equals(originalExceptionMessage)) {
-            message = GENERIC_MESSAGE;
-        }
+        log.warn("Exception occurred", ErrorHandler.findMostSpecificException(exception));
         final ApiGlobalErrorResponse dataIntegrityError = ApiGlobalErrorResponse.dataIntegrityError(exception.getGlobalisationMessageCode(),
-                message, exception.getParameterName(), exception.getDefaultUserMessageArgs());
+                exception.getDefaultUserMessage(), exception.getParameterName(), exception.getDefaultUserMessageArgs());
 
         return Response.status(Status.FORBIDDEN).entity(dataIntegrityError).type(MediaType.APPLICATION_JSON).build();
     }
@@ -80,25 +55,5 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
     @Override
     public int errorCode() {
         return 3001;
-    }
-
-    private String checkForForeignConstraintError(PlatformDataIntegrityException exception, String originalExceptionMessage) {
-        String message = originalExceptionMessage;
-        // POSTGRES
-        if (exception.getMessage().contains("is still referenced from table")) {
-            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
-            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") is still referenced from table");
-            message = "Foreign key constraint fails: Entry with " + key + ": " + entry + " is still referenced!";
-        } else if (exception.getMessage().contains("is not present in table")) {
-            String key = StringUtils.substringBetween(exception.getMessage(), "Detail: Key (", ")=(");
-            String entry = StringUtils.substringBetween(exception.getMessage(), ")=(", ") is not present in table");
-            message = "Foreign key constraint fails: Entry with " + key + ": " + entry + " does not exists";
-        }
-        // MYSQL / MARIADB
-        else if (exception.getMessage().contains("a foreign key constraint fails")) {
-            String key = StringUtils.substringBetween(exception.getMessage(), "FOREIGN KEY (", ") REFERENCES");
-            message = "Foreign key constraint fails for " + key;
-        }
-        return message;
     }
 }

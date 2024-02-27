@@ -186,6 +186,9 @@ public final class ErrorHandler {
             msgCode = msgCode == null ? codePfx + ".validation.error" : msgCode;
             return new PlatformApiDataValidationException(List.of(ApiParameterError.parameterError(msgCode, msg, param, defaultMsgArgs)));
         }
+        if (t instanceof jakarta.persistence.OptimisticLockException) {
+            return (RuntimeException) t;
+        }
         if (t instanceof PersistenceException) {
             msgCode = msgCode == null ? codePfx + ".persistence.error" : msgCode;
             return new PlatformDataIntegrityException(msgCode, msg, param, args);
@@ -197,9 +200,6 @@ public final class ErrorHandler {
         if (t instanceof ParseException) {
             msgCode = msgCode == null ? codePfx + ".parse.error" : msgCode;
             return new PlatformDataIntegrityException(msgCode, msg, param, args);
-        }
-        if (t.getCause() != null) {
-            return getMappable(t.getCause(), msgCode, defaultMsg, param, defaultMsgArgs);
         }
         if (t instanceof RuntimeException re) {
             return re;
@@ -213,5 +213,13 @@ public final class ErrorHandler {
         } else {
             return Set.of(array);
         }
+    }
+
+    public static Throwable findMostSpecificException(Exception exception) {
+        Throwable mostSpecificException = exception;
+        while (mostSpecificException.getCause() != null) {
+            mostSpecificException = mostSpecificException.getCause();
+        }
+        return mostSpecificException;
     }
 }
