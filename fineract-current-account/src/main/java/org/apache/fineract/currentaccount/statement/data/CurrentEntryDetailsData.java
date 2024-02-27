@@ -42,6 +42,9 @@ import org.apache.fineract.statement.data.camt053.TransactionReferencesData;
 @Getter
 public class CurrentEntryDetailsData extends EntryDetailsData {
 
+    public static final String DIRECTION_OUT = "OUT";
+    public static final String DIRECTION_IN = "IN";
+
     public CurrentEntryDetailsData(TransactionDetailsData details) {
         super(details == null ? null : new TransactionDetailsData[] { details });
     }
@@ -86,7 +89,7 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
             return null;
         }
 
-        boolean outgoing = (Boolean) transactionDetails.get("isOutgoing");
+        boolean outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         return outgoing ? new TransactionPartiesData(party, account, partner, partnerAccount)
                 : new TransactionPartiesData(partner, partnerAccount, party, account);
     }
@@ -101,7 +104,7 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
                 .map(e -> CurrentAccountResolver.resolveInternal(scheme, e.getValue(), null))
                 .orElse(CurrentAccountResolver.resolveDefault(transaction.getAccountId()));
         String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
-        boolean outgoing = (Boolean) transactionDetails.get("isOutgoing");
+        boolean outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         CurrentTransactionEnvelopeData envelope = outgoing
                 ? CurrentTransactionEnvelopeData.create(identifier.getIdentifier(), identifier.getTypeName(), partnerIdentifier, null)
                 : CurrentTransactionEnvelopeData.create(partnerIdentifier, null, identifier.getIdentifier(), identifier.getTypeName());

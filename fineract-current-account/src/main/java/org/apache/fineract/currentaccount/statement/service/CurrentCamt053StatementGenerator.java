@@ -105,17 +105,13 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
         AccountIdentifier iban = identifiersByType.get(IBAN);
         boolean isConversionAccount = false;
         String accountDiscriminator = null;
-        String disposalAccountId = null;
         if (iban != null) {
             String subValue = iban.getSubValue();
-            if (CONVERSION_ACCOUNT_DISCRIMINATOR.equals(subValue)) {
+            if (CONVERSION_ACCOUNT_DISCRIMINATOR.equalsIgnoreCase(subValue)) {
                 isConversionAccount = true;
                 accountDiscriminator = CONVERSION_ACCOUNT_DISCRIMINATOR;
-                disposalAccountId = accountIdentifierRepository.getAccountIdByIdTypeAndIdentifier(CURRENT, IBAN, iban.getValue(),
-                        DISPOSAL_ACCOUNT_DISCRIMINATOR);
-            } else if (DISPOSAL_ACCOUNT_DISCRIMINATOR.equals(subValue)) {
+            } else if (DISPOSAL_ACCOUNT_DISCRIMINATOR.equalsIgnoreCase(subValue)) {
                 accountDiscriminator = DISPOSAL_ACCOUNT_DISCRIMINATOR;
-                disposalAccountId = accountId;
             }
         }
 
@@ -129,23 +125,6 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
                 types);
         Map<String, Map<String, Object>> transactionDetailsById = accountStatementService
                 .getTransactionDetails(transactions.stream().map(CurrentTransactionData::getId).collect(Collectors.toList()));
-        List<CurrentTransactionType> debitTypes = CurrentTransactionType.getFiltered(CurrentTransactionType::isMonetaryDebit);
-        for (CurrentTransactionData transaction : transactions) {
-            String transactionId = transaction.getId();
-            Map<String, Object> transactionDetails = transactionDetailsById.get(transactionId);
-            boolean isOutgoing = transaction.getTransactionType().isDebit();
-            if (transactionDetails == null) {
-                transactionDetailsById.put(transactionId, Map.of("isOutgoing", isOutgoing));
-            } else {
-                if ((isConversionAccount || transaction.getTransactionType().isCredit()) && disposalAccountId != null) {
-                    String internalCorrelationId = (String) transactionDetails.get("internal_correlation_id");
-                    String categoryPurposeCode = (String) transactionDetails.get("category_purpose_code");
-                    isOutgoing = accountStatementService.hasTransaction(disposalAccountId, transactionId, internalCorrelationId,
-                            categoryPurposeCode, debitTypes);
-                }
-                transactionDetails.put("isOutgoing", isOutgoing);
-            }
-        }
 
         OffsetDateTime creationDateTime = content.getGroupHeader().getCreationDateTime();
         BigDecimal closureBalance;
