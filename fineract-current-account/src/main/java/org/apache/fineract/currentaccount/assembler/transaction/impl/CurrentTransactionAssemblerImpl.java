@@ -224,7 +224,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
             throw new GeneralPlatformDomainRuleException(pfx + "balance", "Insufficient funds! Current balance: " + origBalance);
         }
         BigDecimal newAvailableBalance = account.getAvailableBalance(balance, true);
-        ;
+
         if (MathUtil.isLessThanZero(newAvailableBalance)) {
             String code = pfx + (!MathUtil.isEmpty(account.getMinimumRequiredBalance()) ? "minrequiredbalance" : "maxoverdraft");
             throw new GeneralPlatformDomainRuleException(code,

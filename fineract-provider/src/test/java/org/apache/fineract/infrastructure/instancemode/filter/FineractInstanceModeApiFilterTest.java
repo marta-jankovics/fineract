@@ -395,4 +395,44 @@ class FineractInstanceModeApiFilterTest {
         verifyNoInteractions(filterChain);
         verify(response).setStatus(HttpStatus.SC_METHOD_NOT_ALLOWED);
     }
+
+    @Test
+    void testDoFilterInternal_ShouldLetQueryApiThrough_WhenFineractIsInReadMode() throws ServletException, IOException {
+        // given
+        FineractProperties.FineractModeProperties modeProperties = InstanceModeMock.createModeProps(true, false, false, false);
+        given(fineractProperties.getMode()).willReturn(modeProperties);
+        given(request.getMethod()).willReturn(HttpMethod.POST.name());
+        given(request.getPathInfo()).willReturn("/v1/random-uri/query");
+        // when
+        underTest.doFilterInternal(request, response, filterChain);
+        // then
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void testDoFilterInternal_ShouldLetQueryApiThrough_WhenFineractIsInWriteMode() throws ServletException, IOException {
+        // given
+        FineractProperties.FineractModeProperties modeProperties = InstanceModeMock.createModeProps(false, true, false, false);
+        given(fineractProperties.getMode()).willReturn(modeProperties);
+        given(request.getMethod()).willReturn(HttpMethod.POST.name());
+        given(request.getPathInfo()).willReturn("/v1/random-uri/query");
+        // when
+        underTest.doFilterInternal(request, response, filterChain);
+        // then
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void testDoFilterInternal_ShouldNotLetQueryApiThrough_WhenFineractIsNotInReadOrWriteMode() throws ServletException, IOException {
+        // given
+        FineractProperties.FineractModeProperties modeProperties = InstanceModeMock.createModeProps(false, false, false, false);
+        given(fineractProperties.getMode()).willReturn(modeProperties);
+        given(request.getMethod()).willReturn(HttpMethod.POST.name());
+        given(request.getPathInfo()).willReturn("/v1/random-uri/query");
+        // when
+        underTest.doFilterInternal(request, response, filterChain);
+        // then
+        verifyNoInteractions(filterChain);
+        verify(response).setStatus(HttpStatus.SC_METHOD_NOT_ALLOWED);
+    }
 }
