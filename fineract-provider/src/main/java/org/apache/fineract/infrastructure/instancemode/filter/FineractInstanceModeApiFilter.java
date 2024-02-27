@@ -48,7 +48,8 @@ public class FineractInstanceModeApiFilter extends OncePerRequestFilter {
             // Batches with all GET requests need to be allowed in read-only instances, hence this check will be
             // moved
             // under the Api Resource.
-            item(p -> true, pi -> pi.startsWith("/v1/batches")));
+            item(p -> true, pi -> pi.startsWith("/v1/batches")),
+            item(p -> p.isReadEnabled() || p.isWriteEnabled(), pi -> pi.endsWith("/query")));
 
     private final FineractProperties fineractProperties;
 
