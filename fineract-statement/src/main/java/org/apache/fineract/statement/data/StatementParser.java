@@ -213,7 +213,7 @@ public final class StatementParser {
 
     private String parseStatementCode(JsonElement element, DataValidatorBuilder validator) {
         final String code = fromJsonHelper.extractStringNamed(PARAM_STATEMENT_CODE, element);
-        validator.parameter(PARAM_STATEMENT_CODE).value(code).notBlank();
+        validator.parameter(PARAM_STATEMENT_CODE).value(code).ignoreIfNull().notBlank();
         return code;
     }
 

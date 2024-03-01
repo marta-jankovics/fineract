@@ -18,12 +18,13 @@
  */
 package org.apache.fineract.statement.data.dto;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AccountStatementData {
+public class AccountStatementData implements Serializable {
 
     private final String accountId;
     private final String statementCode;

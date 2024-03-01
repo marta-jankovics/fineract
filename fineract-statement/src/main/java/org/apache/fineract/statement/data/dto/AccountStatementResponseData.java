@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.statement.data.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
 @AllArgsConstructor
-public class AccountStatementResponseData {
+public class AccountStatementResponseData implements Serializable {
 
     private final String statementCode;
     private final StringEnumOptionData statementType;

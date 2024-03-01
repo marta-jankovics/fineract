@@ -30,8 +30,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import static org.apache.fineract.portfolio.note.domain.NoteType.CLIENT;
-
 public interface NoteRepository extends JpaRepository<Note, Long>, JpaSpecificationExecutor<Note> {
 
     List<Note> findByLoanId(Long id);

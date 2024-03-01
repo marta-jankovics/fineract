@@ -85,6 +85,7 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
             dataValidator.reset().parameter(TRANSACTION_DATE_PARAM).value(transactionDate).notNull()
                     .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
         }
+        validateNote(command, dataValidator);
 
         dataValidator.throwValidationErrors();
     }
@@ -117,6 +118,13 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
             final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
             dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();
         }
+        validateNote(command, dataValidator);
+
         dataValidator.throwValidationErrors();
+    }
+
+    private static void validateNote(JsonCommand command, DataValidatorBuilder dataValidator) {
+        final String note = command.stringValueOfParameterNamed(NOTE_PARAM);
+        dataValidator.reset().parameter(NOTE_PARAM).value(note).ignoreIfNull().notBlank().notExceedingLengthOf(1000);
     }
 }

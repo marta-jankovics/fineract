@@ -179,12 +179,16 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
         if (recurrence == null) {
             return null;
         }
-        if (statementDate == null && CalendarUtils.isValidRecurringDate(recurrence, startDate, startDate)) {
-            return startDate;
+        LocalDate seedDate = statementDate;
+        if (statementDate == null) {
+            seedDate = startDate;
+            if (DateUtils.isEqual(startDate,
+                    CalendarUtils.getNextRecurringDate(getRecurrence(), seedDate, startDate.minusDays(1), false))) {
+                return startDate; // first generation date should be the activation date if it matches the recurrence
+            }
         }
 
         // nextDate might be calculated earlier than today, but it is ok, the next generation job will generate again
-        LocalDate seedDate = statementDate == null ? startDate : statementDate;
         return CalendarUtils.getNextRecurringDate(getRecurrence(), seedDate, startDate, false);
     }
 

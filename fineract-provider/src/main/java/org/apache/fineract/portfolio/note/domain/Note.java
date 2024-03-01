@@ -75,7 +75,7 @@ public class Note extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     @JoinColumn(name = "share_account_id", nullable = true)
     private ShareAccount shareAccount;
 
-    @Column(name = "entity_identifier", nullable = true)
+    @Column(name = "entity_identifier", length = 40)
     private String entityIdentifier;
 
     @NotNull

@@ -18,13 +18,14 @@
  */
 package org.apache.fineract.statement.data.dto;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
 @AllArgsConstructor
-public class ProductStatementResponseData {
+public class ProductStatementResponseData implements Serializable {
 
     private final String statementCode;
     private final StringEnumOptionData statementType;

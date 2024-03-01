@@ -34,6 +34,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -85,7 +86,11 @@ public class ProductStatement extends AbstractPersistableCustom<Long> {
     private String sequencePrefix;
 
     public static ProductStatement create(@NotNull ProductStatementData statementData) {
-        return new ProductStatement(statementData.getProductId(), statementData.getProductType(), statementData.getStatementCode(),
+        String statementCode = statementData.getStatementCode();
+        if (statementCode == null) {
+            statementCode = UUID.randomUUID().toString();
+        }
+        return new ProductStatement(statementData.getProductId(), statementData.getProductType(), statementCode,
                 Optional.ofNullable(statementData.getStatementType()).orElse(StatementType.getDefault()),
                 Optional.ofNullable(statementData.getPublishType()).orElse(StatementPublishType.getDefault()),
                 Optional.ofNullable(statementData.getBatchType()).orElse(StatementBatchType.getDefault()), statementData.getRecurrence(),

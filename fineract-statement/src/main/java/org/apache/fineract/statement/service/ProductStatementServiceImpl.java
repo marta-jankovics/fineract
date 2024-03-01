@@ -84,10 +84,11 @@ public class ProductStatementServiceImpl implements ProductStatementService {
                     final JsonObject statementObject = statementElement.getAsJsonObject();
                     ProductStatementData statementData = statementParser.parseProductStatementForUpdate(statementObject, productId,
                             productType);
-                    final String code = statementData.getStatementCode();
-                    ProductStatement statement = statementsByCode.get(code);
+                    String code = statementData.getStatementCode();
+                    ProductStatement statement = code == null ? null : statementsByCode.get(code);
                     if (statement == null) {
                         statement = ProductStatement.create(statementData);
+                        code = statement.getStatementCode();
                         changes.computeIfAbsent("added", e -> new HashMap<>()).put(PARAM_STATEMENT_CODE, code);
                     } else {
                         HashMap<String, Object> updated = new HashMap<>();

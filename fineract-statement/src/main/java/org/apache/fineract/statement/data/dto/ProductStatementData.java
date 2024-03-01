@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.statement.data.dto;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.portfolio.PortfolioProductType;
@@ -27,7 +28,7 @@ import org.apache.fineract.statement.domain.StatementType;
 
 @Getter
 @AllArgsConstructor
-public class ProductStatementData {
+public class ProductStatementData implements Serializable {
 
     private final String productId;
     private final PortfolioProductType productType;

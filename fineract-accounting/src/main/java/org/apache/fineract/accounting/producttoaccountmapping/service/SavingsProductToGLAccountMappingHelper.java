@@ -18,16 +18,14 @@
  */
 package org.apache.fineract.accounting.producttoaccountmapping.service;
 
-import static org.apache.fineract.accounting.common.AccountingConstants.AccrualAccountsForSavings;
-import static org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForSavings;
-import static org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams;
-import static org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams.INTEREST_ON_SAVINGS;
-
 import com.google.gson.JsonElement;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.accounting.common.AccountingConstants;
+import org.apache.fineract.accounting.common.AccountingConstants.AccrualAccountsForSavings;
+import org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForSavings;
+import org.apache.fineract.accounting.common.AccountingConstants.SavingProductAccountingParams;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
@@ -146,7 +144,8 @@ public class SavingsProductToGLAccountMappingHelper {
                 element);
         final Long incomeFromPenaltiesId = this.fromApiJsonHelper
                 .extractLongNamed(SavingProductAccountingParams.INCOME_FROM_PENALTIES.getValue(), element);
-        final Long interestOnSavingsId = this.fromApiJsonHelper.extractLongNamed(INTEREST_ON_SAVINGS.getValue(), element);
+        final Long interestOnSavingsId = this.fromApiJsonHelper
+                .extractLongNamed(SavingProductAccountingParams.INTEREST_ON_SAVINGS.getValue(), element);
         final Long savingsControlId = this.fromApiJsonHelper
                 .extractLongNamed(AccountingConstants.SavingProductAccountingParams.SAVINGS_CONTROL.getValue(), element);
         final Long transfersInSuspenseAccountId = this.fromApiJsonHelper

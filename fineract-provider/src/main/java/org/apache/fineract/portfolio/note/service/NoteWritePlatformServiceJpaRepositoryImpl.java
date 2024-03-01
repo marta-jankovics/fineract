@@ -265,12 +265,14 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 .build();
     }
 
-    private CommandProcessingResult saveEntityNote(@NotNull NoteType type, @NotNull String entityIdentifier, Long noteId, @NotNull JsonCommand command) {
+    private CommandProcessingResult saveEntityNote(@NotNull NoteType type, @NotNull String entityIdentifier, Long noteId,
+            @NotNull JsonCommand command) {
         switch (type) {
             case CURRENT_ACCOUNT -> currentAccountRepository.findById(entityIdentifier)
                     .orElseThrow(() -> new ResourceNotFoundException(CURRENT_ACCOUNT_ENTITY_NAME, entityIdentifier));
             case CURRENT_TRANSACTION -> currentTransactionRepository.findById(entityIdentifier)
                     .orElseThrow(() -> new ResourceNotFoundException(CURRENT_TRANSACTION_ENTITY_NAME, entityIdentifier));
+            default -> throw new NoteResourceNotSupportedException(type.name());
         }
         final String noteS = command.stringValueOfParameterNamed("note");
         Note note;

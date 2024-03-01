@@ -31,7 +31,7 @@ public interface NoteWritePlatformService {
 
     CommandProcessingResult deleteNote(JsonCommand command);
 
-    void createAndPersistClientNote(final Long clientId, JsonCommand command);
+    void createAndPersistClientNote(Long clientId, JsonCommand command);
 
     Long createEntityNote(@NotNull NoteType type, @NotNull String entityIdentifier, @NotNull JsonCommand command);
 }
