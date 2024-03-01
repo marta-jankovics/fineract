@@ -193,7 +193,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
     }
 
     private static void validateNote(JsonCommand command, DataValidatorBuilder dataValidator) {
-        final String note = command.stringValueOfParameterNamed(NOTE_PARAM);
+        final String note = command.stringValueOfParameterNamedAllowingNull(NOTE_PARAM);
         dataValidator.reset().parameter(NOTE_PARAM).value(note).ignoreIfNull().notBlank().notExceedingLengthOf(1000);
     }
 }
