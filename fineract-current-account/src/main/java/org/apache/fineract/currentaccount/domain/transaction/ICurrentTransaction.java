@@ -48,6 +48,5 @@ public interface ICurrentTransaction {
 
     OffsetDateTime getCreatedDateTime();
 
-    @NotNull
     Long getPaymentTypeId();
 }
