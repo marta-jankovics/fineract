@@ -91,8 +91,7 @@ public interface CurrentTransactionResponseDataMapper {
 
     @Named("mapPaymentTypeData")
     default PaymentTypeData mapPaymentTypeData(CurrentTransactionData data) {
-        return PaymentTypeData.instance(data.getPaymentTypeId(), data.getPaymentTypeName());
+        Long paymentTypeId = data.getPaymentTypeId();
+        return paymentTypeId == null ? null : PaymentTypeData.instance(paymentTypeId, data.getPaymentTypeName());
     }
-
-    List<CurrentTransactionResponseData> mapAll(List<CurrentTransactionData> data);
 }
