@@ -358,7 +358,7 @@ public final class CalendarUtils {
         return humanReadable;
     }
 
-    public static boolean isValidRedurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate date) {
+    public static boolean isValidRecurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate date) {
         final Recur recur = CalendarUtils.getICalRecur(recurringRule);
         if (recur == null) {
             return false;
@@ -368,7 +368,7 @@ public final class CalendarUtils {
         return isValidRecurringDate(recur, seedDate, date, isSkipRepaymentonFirstDayOfMonth, numberOfDays);
     }
 
-    public static boolean isValidRedurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate date,
+    public static boolean isValidRecurringDate(final String recurringRule, final LocalDate seedDate, final LocalDate date,
             boolean isSkipRepaymentonFirstDayOfMonth, final Integer numberOfDays) {
 
         final Recur recur = CalendarUtils.getICalRecur(recurringRule);
@@ -388,7 +388,7 @@ public final class CalendarUtils {
         final Collection<LocalDate> recurDate = getRecurringDates(recur, seedDate, startDate, date.plusDays(1), 1,
                 isSkipRepaymentonFirstDayOfMonth, numberOfDays);
 
-        return (recurDate == null || recurDate.isEmpty()) ? false : recurDate.contains(date);
+        return recurDate != null && !recurDate.isEmpty() && recurDate.contains(date);
     }
 
     public enum DayNameEnum {
@@ -532,7 +532,7 @@ public final class CalendarUtils {
         }
         LocalDate startDate = disbursementDate;
         final LocalDate seedDate = calendar.getStartDateLocalDate();
-        if (isValidRedurringDate(calendar.getRecurrence(), seedDate, startDate, isSkipRepaymentOnFirstDayOfMonth, numberOfDays)
+        if (isValidRecurringDate(calendar.getRecurrence(), seedDate, startDate, isSkipRepaymentOnFirstDayOfMonth, numberOfDays)
                 && !frequency.equals(Recur.Frequency.DAILY.name())) {
             startDate = startDate.plusDays(1);
         }
