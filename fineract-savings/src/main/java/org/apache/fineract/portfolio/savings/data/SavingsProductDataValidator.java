@@ -260,7 +260,7 @@ public class SavingsProductDataValidator {
         if (AccountingValidations.isCashBasedAccounting(accountingRuleType)
                 || AccountingValidations.isAccrualPeriodicBasedAccounting(accountingRuleType)) {
             savingsProductAccountingDataValidator.evaluateProductAccountingData(accountingRuleType, isDormancyActive, element,
-                    baseDataValidator, DepositAccountType.SAVINGS_DEPOSIT);
+                    baseDataValidator, DepositAccountType.SAVINGS_DEPOSIT, true);
         }
 
         validateOverdraftParams(baseDataValidator, element);
@@ -385,8 +385,11 @@ public class SavingsProductDataValidator {
         }
 
         // accounting related data validation
-        final Integer accountingRuleType = this.fromApiJsonHelper.extractIntegerNamed("accountingRule", element, Locale.getDefault());
-        baseDataValidator.reset().parameter("accountingRule").value(accountingRuleType).notNull().inMinMaxRange(1, 3);
+        Integer accountingRuleType = product.getAccountingType();
+        if (this.fromApiJsonHelper.parameterExists("accountingRule", element)) {
+            accountingRuleType = this.fromApiJsonHelper.extractIntegerNamed("accountingRule", element, Locale.getDefault());
+            baseDataValidator.reset().parameter("accountingRule").value(accountingRuleType).notNull().inMinMaxRange(1, 3);
+        }
 
         // dormancy
         final Boolean isDormancyActive = this.fromApiJsonHelper.parameterExists(isDormancyTrackingActiveParamName, element)
@@ -396,7 +399,7 @@ public class SavingsProductDataValidator {
         if (AccountingValidations.isCashBasedAccounting(accountingRuleType)
                 || AccountingValidations.isAccrualPeriodicBasedAccounting(accountingRuleType)) {
             savingsProductAccountingDataValidator.evaluateProductAccountingData(accountingRuleType, isDormancyActive, element,
-                    baseDataValidator, DepositAccountType.SAVINGS_DEPOSIT);
+                    baseDataValidator, DepositAccountType.SAVINGS_DEPOSIT, false);
         }
 
         if (null != isDormancyActive && isDormancyActive) {
