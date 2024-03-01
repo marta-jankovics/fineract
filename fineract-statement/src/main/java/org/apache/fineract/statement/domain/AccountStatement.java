@@ -170,7 +170,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
     public void generated(AccountStatementResult result) {
         statementResult = result;
         statementDate = nextStatementDate;
-        nextStatementDate = calcNextDate(nextStatementDate);
+        nextStatementDate = calcNextDate(statementDate);
         sequenceNo = calcNextSequence();
         statementStatus = statementStatus.generate();
     }
@@ -179,6 +179,10 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
         if (recurrence == null) {
             return null;
         }
+        if (statementDate == null && CalendarUtils.isValidRecurringDate(recurrence, startDate, startDate)) {
+            return startDate;
+        }
+
         // nextDate might be calculated earlier than today, but it is ok, the next generation job will generate again
         LocalDate seedDate = statementDate == null ? startDate : statementDate;
         return CalendarUtils.getNextRecurringDate(getRecurrence(), seedDate, startDate, false);

@@ -19,12 +19,14 @@
 package org.apache.fineract.currentaccount.api.account;
 
 import jakarta.ws.rs.core.UriInfo;
+import java.util.List;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
+import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,6 +47,13 @@ public interface CurrentAccountsApi {
     IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifier(String idType, String identifier);
 
     IdentifiersResponseData retrieveIdentifiersByIdTypeIdentifierSubIdentifier(String idType, String identifier, String subIdentifier);
+
+    List<AccountStatementResponseData> retrieveStatementsByIdentifier(String identifier);
+
+    List<AccountStatementResponseData> retrieveStatementsByIdTypeIdentifier(String idType, String identifier);
+
+    List<AccountStatementResponseData> retrieveStatementsByIdTypeIdentifierSubIdentifier(String idType, String identifier,
+            String subIdentifier);
 
     CommandProcessingResult create(String requestJson);
 

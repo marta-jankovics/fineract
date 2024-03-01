@@ -23,7 +23,6 @@ import jakarta.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -64,10 +63,7 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     @Query("select case when (count (ca) > 0) then 'true' else 'false' end from CurrentAccount ca where ca.clientId = :clientId and ca.status in :statuses")
     boolean hasAccountInStatusByClient(@Param("clientId") Long clientId, @Param("statuses") List<CurrentAccountStatus> statuses);
 
-    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData(ca.id, ca.accountNumber, ca.externalId) FROM CurrentAccount ca WHERE ca.id = :accountId")
-    Optional<CurrentAccountIdentifiersData> findIdentifiersByAccountId(@Param("accountId") String accountId);
-
-    @Query("SELECT ca FROM CurrentAccount ca WHERE ca.productId = :productId and ca.status in :statuses")
+    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.productId = :productId and ca.status in :statuses")
     List<String> getIdsByProductIdAndStatus(@Param("productId") String productId, @Param("statuses") List<CurrentAccountStatus> statuses);
 
     boolean existsByProductId(String productId);

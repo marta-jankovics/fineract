@@ -19,20 +19,15 @@
 package org.apache.fineract.currentaccount.service.product.read;
 
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
-import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductTemplateResponseData;
 import org.apache.fineract.currentaccount.service.product.CurrentProductResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 public interface CurrentProductReadService {
 
     CurrentProductTemplateResponseData retrieveTemplate();
-
-    List<CurrentProductData> retrieveAll(Sort sort);
 
     Page<CurrentProductResponseData> retrieveAll(Pageable pageRequest);
 

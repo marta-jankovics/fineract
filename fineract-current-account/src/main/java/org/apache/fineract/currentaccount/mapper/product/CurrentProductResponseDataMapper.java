@@ -26,13 +26,14 @@ import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGL
 import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
-import org.apache.fineract.currentaccount.data.product.GlAccountMapping;
+import org.apache.fineract.currentaccount.data.product.GlAccountMappingResponseData;
 import org.apache.fineract.currentaccount.data.product.PaymentChannelToFundSourceData;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashBasedAccount;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
+import org.apache.fineract.statement.data.dto.ProductStatementResponseData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -41,31 +42,23 @@ import org.springframework.data.domain.Page;
 @Mapper(config = MapstructMapperConfig.class)
 public interface CurrentProductResponseDataMapper {
 
-    default Page<CurrentProductResponseData> map(Page<CurrentProductData> data,
-            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
-        return data.map(currentProductData -> map(currentProductData, glAccountMappingRetrieveFunc));
-    }
-
     default CurrentProductResponseData map(CurrentProductData currentProductData,
-            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
-        return mapResolved(currentProductData, glAccountMappingRetrieveFunc.apply(currentProductData));
-    }
-
-    default List<CurrentProductResponseData> map(List<CurrentProductData> data,
-            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc) {
-        return data.stream().map(currentProductData -> map(currentProductData, glAccountMappingRetrieveFunc)).toList();
+            Function<CurrentProductData, List<ProductToGLAccountMapping>> glAccountMappingRetrieveFunc,
+            Function<CurrentProductData, List<ProductStatementResponseData>> statementsRetrieveFunc) {
+        return mapResolved(currentProductData, glAccountMappingRetrieveFunc.apply(currentProductData),
+                statementsRetrieveFunc.apply(currentProductData));
     }
 
     default Page<CurrentProductResponseData> map(Page<CurrentProductData> data) {
-        return data.map(this::map);
+        return data.map(this::mapAll);
     }
 
     default List<CurrentProductResponseData> map(List<CurrentProductData> data) {
-        return data.stream().map(currentProductData -> mapResolved(currentProductData, null)).toList();
+        return data.stream().map(this::mapAll).toList();
     }
 
-    default CurrentProductResponseData map(CurrentProductData currentProductData) {
-        return mapResolved(currentProductData, null);
+    default CurrentProductResponseData mapAll(CurrentProductData currentProductData) {
+        return mapResolved(currentProductData, null, null);
     }
 
     @Mapping(target = "currency", source = "currentProductData", qualifiedByName = "currency")
@@ -73,7 +66,8 @@ public interface CurrentProductResponseDataMapper {
     @Mapping(target = "balanceCalculationType", source = "currentProductData", qualifiedByName = "balanceCalculationType")
     @Mapping(target = "glAccountMappings", source = "glAccountMappings", qualifiedByName = "glAccountMapping")
     @Mapping(target = "paymentChannelToFundSourceMappings", source = "glAccountMappings", qualifiedByName = "paymentChannelMapping")
-    CurrentProductResponseData mapResolved(CurrentProductData currentProductData, List<ProductToGLAccountMapping> glAccountMappings);
+    CurrentProductResponseData mapResolved(CurrentProductData currentProductData, List<ProductToGLAccountMapping> glAccountMappings,
+            List<ProductStatementResponseData> statements);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentProductData currentProductData) {
@@ -93,7 +87,7 @@ public interface CurrentProductResponseDataMapper {
     }
 
     @Named("glAccountMapping")
-    default List<GlAccountMapping> glAccountMapping(List<ProductToGLAccountMapping> glAccountMappings) {
+    default List<GlAccountMappingResponseData> glAccountMapping(List<ProductToGLAccountMapping> glAccountMappings) {
         if (glAccountMappings == null) {
             return null;
         }
@@ -104,7 +98,7 @@ public interface CurrentProductResponseDataMapper {
 
             StringEnumOptionData cashAccount = CurrentProductCashBasedAccount.fromInt(glAccountMapping.getFinancialAccountType())
                     .toGLStringEnumOptionData();
-            return new GlAccountMapping(cashAccount, glAccountDetailsData);
+            return new GlAccountMappingResponseData(cashAccount, glAccountDetailsData);
         }).collect(Collectors.toList());
     }
 

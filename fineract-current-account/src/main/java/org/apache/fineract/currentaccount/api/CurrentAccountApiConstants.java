@@ -30,6 +30,8 @@ public class CurrentAccountApiConstants {
     public static final String CURRENT_ACCOUNT_ENTITY_NAME = "CURRENTACCOUNT";
     public static final String CURRENT_TRANSACTION_ENTITY_NAME = "CURRENTTRANSACTION";
     public static final String CURRENT_IDENTIFIER_ENTITY_NAME = "CURRENTIDENTIFIER";
+    public static final String CURRENT_NOTE_ENTITY_NAME = "CURRENTNOTE";
+    public static final String CURRENT_TRANSACTION_NOTE_ENTITY_NAME = "CURRENTTRANSACTIONNOTE";
 
     public static final String CURRENT_PRODUCT_RESOURCE_NAME = CURRENT_PRODUCT_ENTITY_NAME.toLowerCase();
     public static final String CURRENT_ACCOUNT_RESOURCE_NAME = CURRENT_ACCOUNT_ENTITY_NAME.toLowerCase();
@@ -84,6 +86,7 @@ public class CurrentAccountApiConstants {
     public static final String OVERDRAFT_LIMIT_PARAM = "overdraftLimit";
     public static final String MINIMUM_REQUIRED_BALANCE_PARAM = "minimumRequiredBalance";
     public static final String STATEMENTS_PARAM = StatementParser.PARAM_STATEMENTS;
+    public static final String NOTE_PARAM = "note";
     // Accounting
     public static final String CONTROL_ACCOUNT_ID_PARAM = "controlAccountId";
     public static final String REFERENCE_ACCOUNT_ID_PARAM = "referenceAccountId";
@@ -114,7 +117,7 @@ public class CurrentAccountApiConstants {
 
     // API
     public static final String SLASH = "/";
-    public static final String RESERVED_API_WORDS_REGEX = "(?!transactions|query|identifiers|template)([a-zA-Z_0-9-]+)";
+    public static final String RESERVED_API_WORDS_REGEX = "(?!transactions|identifiers|statements|notes|query|template)([a-zA-Z_0-9-]+)";
     public static final String RESERVED_API_REGEX = ":" + RESERVED_API_WORDS_REGEX;
     public static final String ID_TYPE_API_REGEX = "{" + ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
     public static final String IDENTIFIER_API_REGEX = "{" + IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";

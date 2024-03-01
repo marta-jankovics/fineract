@@ -50,12 +50,13 @@ import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
 import org.apache.fineract.statement.data.dto.ProductStatementTemplateData;
+import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.domain.StatementBatchType;
 import org.apache.fineract.statement.domain.StatementPublishType;
 import org.apache.fineract.statement.domain.StatementType;
+import org.apache.fineract.statement.mapper.StatementResponseDataMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -71,6 +72,8 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     private final PaymentTypeReadPlatformService paymentTypeReadPlatformService;
     private final ConfigurationDomainService configurationDomainService;
     private final GLAccountRepository glAccountRepository;
+    private final ProductStatementRepository productStatementRepository;
+    private final StatementResponseDataMapper statementResponseDataMapper;
 
     @Override
     public CurrentProductTemplateResponseData retrieveTemplate() {
@@ -102,15 +105,8 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
     }
 
     @Override
-    public List<CurrentProductData> retrieveAll(Sort sort) {
-        return currentProductRepository.getProductsSorted(sort);
-    }
-
-    @Override
     public Page<CurrentProductResponseData> retrieveAll(Pageable pageable) {
-        return currentProductResponseDataMapper.map(currentProductRepository.getProductsDataPage(pageable),
-                (CurrentProductData product) -> productToGLAccountMappingRepository.findByProductIdentifierAndProductType(product.getId(),
-                        PortfolioProductType.CURRENT.getValue()));
+        return currentProductResponseDataMapper.map(currentProductRepository.getProductsDataPage(pageable));
     }
 
     @Override
@@ -124,8 +120,11 @@ public class CurrentProductReadServiceImpl implements CurrentProductReadService 
             throw new ResourceNotFoundException("current.product", "Current product with %s: %s cannot be found",
                     productResolver.getIdType(), productResolver.getIdentifier());
         }
-        return currentProductResponseDataMapper.map(productData, (CurrentProductData product) -> productToGLAccountMappingRepository
-                .findByProductIdentifierAndProductType(product.getId(), PortfolioProductType.CURRENT.getValue()));
+        return currentProductResponseDataMapper.map(productData,
+                (CurrentProductData product) -> productToGLAccountMappingRepository.findByProductIdentifierAndProductType(product.getId(),
+                        PortfolioProductType.CURRENT.getValue()),
+                (CurrentProductData product) -> statementResponseDataMapper.mapProductStatements(
+                        productStatementRepository.getByProductIdAndProductType(product.getId(), PortfolioProductType.CURRENT)));
     }
 
     @Override

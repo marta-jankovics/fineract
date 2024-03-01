@@ -28,7 +28,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProductStatementRepository extends JpaRepository<ProductStatement, Long>, JpaSpecificationExecutor<ProductStatement> {
 
-    List<ProductStatement> findByProductIdAndProductType(String productId, PortfolioProductType productType);
+    List<ProductStatement> getByProductIdAndProductType(String productId, PortfolioProductType productType);
 
     Optional<ProductStatement> findByStatementCode(String statementCode);
 

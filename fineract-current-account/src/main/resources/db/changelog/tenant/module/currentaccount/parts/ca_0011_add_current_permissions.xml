@@ -244,4 +244,63 @@
             <column name="can_maker_checker" valueBoolean="false"/>
         </insert>
     </changeSet>
+    <!--    Note -->
+    <changeSet author="fineract" id="5">
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="READ_CURRENTNOTE"/>
+            <column name="entity_name" value="CURRENTNOTE"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="CREATE_CURRENTNOTE"/>
+            <column name="entity_name" value="CURRENTNOTE"/>
+            <column name="action_name" value="CREATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="UPDATE_CURRENTNOTE"/>
+            <column name="entity_name" value="CURRENTNOTE"/>
+            <column name="action_name" value="UPDATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="portfolio"/>
+            <column name="code" value="DELETE_CURRENTNOTE"/>
+            <column name="entity_name" value="CURRENTNOTE"/>
+            <column name="action_name" value="DELETE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="READ_CURRENTTRANSACTIONNOTE"/>
+            <column name="entity_name" value="CURRENTTRANSACTIONNOTE"/>
+            <column name="action_name" value="READ"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="CREATE_CURRENTTRANSACTIONNOTE"/>
+            <column name="entity_name" value="CURRENTTRANSACTIONNOTE"/>
+            <column name="action_name" value="CREATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="UPDATE_CURRENTTRANSACTIONNOTE"/>
+            <column name="entity_name" value="CURRENTTRANSACTIONNOTE"/>
+            <column name="action_name" value="UPDATE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+        <insert tableName="m_permission">
+            <column name="grouping" value="transaction_current"/>
+            <column name="code" value="DELETE_CURRENTTRANSACTIONNOTE"/>
+            <column name="entity_name" value="CURRENTTRANSACTIONNOTE"/>
+            <column name="action_name" value="DELETE"/>
+            <column name="can_maker_checker" valueBoolean="false"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

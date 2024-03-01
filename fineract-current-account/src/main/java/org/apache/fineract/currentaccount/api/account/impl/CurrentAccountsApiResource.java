@@ -77,6 +77,7 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryService;
+import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.SortDefault;
@@ -183,6 +184,39 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
             @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier) {
         return retrieveIdentifiers(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
+    }
+
+    @GET
+    @Path(IDENTIFIER_API_REGEX + "/statements")
+    @Operation(operationId = "retrieveCurrentAccountStatements", summary = "Retrieve a statements/account", description = "Retrieves a current statements/account\n\n"
+            + "Example Requests :\n" + "\n" + "current-accounts/1/statements")
+    @Override
+    public List<AccountStatementResponseData> retrieveStatementsByIdentifier(
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
+        return retrieveStatements(CurrentAccountResolver.resolveDefault(identifier));
+    }
+
+    @GET
+    @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/statements")
+    @Operation(operationId = "retrieveCurrentAccountStatements", summary = "Retrieve statements/account by alternative id", description = "Retrieves a current statements/account by identifier\n\n"
+            + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/statements")
+    @Override
+    public List<AccountStatementResponseData> retrieveStatementsByIdTypeIdentifier(
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier) {
+        return retrieveStatements(CurrentAccountResolver.resolve(idType, identifier, null));
+    }
+
+    @GET
+    @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/" + SUB_IDENTIFIER_API_REGEX + "/statements")
+    @Operation(operationId = "retrieveCurrentAccountStatements", summary = "Retrieve statements/account by alternative id\", description = \"Retrieves a current statements/account by identifier\n\n"
+            + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/statements")
+    @Override
+    public List<AccountStatementResponseData> retrieveStatementsByIdTypeIdentifierSubIdentifier(
+            @PathParam(ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
+            @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
+            @PathParam(SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String subIdentifier) {
+        return retrieveStatements(CurrentAccountResolver.resolve(idType, identifier, subIdentifier));
     }
 
     @POST
@@ -368,6 +402,11 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     private IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_IDENTIFIER_ENTITY_NAME);
         return currentAccountReadService.retrieveIdentifiers(accountResolver);
+    }
+
+    private List<AccountStatementResponseData> retrieveStatements(@NotNull CurrentAccountResolver accountResolver) {
+        context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_IDENTIFIER_ENTITY_NAME);
+        return currentAccountReadService.retrieveStatements(accountResolver);
     }
 
     private CommandProcessingResult updateCurrentAccount(@NotNull CurrentAccountResolver accountResolver, String requestJson) {

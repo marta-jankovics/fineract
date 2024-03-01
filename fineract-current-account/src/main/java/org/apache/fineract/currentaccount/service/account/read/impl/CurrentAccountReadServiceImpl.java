@@ -33,13 +33,18 @@ import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifie
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
+import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
-import org.apache.fineract.currentaccount.service.product.read.CurrentProductReadService;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
+import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
+import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
+import org.apache.fineract.statement.domain.AccountStatement;
+import org.apache.fineract.statement.domain.AccountStatementRepository;
+import org.apache.fineract.statement.mapper.StatementResponseDataMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,16 +53,17 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class CurrentAccountReadServiceImpl implements CurrentAccountReadService {
 
+    private final CurrentProductRepository currentProductRepository;
+    private final CurrentProductResponseDataMapper productResponseDataMapper;
     private final CurrentAccountRepository currentAccountRepository;
     private final AccountIdentifierRepository accountIdentifierRepository;
-    private final CurrentProductReadService currentProductReadPlatformService;
-    private final CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper;
-    private final CurrentProductResponseDataMapper productResponseDataMapper;
+    private final CurrentAccountIdentifiersResponseDataMapper identifiersResponseDataMapper;
+    private final AccountStatementRepository accountStatementRepository;
+    private final StatementResponseDataMapper statementResponseDataMapper;
 
     @Override
     public CurrentAccountTemplateResponseData retrieveTemplate() {
-        final List<CurrentProductData> productOptions = this.currentProductReadPlatformService
-                .retrieveAll(Sort.by(Sort.Direction.ASC, "name"));
+        final List<CurrentProductData> productOptions = currentProductRepository.getProductsSorted(Sort.by(Sort.Direction.ASC, "name"));
 
         return CurrentAccountTemplateResponseData.builder() //
                 .productOptions(productResponseDataMapper.map(productOptions)) //
@@ -115,12 +121,20 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     @Override
     public IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {
         String accountId = retrieveId(accountResolver);
-        CurrentAccountIdentifiersData currentAccountIdentifiersData = currentAccountRepository.findIdentifiersByAccountId(accountId)
+        CurrentAccountIdentifiersData currentAccountIdentifiersData = accountIdentifierRepository.findIdentifiersByAccountId(accountId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository
                 .getByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, accountId);
-        return currentAccountIdentifiersResponseDataMapper.map(currentAccountIdentifiersData, extraSecondaryIdentifiers);
+        return identifiersResponseDataMapper.map(currentAccountIdentifiersData, extraSecondaryIdentifiers);
+    }
+
+    @Override
+    public List<AccountStatementResponseData> retrieveStatements(@NotNull CurrentAccountResolver accountResolver) {
+        String accountId = retrieveId(accountResolver);
+        List<AccountStatement> statements = accountStatementRepository.getByAccountIdAndProductStatementProductType(accountId,
+                PortfolioProductType.CURRENT);
+        return statementResponseDataMapper.mapAccountStatements(statements);
     }
 
     private String resolveIdBySecondaryIdentifier(@NotNull CurrentAccountResolver accountResolver) {

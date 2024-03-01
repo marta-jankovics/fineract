@@ -24,6 +24,7 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
+import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,4 +42,6 @@ public interface CurrentAccountReadService {
     String retrieveId(@NotNull CurrentAccountResolver accountResolver);
 
     IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver);
+
+    List<AccountStatementResponseData> retrieveStatements(@NotNull CurrentAccountResolver accountResolver);
 }

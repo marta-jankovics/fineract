@@ -19,30 +19,13 @@
 package org.apache.fineract.currentaccount.data.product;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
 import lombok.Data;
+import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
-import org.apache.fineract.organisation.monetary.data.CurrencyData;
-import org.apache.fineract.statement.data.dto.ProductStatementResponseData;
 
 @Data
-public class CurrentProductResponseData implements Serializable {
+public class GlAccountMappingResponseData implements Serializable {
 
-    // Current product data
-    private final String id;
-    private final String name;
-    private final String shortName;
-    private final String description;
-    private final CurrencyData currency;
-    private final StringEnumOptionData accountingType;
-    private final Boolean allowOverdraft;
-    private final BigDecimal overdraftLimit;
-    private final BigDecimal minimumRequiredBalance;
-    private final Boolean allowForceTransaction;
-    private final StringEnumOptionData balanceCalculationType;
-
-    private final List<GlAccountMappingResponseData> glAccountMappings;
-    private List<PaymentChannelToFundSourceData> paymentChannelToFundSourceMappings;
-    private List<ProductStatementResponseData> statements;
+    private final StringEnumOptionData accountType;
+    private final GLAccountDetailsData glAccount;
 }

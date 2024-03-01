@@ -75,7 +75,7 @@ public class ProductStatementServiceImpl implements ProductStatementService {
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statementArray != null) {
-                List<ProductStatement> existingStatements = statementRepository.findByProductIdAndProductType(productId, productType);
+                List<ProductStatement> existingStatements = statementRepository.getByProductIdAndProductType(productId, productType);
                 Map<String, ProductStatement> statementsByCode = existingStatements.stream()
                         .collect(Collectors.toMap(ProductStatement::getStatementCode, v -> v));
                 changes = new HashMap<>();

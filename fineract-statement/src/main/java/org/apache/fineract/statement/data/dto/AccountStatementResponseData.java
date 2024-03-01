@@ -16,16 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.product;
+package org.apache.fineract.statement.data.dto;
 
-import java.io.Serializable;
-import lombok.Data;
-import org.apache.fineract.currentaccount.data.accounting.GLAccountDetailsData;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
-@Data
-public class GlAccountMapping implements Serializable {
+@Getter
+@AllArgsConstructor
+public class AccountStatementResponseData {
 
-    private final StringEnumOptionData accountType;
-    private final GLAccountDetailsData glAccount;
+    private final String statementCode;
+    private final StringEnumOptionData statementType;
+    private final StringEnumOptionData publishType;
+    private final StringEnumOptionData batchType;
+    private final String recurrence;
+    private final String sequencePrefix;
+    private final StringEnumOptionData statementStatus;
+    private final Integer sequenceNo;
+    private final LocalDate statementDate;
+    private final BigDecimal statementBalance;
+    private final String resultCode;
+    private final StringEnumOptionData resultStatus;
+    private LocalDate resultPublishedOn;
+    private final LocalDate nextStatementDate;
 }

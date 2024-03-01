@@ -77,6 +77,9 @@ import org.apache.fineract.organisation.office.domain.OfficeRepository;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
+import org.apache.fineract.statement.domain.AccountStatementRepository;
+import org.apache.fineract.statement.domain.ProductStatementRepository;
+import org.apache.fineract.statement.mapper.StatementResponseDataMapper;
 import org.apache.fineract.statement.service.ProductStatementService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -100,12 +103,14 @@ public class CurrentAccountAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(CurrentAccountReadService.class)
-    public CurrentAccountReadService currentAccountReadService(CurrentAccountRepository currentAccountRepository,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentProductReadService currentProductReadPlatformService,
-            CurrentProductResponseDataMapper currentProductResponseDataMapper,
-            CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper) {
-        return new CurrentAccountReadServiceImpl(currentAccountRepository, accountIdentifierRepository, currentProductReadPlatformService,
-                currentAccountIdentifiersResponseDataMapper, currentProductResponseDataMapper);
+    public CurrentAccountReadService currentAccountReadService(CurrentProductRepository currentProductRepository,
+            CurrentProductResponseDataMapper currentProductResponseDataMapper, CurrentAccountRepository currentAccountRepository,
+            AccountIdentifierRepository accountIdentifierRepository,
+            CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper,
+            AccountStatementRepository accountStatementRepository, StatementResponseDataMapper statementResponseDataMapper) {
+        return new CurrentAccountReadServiceImpl(currentProductRepository, currentProductResponseDataMapper, currentAccountRepository,
+                accountIdentifierRepository, currentAccountIdentifiersResponseDataMapper, accountStatementRepository,
+                statementResponseDataMapper);
     }
 
     @Bean
@@ -152,9 +157,11 @@ public class CurrentAccountAutoConfiguration {
             CurrencyReadPlatformService currencyReadPlatformService, CurrentProductResponseDataMapper currentProductResponseDataMapper,
             ProductToGLAccountMappingRepository productToGLAccountMappingRepository,
             PaymentTypeReadPlatformService paymentTypeReadPlatformService, ConfigurationDomainService configurationDomainService,
-            GLAccountRepository glAccountRepository) {
+            GLAccountRepository glAccountRepository, ProductStatementRepository productStatementRepository,
+            StatementResponseDataMapper statementResponseDataMapper) {
         return new CurrentProductReadServiceImpl(currentProductRepository, currencyReadPlatformService, currentProductResponseDataMapper,
-                productToGLAccountMappingRepository, paymentTypeReadPlatformService, configurationDomainService, glAccountRepository);
+                productToGLAccountMappingRepository, paymentTypeReadPlatformService, configurationDomainService, glAccountRepository,
+                productStatementRepository, statementResponseDataMapper);
     }
 
     @Bean

@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 
 @RequiredArgsConstructor
@@ -73,5 +74,9 @@ public enum StatementStatus {
 
     public static List<StatementStatus> getFiltered(Predicate<? super StatementStatus> predicate) {
         return Arrays.stream(VALUES).filter(predicate).toList();
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), name());
     }
 }

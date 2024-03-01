@@ -90,7 +90,7 @@ public class AccountStatementServiceImpl implements AccountStatementService {
 
     protected void createDefaultAccountStatements(@NotNull String accountId, @NotNull String productId,
             @NotNull PortfolioProductType productType) {
-        List<ProductStatement> prodStatements = productStatementRepository.findByProductIdAndProductType(productId, productType);
+        List<ProductStatement> prodStatements = productStatementRepository.getByProductIdAndProductType(productId, productType);
         if (prodStatements.isEmpty()) {
             return;
         }
@@ -131,7 +131,7 @@ public class AccountStatementServiceImpl implements AccountStatementService {
         if (command.parameterExists(PARAM_STATEMENTS)) {
             final JsonArray statementArray = command.arrayOfParameterNamed(PARAM_STATEMENTS);
             if (statementArray != null) {
-                List<AccountStatement> existingStatements = statementRepository.findByAccountIdAndProductStatementProductType(accountId,
+                List<AccountStatement> existingStatements = statementRepository.getByAccountIdAndProductStatementProductType(accountId,
                         productType);
                 Map<String, AccountStatement> statementsByCode = existingStatements.stream()
                         .collect(Collectors.toMap(AccountStatement::getStatementCode, v -> v));
@@ -204,7 +204,7 @@ public class AccountStatementServiceImpl implements AccountStatementService {
 
     @Override
     public void activateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType) {
-        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
+        List<AccountStatement> statements = statementRepository.getByAccountIdAndProductStatementProductType(accountId, productType);
         for (AccountStatement statement : statements) {
             statement.activate();
         }
@@ -212,7 +212,7 @@ public class AccountStatementServiceImpl implements AccountStatementService {
 
     @Override
     public void inactivateAccountStatements(@NotNull String accountId, @NotNull PortfolioProductType productType) {
-        List<AccountStatement> statements = statementRepository.findByAccountIdAndProductStatementProductType(accountId, productType);
+        List<AccountStatement> statements = statementRepository.getByAccountIdAndProductStatementProductType(accountId, productType);
         for (AccountStatement statement : statements) {
             statement.inactivate();
         }

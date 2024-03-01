@@ -16,17 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.statement.domain;
+package org.apache.fineract.statement.data.dto;
 
-import java.util.List;
-import java.util.Optional;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
-public interface AccountStatementRepository extends JpaRepository<AccountStatement, Long>, JpaSpecificationExecutor<AccountStatement> {
+@Getter
+@AllArgsConstructor
+public class ProductStatementResponseData {
 
-    Optional<AccountStatement> findByAccountIdAndProductStatementStatementCode(String accountId, String statementCode);
-
-    List<AccountStatement> getByAccountIdAndProductStatementProductType(String accountId, PortfolioProductType productType);
+    private final String statementCode;
+    private final StringEnumOptionData statementType;
+    private final StringEnumOptionData publishType;
+    private final StringEnumOptionData batchType;
+    private final String recurrence;
+    private final String sequencePrefix;
 }
