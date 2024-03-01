@@ -58,13 +58,17 @@ public final class CurrentTransactionStatementData extends TransactionStatementD
 
     public static CurrentTransactionStatementData create(@NotNull CurrentTransactionData transaction,
             @NotNull Map<InteropIdentifierType, AccountIdentifier> identifiers, Map<String, Object> clientDetails, @NotNull String currency,
-            int statementType, @NotNull Map<String, Object> transactionDetails) {
+            int statementType, Map<String, Object> transactionDetails) {
         String paymentTypeCode = transaction.getPaymentTypeName();
-        if (paymentTypeCode == null) {
-            paymentTypeCode = (String) transactionDetails.get("payment_type_code");
+        String inputChannel = null;
+        String structuredData = null;
+        if (transactionDetails != null) {
+            if (paymentTypeCode == null) {
+                paymentTypeCode = (String) transactionDetails.get("payment_type_code");
+            }
+            inputChannel = (String) transactionDetails.get("transaction_creation_channel");
+            structuredData = Strings.emptyToNull((String) transactionDetails.get("entry_details"));
         }
-        String inputChannel = (String) transactionDetails.get("transaction_creation_channel");
-        String structuredData = Strings.emptyToNull((String) transactionDetails.get("entry_details"));
         CurrentEntryDetailsData entryDetails = CurrentEntryDetailsData.create(transaction, identifiers, clientDetails, currency,
                 transactionDetails, paymentTypeCode);
 

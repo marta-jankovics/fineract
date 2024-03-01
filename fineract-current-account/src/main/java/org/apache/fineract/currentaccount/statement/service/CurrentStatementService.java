@@ -34,6 +34,7 @@ public interface CurrentStatementService extends AccountStatementService {
     @NotNull
     List<String> getPendingTransactionIds(@NotNull String accountId, List<String> transactionIds);
 
+    @NotNull
     Map<String, Map<String, Object>> getTransactionDetails(List<String> transactionIds);
 
     boolean hasTransaction(@NotNull String accountId, @NotNull String transactionId, @NotNull String internalCorrelationId,

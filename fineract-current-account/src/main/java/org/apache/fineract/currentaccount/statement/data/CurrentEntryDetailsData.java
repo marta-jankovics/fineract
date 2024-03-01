@@ -51,12 +51,16 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
 
     public static CurrentEntryDetailsData create(@NotNull CurrentTransactionData transaction,
             @NotNull Map<InteropIdentifierType, AccountIdentifier> identifiers, Map<String, Object> clientDetails, @NotNull String currency,
-            @NotNull Map<String, Object> transactionDetails, String paymentTypeCode) {
-        String endToEndId = (String) transactionDetails.get("end_to_end_id");
+            Map<String, Object> transactionDetails, String paymentTypeCode) {
+        String endToEndId = null;
+        String unstructuredInfo = null;
+        if (transactionDetails != null) {
+            endToEndId = (String) transactionDetails.get("end_to_end_id");
+            unstructuredInfo = (String) transactionDetails.get("remittance_information_unstructured");
+        }
         TransactionReferencesData references = TransactionReferencesData.create(endToEndId, transaction.getId());
         TransactionPartiesData parties = createParties(transaction, identifiers, clientDetails, currency, transactionDetails,
                 paymentTypeCode);
-        String unstructuredInfo = (String) transactionDetails.get("remittance_information_unstructured");
         RemittanceInfoData remittanceInfo = RemittanceInfoData.create(unstructuredInfo);
         // create even if other identifiers were added to parties
         SupplementaryData supplementaryData = createSupplementaryData(transaction, identifiers, transactionDetails, paymentTypeCode);
@@ -70,7 +74,7 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
             Map<String, Object> transactionDetails, String paymentTypeCode) {
         boolean onUs = paymentTypeCode != null && paymentTypeCode.startsWith("EMY");
         String iban = Optional.ofNullable(identifiers.get(IBAN)).map(AccountIdentifier::getValue)
-                .orElse((String) transactionDetails.get("account_iban"));
+                .orElse(transactionDetails == null ? null : (String) transactionDetails.get("account_iban"));
         String shortName = clientDetails == null ? null : (String) clientDetails.get("short_name");
         // internal_account_id or bban or id
         final InteropIdentifierType scheme = onUs ? ALIAS : BBAN;
@@ -80,22 +84,26 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
         PartyData party = PartyData.create(shortName, null);
         RelatedAccountData account = RelatedAccountData.create(iban, identifier.getIdentifier(), identifier.getTypeName(), currency);
 
-        String partnerName = (String) transactionDetails.get("partner_name");
-        String partnerIban = (String) transactionDetails.get("partner_account_iban");
-        String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
-        PartyData partner = PartyData.create(partnerName, null);
-        RelatedAccountData partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, null, currency);
+        PartyData partner = null;
+        RelatedAccountData partnerAccount = null;
+        boolean outgoing = transaction.getTransactionType().isDebit();
+        if (transactionDetails != null) {
+            String partnerName = (String) transactionDetails.get("partner_name");
+            String partnerIban = (String) transactionDetails.get("partner_account_iban");
+            String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
+            partner = PartyData.create(partnerName, null);
+            partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, null, currency);
+            outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
+        }
         if (party == null && account == null && partner == null && partnerAccount == null) {
             return null;
         }
-
-        boolean outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         return outgoing ? new TransactionPartiesData(party, account, partner, partnerAccount)
                 : new TransactionPartiesData(partner, partnerAccount, party, account);
     }
 
     private static SupplementaryData createSupplementaryData(@NotNull CurrentTransactionData transaction,
-            @NotNull Map<InteropIdentifierType, AccountIdentifier> identifiers, @NotNull Map<String, Object> transactionDetails,
+            @NotNull Map<InteropIdentifierType, AccountIdentifier> identifiers, Map<String, Object> transactionDetails,
             String paymentTypeCode) {
         boolean onUs = paymentTypeCode != null && paymentTypeCode.startsWith("EMY");
         // internal_account_id or bban or id
@@ -103,8 +111,12 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
         CurrentAccountResolver identifier = Optional.ofNullable(identifiers.get(scheme))
                 .map(e -> CurrentAccountResolver.resolveInternal(scheme, e.getValue(), null))
                 .orElse(CurrentAccountResolver.resolveDefault(transaction.getAccountId()));
-        String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
-        boolean outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
+        String partnerIdentifier = null;
+        boolean outgoing = transaction.getTransactionType().isDebit();
+        if (transactionDetails != null) {
+            partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
+            outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
+        }
         CurrentTransactionEnvelopeData envelope = outgoing
                 ? CurrentTransactionEnvelopeData.create(identifier.getIdentifier(), identifier.getTypeName(), partnerIdentifier, null)
                 : CurrentTransactionEnvelopeData.create(partnerIdentifier, null, identifier.getIdentifier(), identifier.getTypeName());

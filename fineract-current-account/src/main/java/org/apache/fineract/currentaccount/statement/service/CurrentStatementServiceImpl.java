@@ -155,6 +155,7 @@ public class CurrentStatementServiceImpl extends AccountStatementServiceImpl imp
     }
 
     @Override
+    @NotNull
     public Map<String, Map<String, Object>> getTransactionDetails(List<String> transactionIds) {
         Map<String, Map<String, Object>> result = new HashMap<>();
         if (transactionIds == null || transactionIds.isEmpty()) {
