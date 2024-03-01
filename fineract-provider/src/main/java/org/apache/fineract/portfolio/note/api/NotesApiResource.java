@@ -68,6 +68,8 @@ public class NotesApiResource {
     public static final String LOANTRANSACTIONNOTE = "LOANTRANSACTIONNOTE";
     public static final String SAVINGNOTE = "SAVINGNOTE";
     public static final String GROUPNOTE = "GROUPNOTE";
+    public static final String CURRENTNOTE = "CURRENTNOTE";
+    public static final String CURRENTTRANSACTIONNOTE = "CURRENTTRANSACTIONNOTE";
     public static final String INVALIDNOTE = "INVALIDNOTE";
     private static final Set<String> NOTE_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList("id", "resourceId", "clientId", "groupId", "loanId", "loanTransactionId", "depositAccountId", "savingAccountId",
@@ -87,19 +89,15 @@ public class NotesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotesApiResourceSwagger.GetResourceTypeResourceIdNotesResponse.class)))) })
     public String retrieveNotesByResource(@PathParam("resourceType") @Parameter(description = "resourceType") final String resourceType,
-            @PathParam("resourceId") @Parameter(description = "resourceId") final Long resourceId, @Context final UriInfo uriInfo) {
-
+            @PathParam("resourceId") @Parameter(description = "resourceId") final String resourceId, @Context final UriInfo uriInfo) {
         final NoteType noteType = NoteType.fromApiUrl(resourceType);
-
         if (noteType == null) {
             throw new NoteResourceNotSupportedException(resourceType);
         }
 
         this.context.authenticatedUser().validateHasReadPermission(getResourceDetails(noteType, resourceId).entityName());
 
-        final Integer noteTypeId = noteType.getValue();
-
-        final Collection<NoteData> notes = this.readPlatformService.retrieveNotesByResource(resourceId, noteTypeId);
+        final Collection<NoteData> notes = this.readPlatformService.retrieveNotesByResource(resourceId, noteType);
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
         return this.toApiJsonSerializer.serialize(settings, notes, NOTE_DATA_PARAMETERS);
@@ -116,20 +114,16 @@ public class NotesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = NotesApiResourceSwagger.GetResourceTypeResourceIdNotesNoteIdResponse.class))) })
     public String retrieveNote(@PathParam("resourceType") @Parameter(description = "resourceType") final String resourceType,
-            @PathParam("resourceId") @Parameter(description = "resourceId") final Long resourceId,
+            @PathParam("resourceId") @Parameter(description = "resourceId") final String resourceId,
             @PathParam("noteId") @Parameter(description = "noteId") final Long noteId, @Context final UriInfo uriInfo) {
-
         final NoteType noteType = NoteType.fromApiUrl(resourceType);
-
         if (noteType == null) {
             throw new NoteResourceNotSupportedException(resourceType);
         }
 
         this.context.authenticatedUser().validateHasReadPermission(getResourceDetails(noteType, resourceId).entityName());
 
-        final Integer noteTypeId = noteType.getValue();
-
-        final NoteData note = this.readPlatformService.retrieveNote(noteId, resourceId, noteTypeId);
+        final NoteData note = this.readPlatformService.retrieveNote(noteId, resourceId, noteType);
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
         return this.toApiJsonSerializer.serialize(settings, note, NOTE_DATA_PARAMETERS);
@@ -144,7 +138,7 @@ public class NotesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = NotesApiResourceSwagger.PostResourceTypeResourceIdNotesResponse.class))) })
     public String addNewNote(@PathParam("resourceType") @Parameter(description = "resourceType") final String resourceType,
-            @PathParam("resourceId") @Parameter(description = "resourceId") final Long resourceId,
+            @PathParam("resourceId") @Parameter(description = "resourceId") final String resourceId,
             @Parameter(hidden = true) final String apiRequestBodyAsJson) {
 
         final NoteType noteType = NoteType.fromApiUrl(resourceType);
@@ -171,7 +165,7 @@ public class NotesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = NotesApiResourceSwagger.PutResourceTypeResourceIdNotesNoteIdResponse.class))) })
     public String updateNote(@PathParam("resourceType") @Parameter(description = "resourceType") final String resourceType,
-            @PathParam("resourceId") @Parameter(description = "resourceId") final Long resourceId,
+            @PathParam("resourceId") @Parameter(description = "resourceId") final String resourceId,
             @PathParam("noteId") @Parameter(description = "noteId") final Long noteId,
             @Parameter(hidden = true) final String apiRequestBodyAsJson) {
 
@@ -199,7 +193,7 @@ public class NotesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = NotesApiResourceSwagger.DeleteResourceTypeResourceIdNotesNoteIdResponse.class))) })
     public String deleteNote(@PathParam("resourceType") @Parameter(description = "resourceType") final String resourceType,
-            @PathParam("resourceId") @Parameter(description = "resourceId") final Long resourceId,
+            @PathParam("resourceId") @Parameter(description = "resourceId") final String resourceId,
             @PathParam("noteId") @Parameter(description = "noteId") final Long noteId) {
 
         final NoteType noteType = NoteType.fromApiUrl(resourceType);
@@ -218,32 +212,40 @@ public class NotesApiResource {
         return this.toApiJsonSerializer.serialize(result);
     }
 
-    private CommandWrapper getResourceDetails(final NoteType type, final Long resourceId) {
+    private CommandWrapper getResourceDetails(final NoteType type, final String resourceId) {
         CommandWrapperBuilder resourceDetails = new CommandWrapperBuilder();
         String resourceNameForPermissions;
         switch (type) {
             case CLIENT -> {
                 resourceNameForPermissions = CLIENTNOTE;
-                resourceDetails.withClientId(resourceId);
+                resourceDetails.withClientId(Long.valueOf(resourceId));
             }
             case LOAN -> {
                 resourceNameForPermissions = LOANNOTE;
-                resourceDetails.withLoanId(resourceId);
+                resourceDetails.withLoanId(Long.valueOf(resourceId));
             }
             case LOAN_TRANSACTION -> {
                 resourceNameForPermissions = LOANTRANSACTIONNOTE;
                 // updating loanId, to distinguish saving transaction note and
                 // loan transaction note as we are using subEntityId for both.
-                resourceDetails.withLoanId(resourceId);
-                resourceDetails.withSubEntityId(resourceId);
+                resourceDetails.withLoanId(Long.valueOf(resourceId));
+                resourceDetails.withSubEntityId(Long.valueOf(resourceId));
             }
             case SAVING_ACCOUNT -> {
                 resourceNameForPermissions = SAVINGNOTE;
-                resourceDetails.withSavingsId(resourceId);
+                resourceDetails.withSavingsId(Long.valueOf(resourceId));
             }
             case GROUP -> {
                 resourceNameForPermissions = GROUPNOTE;
-                resourceDetails.withGroupId(resourceId);
+                resourceDetails.withGroupId(Long.valueOf(resourceId));
+            }
+            case CURRENT_ACCOUNT -> {
+                resourceNameForPermissions = CURRENTNOTE;
+                resourceDetails.withEntityIdentifier(resourceId);
+            }
+            case CURRENT_TRANSACTION -> {
+                resourceNameForPermissions = CURRENTTRANSACTIONNOTE;
+                resourceDetails.withEntityIdentifier(resourceId);
             }
             default -> resourceNameForPermissions = INVALIDNOTE;
         }

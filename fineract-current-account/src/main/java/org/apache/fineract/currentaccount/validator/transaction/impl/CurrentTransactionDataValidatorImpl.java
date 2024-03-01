@@ -23,6 +23,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATATABLES_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.DATE_FORMAT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.NOTE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_AMOUNT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_DATE_PARAM;
@@ -49,10 +50,10 @@ public class CurrentTransactionDataValidatorImpl implements CurrentTransactionDa
 
     protected static final Set<String> CURRENT_ACCOUNT_TRANSACTION_REQUEST_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, TRANSACTION_AMOUNT_PARAM, PAYMENT_TYPE_ID_PARAM,
-                    CURRENCY_CODE_PARAM, DATATABLES_PARAM));
+                    CURRENCY_CODE_PARAM, NOTE_PARAM, DATATABLES_PARAM));
 
     protected static final Set<String> CURRENT_ACCOUNT_RELEASE_TRANSACTION_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM));
+            Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, TRANSACTION_DATE_PARAM, NOTE_PARAM));
 
     @Override
     public void validateDeposit(JsonCommand command) {

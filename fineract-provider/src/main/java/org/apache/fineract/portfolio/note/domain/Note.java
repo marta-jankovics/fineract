@@ -23,6 +23,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -74,31 +75,45 @@ public class Note extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     @JoinColumn(name = "share_account_id", nullable = true)
     private ShareAccount shareAccount;
 
+    @Column(name = "entity_identifier", nullable = true)
+    private String entityIdentifier;
+
+    @NotNull
     public static Note clientNoteFromJson(final Client client, final JsonCommand command) {
         final String note = command.stringValueOfParameterNamed("note");
         return new Note(client, note);
     }
 
+    @NotNull
     public static Note groupNoteFromJson(final Group group, final JsonCommand command) {
         final String note = command.stringValueOfParameterNamed("note");
         return new Note(group, note);
     }
 
+    @NotNull
     public static Note loanNote(final Loan loan, final String note) {
         return new Note(loan, note);
     }
 
+    @NotNull
     public static Note loanTransactionNote(final Loan loan, final LoanTransaction loanTransaction, final String note) {
         return new Note(loan, loanTransaction, note);
     }
 
+    @NotNull
     public static Note savingNote(final SavingsAccount account, final String note) {
         return new Note(account, note);
     }
 
+    @NotNull
     public static Note savingsTransactionNote(final SavingsAccount savingsAccount, final SavingsAccountTransaction savingsTransaction,
             final String note) {
         return new Note(savingsAccount, savingsTransaction, note);
+    }
+
+    @NotNull
+    public static Note entityNote(@NotNull NoteType noteType, @NotNull String entityIdentifier, @NotNull String note) {
+        return new Note(noteType, entityIdentifier, note);
     }
 
     private Note(final SavingsAccount savingsAccount, final SavingsAccountTransaction savingsTransaction, final String note) {
@@ -164,6 +179,12 @@ public class Note extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.noteTypeId = NoteType.SHARE_ACCOUNT.getValue();
     }
 
+    public Note(@NotNull NoteType noteType, @NotNull String entityIdentifier, @NotNull String note) {
+        this.noteTypeId = noteType.getValue();
+        this.entityIdentifier = entityIdentifier;
+        this.note = note;
+    }
+
     public Map<String, Object> update(final JsonCommand command) {
         final Map<String, Object> actualChanges = new LinkedHashMap<>(7);
 
@@ -174,10 +195,6 @@ public class Note extends AbstractAuditableWithUTCDateTimeCustom<Long> {
             this.note = StringUtils.defaultIfEmpty(newValue, null);
         }
         return actualChanges;
-    }
-
-    public boolean isNotAgainstClientWithIdOf(final Long clientId) {
-        return !this.client.identifiedBy(clientId);
     }
 
     public String getNote() {

@@ -996,7 +996,7 @@ public class LoansApiResource {
 
             if (associationParameters.contains(DataTableApiConstant.notesAssociateParamName)) {
                 mandatoryResponseParameters.add(DataTableApiConstant.notesAssociateParamName);
-                notes = this.noteReadPlatformService.retrieveNotesByResource(resolvedLoanId, NoteType.LOAN.getValue());
+                notes = this.noteReadPlatformService.retrieveNotesByResource(resolvedLoanId.toString(), NoteType.LOAN);
                 if (CollectionUtils.isEmpty(notes)) {
                     notes = null;
                 }

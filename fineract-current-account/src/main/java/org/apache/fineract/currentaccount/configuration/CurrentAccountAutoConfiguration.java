@@ -75,6 +75,7 @@ import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDa
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.organisation.office.domain.OfficeRepository;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
+import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
 import org.apache.fineract.statement.domain.AccountStatementRepository;
@@ -145,10 +146,11 @@ public class CurrentAccountAutoConfiguration {
             CurrentAccountBalanceWriteService currentAccountBalanceWriteService, EntityActionRepository entityActionRepository,
             AccountIdentifierRepository accountIdentifierRepository,
             CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper,
-            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentStatementService currentStatementService) {
+            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentStatementService currentStatementService,
+            NoteWritePlatformService noteWriteService) {
         return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, externalIdFactory,
                 currentAccountBalanceReadService, currentAccountBalanceWriteService, entityActionRepository, accountIdentifierRepository,
-                currentAccountIdentifiersResponseDataMapper, readWriteNonCoreDataService, currentStatementService);
+                currentAccountIdentifiersResponseDataMapper, readWriteNonCoreDataService, currentStatementService, noteWriteService);
     }
 
     @Bean
@@ -211,9 +213,9 @@ public class CurrentAccountAutoConfiguration {
     public CurrentTransactionAssembler currentTransactionAssembler(ExternalIdFactory externalIdFactory,
             ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentProductRepository currentProductRepository,
             CurrentTransactionRepository currentTransactionRepository, CurrentAccountBalanceReadService currentAccountBalanceReadService,
-            CurrentAccountBalanceWriteService currentAccountBalanceWriteService) {
+            CurrentAccountBalanceWriteService currentAccountBalanceWriteService, NoteWritePlatformService noteWriteService) {
         return new CurrentTransactionAssemblerImpl(externalIdFactory, readWriteNonCoreDataService, currentProductRepository,
-                currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService);
+                currentTransactionRepository, currentAccountBalanceReadService, currentAccountBalanceWriteService, noteWriteService);
     }
 
     @Bean

@@ -55,6 +55,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public BigDecimal overdraftLimit;
         @Schema(example = "LAZY")
         public String balanceCalculationType;
+        @Schema(maxLength = 1000)
+        public String note;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         @Schema(description = "Alternative identifiers")
@@ -82,6 +84,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public BigDecimal overdraftLimit;
         @Schema(example = "LAZY")
         public String balanceCalculationType;
+        @Schema(maxLength = 1000)
+        public String note;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
         @Schema(description = "Alternative identifiers")
@@ -99,6 +103,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String locale;
         @Schema(example = "05 September 2014")
         public String actionDate;
+        @Schema(maxLength = 1000)
+        public String note;
 
         private PostCurrentAccountActionRequest() {}
     }

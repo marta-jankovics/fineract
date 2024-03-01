@@ -18,9 +18,10 @@
  */
 package org.apache.fineract.portfolio.note.service;
 
+import jakarta.validation.constraints.NotNull;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-import org.apache.fineract.portfolio.client.domain.Client;
+import org.apache.fineract.portfolio.note.domain.NoteType;
 
 public interface NoteWritePlatformService {
 
@@ -30,5 +31,7 @@ public interface NoteWritePlatformService {
 
     CommandProcessingResult deleteNote(JsonCommand command);
 
-    void createAndPersistClientNote(Client client, JsonCommand command);
+    void createAndPersistClientNote(final Long clientId, JsonCommand command);
+
+    Long createEntityNote(@NotNull NoteType type, @NotNull String entityIdentifier, @NotNull JsonCommand command);
 }

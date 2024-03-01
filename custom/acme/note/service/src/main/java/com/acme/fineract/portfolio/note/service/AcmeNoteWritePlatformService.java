@@ -21,7 +21,6 @@ package com.acme.fineract.portfolio.note.service;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -53,7 +52,5 @@ public class AcmeNoteWritePlatformService implements NoteWritePlatformService, I
     }
 
     @Override
-    public void createAndPersistClientNote(Client client, JsonCommand command) {
-
-    }
+    public void createAndPersistClientNote(Long clientId, JsonCommand command) {}
 }

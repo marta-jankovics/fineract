@@ -223,6 +223,11 @@ public class CommandWrapperBuilder {
         return this;
     }
 
+    public CommandWrapperBuilder withEntityIdentifier(String entityIdentifier) {
+        this.entityIdentifier = entityIdentifier;
+        return this;
+    }
+
     public CommandWrapperBuilder updateGlobalConfiguration(final Long configId) {
         this.actionName = "UPDATE";
         this.entityName = "CONFIGURATION";
@@ -1794,7 +1799,7 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder createNote(final CommandWrapper resourceDetails, final String resourceType, final Long resourceId) {
+    public CommandWrapperBuilder createNote(final CommandWrapper resourceDetails, final String resourceType, final String resourceId) {
         this.actionName = "CREATE";
         this.entityName = resourceDetails.entityName();// Note supports multiple
                                                        // resources. Note
@@ -1809,7 +1814,7 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder updateNote(final CommandWrapper resourceDetails, final String resourceType, final Long resourceId,
+    public CommandWrapperBuilder updateNote(final CommandWrapper resourceDetails, final String resourceType, final String resourceId,
             final Long noteId) {
         this.actionName = "UPDATE";
         this.entityName = resourceDetails.entityName();// Note supports multiple
@@ -1826,7 +1831,7 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder deleteNote(final CommandWrapper resourceDetails, final String resourceType, final Long resourceId,
+    public CommandWrapperBuilder deleteNote(final CommandWrapper resourceDetails, final String resourceType, final String resourceId,
             final Long noteId) {
         this.actionName = "DELETE";
         this.entityName = resourceDetails.entityName();// Note supports multiple

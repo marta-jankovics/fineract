@@ -142,7 +142,7 @@ public class CurrentTransactionWriteServiceImpl implements CurrentTransactionWri
                         "Current transaction with id: %s and account id: %s", transactionId, accountId));
 
         final Map<String, Object> changes = new LinkedHashMap<>();
-        final CurrentTransaction releaseTransaction = transactionAssembler.release(account, holdTransaction, changes);
+        final CurrentTransaction releaseTransaction = transactionAssembler.release(account, holdTransaction, command, changes);
 
         // TODO: accounting and external event emitting
         // postJournalEntries(account, existingTransactionIds, existingReversedTransactionIds, isAccountTransfer,

@@ -31,6 +31,7 @@ import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.IDENTIFIERS_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.LOCALE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.MINIMUM_REQUIRED_BALANCE_PARAM;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.NOTE_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.OVERDRAFT_LIMIT_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PRODUCT_ID_PARAM;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.STATEMENTS_PARAM;
@@ -56,14 +57,14 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 @RequiredArgsConstructor
 public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValidator {
 
-    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(LOCALE_PARAM, DATE_FORMAT_PARAM, ACCOUNT_NUMBER_PARAM, EXTERNAL_ID_PARAM, CLIENT_ID_PARAM, PRODUCT_ID_PARAM,
-                    SUBMITTED_ON_DATE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
-                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
+    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_CREATE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(LOCALE_PARAM,
+            DATE_FORMAT_PARAM, ACCOUNT_NUMBER_PARAM, EXTERNAL_ID_PARAM, CLIENT_ID_PARAM, PRODUCT_ID_PARAM, SUBMITTED_ON_DATE_PARAM,
+            ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM, ALLOW_FORCE_TRANSACTION_PARAM,
+            BALANCE_CALCULATION_TYPE_PARAM, NOTE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
 
-    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(
-            Arrays.asList(LOCALE_PARAM, ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM,
-                    ALLOW_FORCE_TRANSACTION_PARAM, BALANCE_CALCULATION_TYPE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
+    public static final Set<String> CURRENT_ACCOUNT_REQUEST_FOR_UPDATE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(LOCALE_PARAM,
+            ALLOW_OVERDRAFT_PARAM, OVERDRAFT_LIMIT_PARAM, MINIMUM_REQUIRED_BALANCE_PARAM, ALLOW_FORCE_TRANSACTION_PARAM,
+            BALANCE_CALCULATION_TYPE_PARAM, NOTE_PARAM, DATATABLES_PARAM, IDENTIFIERS_PARAM, STATEMENTS_PARAM));
 
     @Override
     public void validateForSubmit(final JsonCommand command) {
@@ -114,6 +115,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
                 dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
             }
         }
+        validateNote(command, dataValidator);
 
         dataValidator.throwValidationErrors();
     }
@@ -149,6 +151,7 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
             final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
             dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
         }
+        validateNote(command, dataValidator);
 
         dataValidator.throwValidationErrors();
     }
@@ -172,7 +175,8 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         if (StringUtils.isBlank(command.json())) {
             throw new InvalidJsonException();
         }
-        final Set<String> disbursementParameters = new HashSet<>(Arrays.asList(ACTION_DATE_PARAM, LOCALE_PARAM, DATE_FORMAT_PARAM));
+        final Set<String> disbursementParameters = new HashSet<>(
+                Arrays.asList(ACTION_DATE_PARAM, LOCALE_PARAM, DATE_FORMAT_PARAM, NOTE_PARAM));
 
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), disbursementParameters);
@@ -183,6 +187,13 @@ public class CurrentAccountDataValidatorImpl implements CurrentAccountDataValida
         dataValidator.reset().parameter(ACTION_DATE_PARAM).value(actionDate).ignoreIfNull()
                 .validateDateBeforeOrEqual(DateUtils.getBusinessLocalDate());
 
+        validateNote(command, dataValidator);
+
         dataValidator.throwValidationErrors();
+    }
+
+    private static void validateNote(JsonCommand command, DataValidatorBuilder dataValidator) {
+        final String note = command.stringValueOfParameterNamed(NOTE_PARAM);
+        dataValidator.reset().parameter(NOTE_PARAM).value(note).ignoreIfNull().notBlank().notExceedingLengthOf(1000);
     }
 }

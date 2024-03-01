@@ -44,6 +44,8 @@ public final class CurrentTransactionsApiResourceSwagger {
         public Integer paymentTypeId;
         @Schema(example = "USD", description = "nullable")
         public String currencyCode;
+        @Schema(maxLength = 1000)
+        public String note;
         @Schema(description = "Datatable details")
         public List<DatatableEntriesRequest> datatables;
     }

@@ -60,6 +60,8 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
+import org.apache.fineract.portfolio.note.domain.NoteType;
+import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.apache.fineract.portfolio.paymentdetail.PaymentDetailConstants;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
@@ -74,6 +76,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     private final CurrentTransactionRepository currentTransactionRepository;
     private final CurrentAccountBalanceReadService accountBalanceReadService;
     private final CurrentAccountBalanceWriteService accountBalanceWriteService;
+    private final NoteWritePlatformService noteWriteService;
 
     @Override
     public CurrentTransaction assemble(JsonCommand command) {
@@ -101,7 +104,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     }
 
     @Override
-    public CurrentTransaction release(CurrentAccount account, CurrentTransaction holdTransaction, Map<String, Object> changes) {
+    public CurrentTransaction release(CurrentAccount account, CurrentTransaction holdTransaction, JsonCommand command,
+            Map<String, Object> changes) {
         ExternalId externalId = externalIdFactory.create();
         LocalDate actualDate = DateUtils.getBusinessLocalDate();
 
@@ -123,6 +127,10 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
         account.setNextStatus(TRANSACTION_AMOUNT_RELEASE);
         handleBalance(account, transaction, false, TRANSACTION_AMOUNT_RELEASE);
+
+        transaction = currentTransactionRepository.save(transaction);
+        String transactionId = transaction.getId();
+        noteWriteService.createEntityNote(NoteType.CURRENT_TRANSACTION, transactionId, command);
 
         return currentTransactionRepository.save(transaction);
     }
@@ -162,6 +170,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         } else {
             transaction = currentTransactionRepository.save(transaction);
         }
+        noteWriteService.createEntityNote(NoteType.CURRENT_TRANSACTION, transaction.getId(), command);
         return transaction;
     }
 

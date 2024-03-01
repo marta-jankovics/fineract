@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.portfolio.note.starter;
 
+import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
+import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.portfolio.client.domain.ClientRepositoryWrapper;
 import org.apache.fineract.portfolio.group.domain.GroupRepository;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepositoryWrapper;
@@ -32,23 +34,24 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 public class NoteAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public NoteReadPlatformService noteReadPlatformService(JdbcTemplate jdbcTemplate) {
-        return new NoteReadPlatformServiceImpl(jdbcTemplate);
+    public NoteReadPlatformService noteReadPlatformService(NoteRepository noteRepository) {
+        return new NoteReadPlatformServiceImpl(noteRepository);
     }
 
     @Bean
     @ConditionalOnMissingBean
     public NoteWritePlatformService noteWritePlatformService(NoteRepository noteRepository, ClientRepositoryWrapper clientRepository,
             GroupRepository groupRepository, LoanRepositoryWrapper loanRepository, LoanTransactionRepository loanTransactionRepository,
-            NoteCommandFromApiJsonDeserializer fromApiJsonDeserializer, SavingsAccountRepository savingsAccountRepository) {
+            NoteCommandFromApiJsonDeserializer fromApiJsonDeserializer, SavingsAccountRepository savingsAccountRepository,
+            CurrentAccountRepository currentAccountRepository, CurrentTransactionRepository currentTransactionRepository) {
         return new NoteWritePlatformServiceJpaRepositoryImpl(noteRepository, clientRepository, groupRepository, loanRepository,
-                loanTransactionRepository, fromApiJsonDeserializer, savingsAccountRepository);
+                loanTransactionRepository, fromApiJsonDeserializer, savingsAccountRepository, currentAccountRepository,
+                currentTransactionRepository);
     }
 }

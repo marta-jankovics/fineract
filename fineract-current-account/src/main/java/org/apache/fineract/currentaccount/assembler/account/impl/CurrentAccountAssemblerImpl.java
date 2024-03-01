@@ -41,6 +41,7 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.UPDATE;
 import static org.apache.fineract.currentaccount.enumeration.account.EntityActionType.CLOSE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DatatableApiConstants.DATATABLES_PARAM;
+import static org.apache.fineract.portfolio.note.domain.NoteType.CURRENT_ACCOUNT;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -94,6 +95,7 @@ import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.client.exception.ClientNotActiveException;
 import org.apache.fineract.portfolio.client.exception.ClientNotFoundException;
+import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
@@ -111,6 +113,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final CurrentAccountIdentifiersResponseDataMapper accountIdentifiersResponseDataMapper;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
     private final CurrentStatementService accountStatementService;
+    private final NoteWritePlatformService noteWriteService;
 
     /**
      * Assembles a new {@link CurrentAccount} from JSON details passed in request inheriting details where relevant from
@@ -179,15 +182,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         validateAccountValuesWithProduct(product, account);
         account = accountRepository.saveAndFlush(account);
 
+        String accountId = account.getId();
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
             // TODO: Datatable service should handle whether all changes needs to be flushed or not... relying on the
             // caller to do it beforehand is not enough...
-            persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, false, readWriteNonCoreDataService);
+            persistDatatableEntries(EntityTables.CURRENT, accountId, datatables, false, readWriteNonCoreDataService);
         }
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
         persistAccountIdentifiers(account, command);
-        accountStatementService.createAccountStatements(account.getId(), product.getId(), PortfolioProductType.CURRENT, command);
+        noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
+        accountStatementService.createAccountStatements(accountId, product.getId(), PortfolioProductType.CURRENT, command);
         return account;
     }
 
@@ -260,16 +265,17 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             accountRepository.save(account);
         }
 
+        String accountId = account.getId();
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
-            Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT, account.getId(), datatables, true,
+            Map<String, Object> datatableChanges = persistDatatableEntries(EntityTables.CURRENT, accountId, datatables, true,
                     readWriteNonCoreDataService);
             if (datatableChanges != null && !datatableChanges.isEmpty()) {
                 actualChanges.put(DATATABLES_PARAM, datatableChanges);
             }
         }
         updateIdentifiers(account, command, actualChanges);
-        accountStatementService.updateAccountStatements(account.getId(), PortfolioProductType.CURRENT, command);
+        accountStatementService.updateAccountStatements(accountId, PortfolioProductType.CURRENT, command);
 
         return actualChanges;
     }
@@ -303,6 +309,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
 
         persistEntityAction(account, EntityActionType.CANCEL, cancelledOnDate);
+        noteWriteService.createEntityNote(CURRENT_ACCOUNT, account.getId(), command);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
@@ -355,6 +362,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
 
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
 
+        noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
         accountStatementService.activateAccountStatements(accountId, PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
@@ -384,17 +392,19 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             dataValidator.reset().parameter(ACTION_DATE_PARAM).value(closedDate).failWithCode("cannot.be.a.future.date");
             dataValidator.throwValidationErrors();
         }
+        String accountId = account.getId();
         BalanceCalculationData balanceData = calculateBalance(account, CurrentAccountAction.CLOSE);
         if (!MathUtil.isEmpty(balanceData.getAccountBalance()) || !MathUtil.isEmpty(balanceData.getHoldAmount())) {
             throw new GeneralPlatformDomainRuleException("error.msg.account.close.with.balance",
-                    "Account cannot be closed. Balance is not 0.", account.getId());
+                    "Account cannot be closed. Balance is not 0.", accountId);
         }
 
         account.setNextStatus(CurrentAccountAction.CLOSE);
         persistAccountBalance(account, balanceData, CurrentAccountAction.CLOSE);
         persistEntityAction(account, CLOSE, closedDate);
 
-        accountStatementService.inactivateAccountStatements(account.getId(), PortfolioProductType.CURRENT);
+        noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
+        accountStatementService.inactivateAccountStatements(accountId, PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
