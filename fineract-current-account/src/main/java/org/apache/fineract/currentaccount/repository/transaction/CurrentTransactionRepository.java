@@ -39,10 +39,8 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     String TRANSACTION_DATA_SELECT = "SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
             + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
-            + "FROM CurrentTransaction t "
-            + "JOIN CurrentAccount ca on ca.id = t.accountId "
-            + "JOIN CurrentProduct cp on cp.id = ca.productId "
-            + "JOIN ApplicationCurrency curr on curr.code = cp.currency.code "
+            + "FROM CurrentTransaction t JOIN CurrentAccount ca on ca.id = t.accountId "
+            + "JOIN CurrentProduct cp on cp.id = ca.productId JOIN ApplicationCurrency curr on curr.code = cp.currency.code "
             + "LEFT JOIN PaymentType pt on pt.id = t.paymentTypeId ";
 
     String getIdByExternalId(ExternalId externalId);
