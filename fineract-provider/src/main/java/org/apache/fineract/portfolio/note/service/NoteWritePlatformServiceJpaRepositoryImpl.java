@@ -21,7 +21,10 @@ package org.apache.fineract.portfolio.note.service;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_ENTITY_NAME;
 
+import com.google.common.base.Splitter;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -84,9 +87,7 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
     @Override
     public CommandProcessingResult createNote(final JsonCommand command) {
         this.fromApiJsonDeserializer.validateNote(command.json());
-
-        final String resourceUrl = getResourceUrlFromCommand(command); // command.getSupportedEntityType();
-        final NoteType type = NoteType.fromApiUrl(resourceUrl);
+        final NoteType type = getNoteTypeFromCommand(command);
         switch (type) {
             case CLIENT: {
                 return createClientNote(command);
@@ -108,17 +109,14 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 return saveEntityNote(type, command.getResourceIdentifier(), null, command);
             }
             default:
-                throw new NoteResourceNotSupportedException(resourceUrl);
+                throw new NoteResourceNotSupportedException(command.getUrl());
         }
     }
 
     @Override
     public CommandProcessingResult updateNote(final JsonCommand command) {
         this.fromApiJsonDeserializer.validateNote(command.json());
-
-        final String resourceUrl = getResourceUrlFromCommand(command); // command.getSupportedEntityType();
-        final NoteType type = NoteType.fromApiUrl(resourceUrl);
-
+        final NoteType type = getNoteTypeFromCommand(command);
         switch (type) {
             case CLIENT: {
                 return updateClientNote(command);
@@ -140,15 +138,13 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 return saveEntityNote(type, command.getResourceIdentifier(), command.entityId(), command);
             }
             default:
-                throw new NoteResourceNotSupportedException(resourceUrl);
+                throw new NoteResourceNotSupportedException(command.getUrl());
         }
     }
 
     @Override
     public CommandProcessingResult deleteNote(final JsonCommand command) {
-
         final Note noteForDelete = getNoteForDelete(command);
-
         this.noteRepository.delete(noteForDelete);
         return new CommandProcessingResultBuilder() //
                 .withCommandId(null) //
@@ -296,30 +292,6 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 .build();
     }
 
-    private String getResourceUrlFromCommand(JsonCommand command) {
-
-        final String resourceUrl;
-
-        if (command.getClientId() != null) {
-            resourceUrl = NoteType.CLIENT.getApiUrl();
-        } else if (command.getGroupId() != null) {
-            resourceUrl = NoteType.GROUP.getApiUrl();
-        } else if (command.getLoanId() != null) {
-            if (command.subentityId() != null) {
-                resourceUrl = NoteType.LOAN_TRANSACTION.getApiUrl();
-            } else {
-                resourceUrl = NoteType.LOAN.getApiUrl();
-            }
-        } else if (command.getSavingsId() != null) {
-            // TODO: SAVING_TRANSACTION type need to be add.
-            resourceUrl = NoteType.SAVING_ACCOUNT.getApiUrl();
-        } else {
-            resourceUrl = "";
-        }
-
-        return resourceUrl;
-    }
-
     private CommandProcessingResult updateClientNote(final JsonCommand command) {
         final Long resourceId = command.getClientId();
         final Long noteId = command.entityId();
@@ -450,29 +422,28 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
     }
 
     private Note getNoteForDelete(final JsonCommand command) {
-        final String resourceUrl = getResourceUrlFromCommand(command);// command.getSupportedEntityType();
+        final NoteType type = getNoteTypeFromCommand(command);
         final Long noteId = command.entityId();
-        final NoteType type = NoteType.fromApiUrl(resourceUrl);
         Long resourceId = null;
-        Note noteForUpdate = null;
+        Note note = null;
         switch (type) {
             case CLIENT: {
                 resourceId = command.getClientId();
                 final Client client = this.clientRepository.findOneWithNotFoundDetection(resourceId);
-                noteForUpdate = this.noteRepository.findByClientAndId(client, noteId);
+                note = this.noteRepository.findByClientAndId(client, noteId);
             }
             break;
             case GROUP: {
                 final Long groupId = command.getGroupId();
                 resourceId = groupId;
                 Group group = this.groupRepository.findById(groupId).orElseThrow(() -> new GroupNotFoundException(groupId));
-                noteForUpdate = this.noteRepository.findByGroupAndId(group, noteId);
+                note = this.noteRepository.findByGroupAndId(group, noteId);
             }
             break;
             case LOAN: {
                 resourceId = command.getLoanId();
                 final Loan loan = this.loanRepository.findOneWithNotFoundDetection(resourceId);
-                noteForUpdate = this.noteRepository.findByLoanAndId(loan, noteId);
+                note = this.noteRepository.findByLoanAndId(loan, noteId);
             }
             break;
             case LOAN_TRANSACTION: {
@@ -480,7 +451,7 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 final Long loanTransactionId = resourceId;
                 final LoanTransaction loanTransaction = this.loanTransactionRepository.findById(loanTransactionId)
                         .orElseThrow(() -> new LoanTransactionNotFoundException(loanTransactionId));
-                noteForUpdate = this.noteRepository.findByLoanTransactionAndId(loanTransaction, noteId);
+                note = this.noteRepository.findByLoanTransactionAndId(loanTransaction, noteId);
             }
             break;
             case SAVING_ACCOUNT: {
@@ -488,7 +459,7 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
                 final SavingsAccount savingAccount = this.savingsAccountRepository.findById(savinsAccountId)
                         .orElseThrow(() -> new SavingsAccountNotFoundException(savinsAccountId));
 
-                noteForUpdate = this.noteRepository.findBySavingsAccountAndId(savingAccount, noteId);
+                note = this.noteRepository.findBySavingsAccountAndId(savingAccount, noteId);
             }
             break;
             case SHARE_ACCOUNT:
@@ -500,12 +471,23 @@ public class NoteWritePlatformServiceJpaRepositoryImpl implements NoteWritePlatf
             case CURRENT_ACCOUNT:
             case CURRENT_TRANSACTION:
                 final String entityIdentifier = command.getResourceIdentifier();
-                noteForUpdate = noteRepository.getByNoteTypeIdAndEntityIdentifierAndId(type.getValue(), entityIdentifier, noteId);
+                note = noteRepository.getByNoteTypeIdAndEntityIdentifierAndId(type.getValue(), entityIdentifier, noteId);
             break;
         }
-        if (noteForUpdate == null) {
+        if (note == null) {
             throw new NoteNotFoundException(noteId, resourceId, type.name().toLowerCase());
         }
-        return noteForUpdate;
+        return note;
+    }
+
+    @NotNull
+    private NoteType getNoteTypeFromCommand(JsonCommand command) {
+        String url = command.getUrl();
+        List<String> pathParams = Splitter.on('/').splitToList(url.startsWith("/") ? url.substring(1) : url);
+        NoteType noteType;
+        if (pathParams.isEmpty() || (noteType = NoteType.fromApiUrl(pathParams.get(0))) == null) {
+            throw new NoteResourceNotSupportedException(url);
+        }
+        return noteType;
     }
 }

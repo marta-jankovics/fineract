@@ -57,10 +57,11 @@ public interface NoteRepository extends JpaRepository<Note, Long>, JpaSpecificat
 
     List<Note> getByNoteTypeIdAndEntityIdentifier(Integer noteTypeId, String entityIdentifier);
 
-    String NOTE_DATA_SELECT = "select new org.apache.fineract.portfolio.note.data.NoteData(n.id, n.client.id, n.group.id, n.loan.id, "
-            + "n.loanTransaction.id, n.savingsAccount.id, n.savingsTransaction.id, n.shareAccount.id, n.entityIdentifier, n.noteTypeId, "
-            + "n.note, n.createdBy, cb.username, n.createdDate, n.lastModifiedBy, mb.username, n.lastModifiedDate) "
-            + "from Note n left join AppUser cb on n.createdBy = cb.id left join AppUser mb on n.lastModifiedBy = mb.id ";
+    String NOTE_DATA_SELECT = "select new org.apache.fineract.portfolio.note.data.NoteData(n.id, c.id, g.id, l.id, lt.id, s.id, st.id, sh.id, "
+            + "n.entityIdentifier, n.noteTypeId, n.note, n.createdBy, cb.username, n.createdDate, n.lastModifiedBy, mb.username, n.lastModifiedDate) "
+            + "from Note n left join n.client c left join n.group g left join n.loan l left join n.loanTransaction lt "
+            + "left join n.savingsAccount s left join n.savingsTransaction st left join n.shareAccount sh "
+            + "left join AppUser cb on n.createdBy = cb.id left join AppUser mb on n.lastModifiedBy = mb.id ";
     String NOTE_DATA_ORDER = " order by n.createdDate DESC";
     String NOTE_DATA_ID_WHERE = " and n.id = :id ";
 

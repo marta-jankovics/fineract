@@ -50,11 +50,11 @@ public class NoteData {
     private final String updatedByUsername;
     private final OffsetDateTime updatedOn;
 
-    public NoteData(Long id, Long clientId, Long groupId, Long loanId, Long transactionId, Long savingAccountId, Long savingsTransactionId,
-            Long shareAccountId, String entityIdentifier, Integer noteTypeId, String note, Long createdById, String createdByUsername,
-            OffsetDateTime createdOn, Long updatedById, String updatedByUsername, OffsetDateTime updatedOn) {
-        this(id, clientId, groupId, loanId, transactionId, null, savingAccountId, savingsTransactionId, shareAccountId, entityIdentifier,
-                noteTypeId == null ? null : NoteType.fromInt(noteTypeId).toEnumOptionData(), note, createdById, createdByUsername,
-                createdOn, updatedById, updatedByUsername, updatedOn);
+    public NoteData(Long id, Long clientId, Long groupId, Long loanId, Long loanTransactionId, Long savingAccountId,
+            Long savingsTransactionId, Long shareAccountId, String entityIdentifier, Integer noteTypeId, String note, Long createdById,
+            String createdByUsername, OffsetDateTime createdOn, Long updatedById, String updatedByUsername, OffsetDateTime updatedOn) {
+        this(id, clientId, groupId, loanId, loanTransactionId, null, savingAccountId, savingsTransactionId, shareAccountId,
+                entityIdentifier, noteTypeId == null ? null : NoteType.fromInt(noteTypeId).toEnumOptionData(), note, createdById,
+                createdByUsername, createdOn, updatedById, updatedByUsername, updatedOn);
     }
 }
