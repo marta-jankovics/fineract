@@ -32,8 +32,8 @@ public enum NoteType {
     GROUP(600, "noteType.group", "groups", "Group note"), //
     SHARE_ACCOUNT(700, "noteType.shares", "accounts/share", "Share account note"), //
     SAVINGS_TRANSACTION(800, "noteType.savings.transaction", "savingsTransactions", "Savings transaction note"), //
-    CURRENT_ACCOUNT(900, "noteType.current", "currentaccounts", "Current account note"), //
-    CURRENT_TRANSACTION(920, "noteType.savings.transaction", "currenttransactions", "current transaction note"), //
+    CURRENT_ACCOUNT(900, "noteType.current", "current-accounts", "Current account note"), //
+    CURRENT_TRANSACTION(920, "noteType.savings.transaction", "current-transactions", "current transaction note"), //
     ;
 
     public static final NoteType[] VALUES = values();

@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.portfolio.note.api;
 
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_NOTE_ENTITY_NAME;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_TRANSACTION_NOTE_ENTITY_NAME;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -68,8 +71,6 @@ public class NotesApiResource {
     public static final String LOANTRANSACTIONNOTE = "LOANTRANSACTIONNOTE";
     public static final String SAVINGNOTE = "SAVINGNOTE";
     public static final String GROUPNOTE = "GROUPNOTE";
-    public static final String CURRENTNOTE = "CURRENTNOTE";
-    public static final String CURRENTTRANSACTIONNOTE = "CURRENTTRANSACTIONNOTE";
     public static final String INVALIDNOTE = "INVALIDNOTE";
     private static final Set<String> NOTE_DATA_PARAMETERS = new HashSet<>(
             Arrays.asList("id", "resourceId", "clientId", "groupId", "loanId", "loanTransactionId", "depositAccountId", "savingAccountId",
@@ -240,11 +241,11 @@ public class NotesApiResource {
                 resourceDetails.withGroupId(Long.valueOf(resourceId));
             }
             case CURRENT_ACCOUNT -> {
-                resourceNameForPermissions = CURRENTNOTE;
+                resourceNameForPermissions = CURRENT_NOTE_ENTITY_NAME;
                 resourceDetails.withEntityIdentifier(resourceId);
             }
             case CURRENT_TRANSACTION -> {
-                resourceNameForPermissions = CURRENTTRANSACTIONNOTE;
+                resourceNameForPermissions = CURRENT_TRANSACTION_NOTE_ENTITY_NAME;
                 resourceDetails.withEntityIdentifier(resourceId);
             }
             default -> resourceNameForPermissions = INVALIDNOTE;

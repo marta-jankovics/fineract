@@ -19,7 +19,7 @@
 package org.apache.fineract.portfolio.note.service;
 
 import jakarta.validation.constraints.NotNull;
-import java.util.Collection;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.portfolio.note.data.NoteData;
 import org.apache.fineract.portfolio.note.domain.NoteRepository;
@@ -46,7 +46,7 @@ public class NoteReadPlatformServiceImpl implements NoteReadPlatformService {
     }
 
     @Override
-    public Collection<NoteData> retrieveNotesByResource(@NotNull String resourceId, @NotNull NoteType noteType) {
+    public List<NoteData> retrieveNotesByResource(@NotNull String resourceId, @NotNull NoteType noteType) {
         return switch (noteType) {
             case CLIENT -> noteRepository.getNotesDataByClientId(Long.valueOf(resourceId));
             case LOAN -> noteRepository.getNotesDataByLoanId(Long.valueOf(resourceId));

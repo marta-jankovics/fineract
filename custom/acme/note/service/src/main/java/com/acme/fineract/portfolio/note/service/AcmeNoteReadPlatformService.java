@@ -18,7 +18,7 @@
  */
 package com.acme.fineract.portfolio.note.service;
 
-import java.util.Collection;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.portfolio.note.data.NoteData;
 import org.apache.fineract.portfolio.note.domain.NoteType;
@@ -43,7 +43,7 @@ public class AcmeNoteReadPlatformService implements NoteReadPlatformService, Ini
     }
 
     @Override
-    public Collection<NoteData> retrieveNotesByResource(String resourceId, NoteType noteType) {
+    public List<NoteData> retrieveNotesByResource(String resourceId, NoteType noteType) {
         return null;
     }
 }

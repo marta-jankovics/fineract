@@ -43,7 +43,8 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             + "JOIN CurrentProduct cp on cp.id = ca.productId JOIN ApplicationCurrency curr on curr.code = cp.currency.code "
             + "LEFT JOIN PaymentType pt on pt.id = t.paymentTypeId ";
 
-    String getIdByExternalId(ExternalId externalId);
+    @Query("SELECT t.id FROM CurrentTransaction t WHERE t.externalId = :externalId")
+    String getIdByExternalId(@Param("externalId") ExternalId externalId);
 
     @Query(TRANSACTION_DATA_SELECT + "WHERE t.accountId = :accountId AND t.id = :transactionId")
     CurrentTransactionData getTransactionDataById(@Param("accountId") String accountId, @Param("transactionId") String transactionId);
