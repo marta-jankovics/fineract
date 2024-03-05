@@ -263,8 +263,7 @@ public class CurrentTransactionNotesApiResource implements CurrentTransactionNot
     }
 
     @POST
-    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX
-            + "/notes")
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX + "/notes")
     @Operation(operationId = "createCurrentTransactionNote", summary = "Create note/account by alternative id", description = "Creates a current notes/transaction by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/notes")
     @Override
