@@ -141,4 +141,34 @@ public final class CurrentAccountsApiResourceSwagger {
         @Schema(example = "A")
         public String subValue;
     }
+
+    @Schema(description = "CurrentAccountNoteRequest")
+    public static final class CurrentAccountNoteRequest {
+
+        @Schema(example = "test note")
+        public String note;
+    }
+
+    @Schema(description = "CurrentAccountNoteCommandResponse")
+    public static class CurrentAccountNoteCommandResponse {
+
+        @Schema(example = "10")
+        public BigDecimal resourceId;
+        @Schema(example = "Lv7qwC1NFJ4C1Q5eAvnNh")
+        public String resourceIdentifier;
+    }
+
+    @Schema(description = "CurrentAccountNoteUpdateCommandResponse")
+    public static final class CurrentAccountNoteUpdateCommandResponse extends CurrentAccountNoteCommandResponse {
+
+        @Schema(example = "")
+        public Map<String, Object> changes;
+    }
+
+    @Schema(description = "CurrentAccountNoteDeleteCommandResponse")
+    public static class CurrentAccountNoteDeleteCommandResponse {
+
+        @Schema(example = "10")
+        public BigDecimal resourceId;
+    }
 }

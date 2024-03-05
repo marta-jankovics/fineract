@@ -29,6 +29,11 @@ import static org.apache.fineract.portfolio.note.domain.NoteType.CURRENT_ACCOUNT
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
@@ -140,6 +145,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(IDENTIFIER_API_REGEX + "/notes")
     @Operation(operationId = "createCurrentAccountNote", summary = "Create a note/account", description = "Creates a current notes/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1/notes")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteCommandResponse.class))) })
     @Override
     public CommandProcessingResult createNoteByIdentifier(
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
@@ -151,6 +159,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/notes")
     @Operation(operationId = "createCurrentAccountNote", summary = "Create note/account by alternative id", description = "Creates a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/notes")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteCommandResponse.class))) })
     @Override
     public CommandProcessingResult createNoteByIdTypeIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
@@ -163,6 +174,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/" + SUB_IDENTIFIER_API_REGEX + "/notes")
     @Operation(operationId = "createCurrentAccountNote", summary = "Create note/account by alternative id\", description = \"Creates a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/notes")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteCommandResponse.class))) })
     @Override
     public CommandProcessingResult createNoteByIdTypeIdentifierSubIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
@@ -176,6 +190,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "updateCurrentAccountNote", summary = "Update a note/account", description = "Updates a current notes/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1/notes/20")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateNoteByIdentifier(
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
@@ -187,6 +204,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "updateCurrentAccountNote", summary = "Update note/account by alternative id", description = "Updates a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/notes/20")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateNoteByIdTypeIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
@@ -199,6 +219,9 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/" + SUB_IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "updateCurrentAccountNote", summary = "Update note/account by alternative id\", description = \"Updates a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/notes/20")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteUpdateCommandResponse.class))) })
     @Override
     public CommandProcessingResult updateNoteByIdTypeIdentifierSubIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
@@ -212,6 +235,8 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "deleteCurrentAccountNote", summary = "Delete a note/account", description = "Deletes a current notes/account\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/1/notes/20")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteDeleteCommandResponse.class))) })
     @Override
     public CommandProcessingResult deleteNoteByIdentifier(
             @PathParam(IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String identifier,
@@ -223,6 +248,8 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "deleteCurrentAccountNote", summary = "Delete note/account by alternative id", description = "Deletes a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/notes/20")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteDeleteCommandResponse.class))) })
     @Override
     public CommandProcessingResult deleteNoteByIdTypeIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
@@ -235,6 +262,8 @@ public class CurrentAccountNotesApiResource implements CurrentAccountNotesApi {
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX + "/" + SUB_IDENTIFIER_API_REGEX + "/notes/{noteId}")
     @Operation(operationId = "deleteCurrentAccountNote", summary = "Delete note/account by alternative id\", description = \"Deletes a current notes/account by note\n\n"
             + "Example Requests :\n" + "\n" + "current-accounts/external-id/ExternalId1/S/notes/20")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentAccountsApiResourceSwagger.CurrentAccountNoteDeleteCommandResponse.class))) })
     @Override
     public CommandProcessingResult deleteNoteByIdTypeIdentifierSubIdentifier(
             @PathParam(ID_TYPE_PARAM) @Parameter(description = "Note type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String idType,
