@@ -439,10 +439,7 @@ public class SavingsAccountTransactionTest {
         Integer statusCode = response1.getStatusCode();
         String msg = Strings.nullToEmpty(response1.getBody());
         assertNotNull(statusCode, "First response status code");
-        assertTrue(
-                SC_OK == statusCode || SC_CONFLICT == statusCode
-                        || (SC_FORBIDDEN == statusCode && msg.contains("Cannot add or update a child row")),
-                "Status code: " + statusCode + ", message: " + msg);
+        assertTrue(SC_OK == statusCode || SC_CONFLICT == statusCode, "Status code: " + statusCode + ", message: " + msg);
         if (SC_OK == statusCode) {
             assertEquals(4, responses.size(), "Response size for OK response");
             Integer statusCode4 = responses.get(3).getStatusCode();

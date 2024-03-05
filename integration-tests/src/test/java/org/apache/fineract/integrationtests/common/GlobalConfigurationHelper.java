@@ -119,8 +119,8 @@ public class GlobalConfigurationHelper {
         ArrayList<HashMap> expectedGlobalConfigurations = getAllDefaultGlobalConfigurations();
         ArrayList<HashMap> actualGlobalConfigurations = getAllGlobalConfigurations(requestSpec, responseSpec);
 
-        Assertions.assertEquals(62, expectedGlobalConfigurations.size());
-        Assertions.assertEquals(62, actualGlobalConfigurations.size());
+        Assertions.assertEquals(57, expectedGlobalConfigurations.size());
+        Assertions.assertEquals(57, actualGlobalConfigurations.size());
 
         for (int i = 0; i < expectedGlobalConfigurations.size(); i++) {
             HashMap expectedGlobalConfiguration = expectedGlobalConfigurations.get(i);
@@ -590,27 +590,27 @@ public class GlobalConfigurationHelper {
         defaults.add(nextPaymentDateConfigForLoan);
 
         HashMap<String, Object> balanceCalculationDelay = new HashMap<>();
-        nextPaymentDateConfigForLoan.put("id", 60);
-        nextPaymentDateConfigForLoan.put("name", "balance_calculation_delay");
-        nextPaymentDateConfigForLoan.put("value", 20);
-        nextPaymentDateConfigForLoan.put("enabled", true);
-        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        balanceCalculationDelay.put("id", 60);
+        balanceCalculationDelay.put("name", "balance_calculation_delay");
+        balanceCalculationDelay.put("value", 20);
+        balanceCalculationDelay.put("enabled", true);
+        balanceCalculationDelay.put("trapDoor", false);
         defaults.add(balanceCalculationDelay);
 
         HashMap<String, Object> dailyBalanceCleanupDays = new HashMap<>();
-        nextPaymentDateConfigForLoan.put("id", 61);
-        nextPaymentDateConfigForLoan.put("name", "daily_balance_cleanup_days");
-        nextPaymentDateConfigForLoan.put("value", 32);
-        nextPaymentDateConfigForLoan.put("enabled", false);
-        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        dailyBalanceCleanupDays.put("id", 61);
+        dailyBalanceCleanupDays.put("name", "daily_balance_cleanup_days");
+        dailyBalanceCleanupDays.put("value", 32);
+        dailyBalanceCleanupDays.put("enabled", false);
+        dailyBalanceCleanupDays.put("trapDoor", false);
         defaults.add(dailyBalanceCleanupDays);
 
         HashMap<String, Object> accountingCalculationDelay = new HashMap<>();
-        nextPaymentDateConfigForLoan.put("id", 62);
-        nextPaymentDateConfigForLoan.put("name", "accounting_calculation_delay");
-        nextPaymentDateConfigForLoan.put("value", 20);
-        nextPaymentDateConfigForLoan.put("enabled", true);
-        nextPaymentDateConfigForLoan.put("trapDoor", false);
+        accountingCalculationDelay.put("id", 62);
+        accountingCalculationDelay.put("name", "accounting_calculation_delay");
+        accountingCalculationDelay.put("value", 20);
+        accountingCalculationDelay.put("enabled", true);
+        accountingCalculationDelay.put("trapDoor", false);
         defaults.add(accountingCalculationDelay);
 
         return defaults;

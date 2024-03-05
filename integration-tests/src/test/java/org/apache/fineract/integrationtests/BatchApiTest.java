@@ -2468,7 +2468,7 @@ public class BatchApiTest {
      * @see org.apache.fineract.batch.command.internal.ModifyLoanApplicationByExternalIdCommandStrategy
      */
     @Test
-    public void shoulRetrieveTheProperErrorDuringLockedLoan() {
+    public void shouldRetrieveTheProperErrorDuringLockedLoan() {
         ResponseSpecification responseSpec = new ResponseSpecBuilder().expectStatusCode(202).build();
         LoanAccountLockHelper loanAccountLockHelper = new LoanAccountLockHelper(this.requestSpec, responseSpec);
         final String loanProductJSON = new LoanProductTestBuilder() //

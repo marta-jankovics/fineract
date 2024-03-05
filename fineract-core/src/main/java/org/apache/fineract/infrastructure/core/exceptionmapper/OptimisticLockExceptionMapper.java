@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.data.ApiGlobalErrorResponse;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
 import org.eclipse.persistence.exceptions.OptimisticLockException;
+import org.eclipse.persistence.queries.ObjectLevelModifyQuery;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -43,8 +44,9 @@ public class OptimisticLockExceptionMapper implements FineractExceptionMapper, E
     @Override
     public Response toResponse(final OptimisticLockException exception) {
         log.warn("Exception occurred", ErrorHandler.findMostSpecificException(exception));
-        String type = exception.getQuery() == null ? "unknown" : "query";
-        String identifier = "unknown";
+        ObjectLevelModifyQuery query = exception.getQuery();
+        String type = query == null ? "unknown" : "query";
+        String identifier = query == null ? "unknown" : query.getName();
         final ApiGlobalErrorResponse dataIntegrityError = ApiGlobalErrorResponse.conflict(type, identifier);
         return Response.status(SC_CONFLICT).entity(dataIntegrityError).type(MediaType.APPLICATION_JSON).build();
     }
