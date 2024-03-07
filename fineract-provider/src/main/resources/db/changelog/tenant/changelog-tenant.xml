@@ -158,4 +158,5 @@
     <include file="parts/0136_loan_reaging_parameters.xml" relativeToChangelogFile="true" />
     <include file="parts/0137_add_external_event_for_loan_reamortization.xml" relativeToChangelogFile="true" />
     <include file="parts/0138_note_entity_identifier.xml" relativeToChangelogFile="true" />
+    <include file="parts/0139_command_source_idempotency_key_length.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>
