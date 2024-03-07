@@ -54,11 +54,13 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
             Map<String, Object> transactionDetails, String paymentTypeCode) {
         String endToEndId = null;
         String unstructuredInfo = null;
+        String transactionIdentification = transaction.getId();
         if (transactionDetails != null) {
             endToEndId = (String) transactionDetails.get("end_to_end_id");
             unstructuredInfo = (String) transactionDetails.get("remittance_information_unstructured");
+            transactionIdentification = (String) transactionDetails.get("transaction_identification");
         }
-        TransactionReferencesData references = TransactionReferencesData.create(endToEndId, transaction.getId());
+        TransactionReferencesData references = TransactionReferencesData.create(endToEndId, transactionIdentification);
         TransactionPartiesData parties = createParties(transaction, identifiers, clientDetails, currency, transactionDetails,
                 paymentTypeCode);
         RemittanceInfoData remittanceInfo = RemittanceInfoData.create(unstructuredInfo);
