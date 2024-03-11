@@ -58,7 +58,7 @@ public class CurrentEntryDetailsData extends EntryDetailsData {
         if (transactionDetails != null) {
             endToEndId = (String) transactionDetails.get("end_to_end_id");
             unstructuredInfo = (String) transactionDetails.get("remittance_information_unstructured");
-            transactionIdentification = (String) transactionDetails.get("transaction_identification");
+            transactionIdentification = (String) transactionDetails.get("transaction_id");
         }
         TransactionReferencesData references = TransactionReferencesData.create(endToEndId, transactionIdentification);
         TransactionPartiesData parties = createParties(transaction, identifiers, clientDetails, currency, transactionDetails,
