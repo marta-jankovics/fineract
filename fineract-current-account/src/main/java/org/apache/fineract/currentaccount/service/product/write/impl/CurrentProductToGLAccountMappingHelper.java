@@ -61,26 +61,27 @@ public class CurrentProductToGLAccountMappingHelper {
     private final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper;
 
     public void createCurrentProductAccountMapping(final JsonCommand command, final String paramName, final CurrentProduct product,
-            final CurrentProductCashBasedAccount accountType) {
+            final CurrentProductCashBasedAccount financialAccountType) {
         final Long accountId = command.longValueOfParameterNamed(paramName);
-        final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, accountType.getType(), accountId);
+        final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, financialAccountType.getType(), accountId);
         final ProductToGLAccountMapping accountMapping = new ProductToGLAccountMapping().setGlAccount(glAccount)
                 .setProductIdentifier(product.getId()).setProductType(PortfolioProductType.CURRENT.getValue())
-                .setFinancialAccountType(accountType.getId());
+                .setFinancialAccountType(financialAccountType.getId());
         this.accountMappingRepository.save(accountMapping);
     }
 
     public void updateCurrentProductAccountMappingChanges(final JsonCommand command, final String paramName, final CurrentProduct product,
-            CurrentProductCashBasedAccount cashAccounts, final Map<String, Object> changes) {
+            CurrentProductCashBasedAccount financialAccountType, final Map<String, Object> changes) {
         final Long accountId = command.longValueOfParameterNamed(paramName);
 
         final ProductToGLAccountMapping accountMapping = this.accountMappingRepository.findCoreProductToFinAccountMapping(product.getId(),
-                PortfolioProductType.CURRENT.getValue(), cashAccounts.getId());
+                PortfolioProductType.CURRENT.getValue(), financialAccountType.getId());
         if (accountMapping == null) {
-            throw new ProductToGLAccountMappingNotFoundException(PortfolioProductType.CURRENT, product.getId(), cashAccounts.name());
+            createCurrentProductAccountMapping(command, paramName, product, financialAccountType);
+            changes.put(paramName, accountId);
         } else {
             if (accountMapping.getGlAccount() != null && !Objects.equals(accountMapping.getGlAccount().getId(), accountId)) {
-                final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, cashAccounts.getType(),
+                final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, financialAccountType.getType(),
                         accountId);
                 changes.put(paramName, accountId);
                 accountMapping.setGlAccount(glAccount);
