@@ -66,6 +66,7 @@ import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
+import org.apache.fineract.currentaccount.search.service.CurrentQueryService;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
@@ -80,7 +81,6 @@ import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
-import org.apache.fineract.portfolio.search.service.AdvancedQueryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.SortDefault;
@@ -100,7 +100,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     private final CurrentAccountReadService currentAccountReadService;
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentTransactionResponseDataMapper currentTransactionResponseDataMapper;
-    private final AdvancedQueryService advancedQueryService;
+    private final CurrentQueryService queryService;
     private final DefaultToApiJsonSerializer<JsonObject> toApiJsonSerializer;
 
     @GET
@@ -488,7 +488,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
         if (accountResolver != null) {
             addFilters = List.of(ColumnFilterData.eq("account_id", getResolvedAccountId(accountResolver)));
         }
-        Page<JsonObject> result = advancedQueryService.query(EntityTables.CURRENT_TRANSACTION, queryRequest, addFilters);
+        Page<JsonObject> result = queryService.query(EntityTables.CURRENT_TRANSACTION, queryRequest, addFilters);
         return toApiJsonSerializer.serializePretty(true, result);
     }
 

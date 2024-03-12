@@ -73,7 +73,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
         if (pageable.getSort().isSorted()) {
             List<Sort.Order> orders = pageable.getSort().toList();
             sortPageable = pageable.withSort(Sort.by(orders.stream()
-                    .map(e -> e.withProperty(SearchUtil.validateToJdbcColumnName(e.getProperty(), headersByName, false))).toList()));
+                    .map(e -> e.withProperty(SearchUtil.resolveToJdbcColumnName(e.getProperty(), headersByName, false))).toList()));
         } else {
             pageable = pageable.withSort(Sort.Direction.DESC, "transaction_date", CREATED_DATE_DB_FIELD, "id");
             sortPageable = pageable;

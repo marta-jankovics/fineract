@@ -64,6 +64,7 @@ import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseDat
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
 import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
+import org.apache.fineract.currentaccount.search.service.CurrentQueryService;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
@@ -96,7 +97,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
     private final CurrentAccountReadService currentAccountReadService;
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
     private final CurrentAccountResponseDataMapper currentAccountResponseDataMapper;
-    private final AdvancedQueryService advancedQueryService;
+    private final CurrentQueryService queryService;
     private final DefaultToApiJsonSerializer<JsonObject> toApiJsonSerializer;
 
     @GET
@@ -440,14 +441,14 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
         return result;
     }
 
-    private String query(@NotNull CurrentAccountResolver accountResolver, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
+    private String query(CurrentAccountResolver accountResolver, PagedLocalRequest<AdvancedQueryRequest> queryRequest) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_ACCOUNT_RESOURCE_NAME);
         List<ColumnFilterData> addFilters = null;
-        String identifier = getResolvedAccountId(accountResolver);
-        if (identifier != null) {
+        if (accountResolver != null) {
+            String identifier = getResolvedAccountId(accountResolver);
             addFilters = List.of(ColumnFilterData.eq("id", identifier));
         }
-        Page<JsonObject> result = advancedQueryService.query(EntityTables.CURRENT, queryRequest, addFilters);
+        Page<JsonObject> result = queryService.query(EntityTables.CURRENT, queryRequest, addFilters);
         return toApiJsonSerializer.serializePretty(true, result);
     }
 

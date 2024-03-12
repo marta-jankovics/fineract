@@ -20,6 +20,7 @@ package org.apache.fineract.infrastructure.core.service.database;
 
 import static java.lang.String.format;
 
+import jakarta.persistence.criteria.JoinType;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
@@ -212,6 +213,10 @@ public class DatabaseSpecificSQLGenerator {
         return Strings.isEmpty(alias) ? field : (alias + '.') + field;
     }
 
+    public String as(@NotNull String field, String as) {
+        return Strings.isEmpty(as) ? field : (field + " as " + as);
+    }
+
     public String buildSelect(Collection<String> fields, String alias, boolean embedded) {
         if (fields == null || fields.isEmpty()) {
             return "";
@@ -220,7 +225,15 @@ public class DatabaseSpecificSQLGenerator {
         if (!embedded) {
             select = "SELECT ";
         }
-        return select + fields.stream().map(e -> alias(escape(e), alias)).collect(Collectors.joining(", "));
+        return select + fields.stream().map(e -> getSelect(e, alias)).collect(Collectors.joining(", "));
+    }
+
+    public String getSelect(@NotNull String field, String alias) {
+        return alias(escape(field), alias);
+    }
+
+    public String getSelect(@NotNull String field, String alias, String as) {
+        return Strings.isEmpty(as) ? getSelect(field, alias) : format("%s as %s", alias(escape(field), alias), escape(as));
     }
 
     public String buildFrom(String definition, String alias, boolean embedded) {
@@ -231,14 +244,24 @@ public class DatabaseSpecificSQLGenerator {
         if (!embedded) {
             from = "FROM ";
         }
-        return from + escape(definition) + (Strings.isEmpty(alias) ? "" : (" " + alias));
+        return from + getFrom(definition, alias);
+    }
+
+    public String getFrom(@NotNull String table, String alias) {
+        return escape(table) + (Strings.isEmpty(alias) ? "" : (" " + alias));
     }
 
     public String buildJoin(@NotNull String definition, String alias, @NotNull String fkCol, String refAlias, @NotNull String refCol,
             String joinType) {
         String join = Strings.isEmpty(joinType) ? "JOIN" : (joinType + " JOIN");
         alias = Strings.isEmpty(alias) ? "" : (" " + alias);
-        return format("%s %s%s ON %s = %s", join, escape(definition), alias, alias(escape(fkCol), alias), alias(escape(refCol), refAlias));
+        return format("%s %s ON %s = %s", join, getFrom(definition, alias), alias(escape(fkCol), alias), alias(escape(refCol), refAlias));
+    }
+
+    public String buildJoin(@NotNull String fromColumn, String fromAlias, @NotNull String toTable, @NotNull String toColumn, String toAlias,
+            @NotNull JoinType joinType) {
+        return format("%s JOIN %s ON %s = %s", joinType, getFrom(toTable, toAlias), alias(escape(toColumn), toAlias),
+                alias(escape(fromColumn), fromAlias));
     }
 
     public String buildOrderBy(List<Sort.Order> orders, String alias, boolean embedded) {
@@ -249,8 +272,17 @@ public class DatabaseSpecificSQLGenerator {
         if (!embedded) {
             orderBy = "ORDER BY ";
         }
-        return orderBy + orders.stream().map(e -> String.join(" ", alias(escape(e.getProperty()), alias), e.getDirection().name()))
-                .collect(Collectors.joining(", "));
+        return orderBy + orders.stream().map(e -> getOrderBy(e, alias)).collect(Collectors.joining(", "));
+    }
+
+    @NotNull
+    public String getOrderBy(@NotNull Sort.Order order, String alias) {
+        return getOrderBy(order.getProperty(), alias, order.getDirection());
+    }
+
+    @NotNull
+    public String getOrderBy(@NotNull String field, String alias, @NotNull Sort.Direction direction) {
+        return format("%s %s", alias(escape(field), alias), direction.name());
     }
 
     public String buildInsert(@NotNull String definition, List<String> fields, Map<String, ResultsetColumnHeaderData> headers) {

@@ -22,7 +22,6 @@ import com.google.gson.JsonObject;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Locale;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
@@ -86,7 +85,5 @@ public interface ReadWriteNonCoreDataService {
 
     Page<JsonObject> queryDataTableAdvanced(@NotNull String datatable, @NotNull PagedLocalRequest<AdvancedQueryData> pagedRequest);
 
-    boolean buildDataQueryEmbedded(@NotNull EntityTables entityTable, @NotNull String datatable, @NotNull AdvancedQueryData request,
-            @NotNull List<String> selectColumns, @NotNull StringBuilder select, @NotNull StringBuilder from, @NotNull StringBuilder where,
-            @NotNull List<Object> params, String mainAlias, String alias, String dateFormat, String dateTimeFormat, Locale locale);
+    String validateDatatableRegistered(@NotNull String datatable);
 }

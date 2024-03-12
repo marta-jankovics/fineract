@@ -49,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
+import org.apache.fineract.search.service.SavingsQueryService;
 import org.apache.fineract.infrastructure.core.api.ApiParameterHelper;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -69,7 +70,6 @@ import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransa
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.TransactionSearchRequest;
-import org.apache.fineract.portfolio.search.service.AdvancedQueryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -87,7 +87,7 @@ public class SavingsAccountTransactionsApiResource {
     private final SavingsAccountReadPlatformService savingsAccountReadPlatformService;
     private final PaymentTypeReadPlatformService paymentTypeReadPlatformService;
     private final SavingsAccountTransactionSearchService transactionsSearchService;
-    private final AdvancedQueryService advancedQueryService;
+    private final SavingsQueryService queryService;
 
     private boolean is(final String commandParam, final String commandValue) {
         return StringUtils.isNotBlank(commandParam) && commandParam.trim().equalsIgnoreCase(commandValue);
@@ -178,7 +178,7 @@ public class SavingsAccountTransactionsApiResource {
             PagedLocalRequest<AdvancedQueryRequest> queryRequest, @Context final UriInfo uriInfo) {
         context.authenticatedUser().validateHasReadPermission(SAVINGS_ACCOUNT_TRANSACTION_RESOURCE_NAME);
         List<ColumnFilterData> addFilters = List.of(ColumnFilterData.eq("savings_account_id", savingsId.toString()));
-        final Page<JsonObject> result = advancedQueryService.query(EntityTables.SAVINGS_TRANSACTION, queryRequest, addFilters);
+        final Page<JsonObject> result = queryService.query(EntityTables.SAVINGS_TRANSACTION, queryRequest, addFilters);
         return this.toApiJsonSerializer.serializePretty(ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters()), result);
     }
 

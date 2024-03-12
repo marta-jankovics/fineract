@@ -213,8 +213,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(datatable));
 
         List<String> resultColumns = asList(resultColumnsString.split(","));
-        List<String> selectColumns = SearchUtil.validateToJdbcColumnNames(resultColumns, headersByName, false);
-        ResultsetColumnHeaderData column = SearchUtil.validateToJdbcColumn(columnName, headersByName, false);
+        List<String> selectColumns = SearchUtil.resolveToJdbcColumnNames(resultColumns, headersByName, false);
+        ResultsetColumnHeaderData column = SearchUtil.resolveToJdbcColumn(columnName, headersByName, false);
 
         Object columnValue = SearchUtil.parseJdbcColumnValue(column, columnValueString, null, null, null, false, sqlGenerator);
         String sql = sqlGenerator.buildSelect(selectColumns, null, false) + " " + sqlGenerator.buildFrom(datatable, null, false) + " WHERE "
@@ -238,10 +238,10 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
         Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(datatable));
-        String pkColumn = SearchUtil.getFiltered(headersByName.values(), ResultsetColumnHeaderData::getIsColumnPrimaryKey).getColumnName();
+        String pkColumn = SearchUtil.getFiltered(headersByName.values(), ResultsetColumnHeaderData::isColumnPrimaryKey).getColumnName();
 
         List<ColumnFilterData> columnFilters = request.getNonNullFilters();
-        columnFilters.forEach(e -> e.setColumn(SearchUtil.validateToJdbcColumnName(e.getColumn(), headersByName, false)));
+        columnFilters.forEach(e -> e.setColumn(SearchUtil.resolveToJdbcColumnName(e.getColumn(), headersByName, false)));
 
         List<String> resultColumns = request.getNonNullResultColumns();
         List<String> selectColumns;
@@ -250,14 +250,14 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             selectColumns = new ArrayList<>();
             selectColumns.add(pkColumn);
         } else {
-            selectColumns = SearchUtil.validateToJdbcColumnNames(resultColumns, headersByName, false);
+            selectColumns = SearchUtil.resolveToJdbcColumnNames(resultColumns, headersByName, false);
         }
         PageRequest pageable = pagedRequest.toPageable();
         PageRequest sortPageable;
         if (pageable.getSort().isSorted()) {
             List<Sort.Order> orders = pageable.getSort().toList();
             sortPageable = pageable.withSort(Sort.by(orders.stream()
-                    .map(e -> e.withProperty(SearchUtil.validateToJdbcColumnName(e.getProperty(), headersByName, false))).toList()));
+                    .map(e -> e.withProperty(SearchUtil.resolveToJdbcColumnName(e.getProperty(), headersByName, false))).toList()));
         } else {
             pageable = pageable.withSort(Sort.Direction.DESC, pkColumn);
             sortPageable = pageable;
@@ -296,40 +296,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             SearchUtil.extractJsonResult(rowSet, selectColumns, resultColumns, results);
         }
         return PageableExecutionUtils.getPage(results, pageable, () -> totalElements);
-    }
-
-    @Override
-    public boolean buildDataQueryEmbedded(@NotNull EntityTables entity, @NotNull String datatable, @NotNull AdvancedQueryData request,
-            @NotNull List<String> selectColumns, @NotNull StringBuilder select, @NotNull StringBuilder from, @NotNull StringBuilder where,
-            @NotNull List<Object> params, String mainAlias, String alias, String dateFormat, String dateTimeFormat, Locale locale) {
-        List<String> resultColumns = request.getResultColumns();
-        List<ColumnFilterData> columnFilters = request.getColumnFilters();
-        if ((resultColumns == null || resultColumns.isEmpty()) && (columnFilters == null || columnFilters.isEmpty())) {
-            return false;
-        }
-
-        datatable = validateDatatableRegistered(datatable);
-        context.authenticatedUser().validateHasDatatableReadPermission(datatable);
-
-        Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
-                .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(datatable));
-
-        List<String> thisSelectColumns = SearchUtil.validateToJdbcColumnNames(resultColumns, headersByName, true);
-        if (columnFilters != null) {
-            columnFilters.forEach(e -> e.setColumn(SearchUtil.validateToJdbcColumnName(e.getColumn(), headersByName, false)));
-        }
-
-        select.append(sqlGenerator.buildSelect(thisSelectColumns, alias, true));
-        selectColumns.addAll(thisSelectColumns);
-
-        String joinType = "LEFT";
-        if (SearchUtil.buildQueryCondition(columnFilters, where, params, alias, headersByName, dateFormat, dateTimeFormat, locale, true,
-                sqlGenerator)) {
-            joinType = null; // INNER
-        }
-        from.append(sqlGenerator.buildJoin(datatable, alias, entity.getForeignKeyColumnNameOnDatatable(), mainAlias, entity.getRefColumn(),
-                joinType));
-        return true;
     }
 
     @Transactional
@@ -1294,7 +1260,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             if (isTechnicalParam(entry.getKey())) {
                 continue;
             }
-            ResultsetColumnHeaderData columnHeader = SearchUtil.validateToJdbcColumn(entry.getKey(), headersByName, false);
+            ResultsetColumnHeaderData columnHeader = SearchUtil.resolveToJdbcColumn(entry.getKey(), headersByName, false);
             if (!isUserInsertable(entity, columnHeader)) {
                 continue;
             }
@@ -1342,7 +1308,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
     private static boolean isUserInsertable(@NotNull EntityTables entity, @NotNull ResultsetColumnHeaderData columnHeader) {
         String columnName = columnHeader.getColumnName();
-        return !columnHeader.getIsColumnPrimaryKey() && !CREATEDAT_FIELD_NAME.equals(columnName) && !UPDATEDAT_FIELD_NAME.equals(columnName)
+        return !columnHeader.isColumnPrimaryKey() && !CREATEDAT_FIELD_NAME.equals(columnName) && !UPDATEDAT_FIELD_NAME.equals(columnName)
                 && !entity.getForeignKeyColumnNameOnDatatable().equals(columnName);
     }
 
@@ -1404,7 +1370,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             if (isTechnicalParam(entry.getKey())) {
                 continue;
             }
-            ResultsetColumnHeaderData columnHeader = SearchUtil.validateToJdbcColumn(entry.getKey(), headersByName, false);
+            ResultsetColumnHeaderData columnHeader = SearchUtil.resolveToJdbcColumn(entry.getKey(), headersByName, false);
             if (!isUserUpdatable(entity, columnHeader)) {
                 continue;
             }
@@ -1426,7 +1392,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                         dateTimeFormat, locale)
                 : datatableId;
         if (!updateColumns.isEmpty()) {
-            ResultsetColumnHeaderData pkColumn = SearchUtil.getFiltered(columnHeaders, ResultsetColumnHeaderData::getIsColumnPrimaryKey);
+            ResultsetColumnHeaderData pkColumn = SearchUtil.getFiltered(columnHeaders, ResultsetColumnHeaderData::isColumnPrimaryKey);
             params.add(primaryKey);
             final String sql = sqlGenerator.buildUpdate(datatable, updateColumns, headersByName) + " WHERE " + pkColumn.getColumnName()
                     + " = ?";
@@ -1681,7 +1647,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         SQLInjectionValidator.validateSQLInput(datatable);
     }
 
-    private String validateDatatableRegistered(String datatable) {
+    @Override
+    public String validateDatatableRegistered(@NotNull String datatable) {
         validateDatatable(datatable);
         if (!isRegisteredDatatable(datatable)) {
             throw new DatatableNotFoundException(datatable);

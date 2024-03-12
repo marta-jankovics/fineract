@@ -16,20 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.search.service;
+package org.apache.fineract.portfolio.search.data;
 
-import com.google.gson.JsonObject;
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
-import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
-import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
-import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
-import org.apache.fineract.portfolio.search.data.ColumnFilterData;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
+import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData;
+import org.springframework.data.domain.Sort;
 
-public interface AdvancedQueryService {
+/**
+ * Immutable data object representing datatable data.
+ */
+@AllArgsConstructor
+@Getter
+public final class ColumnSortData implements Serializable {
 
-    Page<JsonObject> query(@NotNull EntityTables entityTables, @NotNull PagedLocalRequest<AdvancedQueryRequest> pagedRequest,
-            List<ColumnFilterData> addFilters);
+    private ResultsetColumnHeaderData columnHeader;
+
+    private Sort.Direction direction;
+
 }

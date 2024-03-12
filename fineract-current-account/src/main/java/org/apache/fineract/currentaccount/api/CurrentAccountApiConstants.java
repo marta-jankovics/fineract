@@ -127,4 +127,9 @@ public class CurrentAccountApiConstants {
     public static final String ACCOUNT_SUB_IDENTIFIER_API_REGEX = "{" + ACCOUNT_SUB_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
     public static final String TRANSACTION_ID_TYPE_API_REGEX = "{" + TRANSACTION_ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
     public static final String TRANSACTION_IDENTIFIER_API_REGEX = "{" + TRANSACTION_IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";
+
+    // search
+    public static final String CURRENCY_VIRTUAL_COLUMN = "currency";
+    public static final String PAYMENT_TYPE_VIRTUAL_COLUMN = "payment_type";
+
 }

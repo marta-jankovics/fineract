@@ -22,6 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseType;
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
@@ -29,7 +30,8 @@ import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 /**
  * Immutable data object representing a resultset column.
  */
-public final class ResultsetColumnHeaderData implements Serializable {
+@Getter
+public class ResultsetColumnHeaderData implements Serializable {
 
     private final String columnName;
     private JdbcJavaType columnType;
@@ -62,10 +64,19 @@ public final class ResultsetColumnHeaderData implements Serializable {
                 columnCode, columnIsUnique, columnIsIndexed, dialect);
     }
 
-    private ResultsetColumnHeaderData(final String columnName, String columnType, final Long columnLength, final boolean columnNullable,
+    protected ResultsetColumnHeaderData(final String columnName, String columnType, final Long columnLength, final boolean columnNullable,
             final boolean columnIsPrimaryKey, final List<ResultsetColumnValueData> columnValues, final String columnCode,
             final boolean columnIsUnique, final boolean columnIsIndexed, DatabaseType dialect) {
+        // Refer org.drizzle.jdbc.internal.mysql.MySQLType.java
+        this(columnName, JdbcJavaType.getByTypeName(dialect, adjustColumnType(columnType), true), columnLength, columnNullable,
+                columnIsPrimaryKey, columnValues, columnCode, columnIsUnique, columnIsIndexed);
+    }
+
+    protected ResultsetColumnHeaderData(final String columnName, JdbcJavaType columnType, final Long columnLength,
+            final boolean columnNullable, final boolean columnIsPrimaryKey, final List<ResultsetColumnValueData> columnValues,
+            final String columnCode, final boolean columnIsUnique, final boolean columnIsIndexed) {
         this.columnName = columnName;
+        this.columnType = columnType;
         this.columnLength = columnLength;
         this.isColumnNullable = columnNullable;
         this.isColumnPrimaryKey = columnIsPrimaryKey;
@@ -73,55 +84,11 @@ public final class ResultsetColumnHeaderData implements Serializable {
         this.columnCode = columnCode;
         this.isColumnUnique = columnIsUnique;
         this.isColumnIndexed = columnIsIndexed;
-
-        // Refer org.drizzle.jdbc.internal.mysql.MySQLType.java
-        this.columnType = JdbcJavaType.getByTypeName(dialect, adjustColumnType(columnType), true);
-
         this.columnDisplayType = calcDisplayType();
-    }
-
-    public String getColumnName() {
-        return this.columnName;
     }
 
     public boolean isNamed(final String columnName) {
         return this.columnName.equalsIgnoreCase(columnName);
-    }
-
-    public JdbcJavaType getColumnType() {
-        return this.columnType;
-    }
-
-    public Long getColumnLength() {
-        return this.columnLength;
-    }
-
-    public boolean getIsColumnNullable() {
-        return isColumnNullable;
-    }
-
-    public boolean getIsColumnPrimaryKey() {
-        return isColumnPrimaryKey;
-    }
-
-    public boolean getIsColumnUnique() {
-        return isColumnUnique;
-    }
-
-    public boolean getIsColumnIndexed() {
-        return isColumnIndexed;
-    }
-
-    public DisplayType getColumnDisplayType() {
-        return this.columnDisplayType;
-    }
-
-    public String getColumnCode() {
-        return this.columnCode;
-    }
-
-    public List<ResultsetColumnValueData> getColumnValues() {
-        return this.columnValues;
     }
 
     public boolean isDateDisplayType() {
@@ -196,26 +163,17 @@ public final class ResultsetColumnHeaderData implements Serializable {
 
     // --- Calculation ---
 
-    private String adjustColumnType(String type) {
+    private static String adjustColumnType(String type) {
         type = type.toUpperCase();
-        switch (type) {
-            case "CLOB":
-            case "ENUM":
-            case "SET":
-                return "VARCHAR";
-            case "NEWDECIMAL":
-                return "DECIMAL";
-            case "LONGLONG":
-                return "BIGINT";
-            case "SHORT":
-                return "SMALLINT";
-            case "TINY":
-                return "TINYINT";
-            case "INT24":
-                return "INT";
-            default:
-                return type;
-        }
+        return switch (type) {
+            case "CLOB", "ENUM", "SET" -> "VARCHAR";
+            case "NEWDECIMAL" -> "DECIMAL";
+            case "LONGLONG" -> "BIGINT";
+            case "SHORT" -> "SMALLINT";
+            case "TINY" -> "TINYINT";
+            case "INT24" -> "INT";
+            default -> type;
+        };
     }
 
     @NotNull

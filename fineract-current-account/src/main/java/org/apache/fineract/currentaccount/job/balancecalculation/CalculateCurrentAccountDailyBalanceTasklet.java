@@ -29,6 +29,7 @@ import org.apache.fineract.currentaccount.repository.account.CurrentAccountDaily
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceWriteService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -43,6 +44,7 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        log.info("Processing {} job", JobName.CALCULATE_CURRENT_DAILY_BALANCE);
         try {
             LocalDate balanceDate = DateUtils.getBusinessLocalDate().minusDays(1L);
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);

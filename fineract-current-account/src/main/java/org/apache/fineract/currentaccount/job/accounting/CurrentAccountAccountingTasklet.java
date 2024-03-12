@@ -30,6 +30,7 @@ import org.apache.fineract.currentaccount.service.accounting.write.CurrentAccoun
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -45,6 +46,7 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        log.info("Processing {} job", JobName.CURRENT_ACCOUNT_ACCOUNTING);
         try {
             long accountingCalculationDelay = configurationService.getAccountingCalculationDelaySeconds();
             OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);

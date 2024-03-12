@@ -32,6 +32,7 @@ import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBal
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -47,6 +48,7 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        log.info("Processing {} job", JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE);
         ThreadLocalContextUtil
                 .setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, BALANCE_CALCULATION.getActionName()));
         try {

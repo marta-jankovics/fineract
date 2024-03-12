@@ -37,8 +37,10 @@ public interface CurrentAccountReadService {
 
     List<CurrentAccountData> retrieveAllByClientId(@NotNull Long clientId, Sort sort);
 
+    @NotNull
     CurrentAccountData retrieve(@NotNull CurrentAccountResolver accountResolver);
 
+    @NotNull
     String retrieveId(@NotNull CurrentAccountResolver accountResolver);
 
     IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver);

@@ -81,6 +81,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
+    @NotNull
     public CurrentAccountData retrieve(@NotNull CurrentAccountResolver accountResolver) {
         CurrentAccountIdType currentType = accountResolver.getIdType();
         String accountIdentifier = accountResolver.getIdentifier();
@@ -103,6 +104,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     }
 
     @Override
+    @NotNull
     public String retrieveId(@NotNull CurrentAccountResolver accountResolver) {
         if (accountResolver.isSecondaryIdentifier()) {
             return resolveIdBySecondaryIdentifier(accountResolver);
@@ -137,6 +139,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
         return statementResponseDataMapper.mapAccountStatements(statements);
     }
 
+    @NotNull
     private String resolveIdBySecondaryIdentifier(@NotNull CurrentAccountResolver accountResolver) {
         InteropIdentifierType secondaryType = accountResolver.getInteropIdType();
         String accountId = accountIdentifierRepository.getAccountIdByIdTypeAndIdentifier(PortfolioAccountType.CURRENT, secondaryType,

@@ -53,6 +53,7 @@ import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeader
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.FilterData;
+import org.apache.fineract.portfolio.search.data.JoinData;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 public final class SearchUtil {
@@ -78,6 +79,18 @@ public final class SearchUtil {
         ResultsetColumnHeaderData filtered = findFiltered(columnHeaders, filter);
         if (filtered == null) {
             throw new PlatformDataIntegrityException("error.msg.column.not.exists", "Column filtered does not exist");
+        }
+        return filtered;
+    }
+
+    public static JoinData findFiltered(@NotNull List<JoinData> joins, @NotNull Predicate<JoinData> filter) {
+        return joins.stream().filter(filter).findFirst().orElse(null);
+    }
+
+    public static JoinData getFiltered(@NotNull List<JoinData> joins, @NotNull Predicate<JoinData> filter) {
+        JoinData filtered = findFiltered(joins, filter);
+        if (filtered == null) {
+            throw new PlatformDataIntegrityException("error.msg.join.not.exists", "Join does not exist");
         }
         return filtered;
     }
@@ -115,15 +128,15 @@ public final class SearchUtil {
     }
 
     @NotNull
-    public static List<String> validateToJdbcColumnNames(List<String> columns, Map<String, ResultsetColumnHeaderData> headersByName,
+    public static List<String> resolveToJdbcColumnNames(List<String> columns, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
             boolean allowEmpty) {
-        List<ResultsetColumnHeaderData> columnHeaders = validateToJdbcColumns(columns, headersByName, allowEmpty);
+        List<ResultsetColumnHeaderData> columnHeaders = resolveToJdbcColumns(columns, headersByName, allowEmpty);
         return columnHeaders.stream().map(e -> e == null ? null : e.getColumnName()).toList();
     }
 
     @NotNull
-    public static List<ResultsetColumnHeaderData> validateToJdbcColumns(List<String> columns,
-            Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
+    public static List<ResultsetColumnHeaderData> resolveToJdbcColumns(List<String> columns,
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
 
         List<ResultsetColumnHeaderData> result = new ArrayList<>();
@@ -132,7 +145,7 @@ public final class SearchUtil {
                 errors.add(parameterErrorWithValue("error.msg.columns.empty", "Columns list is empty", API_PARAM_COLUMN, null));
             }
         } else {
-            columns.forEach(rcn -> result.add(validateToJdbcColumnImpl(rcn, headersByName, errors, allowEmpty)));
+            columns.forEach(rcn -> result.add(resolveToJdbcColumnImpl(rcn, headersByName, errors, allowEmpty)));
         }
         if (!errors.isEmpty()) {
             throw new PlatformApiDataValidationException(errors);
@@ -140,22 +153,23 @@ public final class SearchUtil {
         return result;
     }
 
-    public static String validateToJdbcColumnName(String column, Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
-        ResultsetColumnHeaderData columnHeader = validateToJdbcColumn(column, headersByName, allowEmpty);
+    public static String resolveToJdbcColumnName(String column, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
+            boolean allowEmpty) {
+        ResultsetColumnHeaderData columnHeader = resolveToJdbcColumn(column, headersByName, allowEmpty);
         return columnHeader == null ? null : columnHeader.getColumnName();
     }
 
-    public static ResultsetColumnHeaderData validateToJdbcColumn(String column,
+    public static ResultsetColumnHeaderData resolveToJdbcColumn(String column,
             @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
-        ResultsetColumnHeaderData columnHeader = validateToJdbcColumnImpl(column, headersByName, errors, allowEmpty);
+        ResultsetColumnHeaderData columnHeader = resolveToJdbcColumnImpl(column, headersByName, errors, allowEmpty);
         if (!errors.isEmpty()) {
             throw new PlatformApiDataValidationException(errors);
         }
         return columnHeader;
     }
 
-    private static ResultsetColumnHeaderData validateToJdbcColumnImpl(String column,
+    private static ResultsetColumnHeaderData resolveToJdbcColumnImpl(String column,
             @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<ApiParameterError> errors, boolean allowEmpty) {
         if (!allowEmpty && column == null) {
             errors.add(parameterErrorWithValue("error.msg.column.empty", "Column filter is empty", API_PARAM_COLUMN, null));
@@ -202,7 +216,7 @@ public final class SearchUtil {
             if (!embedded && where.isEmpty()) {
                 where.append(" WHERE ");
             }
-            ResultsetColumnHeaderData columnHeader = validateToJdbcColumn(columnName, headersByName, false);
+            ResultsetColumnHeaderData columnHeader = resolveToJdbcColumn(columnName, headersByName, false);
 
             FilterData filter = filters.get(i);
             SqlOperator operator = filter.getOperator();
@@ -225,7 +239,7 @@ public final class SearchUtil {
             List<Object> values, @NotNull StringBuilder where, @NotNull List<Object> params, String alias,
             @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         int paramCount = values == null ? 0 : values.size();
-        where.append(operator.formatPlaceholder(sqlGenerator, definition, paramCount, alias));
+        where.append(operator.formatPlaceholder(sqlGenerator, definition, paramCount, alias, "?"));
         if (values != null) {
             params.addAll(values);
         }
