@@ -121,7 +121,7 @@ public class AccountStatement extends AbstractAuditableWithUTCDateTimeCustom<Lon
         }
         String sequencePrefix = statementData.getSequencePrefix();
         if (sequencePrefix != null && !Objects.equals(this.sequencePrefix, sequencePrefix)) {
-            setRecurrence(sequencePrefix);
+            setSequencePrefix(sequencePrefix);
             changes.put(PARAM_SEQUENCE_PREFIX, sequencePrefix);
             changed = true;
         }
