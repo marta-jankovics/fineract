@@ -23,12 +23,14 @@ import java.math.BigDecimal;
 import lombok.Data;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType;
+import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 @Data
 public class CurrentProductData implements Serializable {
 
     // Current product data
     private final String id;
+    private final ExternalId externalId;
     private final String name;
     private final String shortName;
     private final String description;
