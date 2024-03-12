@@ -77,7 +77,6 @@ import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
-import org.apache.fineract.portfolio.search.service.AdvancedQueryService;
 import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

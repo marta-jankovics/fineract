@@ -53,7 +53,6 @@ import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
 import org.apache.fineract.portfolio.search.data.TableQueryData;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -147,7 +146,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                         .map(e -> new JoinColumnHeaderData(e, null, dtJoins)).collect(Collectors.toList());
                 Map<String, ResultsetColumnHeaderData> dtHeadersByName = SearchUtil.mapHeadersToName(dtColumnHeaders);
 
-                List<ResultsetColumnHeaderData> selectHeaders = resolveToJdbcColumns(null, dtResultColumns, dtHeadersByName, dtJoins, dtAlias, LEFT, true);
+                List<ResultsetColumnHeaderData> selectHeaders = resolveToJdbcColumns(null, dtResultColumns, dtHeadersByName, dtJoins,
+                        dtAlias, LEFT, true);
                 selectColumns.addAll(selectHeaders);
                 for (ResultsetColumnHeaderData selectHeader : selectHeaders) {
                     String resultColumn = selectHeader.getColumnName();
@@ -304,6 +304,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
 
     @Nullable
     private static String calcAs(ResultsetColumnHeaderData columnHeader, boolean addDefault) {
-        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getVirtualName() : (addDefault ? columnHeader.getColumnName() : null);
+        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getVirtualName()
+                : (addDefault ? columnHeader.getColumnName() : null);
     }
 }

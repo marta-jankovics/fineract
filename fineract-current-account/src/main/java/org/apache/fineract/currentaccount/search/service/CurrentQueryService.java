@@ -41,7 +41,6 @@ import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryServiceImpl;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,8 +51,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class CurrentQueryService extends AdvancedQueryServiceImpl {
 
     public CurrentQueryService(PlatformSecurityContext securityContext, GenericDataService genericDataService,
-                               DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
-                               JdbcTemplate jdbcTemplate) {
+            DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
+            JdbcTemplate jdbcTemplate) {
         super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate);
     }
 

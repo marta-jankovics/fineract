@@ -35,8 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class SavingsQueryService extends AdvancedQueryServiceImpl {
 
     public SavingsQueryService(PlatformSecurityContext securityContext, GenericDataService genericDataService,
-                               DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
-                               JdbcTemplate jdbcTemplate) {
+            DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
+            JdbcTemplate jdbcTemplate) {
         super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate);
     }
 }
