@@ -43,7 +43,6 @@ import org.apache.fineract.accounting.common.AccountingConstants;
 import org.apache.fineract.accounting.glaccount.domain.GLAccount;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMapping;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMappingRepository;
-import org.apache.fineract.accounting.producttoaccountmapping.exception.ProductToGLAccountMappingNotFoundException;
 import org.apache.fineract.accounting.producttoaccountmapping.service.ProductToGLAccountMappingHelper;
 import org.apache.fineract.currentaccount.domain.product.CurrentProduct;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductCashBasedAccount;
@@ -63,7 +62,8 @@ public class CurrentProductToGLAccountMappingHelper {
     public void createCurrentProductAccountMapping(final JsonCommand command, final String paramName, final CurrentProduct product,
             final CurrentProductCashBasedAccount financialAccountType) {
         final Long accountId = command.longValueOfParameterNamed(paramName);
-        final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, financialAccountType.getType(), accountId);
+        final GLAccount glAccount = productToGLAccountMappingHelper.getAccountByIdAndType(paramName, financialAccountType.getType(),
+                accountId);
         final ProductToGLAccountMapping accountMapping = new ProductToGLAccountMapping().setGlAccount(glAccount)
                 .setProductIdentifier(product.getId()).setProductType(PortfolioProductType.CURRENT.getValue())
                 .setFinancialAccountType(financialAccountType.getId());
