@@ -38,6 +38,7 @@ public final class JoinColumnHeaderData extends ResultsetColumnHeaderData {
         this.virtualName = virtualName == null ? getAlias() + "#" + columnHeader.getColumnName() : virtualName;
     }
 
+    @Override
     public boolean isNamed(final String columnName) {
         return super.isNamed(columnName) || virtualName.equalsIgnoreCase(columnName);
     }

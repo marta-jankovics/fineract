@@ -297,8 +297,8 @@ public class DatatableUniqueAndIndexColumnTest {
         @org.mapstruct.Mapper
         public interface Mapper {
 
-            @Mappings({ @Mapping(target = "name", source = "columnName"), @Mapping(target = "unique", source = "isColumnUnique"),
-                    @Mapping(target = "indexed", source = "isColumnIndexed") })
+            @Mappings({ @Mapping(target = "name", source = "columnName"), @Mapping(target = "unique", source = "columnUnique"),
+                    @Mapping(target = "indexed", source = "columnIndexed") })
             NameUniqueIndexedHeaderData map(ResultsetColumnHeaderData source);
 
             List<NameUniqueIndexedHeaderData> map(List<ResultsetColumnHeaderData> source);

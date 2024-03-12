@@ -56,6 +56,7 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
         super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate);
     }
 
+    @Override
     public ResultsetColumnHeaderData resolveCustomColumn(EntityTables entity, @NotNull String virtualColumn,
             @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<JoinData> joins, String mainAlias,
             JoinType joinType, boolean allowEmpty) {
