@@ -149,12 +149,11 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                 List<ResultsetColumnHeaderData> selectHeaders = resolveToJdbcColumns(null, dtResultColumns, dtHeadersByName, dtJoins,
                         dtAlias, LEFT, true);
                 selectColumns.addAll(selectHeaders);
-                for (ResultsetColumnHeaderData selectHeader : selectHeaders) {
-                    String resultColumn = selectHeader.getColumnName();
-                    if (resultColumns.contains(resultColumn)) {
-                        resultColumn = dtTable + "." + resultColumn;
+                for (String dtResultColumn : dtResultColumns) {
+                    if (resultColumns.contains(dtResultColumn)) {
+                        dtResultColumn = dtTable + "." + dtResultColumn;
                     }
-                    resultColumns.add(resultColumn);
+                    resultColumns.add(dtResultColumn);
                 }
                 if (dtColumnFilters != null) {
                     dtColumnFilters.forEach(e -> columnConditions.add(new ColumnConditionData(
