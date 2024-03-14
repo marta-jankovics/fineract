@@ -22,34 +22,45 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Getter
 public enum InteropIdentifierType {
 
-    MSISDN(), //
-    EMAIL(), //
-    PERSONAL_ID("PERSONALID"), //
-    BUSINESS(), //
-    DEVICE(), //
-    ACCOUNT_ID("ACCOUNTID"), //
-    IBAN(), //
-    ALIAS(), //
-    BBAN(), //
+    MSISDN("interopIdentifierType.msisdn"), //
+    EMAIL("interopIdentifierType.email"), //
+    PERSONAL_ID("interopIdentifierType.personalId", "Personal Identifier", "PERSONALID"), //
+    BUSINESS("interopIdentifierType.business"), //
+    DEVICE("interopIdentifierType.device"), //
+    ACCOUNT_ID("interopIdentifierType.accountId", "Account Identifier", "ACCOUNTID"), //
+    IBAN("interopIdentifierType.iban"), //
+    ALIAS("interopIdentifierType.alias"), //
+    BBAN("interopIdentifierType.bban"), //
     ; //
 
-    private static final Map<String, InteropIdentifierType> BY_ALIAS = Arrays.stream(values())
+    public static final InteropIdentifierType[] VALUES = values();
+
+    private static final Map<String, InteropIdentifierType> BY_ALIAS = Arrays.stream(VALUES)
             .collect(Collectors.toMap(InteropIdentifierType::getAlias, v -> v));
-    private static final Map<String, InteropIdentifierType> BY_NAME = Arrays.stream(values())
+    private static final Map<String, InteropIdentifierType> BY_NAME = Arrays.stream(VALUES)
             .collect(Collectors.toMap(InteropIdentifierType::name, v -> v));
 
+    private final String code;
+    private final String description;
     private final String alias;
 
-    InteropIdentifierType(String alias) {
+    InteropIdentifierType(String code, String description, String alias) {
+        this.code = code;
+        this.description = description == null ? name() : description;
         this.alias = alias == null ? name() : alias;
     }
 
-    InteropIdentifierType() {
-        this(null);
+    InteropIdentifierType(String code, String description) {
+        this(code, description, null);
+    }
+
+    InteropIdentifierType(String code) {
+        this(code, null, null);
     }
 
     public static InteropIdentifierType resolveName(String name) {
@@ -58,5 +69,9 @@ public enum InteropIdentifierType {
         }
         InteropIdentifierType idType = BY_ALIAS.get(name);
         return idType == null ? BY_NAME.get(name) : idType;
+    }
+
+    public StringEnumOptionData toStringEnumOptionData() {
+        return new StringEnumOptionData(name(), getCode(), getDescription());
     }
 }

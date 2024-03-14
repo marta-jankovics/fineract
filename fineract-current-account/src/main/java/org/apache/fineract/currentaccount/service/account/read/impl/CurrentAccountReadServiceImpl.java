@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.service.account.read.impl;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountI
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
@@ -64,10 +66,12 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     @Override
     public CurrentAccountTemplateResponseData retrieveTemplate() {
         final List<CurrentProductData> productOptions = currentProductRepository.getProductsSorted(Sort.by(Sort.Direction.ASC, "name"));
+        final List<StringEnumOptionData> identifierTypeOptions = Arrays.stream(InteropIdentifierType.VALUES)
+                .map(InteropIdentifierType::toStringEnumOptionData).toList();
 
         return CurrentAccountTemplateResponseData.builder() //
                 .productOptions(productResponseDataMapper.map(productOptions)) //
-                .build(); //
+                .identifierTypeOptions(identifierTypeOptions).build(); //
     }
 
     @Override

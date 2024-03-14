@@ -885,7 +885,7 @@ public class DataValidatorBuilder {
             try {
                 final RRule rRule = new RRule(recurringRule);
                 rRule.validate();
-            } catch (final ValidationException e) {
+            } catch (final ValidationException | IllegalArgumentException e) {
                 final ApiParameterError error = ApiParameterError.parameterError("validation.msg.invalid.recurring.rule",
                         "The Recurring Rule value: " + recurringRule + " is not valid.", this.parameter, recurringRule);
                 this.dataValidationErrors.add(error);

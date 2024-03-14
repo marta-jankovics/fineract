@@ -118,7 +118,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @Operation(operationId = "createCurrentProduct", summary = "Create a Current Product", description = "Creates a Current Product\n\n"
             + "Mandatory Fields: name, shortName, currencyCode, currencyDigitsAfterDecimal, accountingType, allowOverdraft, allowForceTransaction, balanceCalculationType, locale\n\n"
             + "Optional Fields: externalId, currencyInMultiplesOf, overdraftLimit, minimumRequiredBalance, description")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PostCurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductCommandResponse.class))) })
     @Override
@@ -130,7 +130,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @PUT
     @Path(IDENTIFIER_API_REGEX)
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product", description = "Updates a Current Product")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override
@@ -143,7 +143,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
     @PUT
     @Path(ID_TYPE_API_REGEX + "/" + IDENTIFIER_API_REGEX)
     @Operation(operationId = "updateCurrentProduct", summary = "Update a Current Product by alternative id", description = "Updates a Current Product by alternative id")
-    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductRequest.class)))
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.PutCurrentProductRequest.class)))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = CurrentProductsApiResourceSwagger.CurrentProductUpdateCommandResponse.class))) })
     @Override

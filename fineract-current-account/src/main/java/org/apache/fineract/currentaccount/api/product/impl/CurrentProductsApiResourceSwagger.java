@@ -22,14 +22,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.fineract.currentaccount.api.common.CommonApiResourceSwagger;
 
 public final class CurrentProductsApiResourceSwagger {
 
     private CurrentProductsApiResourceSwagger() {}
 
-    @Schema(description = "CurrentProductRequest")
-    public static final class CurrentProductRequest {
+    @Schema(description = "PostCurrentProductRequest")
+    public static final class PostCurrentProductRequest {
 
         @Schema(example = "Normal current product")
         public String name;
@@ -59,6 +60,8 @@ public final class CurrentProductsApiResourceSwagger {
         public String balanceCalculationType;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Statement settings")
+        public Set<PostCurrentProductStatement> statements;
 
         // Accounting
         @Schema(example = "1")
@@ -78,7 +81,7 @@ public final class CurrentProductsApiResourceSwagger {
         @Schema(example = "")
         public List<PaymentChannelToFundSource> paymentChannelToFundSourceMappings;
 
-        private CurrentProductRequest() {}
+        private PostCurrentProductRequest() {}
 
         public static final class PaymentChannelToFundSource {
 
@@ -88,6 +91,97 @@ public final class CurrentProductsApiResourceSwagger {
             public Long fundSourceAccountId;
 
             private PaymentChannelToFundSource() {}
+        }
+
+        static final class PostCurrentProductStatement {
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            @Schema(allowableValues = { "CAMT053" })
+            public String statementType;
+            @Schema(allowableValues = { "S3" })
+            public String publishType;
+            @Schema(allowableValues = { "SINGLE", "ACCOUNT", "PRODUCT", "CLIENT" })
+            public String batchType;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+            public String recurrence;
+            @Schema(example = "K")
+            public String sequencePrefix;
+        }
+    }
+
+    @Schema(description = "PutCurrentProductRequest")
+    public static final class PutCurrentProductRequest {
+
+        @Schema(example = "Normal current product")
+        public String name;
+        @Schema(example = "A good old regular current product")
+        public String description;
+        @Schema(example = "en")
+        public String locale;
+        @Schema(example = "1")
+        public Integer accountingType;
+        @Schema(example = "true")
+        public Boolean allowOverdraft;
+        @Schema(example = "1000")
+        public BigDecimal overdraftLimit;
+        @Schema(example = "true")
+        public Boolean allowForceTransaction;
+        @Schema(example = "100")
+        public BigDecimal minimumRequiredBalance;
+        @Schema(example = "LAZY")
+        public String balanceCalculationType;
+        @Schema(description = "Datatable details")
+        public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Statement settings")
+        public Set<PutCurrentProductStatement> statements;
+
+        // Accounting
+        @Schema(example = "1")
+        public Long controlAccountId;
+        @Schema(example = "1")
+        public Long referenceAccountId;
+        @Schema(example = "1")
+        public Long overdraftControlAccountId;
+        @Schema(example = "1")
+        public Long transfersInSuspenseAccountId;
+        @Schema(example = "1")
+        public Long writeOffAccountId;
+        @Schema(example = "1")
+        public Long incomeFromFeeAccountId;
+        @Schema(example = "1")
+        public Long incomeFromPenaltyAccountId;
+        @Schema(example = "")
+        public List<PaymentChannelToFundSource> paymentChannelToFundSourceMappings;
+
+        private PutCurrentProductRequest() {}
+
+        public static final class PaymentChannelToFundSource {
+
+            @Schema(example = "1")
+            public Long paymentTypeId;
+            @Schema(example = "1")
+            public Long fundSourceAccountId;
+
+            private PaymentChannelToFundSource() {}
+        }
+
+        static final class PutCurrentProductStatement {
+
+            @Schema(example = "ABC123")
+            public String statementCode;
+            @Schema(allowableValues = { "CAMT053" })
+            public String statementType;
+            @Schema(allowableValues = { "S3" })
+            public String publishType;
+            @Schema(allowableValues = { "SINGLE", "ACCOUNT", "PRODUCT", "CLIENT" })
+            public String batchType;
+            @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+            public String recurrence;
+            @Schema(example = "K")
+            public String sequencePrefix;
+            @Schema(example = "false")
+            public boolean inherit;
         }
     }
 

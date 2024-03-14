@@ -59,6 +59,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String note;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Statement settings")
+        public List<CurrentAccountStatement> statements;
         @Schema(description = "Alternative identifiers")
         public List<CurrentAccountIdentifiers> identifiers;
 
@@ -88,6 +90,8 @@ public final class CurrentAccountsApiResourceSwagger {
         public String note;
         @Schema(description = "Datatable details")
         public List<CommonApiResourceSwagger.DatatableEntriesRequest> datatables;
+        @Schema(description = "Statement settings")
+        public List<CurrentAccountStatement> statements;
         @Schema(description = "Alternative identifiers")
         public List<CurrentAccountIdentifiers> identifiers;
 
@@ -140,6 +144,16 @@ public final class CurrentAccountsApiResourceSwagger {
         public String value;
         @Schema(example = "A")
         public String subValue;
+    }
+
+    static final class CurrentAccountStatement {
+
+        @Schema(example = "ABC123")
+        public String statementCode;
+        @Schema(example = "K")
+        public String sequencePrefix;
+        @Schema(example = "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=28,29,30,31;BYSETPOS=-1")
+        public String recurrence;
     }
 
     @Schema(description = "CurrentAccountNoteRequest")

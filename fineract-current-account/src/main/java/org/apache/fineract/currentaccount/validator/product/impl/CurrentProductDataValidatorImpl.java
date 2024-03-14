@@ -101,7 +101,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         dataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
 
         final String shortName = command.stringValueOfParameterNamedAllowingNull(SHORT_NAME_PARAM);
-        dataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(4);
+        dataValidator.reset().parameter(SHORT_NAME_PARAM).value(shortName).notBlank().notExceedingLengthOf(8);
 
         final String currencyCode = command.stringValueOfParameterNamedAllowingNull(CURRENCY_CODE_PARAM);
         dataValidator.reset().parameter(CURRENCY_CODE_PARAM).value(currencyCode).notBlank();

@@ -23,10 +23,12 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.fineract.currentaccount.data.product.CurrentProductResponseData;
+import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 
 @Data
 @Builder
 public class CurrentAccountTemplateResponseData implements Serializable {
 
     private final List<CurrentProductResponseData> productOptions;
+    private final List<StringEnumOptionData> identifierTypeOptions;
 }
