@@ -29,10 +29,10 @@ public enum InteropIdentifierType {
 
     MSISDN("interopIdentifierType.msisdn"), //
     EMAIL("interopIdentifierType.email"), //
-    PERSONAL_ID("interopIdentifierType.personalId", "Personal Identifier", "PERSONALID"), //
+    PERSONAL_ID("interopIdentifierType.personalId", "PERSONALID", "PERSONALID"), //
     BUSINESS("interopIdentifierType.business"), //
     DEVICE("interopIdentifierType.device"), //
-    ACCOUNT_ID("interopIdentifierType.accountId", "Account Identifier", "ACCOUNTID"), //
+    ACCOUNT_ID("interopIdentifierType.accountId", "ACCOUNTID", "ACCOUNTID"), //
     IBAN("interopIdentifierType.iban"), //
     ALIAS("interopIdentifierType.alias"), //
     BBAN("interopIdentifierType.bban"), //
@@ -53,10 +53,6 @@ public enum InteropIdentifierType {
         this.code = code;
         this.description = description == null ? name() : description;
         this.alias = alias == null ? name() : alias;
-    }
-
-    InteropIdentifierType(String code, String description) {
-        this(code, description, null);
     }
 
     InteropIdentifierType(String code) {
