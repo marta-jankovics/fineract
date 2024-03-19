@@ -37,9 +37,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, String> {
 
-    String TRANSACTION_DATA_SELECT = "SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
-            + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, "
-            + "curr.name, curr.displaySymbol, pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
+    String TRANSACTION_DATA_SELECT = "SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, "
+            + "t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.amount, t.transactionName, t.createdDate, "
+            + "cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, "
+            + "pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t JOIN CurrentAccount ca on ca.id = t.accountId "
             + "JOIN CurrentProduct cp on cp.id = ca.productId JOIN ApplicationCurrency curr on curr.code = cp.currency.code "
             + "LEFT JOIN PaymentType pt on pt.id = t.paymentTypeId ";
@@ -95,7 +96,7 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
     @Query("select new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
-            + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, pt.id, pt.name) "
+            + "t.transactionDate, t.submittedOnDate, t.amount, t.transactionName, t.createdDate, pt.id, pt.name) "
             + "from CurrentTransaction t left join PaymentType pt on pt.id = t.paymentTypeId "
             + "where t.accountId = :accountId and t.submittedOnDate >= :fromDate and t.submittedOnDate <= :toDate "
             + "and t.transactionType in :types order by t.submittedOnDate, t.createdDate, t.id")

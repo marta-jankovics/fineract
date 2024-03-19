@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
     private final CurrentAccountBalanceRepository currentAccountBalanceRepository;
 
     @Override
+    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE);
         ThreadLocalContextUtil

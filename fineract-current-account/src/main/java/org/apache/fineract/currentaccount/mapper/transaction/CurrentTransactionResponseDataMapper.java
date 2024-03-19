@@ -66,6 +66,7 @@ public interface CurrentTransactionResponseDataMapper {
     @Mapping(target = "transactionEntryType", source = "transactionData", qualifiedByName = "transactionEntryType")
     @Mapping(target = "paymentTypeData", source = "transactionData", qualifiedByName = "mapPaymentTypeData")
     @Mapping(target = "transactionAmount", source = "transactionData.amount")
+    @Mapping(target = "transactionName", source = "transactionData.transactionName")
     @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
     @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
     @Mapping(target = "availableBalance", expression = "java(accountData.getAvailableBalance(balanceData, false))")

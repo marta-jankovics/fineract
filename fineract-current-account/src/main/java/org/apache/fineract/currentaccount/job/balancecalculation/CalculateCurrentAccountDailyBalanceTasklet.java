@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.BALANCE_CALCULATION;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
     private final CurrentAccountDailyBalanceRepository dailyBalanceRepository;
 
     @Override
+    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_DAILY_BALANCE);
         try {

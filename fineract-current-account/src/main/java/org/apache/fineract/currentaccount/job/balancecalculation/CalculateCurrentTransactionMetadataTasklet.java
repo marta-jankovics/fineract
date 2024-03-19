@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountAction.METADATA_GENERATION;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -49,6 +50,7 @@ public class CalculateCurrentTransactionMetadataTasklet implements Tasklet {
     private final CurrentTransactionMetadataWriteService metadataWriteService;
 
     @Override
+    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         try {
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(METADATA_GENERATION);

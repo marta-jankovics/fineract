@@ -45,6 +45,7 @@ public final class CurrentTransactionResponseData implements Serializable {
     private final LocalDate submittedOnDate;
     private final BigDecimal transactionAmount;
     private final CurrencyData currency;
+    private final String transactionName;
     private final BigDecimal accountBalance;
     private final BigDecimal holdAmount;
     private final BigDecimal availableBalance;

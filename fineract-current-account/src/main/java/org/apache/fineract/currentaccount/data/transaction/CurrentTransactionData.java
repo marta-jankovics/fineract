@@ -40,6 +40,7 @@ public class CurrentTransactionData implements ICurrentTransaction, Serializable
     private final LocalDate transactionDate;
     private final LocalDate submittedOnDate;
     private final BigDecimal amount;
+    private final String transactionName;
     private final OffsetDateTime createdDateTime;
 
     // Currency data
@@ -57,9 +58,9 @@ public class CurrentTransactionData implements ICurrentTransaction, Serializable
     private final String paymentTypeCodeName;
 
     public CurrentTransactionData(String id, String accountId, ExternalId externalId, CurrentTransactionType transactionType,
-            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount, OffsetDateTime createdDateTime, Long paymentTypeId,
-            String paymentTypeName) {
-        this(id, accountId, externalId, transactionType, transactionDate, submittedOnDate, amount, createdDateTime, null, null, null, null,
-                null, paymentTypeId, paymentTypeName, null, null, null);
+            LocalDate transactionDate, LocalDate submittedOnDate, BigDecimal amount, String transactionName, OffsetDateTime createdDateTime,
+            Long paymentTypeId, String paymentTypeName) {
+        this(id, accountId, externalId, transactionType, transactionDate, submittedOnDate, amount, transactionName, createdDateTime, null,
+                null, null, null, null, paymentTypeId, paymentTypeName, null, null, null);
     }
 }

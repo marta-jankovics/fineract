@@ -31,7 +31,7 @@ import org.apache.fineract.statement.data.camt053.EntryDetailsData;
 
 public final class BinxSavingsTransactionStatementData extends BinxTransactionStatementData {
 
-    protected BinxSavingsTransactionStatementData(String entryReference, @NotNull BigDecimal amount, @NotNull String currency,
+    private BinxSavingsTransactionStatementData(String entryReference, @NotNull BigDecimal amount, @NotNull String currency,
             TransactionEntryType entryType, @NotNull TransactionStatus status, String accountServicerReference, String paymentTypeCode,
             LocalDate bookingDate, LocalDate valueDate, @NotNull EntryDetailsData entryDetails, String inputChannel,
             String structuredEntryDetails) {

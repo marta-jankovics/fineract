@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.job.accounting;
 
 import static org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus.ACTIVE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,7 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
+    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
         for (String accountId : accountIds) {
             try {

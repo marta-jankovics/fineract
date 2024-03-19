@@ -29,7 +29,7 @@ import org.apache.fineract.statement.data.camt053.TransactionStatementData;
 
 public final class SavingsTransactionStatementData extends TransactionStatementData {
 
-    protected SavingsTransactionStatementData(String entryReference, @NotNull BigDecimal amount, @NotNull String currency,
+    private SavingsTransactionStatementData(String entryReference, @NotNull BigDecimal amount, @NotNull String currency,
             TransactionEntryType entryType, @NotNull TransactionStatus status, String accountServicerReference, String paymentTypeCode,
             LocalDate bookingDate, LocalDate valueDate, String inputChannel, EntryDetailsData entryDetails) {
         super(entryReference, amount, currency, entryType, status, accountServicerReference, paymentTypeCode, bookingDate, valueDate,

@@ -226,7 +226,7 @@ public class BinxSavingsCamt053StatementGenerator extends SavingsCamt053Statemen
         String path = super.calcResultPath(productType, publishType, content, transactionDate);
         BinxCamt053Data currentData = (BinxCamt053Data) content;
         String accountType = currentData.isConversionAccount() ? "conversion_account"
-                : ((currentData.isDisposalAccount() ? "disposal_account" : null));
+                : (currentData.isDisposalAccount() ? "disposal_account" : null);
         if (accountType != null) {
             path = path.substring(0, path.lastIndexOf(File.separator) + 1) + accountType;
         }
