@@ -54,7 +54,7 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
                     dailyBalanceWriteService.createDailyBalance(accountId, balanceDate);
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
-                    log.warn("Calculate daily balance for account: {} is failed", accountId);
+                    log.error("Calculate daily balance for account: " + accountId + " is failed", e);
                 }
             }
         } catch (Exception e) {

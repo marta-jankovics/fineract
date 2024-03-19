@@ -18,17 +18,13 @@
  */
 package org.apache.fineract.currentaccount.statement.data;
 
-import static org.apache.fineract.currentaccount.statement.service.CurrentStatementService.CONVERSION_ACCOUNT_DISCRIMINATOR;
-import static org.apache.fineract.currentaccount.statement.service.CurrentStatementService.DISPOSAL_ACCOUNT_DISCRIMINATOR;
 import static org.apache.fineract.interoperation.domain.InteropIdentifierType.ALIAS;
 import static org.apache.fineract.interoperation.domain.InteropIdentifierType.IBAN;
+import static org.apache.fineract.portfolio.PortfolioProductType.CURRENT;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_BEGIN_OF_PERIOD;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_END_OF_PERIOD;
 import static org.apache.fineract.statement.data.camt053.AccountBalanceData.BALANCE_CODE_FULL_OF_PERIOD;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Strings;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,46 +48,20 @@ import org.apache.fineract.statement.data.camt053.TransactionStatementData;
 import org.apache.fineract.statement.data.camt053.TransactionsSummaryData;
 import org.apache.fineract.statement.domain.AccountStatement;
 
-public final class CurrentStatementData extends StatementData {
+public class CurrentStatementData extends StatementData {
 
-    @Transient
-    @JsonIgnore
-    private final transient String accountDiscriminator;
-    @Transient
-    @JsonIgnore
-    private final transient String customerId;
-    @Transient
-    @JsonIgnore
-    private final transient String internalAccountId;
-    @Transient
-    @JsonIgnore
-    private final transient String iban;
-    @Transient
-    @JsonIgnore
-    private final transient LocalDate fromDate;
-    @Transient
-    @JsonIgnore
-    private final transient LocalDate toDate;
-
-    private CurrentStatementData(String identification, OffsetDateTime creationDateTime, DateTimePeriodData fromToDate, AccountData account,
-            AccountBalanceData[] balances, TransactionsSummaryData transactionsSummary, TransactionStatementData[] transactions,
-            String additionalStatementInformation, String accountDiscriminator, String customerId, String internalAccountId, String iban,
+    protected CurrentStatementData(String identification, OffsetDateTime creationDateTime, DateTimePeriodData fromToDate,
+            AccountData account, AccountBalanceData[] balances, TransactionsSummaryData transactionsSummary,
+            TransactionStatementData[] transactions, String accountType, String customerId, String accountId, String iban,
             LocalDate fromDate, LocalDate toDate) {
-        super(identification, creationDateTime, fromToDate, account, balances, transactionsSummary, transactions,
-                additionalStatementInformation);
-        this.accountDiscriminator = accountDiscriminator;
-        this.customerId = customerId;
-        this.internalAccountId = internalAccountId;
-        this.iban = iban;
-        this.fromDate = fromDate;
-        this.toDate = toDate;
+        super(identification, creationDateTime, fromToDate, account, balances, transactionsSummary, transactions, null, accountType,
+                customerId, accountId, iban, fromDate, toDate);
     }
 
     public static CurrentStatementData create(@NotNull AccountStatement statement, @NotNull CurrentAccountData account,
             @NotNull ICurrentAccountDailyBalance dailyBalance, @NotNull Map<InteropIdentifierType, AccountIdentifier> identifiers,
-            Map<String, Object> clientDetails, @NotNull LocalDate fromDate, @NotNull LocalDate toDate, @NotNull String identification,
-            @NotNull OffsetDateTime creationDateTime, int statementType, String accountDiscriminator,
-            @NotNull List<CurrentTransactionData> transactions, @NotNull Map<String, Map<String, Object>> transactionDetails) {
+            @NotNull LocalDate fromDate, @NotNull LocalDate toDate, @NotNull String identification,
+            @NotNull OffsetDateTime creationDateTime, @NotNull List<CurrentTransactionData> transactions) {
         DateTimePeriodData fromToDate = DateTimePeriodData.create(fromDate, toDate);
         String iban = Optional.ofNullable(identifiers.get(IBAN)).map(AccountIdentifier::getValue).orElse(null);
         Optional<CurrentAccountResolver> otherResolver = Optional.ofNullable(identifiers.get(ALIAS))
@@ -100,8 +70,7 @@ public final class CurrentStatementData extends StatementData {
 
         String currency = account.getCurrencyCode();
         // only one of the identifiers can be stored here
-        AccountData accountData = AccountData.create(null, otherIdentifier.getIdentifier(), otherIdentifier.getTypeName(), clientDetails,
-                currency);
+        AccountData accountData = AccountData.create(null, otherIdentifier.getIdentifier(), otherIdentifier.getTypeName(), currency);
         AccountBalanceData opening = AccountBalanceData.create(BALANCE_CODE_BEGIN_OF_PERIOD,
                 MathUtil.nullToZero(statement.getStatementBalance()), currency, fromDate);
         BigDecimal balance = dailyBalance.getAccountBalance();
@@ -117,62 +86,12 @@ public final class CurrentStatementData extends StatementData {
         int size = transactions.size();
         ArrayList<CurrentTransactionStatementData> entries = new ArrayList<>(size);
         for (CurrentTransactionData transaction : transactions) {
-            entries.add(CurrentTransactionStatementData.create(transaction, identifiers, clientDetails, currency, statementType,
-                    transactionDetails.get(transaction.getId())));
+            entries.add(CurrentTransactionStatementData.create(transaction, currency));
         }
 
-        String customerId = Strings.nullToEmpty(clientDetails == null ? null : (String) clientDetails.get("customer_id"));
         return new CurrentStatementData(identification, creationDateTime, fromToDate, accountData,
                 new AccountBalanceData[] { opening, closure, total }, trSum, entries.toArray(new CurrentTransactionStatementData[size]),
-                calcAdditionalInfo(statementType), accountDiscriminator, customerId,
-                otherResolver.map(CurrentAccountResolver::getIdentifier).orElse(null), iban, fromDate, toDate);
-    }
-
-    @Transient
-    @JsonIgnore
-    public String getAccountDiscriminator() {
-        return accountDiscriminator;
-    }
-
-    @Transient
-    @JsonIgnore
-    public boolean isConversionAccount() {
-        return CONVERSION_ACCOUNT_DISCRIMINATOR.equals(accountDiscriminator);
-    }
-
-    @Transient
-    @JsonIgnore
-    public boolean isDisposalAccount() {
-        return DISPOSAL_ACCOUNT_DISCRIMINATOR.equals(accountDiscriminator);
-    }
-
-    @Transient
-    @JsonIgnore
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    @Transient
-    @JsonIgnore
-    public String getInternalAccountId() {
-        return internalAccountId;
-    }
-
-    @Transient
-    @JsonIgnore
-    public String getIban() {
-        return iban;
-    }
-
-    @Transient
-    @JsonIgnore
-    public LocalDate getFromDate() {
-        return fromDate;
-    }
-
-    @Transient
-    @JsonIgnore
-    public LocalDate getToDate() {
-        return toDate;
+                CURRENT.name().toLowerCase(), null, otherResolver.map(CurrentAccountResolver::getIdentifier).orElse(null), iban, fromDate,
+                toDate);
     }
 }

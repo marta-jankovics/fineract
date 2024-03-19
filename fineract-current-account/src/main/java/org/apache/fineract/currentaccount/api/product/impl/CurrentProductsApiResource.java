@@ -88,7 +88,7 @@ public class CurrentProductsApiResource implements CurrentProductApi {
             + "Example Requests:\n" + "\n" + "current-products")
     @Override
     public Page<CurrentProductResponseData> retrieveAll(
-            @Pagination @SortDefault(sort = "createdDate") @Parameter(hidden = true) Pageable pageable) {
+            @Pagination @SortDefault(sort = { "createdDate", "id" }) @Parameter(hidden = true) Pageable pageable) {
         this.context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_PRODUCT_ENTITY_NAME);
         return this.currentProductReadService.retrieveAll(PagedRequest.createFrom(pageable));
     }

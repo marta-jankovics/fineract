@@ -21,13 +21,12 @@ package org.apache.fineract.statement.data.camt053;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
-import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class AccountData {
 
     @NotNull
@@ -39,18 +38,11 @@ public class AccountData {
     @JsonProperty("Owner")
     private final PartyIdentificationData owner;
 
-    public static AccountData create(String iban, String identification, String schemeProprietary, Map<String, Object> clientDetails,
-            String currency) {
+    public static AccountData create(String iban, String identification, String schemeProprietary, String currency) {
         AccountIdentificationData idData = AccountIdentificationData.create(iban, identification, schemeProprietary);
         if (idData == null) {
             return null;
         }
-        PartyIdentificationData owner = null;
-        if (clientDetails != null) {
-            String name = (String) clientDetails.get("short_name");
-            String address = (String) clientDetails.get("address");
-            owner = PartyIdentificationData.create(name, address);
-        }
-        return new AccountData(idData, currency, owner);
+        return new AccountData(idData, currency, null);
     }
 }

@@ -27,7 +27,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 
-public abstract class StatementMetadata {
+public class StatementMetadata {
 
     @JsonProperty("Customer-Id")
     private String[] customerIds;

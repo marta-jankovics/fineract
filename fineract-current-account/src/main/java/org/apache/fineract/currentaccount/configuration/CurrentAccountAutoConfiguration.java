@@ -60,9 +60,12 @@ import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProd
 import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProductWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.currentaccount.service.transaction.read.impl.CurrentTransactionReadServiceImpl;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataWriteService;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
+import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionMetadataWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionWriteServiceImpl;
-import org.apache.fineract.currentaccount.statement.service.CurrentStatementService;
+import org.apache.fineract.currentaccount.statement.service.CurrentCamt053StatementGenerator;
+import org.apache.fineract.currentaccount.statement.service.CurrentStatementWriteService;
 import org.apache.fineract.currentaccount.validator.account.CurrentAccountDataValidator;
 import org.apache.fineract.currentaccount.validator.account.impl.CurrentAccountDataValidatorImpl;
 import org.apache.fineract.currentaccount.validator.product.CurrentProductDataValidator;
@@ -81,7 +84,7 @@ import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatform
 import org.apache.fineract.statement.domain.AccountStatementRepository;
 import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.mapper.StatementResponseDataMapper;
-import org.apache.fineract.statement.service.ProductStatementService;
+import org.apache.fineract.statement.service.ProductStatementWriteService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -146,11 +149,11 @@ public class CurrentAccountAutoConfiguration {
             CurrentAccountBalanceWriteService currentAccountBalanceWriteService, EntityActionRepository entityActionRepository,
             AccountIdentifierRepository accountIdentifierRepository,
             CurrentAccountIdentifiersResponseDataMapper currentAccountIdentifiersResponseDataMapper,
-            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentStatementService currentStatementService,
+            ReadWriteNonCoreDataService readWriteNonCoreDataService, CurrentStatementWriteService currentStatementWriteService,
             NoteWritePlatformService noteWriteService) {
         return new CurrentAccountAssemblerImpl(clientRepository, currentProductRepository, currentAccountRepository, externalIdFactory,
                 currentAccountBalanceReadService, currentAccountBalanceWriteService, entityActionRepository, accountIdentifierRepository,
-                currentAccountIdentifiersResponseDataMapper, readWriteNonCoreDataService, currentStatementService, noteWriteService);
+                currentAccountIdentifiersResponseDataMapper, readWriteNonCoreDataService, currentStatementWriteService, noteWriteService);
     }
 
     @Bean
@@ -177,9 +180,9 @@ public class CurrentAccountAutoConfiguration {
     public CurrentProductAssembler currentProductAssembler(ExternalIdFactory externalIdFactory,
             CurrentProductRepository currentProductRepository, ReadWriteNonCoreDataService readWriteNonCoreDataService,
             CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper,
-            ProductStatementService productStatementService) {
+            ProductStatementWriteService productStatementWriteService) {
         return new CurrentProductAssemblerImpl(externalIdFactory, currentProductRepository, readWriteNonCoreDataService,
-                currentProductToGLAccountMappingHelper, productStatementService);
+                currentProductToGLAccountMappingHelper, productStatementWriteService);
     }
 
     @Bean
@@ -260,5 +263,21 @@ public class CurrentAccountAutoConfiguration {
             CurrentAccountDailyBalanceReadService currentAccountDailyBalanceReadService) {
         return new CurrentAccountDailyBalanceWriteServiceImpl(currentAccountRepository, dailyBalanceRepository,
                 currentAccountDailyBalanceReadService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentCamt053StatementGenerator.class)
+    public CurrentCamt053StatementGenerator currentCamt053StatementGenerator(CurrentAccountRepository currentAccountRepository,
+            AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
+            CurrentAccountDailyBalanceReadService dailyBalanceReadService) {
+        return new CurrentCamt053StatementGenerator(currentAccountRepository, accountIdentifierRepository, transactionRepository,
+                dailyBalanceReadService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CurrentTransactionMetadataWriteService.class)
+    public CurrentTransactionMetadataWriteService currentTransactionMetadataWriteService(CurrentAccountRepository currentAccountRepository,
+            CurrentTransactionRepository currentTransactionRepository) {
+        return new CurrentTransactionMetadataWriteServiceImpl(currentAccountRepository, currentTransactionRepository);
     }
 }

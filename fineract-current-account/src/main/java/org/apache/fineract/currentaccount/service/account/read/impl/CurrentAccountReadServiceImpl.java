@@ -131,14 +131,14 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
                 .orElseThrow(
                         () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository
-                .getByAccountTypeAndAccountId(PortfolioAccountType.CURRENT, accountId);
+                .getByAccountTypeAndAccountIdOrderById(PortfolioAccountType.CURRENT, accountId);
         return identifiersResponseDataMapper.map(currentAccountIdentifiersData, extraSecondaryIdentifiers);
     }
 
     @Override
     public List<AccountStatementResponseData> retrieveStatements(@NotNull CurrentAccountResolver accountResolver) {
         String accountId = retrieveId(accountResolver);
-        List<AccountStatement> statements = accountStatementRepository.getByAccountIdAndProductStatementProductType(accountId,
+        List<AccountStatement> statements = accountStatementRepository.getByAccountIdAndProductStatementProductTypeOrderById(accountId,
                 PortfolioProductType.CURRENT);
         return statementResponseDataMapper.mapAccountStatements(statements);
     }

@@ -24,7 +24,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.Getter;
+import org.apache.fineract.portfolio.TransactionEntryType;
 import org.apache.fineract.statement.StatementUtils;
 
 @Getter
@@ -72,6 +75,15 @@ public class TransactionStatementData {
         this.valueDate = valueDate;
         this.technicalInputChannel = technicalInputChannel;
         this.details = details;
+    }
+
+    protected TransactionStatementData(String entryReference, @NotNull BigDecimal amount, @NotNull String currency,
+            TransactionEntryType entryType, @NotNull TransactionStatus status, String accountServicerReference, String paymentTypeCode,
+            LocalDate bookingDate, LocalDate valueDate, String inputChannel, EntryDetailsData entryDetails) {
+        this(entryReference, new BalanceAmountData(amount, currency), CreditDebitIndicator.forTransactionEntryType(entryType),
+                CodeOrProprietaryData.create(status.name(), null), accountServicerReference,
+                BankTransactionCodeData.create(paymentTypeCode), DateAndTimeData.create(bookingDate), DateAndTimeData.create(valueDate),
+                CodeOrProprietaryData.create(null, inputChannel), entryDetails == null ? null : new EntryDetailsData[] { entryDetails });
     }
 
     public enum TransactionStatus {

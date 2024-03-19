@@ -29,4 +29,6 @@ public interface AccountStatementRepository extends JpaRepository<AccountStateme
     Optional<AccountStatement> findByAccountIdAndProductStatementStatementCode(String accountId, String statementCode);
 
     List<AccountStatement> getByAccountIdAndProductStatementProductType(String accountId, PortfolioProductType productType);
+
+    List<AccountStatement> getByAccountIdAndProductStatementProductTypeOrderById(String accountId, PortfolioProductType productType);
 }

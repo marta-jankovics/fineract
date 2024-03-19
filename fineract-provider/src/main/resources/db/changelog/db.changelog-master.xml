@@ -36,5 +36,6 @@
     <include file="db/changelog/tenant/module/investor/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
     <include file="db/changelog/tenant/module/statement/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
     <include file="db/changelog/tenant/module/currentaccount/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
+    <include file="db/changelog/tenant/module/binx/module-changelog-master.xml" context="tenant_db AND custom_changelog"/>
     <includeAll path="db/custom-changelog" errorIfMissingOrEmpty="false" context="tenant_db AND custom_changelog" />
 </databaseChangeLog>

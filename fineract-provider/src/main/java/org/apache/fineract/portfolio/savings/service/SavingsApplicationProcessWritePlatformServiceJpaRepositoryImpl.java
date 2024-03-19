@@ -87,7 +87,7 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType;
 import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.domain.SavingsProductRepository;
 import org.apache.fineract.portfolio.savings.exception.SavingsProductNotFoundException;
-import org.apache.fineract.statement.service.SavingsStatementService;
+import org.apache.fineract.statement.service.SavingsStatementWriteService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,7 +117,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
     private final GSIMRepositoy gsimRepository;
     private final GroupRepositoryWrapper groupRepositoryWrapper;
     private final GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService;
-    private final SavingsStatementService accountStatementService;
+    private final SavingsStatementWriteService savingsStatementWriteService;
 
     @Transactional
     @Override
@@ -236,7 +236,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CREATE, EntityTables.SAVINGS, savingsId,
                     account.productId());
 
-            accountStatementService.createAccountStatements(savingsId.toString(), account.getSavingsProductId().toString(),
+            savingsStatementWriteService.createAccountStatements(savingsId.toString(), account.getSavingsProductId().toString(),
                     PortfolioProductType.SAVING, command);
 
             businessEventNotifierService.notifyPostBusinessEvent(new SavingsCreateBusinessEvent(account));
@@ -297,7 +297,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             account.modifyApplication(command, changes);
             account.validateNewApplicationState(SAVINGS_ACCOUNT_RESOURCE_NAME);
             account.validateAccountValuesWithProduct();
-            Map<String, Object> statementChanges = accountStatementService.updateAccountStatements(savingsId.toString(),
+            Map<String, Object> statementChanges = savingsStatementWriteService.updateAccountStatements(savingsId.toString(),
                     PortfolioProductType.SAVING, command);
 
             if (!changes.isEmpty()) {

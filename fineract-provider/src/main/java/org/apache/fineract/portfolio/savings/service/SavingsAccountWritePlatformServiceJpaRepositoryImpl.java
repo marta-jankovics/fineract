@@ -127,7 +127,7 @@ import org.apache.fineract.portfolio.savings.exception.SavingsOfficerAssignmentE
 import org.apache.fineract.portfolio.savings.exception.SavingsOfficerUnassignmentException;
 import org.apache.fineract.portfolio.savings.exception.TransactionUpdateNotAllowedException;
 import org.apache.fineract.portfolio.transfer.api.TransferApiConstants;
-import org.apache.fineract.statement.service.SavingsStatementService;
+import org.apache.fineract.statement.service.SavingsStatementWriteService;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
 import org.springframework.data.domain.PageRequest;
@@ -167,7 +167,7 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
     private final GSIMRepositoy gsimRepository;
     private final SavingsAccountInterestPostingService savingsAccountInterestPostingService;
     private final ErrorHandler errorHandler;
-    private final SavingsStatementService accountStatementService;
+    private final SavingsStatementWriteService savingsStatementWriteService;
 
     @Transactional
     @Override
@@ -262,7 +262,7 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
         account.validateAccountBalanceDoesNotBecomeNegative(SavingsAccountTransactionType.PAY_CHARGE.name(),
                 depositAccountOnHoldTransactions, false);
 
-        accountStatementService.activateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
+        savingsStatementWriteService.activateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
     }
 
     @Transactional
@@ -969,7 +969,7 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
         businessEventNotifierService.notifyPostBusinessEvent(new SavingsCloseBusinessEvent(account));
         // disable all standing orders linked to the savings account
         disableStandingInstructionsLinkedToClosedSavings(account);
-        accountStatementService.inactivateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
+        savingsStatementWriteService.inactivateAccountStatements(account.getId().toString(), PortfolioProductType.SAVING);
 
         return new CommandProcessingResultBuilder() //
                 .withEntityId(savingsId) //

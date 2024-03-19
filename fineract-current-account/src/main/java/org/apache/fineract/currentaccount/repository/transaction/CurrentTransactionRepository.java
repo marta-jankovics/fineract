@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
+import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.springframework.data.domain.Page;
@@ -52,6 +53,10 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     @Query(TRANSACTION_DATA_SELECT + "WHERE t.accountId = :accountId AND t.externalId = :externalId")
     CurrentTransactionData getTransactionDataByExternalId(@Param("accountId") String accountId, @Param("externalId") ExternalId externalId);
 
+    boolean existsByTransactionTypeAndReferenceId(CurrentTransactionType currentTransactionType, String referenceId);
+
+    Optional<CurrentTransaction> findByIdAndAccountId(String id, String accountId);
+
     @Query(TRANSACTION_DATA_SELECT + "WHERE t.accountId = :accountId")
     Page<CurrentTransactionData> getTransactionsDataPage(@Param("accountId") String accountId, Pageable pageable);
 
@@ -70,6 +75,12 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     List<CurrentTransaction> getTransactionsFromAndTillSorted(@Param("accountId") String accountId,
             @Param("fromDateTime") OffsetDateTime fromDateTime, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId")
+    List<CurrentTransaction> getTransactions(@Param("accountId") String accountId);
+
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsSorted(@Param("accountId") String accountId);
+
     @Query("SELECT t FROM CurrentTransaction t WHERE t.accountId = :accountId AND t.submittedOnDate > :fromDate AND t.createdDate <= :tillDateTime ORDER BY t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsSubmittedFromAndTillSorted(@Param("accountId") String accountId,
             @Param("fromDate") LocalDate fromDate, @Param("tillDateTime") OffsetDateTime tillDateTime);
@@ -87,12 +98,14 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             + "t.transactionDate, t.submittedOnDate, t.amount, t.createdDate, pt.id, pt.name) "
             + "from CurrentTransaction t left join PaymentType pt on pt.id = t.paymentTypeId "
             + "where t.accountId = :accountId and t.submittedOnDate >= :fromDate and t.submittedOnDate <= :toDate "
-            + "and t.transactionType in :types order by t.createdDate, t.id")
+            + "and t.transactionType in :types order by t.submittedOnDate, t.createdDate, t.id")
     List<CurrentTransactionData> getTransactionsDataForStatement(@Param("accountId") String accountId,
             @Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId")
-    List<CurrentTransaction> getTransactions(@Param("accountId") String accountId);
+    @Query("select t.accountId, t.id from CurrentTransaction t join CurrentAccount ca on t.accountId = ca.id "
+            + "where t.sequenceNo is null and t.createdDate <= :tillDateTime and ca.status in :statuses")
+    List<String[]> getTransactionIdsForMetadata(@Param("tillDateTime") OffsetDateTime tillDateTime,
+            @Param("statuses") List<CurrentAccountStatus> statuses);
 
     @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsSorted(@Param("accountId") String accountId);

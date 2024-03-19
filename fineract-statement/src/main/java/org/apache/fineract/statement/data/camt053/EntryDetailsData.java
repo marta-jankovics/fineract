@@ -32,4 +32,8 @@ public class EntryDetailsData {
     @JsonInclude(NON_EMPTY)
     @JsonProperty("TransactionDetails")
     private TransactionDetailsData[] details;
+
+    public EntryDetailsData(TransactionDetailsData details) {
+        this.details = details == null ? null : new TransactionDetailsData[] { details };
+    }
 }

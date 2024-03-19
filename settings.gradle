@@ -63,6 +63,7 @@ include ':fineract-doc'
 include ':fineract-avro-schemas'
 include ':fineract-statement'
 include ':fineract-current-account'
+include ':custom-binx'
 // NOTE: custom Docker image with all custom modules included
 include ':custom:docker'
 // NOTE: dynamically load custom modules with pattern "custom -> company -> category -> module"

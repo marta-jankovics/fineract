@@ -39,7 +39,8 @@ buildscript {
                 'fineract-client',
                 'fineract-avro-schemas',
                 'fineract-statement',
-                'fineract-current-account'
+                'fineract-current-account',
+                'custom-binx'
             ].contains(it.name)
         }
         fineractPublishProjects = subprojects.findAll{
@@ -54,7 +55,8 @@ buildscript {
                 'fineract-loan',
                 'fineract-savings',
                 'fineract-statement',
-                'fineract-current-account'
+                'fineract-current-account',
+                'custom-binx'
             ].contains(it.name)
         }
         npmRepository = 'https://npm.pkg.github.com'

@@ -32,7 +32,7 @@ import org.apache.fineract.statement.service.AccountStatementGenerationReadServi
 import org.apache.fineract.statement.service.AccountStatementGenerationWriteService;
 import org.apache.fineract.statement.service.AccountStatementPublishReadService;
 import org.apache.fineract.statement.service.AccountStatementPublisher;
-import org.apache.fineract.statement.service.AccountStatementService;
+import org.apache.fineract.statement.service.AccountStatementWriteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -48,13 +48,13 @@ public class AccountStatementServiceProvider {
     private final Map<String, AccountStatementGenerationWriteService> generationWriteServicesMap;
     private final Map<PortfolioProductType, AccountStatementPublishReadService> publishReadServicesMap;
     private final Map<String, AccountStatementPublisher> publishWriteServicesMap;
-    private final Map<PortfolioProductType, AccountStatementService> statementServicesMap;
+    private final Map<PortfolioProductType, AccountStatementWriteService> statementWriteServicesMap;
 
     @Autowired
     public AccountStatementServiceProvider(List<AccountStatementGenerationReadService> generationReadServices,
             List<AccountStatementGenerationWriteService> generationWriteServices,
             List<AccountStatementPublishReadService> publishReadServices, List<AccountStatementPublisher> publishWriteServices,
-            List<AccountStatementService> statementServices) {
+            List<AccountStatementWriteService> statementWriteServices) {
         HashMap<PortfolioProductType, AccountStatementGenerationReadService> generationReadMap = new HashMap<>();
         Arrays.stream(PortfolioProductType.values())
                 .forEach(pt -> generationReadServices.stream().filter(e -> e.isSupport(pt)).findFirst().ifPresent(e -> {
@@ -85,13 +85,13 @@ public class AccountStatementServiceProvider {
                             log.info("Registered statement publish service '{}' for type/s '{}-{}-{}'", e, pt, st, pu);
                         }))));
         this.publishWriteServicesMap = publishWriteMap;
-        HashMap<PortfolioProductType, AccountStatementService> statementMap = new HashMap<>();
+        HashMap<PortfolioProductType, AccountStatementWriteService> statementWriteMap = new HashMap<>();
         Arrays.stream(PortfolioProductType.values())
-                .forEach(pt -> statementServices.stream().filter(e -> e.isSupport(pt)).findFirst().ifPresent(e -> {
-                    statementMap.put(pt, e);
+                .forEach(pt -> statementWriteServices.stream().filter(e -> e.isSupport(pt)).findFirst().ifPresent(e -> {
+                    statementWriteMap.put(pt, e);
                     log.info("Registered statement service '{}' for type/s '{}'", e, pt);
                 }));
-        this.statementServicesMap = statementMap;
+        this.statementWriteServicesMap = statementWriteMap;
     }
 
     public AccountStatementGenerationReadService findAccountStatementGenerationReadService(@NotNull PortfolioProductType productType) {
@@ -155,13 +155,13 @@ public class AccountStatementServiceProvider {
         return service;
     }
 
-    public AccountStatementService findAccountStatementService(@NotNull PortfolioProductType productType) {
-        return statementServicesMap.get(productType);
+    public AccountStatementWriteService findAccountStatementWriteService(@NotNull PortfolioProductType productType) {
+        return statementWriteServicesMap.get(productType);
     }
 
     @NotNull
-    public AccountStatementService getAccountStatementService(@NotNull PortfolioProductType productType) {
-        AccountStatementService service = findAccountStatementService(productType);
+    public AccountStatementWriteService getAccountStatementWriteService(@NotNull PortfolioProductType productType) {
+        AccountStatementWriteService service = findAccountStatementWriteService(productType);
         if (service == null) {
             throw new PlatformServiceUnavailableException("err.msg.statement.service.implementation.missing", SERVICE_MISSING + productType,
                     productType);

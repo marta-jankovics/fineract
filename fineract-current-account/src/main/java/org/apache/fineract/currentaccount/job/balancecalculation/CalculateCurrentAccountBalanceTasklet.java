@@ -61,7 +61,7 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
                     currentAccountBalanceWriteService.updateBalance(accountId, tillDateTime);
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
-                    log.warn("Updating account balance for account: {} is failed", accountId);
+                    log.error("Updating account balance for account: " + accountId + " is failed", e);
                 }
             }
         } catch (Exception e) {

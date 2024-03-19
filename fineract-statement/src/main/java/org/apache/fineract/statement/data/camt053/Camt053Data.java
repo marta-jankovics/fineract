@@ -20,8 +20,10 @@ package org.apache.fineract.statement.data.camt053;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -48,5 +50,20 @@ public class Camt053Data {
         if (supplementaryData != null) {
             supplementaryDatas = ArrayUtils.add(supplementaryDatas, supplementaryData);
         }
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getAccountType() {
+        String result = null;
+        for (StatementData statement : getStatements()) {
+            String accountType = statement.getAccountType();
+            if (result == null) {
+                result = accountType;
+            } else if (!result.equals(accountType)) {
+                return null;
+            }
+        }
+        return result;
     }
 }

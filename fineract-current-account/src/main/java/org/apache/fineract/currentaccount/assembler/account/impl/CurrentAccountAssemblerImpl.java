@@ -78,7 +78,7 @@ import org.apache.fineract.currentaccount.repository.product.CurrentProductRepos
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
 import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
-import org.apache.fineract.currentaccount.statement.service.CurrentStatementService;
+import org.apache.fineract.currentaccount.statement.service.CurrentStatementWriteService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
@@ -112,7 +112,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
     private final AccountIdentifierRepository accountIdentifierRepository;
     private final CurrentAccountIdentifiersResponseDataMapper accountIdentifiersResponseDataMapper;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
-    private final CurrentStatementService accountStatementService;
+    private final CurrentStatementWriteService currentStatementWriteService;
     private final NoteWritePlatformService noteWriteService;
 
     /**
@@ -192,7 +192,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         persistEntityAction(account, EntityActionType.SUBMIT, submittedOnDate);
         persistAccountIdentifiers(account, command);
         noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
-        accountStatementService.createAccountStatements(accountId, product.getId(), PortfolioProductType.CURRENT, command);
+        currentStatementWriteService.createAccountStatements(accountId, product.getId(), PortfolioProductType.CURRENT, command);
         return account;
     }
 
@@ -275,7 +275,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             }
         }
         updateIdentifiers(account, command, actualChanges);
-        accountStatementService.updateAccountStatements(accountId, PortfolioProductType.CURRENT, command);
+        currentStatementWriteService.updateAccountStatements(accountId, PortfolioProductType.CURRENT, command);
 
         return actualChanges;
     }
@@ -363,7 +363,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         persistEntityAction(account, EntityActionType.ACTIVATE, activationDate);
 
         noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
-        accountStatementService.activateAccountStatements(accountId, PortfolioProductType.CURRENT);
+        currentStatementWriteService.activateAccountStatements(accountId, PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();
@@ -404,7 +404,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         persistEntityAction(account, CLOSE, closedDate);
 
         noteWriteService.createEntityNote(CURRENT_ACCOUNT, accountId, command);
-        accountStatementService.inactivateAccountStatements(accountId, PortfolioProductType.CURRENT);
+        currentStatementWriteService.inactivateAccountStatements(accountId, PortfolioProductType.CURRENT);
 
         final DateTimeFormatter fmt = DateTimeFormatter.ofPattern(command.dateFormat()).withLocale(command.extractLocale());
         final Map<String, Object> actualChanges = new LinkedHashMap<>();

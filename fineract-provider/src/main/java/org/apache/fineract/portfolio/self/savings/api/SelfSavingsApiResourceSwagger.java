@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.self.savings.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -138,7 +139,7 @@ final class SelfSavingsApiResourceSwagger {
 
             public GetSelfSavingsCurrency currency;
             @Schema(example = "0")
-            public Integer accountBalance;
+            public BigDecimal accountBalance;
         }
 
         @Schema(example = "1")

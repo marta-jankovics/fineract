@@ -21,8 +21,8 @@ package org.apache.fineract.statement.configuration;
 import org.apache.fineract.statement.data.StatementParser;
 import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.provider.AccountStatementServiceProvider;
-import org.apache.fineract.statement.service.ProductStatementService;
-import org.apache.fineract.statement.service.ProductStatementServiceImpl;
+import org.apache.fineract.statement.service.ProductStatementWriteService;
+import org.apache.fineract.statement.service.ProductStatementWriteServiceImpl;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,9 +35,9 @@ import org.springframework.context.annotation.ComponentScan;
 public class StatementAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(ProductStatementService.class)
-    public ProductStatementService productStatementService(StatementParser statementParser,
+    @ConditionalOnMissingBean(ProductStatementWriteService.class)
+    public ProductStatementWriteService productStatementService(StatementParser statementParser,
             ProductStatementRepository productStatementRepository, AccountStatementServiceProvider accountStatementServiceProvider) {
-        return new ProductStatementServiceImpl(statementParser, productStatementRepository, accountStatementServiceProvider);
+        return new ProductStatementWriteServiceImpl(statementParser, productStatementRepository, accountStatementServiceProvider);
     }
 }

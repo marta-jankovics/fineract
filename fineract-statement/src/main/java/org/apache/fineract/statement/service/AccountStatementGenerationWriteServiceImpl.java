@@ -92,12 +92,12 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
 
         Object content = createContent(productType, statementType, publishType, statements, transactionDate);
         Object metadata = createMetadata(productType, statementType, publishType, content, transactionDate);
-        String messageId = calcResultCode(productType, statementType, publishType, content, transactionDate);
+        String resultCode = calcResultCode(productType, statementType, publishType, content, transactionDate);
         String path = calcResultPath(productType, statementType, publishType, content, transactionDate);
         String name = calcResultName(productType, statementType, publishType, content, transactionDate);
         String contentS = mapContentToString(productType, statementType, publishType, content, transactionDate);
         String metadataS = mapMetadataToString(productType, statementType, publishType, metadata, transactionDate);
-        return AccountStatementResult.create(messageId, productType, statementType, publishType, contentS, metadataS, path, name);
+        return AccountStatementResult.create(resultCode, productType, statementType, publishType, contentS, metadataS, path, name);
     }
 
     @NotNull

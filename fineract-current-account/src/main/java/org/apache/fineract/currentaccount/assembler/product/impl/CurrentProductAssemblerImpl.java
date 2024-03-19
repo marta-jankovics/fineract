@@ -62,7 +62,7 @@ import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
-import org.apache.fineract.statement.service.ProductStatementService;
+import org.apache.fineract.statement.service.ProductStatementWriteService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -72,7 +72,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
     private final CurrentProductRepository currentProductRepository;
     private final ReadWriteNonCoreDataService readWriteNonCoreDataService;
     private final CurrentProductToGLAccountMappingHelper currentProductToGLAccountMappingHelper;
-    private final ProductStatementService productStatementService;
+    private final ProductStatementWriteService productStatementWriteService;
 
     @Override
     public CurrentProduct assemble(final JsonCommand command) {
@@ -105,7 +105,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
         }
 
         persistAccountingRules(product, command);
-        productStatementService.createProductStatements(product.getId(), CURRENT, command);
+        productStatementWriteService.createProductStatements(product.getId(), CURRENT, command);
         return product;
     }
 
@@ -207,7 +207,7 @@ public class CurrentProductAssemblerImpl implements CurrentProductAssembler {
             }
         }
 
-        productStatementService.updateProductStatements(product.getId(), CURRENT, command);
+        productStatementWriteService.updateProductStatements(product.getId(), CURRENT, command);
         updateAccountingRules(product, command, actualChanges);
         return actualChanges;
     }

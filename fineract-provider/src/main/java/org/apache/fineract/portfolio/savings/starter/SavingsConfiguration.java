@@ -136,8 +136,8 @@ import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPos
 import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPosterTask;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionSearchService;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionsSearchServiceImpl;
-import org.apache.fineract.statement.service.ProductStatementService;
-import org.apache.fineract.statement.service.SavingsStatementService;
+import org.apache.fineract.statement.service.ProductStatementWriteService;
+import org.apache.fineract.statement.service.SavingsStatementWriteService;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -361,7 +361,7 @@ public class SavingsConfiguration {
             EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService, AppUserRepositoryWrapper appuserRepository,
             StandingInstructionRepository standingInstructionRepository, BusinessEventNotifierService businessEventNotifierService,
             GSIMRepositoy gsimRepository, SavingsAccountInterestPostingService savingsAccountInterestPostingService,
-            ErrorHandler errorHandler, SavingsStatementService savingsStatementService) {
+            ErrorHandler errorHandler, SavingsStatementWriteService savingsStatementWriteService) {
         return new SavingsAccountWritePlatformServiceJpaRepositoryImpl(context, fromApiJsonDeserializer, savingAccountRepositoryWrapper,
                 staffRepository, savingsAccountTransactionRepository, savingAccountAssembler, savingsAccountTransactionDataValidator,
                 savingsAccountChargeDataValidator, paymentDetailWritePlatformService, journalEntryWritePlatformService,
@@ -369,7 +369,7 @@ public class SavingsConfiguration {
                 chargeRepository, savingsAccountChargeRepository, holidayRepository, workingDaysRepository, configurationDomainService,
                 depositAccountOnHoldTransactionRepository, entityDatatableChecksWritePlatformService, appuserRepository,
                 standingInstructionRepository, businessEventNotifierService, gsimRepository, savingsAccountInterestPostingService,
-                errorHandler, savingsStatementService);
+                errorHandler, savingsStatementWriteService);
     }
 
     @Bean
@@ -385,13 +385,13 @@ public class SavingsConfiguration {
             AccountNumberFormatRepositoryWrapper accountNumberFormatRepository, BusinessEventNotifierService businessEventNotifierService,
             EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService, GSIMRepositoy gsimRepository,
             GroupRepositoryWrapper groupRepositoryWrapper, GroupSavingsIndividualMonitoringWritePlatformService gsimWritePlatformService,
-            SavingsStatementService accountStatementService) {
+            SavingsStatementWriteService savingsStatementWriteService) {
         return new SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl(context, savingAccountRepository, savingAccountAssembler,
                 savingsAccountDataValidator, accountNumberGenerator, clientRepository, groupRepository, savingsProductRepository,
                 noteRepository, staffRepository, savingsAccountApplicationTransitionApiJsonValidator, savingsAccountChargeAssembler,
                 commandProcessingService, savingsAccountDomainService, savingsAccountWritePlatformService, accountNumberFormatRepository,
                 businessEventNotifierService, entityDatatableChecksWritePlatformService, gsimRepository, groupRepositoryWrapper,
-                gsimWritePlatformService, accountStatementService);
+                gsimWritePlatformService, savingsStatementWriteService);
     }
 
     @Bean
@@ -413,9 +413,9 @@ public class SavingsConfiguration {
             SavingsProductRepository savingProductRepository, SavingsProductDataValidator fromApiJsonDataValidator,
             SavingsProductAssembler savingsProductAssembler,
             ProductToGLAccountMappingWritePlatformService accountMappingWritePlatformService,
-            FineractEntityAccessUtil fineractEntityAccessUtil, ProductStatementService productStatementService) {
+            FineractEntityAccessUtil fineractEntityAccessUtil, ProductStatementWriteService productStatementWriteService) {
         return new SavingsProductWritePlatformServiceJpaRepositoryImpl(context, savingProductRepository, fromApiJsonDataValidator,
-                savingsProductAssembler, accountMappingWritePlatformService, fineractEntityAccessUtil, productStatementService);
+                savingsProductAssembler, accountMappingWritePlatformService, fineractEntityAccessUtil, productStatementWriteService);
     }
 
     @Bean

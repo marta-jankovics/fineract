@@ -38,6 +38,8 @@ public interface AccountIdentifierRepository extends JpaRepository<AccountIdenti
 
     List<AccountIdentifier> getByAccountTypeAndAccountId(PortfolioAccountType accountType, String accountId);
 
+    List<AccountIdentifier> getByAccountTypeAndAccountIdOrderById(PortfolioAccountType accountType, String accountId);
+
     AccountIdentifier getByAccountTypeAndAccountIdAndIdentifierType(PortfolioAccountType accountType, String accountId,
             InteropIdentifierType idType);
 

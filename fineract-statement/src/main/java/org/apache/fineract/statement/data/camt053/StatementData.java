@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
@@ -37,10 +38,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class StatementData {
-
-    public static final int STATEMENT_TYPE_ALL = 0;
-    public static final int STATEMENT_TYPE_BOOKED = 1;
-    public static final int STATEMENT_TYPE_PENDING = 2;
 
     @NotNull
     @JsonProperty(value = "Identification", required = true)
@@ -66,6 +63,25 @@ public class StatementData {
 
     @Transient
     @JsonIgnore
+    private final transient String accountType;
+    @Transient
+    @JsonIgnore
+    private final transient String customerId;
+    @Transient
+    @JsonIgnore
+    private final transient String accountId;
+    @Transient
+    @JsonIgnore
+    private final transient String iban;
+    @Transient
+    @JsonIgnore
+    private final transient LocalDate fromDate;
+    @Transient
+    @JsonIgnore
+    private final transient LocalDate toDate;
+
+    @Transient
+    @JsonIgnore
     public BigDecimal getClosureBalance() {
         return Arrays.stream(getBalances()).filter(e -> BALANCE_CODE_END_OF_PERIOD.equals(e.getType().getCodeOrProprietary().getCode()))
                 .findFirst().map(accountBalanceData -> accountBalanceData.getAmount().getAmount()).orElse(BigDecimal.ZERO);
@@ -73,24 +89,37 @@ public class StatementData {
 
     @Transient
     @JsonIgnore
-    public boolean isPendingType() {
-        return "PENDING".equals(getAdditionalStatementInformation());
+    public String getAccountType() {
+        return accountType;
     }
 
-    public static String calcAdditionalInfo(int statementType) {
-        switch (statementType) {
-            case STATEMENT_TYPE_ALL -> {
-                return null;
-            }
-            case STATEMENT_TYPE_BOOKED -> {
-                return "BOOKED";
-            }
-            case STATEMENT_TYPE_PENDING -> {
-                return "PENDING";
-            }
-            default -> {
-                return null;
-            }
-        }
+    @Transient
+    @JsonIgnore
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getAccountId() {
+        return accountId;
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getIban() {
+        return iban;
+    }
+
+    @Transient
+    @JsonIgnore
+    public LocalDate getFromDate() {
+        return fromDate;
+    }
+
+    @Transient
+    @JsonIgnore
+    public LocalDate getToDate() {
+        return toDate;
     }
 }

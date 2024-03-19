@@ -149,7 +149,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     public Page<CurrentTransactionResponseData> retrieveAllByAccountIdentifier(
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
-                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+                    @SortDefault(sort = { "transactionDate", "createdDate", "id" }) }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolveDefault(accountIdentifier), pageable);
     }
 
@@ -162,7 +162,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
-                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+                    @SortDefault(sort = { "transactionDate", "createdDate", "id" }) }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null), pageable);
     }
 
@@ -176,7 +176,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
             @Pagination @SortDefault.SortDefaults({ @SortDefault(sort = "transactionDate"), @SortDefault(sort = "createdDate"),
-                    @SortDefault(sort = "id") }) @Parameter(hidden = true) Pageable pageable) {
+                    @SortDefault(sort = { "transactionDate", "createdDate", "id" }) }) @Parameter(hidden = true) Pageable pageable) {
         return retrieveAll(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier), pageable);
     }
 

@@ -114,7 +114,7 @@ public class CurrentAccountsApiResource implements CurrentAccountsApi {
             + "Example Requests:\n\n" + "currentaccounts")
     @Override
     public Page<CurrentAccountResponseData> retrieveAll(
-            @Pagination @SortDefault("createdDate") @Parameter(hidden = true) Pageable pageable) {
+            @Pagination @SortDefault({ "createdDate", "id" }) @Parameter(hidden = true) Pageable pageable) {
         context.authenticatedUser().validateHasReadPermission(CurrentAccountApiConstants.CURRENT_ACCOUNT_ENTITY_NAME);
         return currentAccountResponseDataMapper.map(currentAccountReadService.retrieveAll(pageable),
                 currentAccountBalanceReadService::getCurrentBalance);

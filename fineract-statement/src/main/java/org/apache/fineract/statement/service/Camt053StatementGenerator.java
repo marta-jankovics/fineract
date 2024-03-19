@@ -25,11 +25,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.base.Strings;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoField;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -105,10 +109,19 @@ public abstract class Camt053StatementGenerator {
     }
 
     @NotNull
-    protected abstract StatementMetadata createMetadata(@NotNull PortfolioProductType productType,
-            @NotNull StatementPublishType publishType);
+    protected StatementMetadata createMetadata(@NotNull PortfolioProductType productType, @NotNull StatementPublishType publishType) {
+        return new StatementMetadata();
+    }
 
-    protected abstract void addStatementMetadata(@NotNull StatementData statementData, @NotNull StatementMetadata metadata);
+    protected void addStatementMetadata(@NotNull StatementData statementData, @NotNull StatementMetadata metadata) {
+        log.debug("Generating statement metadata for id {}", statementData.getIdentification());
+        String customerId = Strings.nullToEmpty(statementData.getCustomerId());
+        String accountId = Strings.nullToEmpty(statementData.getAccountId());
+        String iban = Strings.nullToEmpty(statementData.getIban());
+        String accountType = statementData.getAccountType();
+        String currency = statementData.getAccount().getCurrency();
+        metadata.add(customerId, accountId, iban, accountType, currency, statementData.getFromDate(), statementData.getToDate());
+    }
 
     @NotNull
     public String mapMetadataToString(@NotNull StatementMetadata metadata) throws JsonProcessingException {
@@ -120,5 +133,21 @@ public abstract class Camt053StatementGenerator {
     public JsonNode mapMetadataToJson(@NotNull StatementMetadata metadata) {
         metadata.emptyToNull();
         return JSON_MAPPER.valueToTree(metadata);
+    }
+
+    @NotNull
+    public String calcResultCode(@NotNull PortfolioProductType productType, @NotNull StatementPublishType publishType,
+            @NotNull Object content, LocalDate transactionDate) {
+        return ((Camt053Data) content).getGroupHeader().getMessageIdentification();
+    }
+
+    @NotNull
+    public String calcResultPath(@NotNull PortfolioProductType productType, @NotNull StatementPublishType publishType,
+            @NotNull Object content, @NotNull LocalDate transactionDate) {
+        int year = transactionDate.get(ChronoField.YEAR);
+        int month = transactionDate.get(ChronoField.MONTH_OF_YEAR);
+        int day = transactionDate.get(ChronoField.DAY_OF_MONTH);
+        String accountType = Optional.ofNullable(((Camt053Data) content).getAccountType()).orElse(productType.name().toLowerCase());
+        return year + File.separator + year + '-' + month + File.separator + year + '-' + month + '-' + day + File.separator + accountType;
     }
 }
