@@ -77,10 +77,24 @@ public class CurrentTransaction extends AbstractAuditableWithUTCDateTimeCustom<S
     @Column(name = "amount", nullable = false, precision = 6)
     private BigDecimal amount;
 
+    @Column(name = "transaction_name")
+    private String transactionName;
+
+    @Column(name = "sequence_no")
+    private Integer sequenceNo;
+
     public static CurrentTransaction newInstance(String accountId, ExternalId externalId, String correlationId, String referenceId,
             Long paymentDetailId, CurrentTransactionType transactionType, LocalDate transactionDate, LocalDate submittedOnDate,
             BigDecimal amount) {
         return new CurrentTransaction(null, accountId, externalId, correlationId, referenceId, paymentDetailId, transactionType,
-                transactionDate, submittedOnDate, amount);
+                transactionDate, submittedOnDate, amount, null, null);
+    }
+
+    public void setTransactionName(String transactionName) {
+        this.transactionName = transactionName;
+    }
+
+    public void setSequenceNo(Integer sequenceNo) {
+        this.sequenceNo = sequenceNo;
     }
 }

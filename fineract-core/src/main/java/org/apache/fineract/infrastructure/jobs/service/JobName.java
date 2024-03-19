@@ -62,6 +62,7 @@ public enum JobName {
     CALCULATE_CURRENT_ACCOUNT_BALANCE("Update Balance of Current Accounts"), //
     CURRENT_ACCOUNT_ACCOUNTING("Current Account Accounting"), //
     CALCULATE_CURRENT_DAILY_BALANCE("Calculate Current Daily Balance"), //
+    CALCULATE_CURRENT_TRANSACTION_METADATA("Calculate Current Transaction Metadata"), //
     ;
 
     private final String name;

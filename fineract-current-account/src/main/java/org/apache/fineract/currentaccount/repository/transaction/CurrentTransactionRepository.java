@@ -107,10 +107,15 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
     List<String[]> getTransactionIdsForMetadata(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId order by t.createdDate, t.id")
-    List<CurrentTransaction> getTransactionsSorted(@Param("accountId") String accountId);
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.id in :transactionIds order by t.submittedOnDate, t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsForMetadata(@Param("accountId") String accountId,
+            @Param("transactionIds") List<String> transactionIds);
 
-    boolean existsByTransactionTypeAndReferenceId(CurrentTransactionType currentTransactionType, String referenceId);
+    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.id in :transactionIds and t.createdDate <= :tillDateTime "
+            + "order by t.submittedOnDate, t.createdDate, t.id")
+    List<CurrentTransaction> getTransactionsForMetadataTill(@Param("accountId") String accountId,
+            @Param("transactionIds") List<String> transactionIds, @Param("tillDateTime") OffsetDateTime tillDateTime);
 
-    Optional<CurrentTransaction> findByIdAndAccountId(String id, String accountId);
+    @Query("select max(t.sequenceNo) from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate = :date")
+    Integer getMaxSequenceNo(@Param("accountId") String accountId, @Param("date") LocalDate date);
 }

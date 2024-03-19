@@ -59,14 +59,23 @@ public enum CurrentAccountStatus {
                 return this;
             }
             return switch (action) {
-                case UPDATE, BALANCE_CALCULATION, STATEMENT_GENERATION -> this;
+                case UPDATE, BALANCE_CALCULATION, STATEMENT_GENERATION, METADATA_GENERATION -> this;
                 case CLOSE -> CLOSED;
                 default -> null;
             };
         }
     }, //
     CANCELLED("currentAccountStatus.cancelled", "Current account is cancelled"), //
-    CLOSED("currentAccountStatus.closed", "Current account is closed"); //
+    CLOSED("currentAccountStatus.closed", "Current account is closed") {
+
+        @Override
+        public CurrentAccountStatus getNextStatus(@NotNull CurrentAccountAction action) {
+            return switch (action) {
+                case METADATA_GENERATION -> this;
+                default -> null;
+            };
+        }
+    }; //
 
     private static CurrentAccountStatus[] VALUES = values();
 

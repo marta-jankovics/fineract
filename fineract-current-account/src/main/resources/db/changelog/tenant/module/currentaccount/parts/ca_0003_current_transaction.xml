@@ -127,4 +127,10 @@
             <column name="created_on_utc"/>
         </createIndex>
     </changeSet>
+    <changeSet author="fineract" id="5">
+        <addColumn tableName="m_current_transaction">
+            <column name="transaction_name" type="VARCHAR(100)"/>
+            <column name="sequence_no" type="INT"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

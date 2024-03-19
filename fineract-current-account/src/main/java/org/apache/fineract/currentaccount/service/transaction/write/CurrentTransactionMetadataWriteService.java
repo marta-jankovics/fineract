@@ -16,20 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.paymenttype.domain;
+package org.apache.fineract.currentaccount.service.transaction.write;
 
+import jakarta.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-public interface PaymentTypeRepository extends JpaRepository<PaymentType, Long>, JpaSpecificationExecutor<PaymentType> {
+public interface CurrentTransactionMetadataWriteService {
 
-    List<PaymentType> findAllByOrderByPositionAsc();
-
-    List<PaymentType> findAllByCodeNameIsNotNullOrderByPositionAsc();
-
-    @Query("select p.name from PaymentType p where p.id = :id")
-    String getNameById(@Param("id") Long id);
+    void assignMetadata(@NotNull String accountId, @NotNull List<String> transactionIds, OffsetDateTime tillDateTime);
 }
