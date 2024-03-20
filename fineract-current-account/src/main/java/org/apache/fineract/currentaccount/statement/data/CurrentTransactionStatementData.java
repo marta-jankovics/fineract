@@ -39,7 +39,7 @@ public class CurrentTransactionStatementData extends TransactionStatementData {
         String paymentTypeCode = transaction.getPaymentTypeName();
 
         return new CurrentTransactionStatementData(null, transaction.getAmount(), currency, transaction.getTransactionType().getEntryType(),
-                TransactionStatus.BOOK, transaction.getId(), paymentTypeCode, transaction.getSubmittedOnDate(),
+                TransactionStatus.BOOK, transaction.getTransactionName(), paymentTypeCode, transaction.getSubmittedOnDate(),
                 transaction.getTransactionDate(), null, null);
     }
 }

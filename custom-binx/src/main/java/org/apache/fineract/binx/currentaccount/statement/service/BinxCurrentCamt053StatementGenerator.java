@@ -49,17 +49,18 @@ import org.apache.fineract.binx.statement.data.BinxCamt053Data;
 import org.apache.fineract.binx.statement.data.BinxMetadata;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.domain.account.ICurrentAccountDailyBalance;
 import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
-import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceReadService;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;
 import org.apache.fineract.currentaccount.statement.service.CurrentCamt053StatementGenerator;
 import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundException;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.PortfolioProductType;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifier;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifierRepository;
 import org.apache.fineract.statement.data.camt053.Camt053Data;
 import org.apache.fineract.statement.data.camt053.GroupHeaderData;
 import org.apache.fineract.statement.data.camt053.StatementData;
@@ -73,10 +74,10 @@ public class BinxCurrentCamt053StatementGenerator extends CurrentCamt053Statemen
     private final BinxCurrentDetailsReadService detailsReadService;
 
     public BinxCurrentCamt053StatementGenerator(CurrentAccountRepository accountRepository,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
-            CurrentAccountDailyBalanceReadService dailyBalanceReadService, BinxCurrentDetailsReadService accountStatementService) {
-        super(accountRepository, accountIdentifierRepository, transactionRepository, dailyBalanceReadService);
-        this.detailsReadService = accountStatementService;
+                                                AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
+                                                CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService, BinxCurrentDetailsReadService detailsReadService) {
+        super(accountRepository, accountIdentifierRepository, transactionRepository, dailyBalanceReadService, transactionMetadataService);
+        this.detailsReadService = detailsReadService;
     }
 
     @Override
@@ -124,6 +125,8 @@ public class BinxCurrentCamt053StatementGenerator extends CurrentCamt053Statemen
         List<CurrentTransactionType> types = CurrentTransactionType.getFiltered(e -> e.isMonetaryDebit() || e.isMonetaryCredit());
         List<CurrentTransactionData> transactions = transactionRepository.getTransactionsDataForStatement(accountId, fromDate, toDate,
                 types);
+        calculateTransactionNames(accountData, transactions);
+
         Map<String, Map<String, Object>> transactionDetailsById = detailsReadService
                 .getTransactionDetails(transactions.stream().map(CurrentTransactionData::getId).collect(Collectors.toList()));
 

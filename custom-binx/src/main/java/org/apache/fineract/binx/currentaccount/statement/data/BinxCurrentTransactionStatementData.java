@@ -25,9 +25,9 @@ import java.time.LocalDate;
 import java.util.Map;
 import org.apache.fineract.binx.statement.data.BinxTransactionStatementData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.TransactionEntryType;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifier;
 import org.apache.fineract.statement.data.camt053.EntryDetailsData;
 
 public final class BinxCurrentTransactionStatementData extends BinxTransactionStatementData {
@@ -57,7 +57,7 @@ public final class BinxCurrentTransactionStatementData extends BinxTransactionSt
                 transactionDetails, paymentTypeCode);
 
         return new BinxCurrentTransactionStatementData(null, transaction.getAmount(), currency,
-                transaction.getTransactionType().getEntryType(), calcTransactionStatus(statementType), transaction.getId(), paymentTypeCode,
+                transaction.getTransactionType().getEntryType(), calcTransactionStatus(statementType), transaction.getTransactionName(), paymentTypeCode,
                 transaction.getSubmittedOnDate(), transaction.getTransactionDate(), entryDetails, inputChannel, structuredData);
     }
 }
