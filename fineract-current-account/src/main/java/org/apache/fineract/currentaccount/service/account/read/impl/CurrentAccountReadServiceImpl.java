@@ -26,14 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
-import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.data.product.CurrentProductData;
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountIdType;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountIdentifiersResponseDataMapper;
 import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseDataMapper;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
-import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountReadService;
@@ -43,6 +40,9 @@ import org.apache.fineract.infrastructure.core.exception.ResourceNotFoundExcepti
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
+import org.apache.fineract.portfolio.account.data.IdentifiersResponseData;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifier;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifierRepository;
 import org.apache.fineract.statement.data.dto.AccountStatementResponseData;
 import org.apache.fineract.statement.domain.AccountStatement;
 import org.apache.fineract.statement.domain.AccountStatementRepository;
@@ -127,7 +127,7 @@ public class CurrentAccountReadServiceImpl implements CurrentAccountReadService 
     @Override
     public IdentifiersResponseData retrieveIdentifiers(@NotNull CurrentAccountResolver accountResolver) {
         String accountId = retrieveId(accountResolver);
-        CurrentAccountIdentifiersData currentAccountIdentifiersData = accountIdentifierRepository.findIdentifiersByAccountId(accountId)
+        CurrentAccountIdentifiersData currentAccountIdentifiersData = currentAccountRepository.findIdentifiersByAccountId(accountId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("current.account", "Current account with id: %s cannot be found", accountId));
         List<AccountIdentifier> extraSecondaryIdentifiers = accountIdentifierRepository

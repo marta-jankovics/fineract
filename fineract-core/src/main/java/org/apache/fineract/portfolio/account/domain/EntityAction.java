@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.domain.account;
+package org.apache.fineract.portfolio.account.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,11 +28,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.fineract.currentaccount.enumeration.account.EntityActionType;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.portfolio.PortfolioProductType;
 
-//TODO: Move to core when it goes to support other entities as well
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

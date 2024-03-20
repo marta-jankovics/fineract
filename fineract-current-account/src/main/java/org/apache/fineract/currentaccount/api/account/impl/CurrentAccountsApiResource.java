@@ -62,7 +62,6 @@ import org.apache.fineract.currentaccount.api.account.CurrentAccountsApi;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountResponseData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountTemplateResponseData;
-import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
 import org.apache.fineract.currentaccount.mapper.account.CurrentAccountResponseDataMapper;
 import org.apache.fineract.currentaccount.search.service.CurrentQueryService;
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
@@ -75,6 +74,7 @@ import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSer
 import org.apache.fineract.infrastructure.core.service.PagedLocalRequest;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.apache.fineract.portfolio.account.data.IdentifiersResponseData;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryRequest;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.statement.data.dto.AccountStatementResponseData;

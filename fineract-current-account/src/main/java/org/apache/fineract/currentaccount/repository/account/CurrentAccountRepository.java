@@ -23,6 +23,7 @@ import jakarta.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
+import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccount;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -97,4 +98,7 @@ public interface CurrentAccountRepository extends JpaRepository<CurrentAccount, 
     @QueryHints({ @QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000") })
     @Query("SELECT ca FROM CurrentAccount ca WHERE ca.id = :id")
     Optional<CurrentAccount> findAccountByIdWithExclusiveLock(@Param("id") String id);
+
+    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData(ca.id, ca.accountNumber, ca.externalId) FROM CurrentAccount ca WHERE ca.id = :accountId")
+    Optional<CurrentAccountIdentifiersData> findIdentifiersByAccountId(@Param("accountId") String accountId);
 }

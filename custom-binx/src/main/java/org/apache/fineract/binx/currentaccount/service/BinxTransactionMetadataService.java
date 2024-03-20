@@ -23,30 +23,31 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
-import org.apache.fineract.currentaccount.domain.transaction.CurrentTransaction;
+import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
-import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionMetadataWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionMetadataServiceImpl;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepository;
+import org.apache.fineract.portfolio.transaction.domain.TransactionParamRepository;
 import org.apache.logging.log4j.util.Strings;
 
 @Slf4j
-public class BinxTransactionMetadataWriteService extends CurrentTransactionMetadataWriteServiceImpl {
+public class BinxTransactionMetadataService extends CurrentTransactionMetadataServiceImpl {
 
     private final BinxCurrentDetailsReadService detailsReadService;
     private final PaymentTypeRepository paymentTypeRepository;
 
-    public BinxTransactionMetadataWriteService(CurrentAccountRepository accountRepository,
-            CurrentTransactionRepository transactionRepository, BinxCurrentDetailsReadService detailsReadService,
-            PaymentTypeRepository paymentTypeRepository) {
-        super(accountRepository, transactionRepository);
+    public BinxTransactionMetadataService(CurrentAccountRepository accountRepository,
+                                          CurrentTransactionRepository transactionRepository, TransactionParamRepository transactionParamRepository,
+                                          BinxCurrentDetailsReadService detailsReadService, PaymentTypeRepository paymentTypeRepository) {
+        super(accountRepository, transactionRepository, transactionParamRepository);
         this.detailsReadService = detailsReadService;
         this.paymentTypeRepository = paymentTypeRepository;
     }
 
     @NotNull
     @Override
-    protected String calculateTransactionName(@NotNull CurrentAccountData account, @NotNull CurrentTransaction transaction, int sequence) {
+    protected String calculateTransactionName(@NotNull CurrentAccountData account, @NotNull ICurrentTransaction transaction, int sequence) {
         String code = null;
         Long paymentTypeId = transaction.getPaymentTypeId();
         if (paymentTypeId != null) {
@@ -63,7 +64,7 @@ public class BinxTransactionMetadataWriteService extends CurrentTransactionMetad
                 if (code == null) {
                     code = paymentTypeCode;
                     code = code.replace(" ", "");
-                    code = code.substring(0, Math.min(code.length(), 80));
+                    code = code.substring(0, Math.min(code.length(), 20));
                 }
             }
         }

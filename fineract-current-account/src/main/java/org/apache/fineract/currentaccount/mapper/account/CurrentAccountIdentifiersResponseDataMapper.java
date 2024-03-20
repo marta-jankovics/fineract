@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
-import org.apache.fineract.currentaccount.data.account.IdTypeValueSubValueData;
-import org.apache.fineract.currentaccount.data.account.IdentifiersResponseData;
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.domain.StringValueHolder;
+import org.apache.fineract.portfolio.account.data.IdTypeValueSubValueData;
+import org.apache.fineract.portfolio.account.data.IdentifiersResponseData;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifier;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

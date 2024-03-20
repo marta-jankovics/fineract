@@ -34,7 +34,6 @@ import org.apache.fineract.currentaccount.mapper.product.CurrentProductResponseD
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountDailyBalanceRepository;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
-import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.accounting.CurrentAccountAccountingRepository;
 import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRepository;
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
@@ -60,9 +59,9 @@ import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProd
 import org.apache.fineract.currentaccount.service.product.write.impl.CurrentProductWriteServiceImpl;
 import org.apache.fineract.currentaccount.service.transaction.read.CurrentTransactionReadService;
 import org.apache.fineract.currentaccount.service.transaction.read.impl.CurrentTransactionReadServiceImpl;
-import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataWriteService;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionWriteService;
-import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionMetadataWriteServiceImpl;
+import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionMetadataServiceImpl;
 import org.apache.fineract.currentaccount.service.transaction.write.impl.CurrentTransactionWriteServiceImpl;
 import org.apache.fineract.currentaccount.statement.service.CurrentCamt053StatementGenerator;
 import org.apache.fineract.currentaccount.statement.service.CurrentStatementWriteService;
@@ -77,10 +76,12 @@ import org.apache.fineract.infrastructure.core.service.ExternalIdFactory;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.organisation.office.domain.OfficeRepository;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifierRepository;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
 import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.apache.fineract.portfolio.paymenttype.service.PaymentTypeReadPlatformService;
+import org.apache.fineract.portfolio.transaction.domain.TransactionParamRepository;
 import org.apache.fineract.statement.domain.AccountStatementRepository;
 import org.apache.fineract.statement.domain.ProductStatementRepository;
 import org.apache.fineract.statement.mapper.StatementResponseDataMapper;
@@ -269,15 +270,16 @@ public class CurrentAccountAutoConfiguration {
     @ConditionalOnMissingBean(CurrentCamt053StatementGenerator.class)
     public CurrentCamt053StatementGenerator currentCamt053StatementGenerator(CurrentAccountRepository currentAccountRepository,
             AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
-            CurrentAccountDailyBalanceReadService dailyBalanceReadService) {
+            CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService) {
         return new CurrentCamt053StatementGenerator(currentAccountRepository, accountIdentifierRepository, transactionRepository,
-                dailyBalanceReadService);
+                dailyBalanceReadService, transactionMetadataService);
     }
 
     @Bean
-    @ConditionalOnMissingBean(CurrentTransactionMetadataWriteService.class)
-    public CurrentTransactionMetadataWriteService currentTransactionMetadataWriteService(CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository) {
-        return new CurrentTransactionMetadataWriteServiceImpl(currentAccountRepository, currentTransactionRepository);
+    @ConditionalOnMissingBean(CurrentTransactionMetadataService.class)
+    public CurrentTransactionMetadataService currentTransactionMetadataService(CurrentAccountRepository currentAccountRepository,
+                                                                                    CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository) {
+        return new CurrentTransactionMetadataServiceImpl(currentAccountRepository, currentTransactionRepository,
+                transactionParamRepository);
     }
 }

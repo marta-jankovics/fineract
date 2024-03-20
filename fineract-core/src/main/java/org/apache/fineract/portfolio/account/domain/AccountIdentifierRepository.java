@@ -16,12 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.repository.accountidentifiers;
+package org.apache.fineract.portfolio.account.domain;
 
 import java.util.List;
-import java.util.Optional;
-import org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData;
-import org.apache.fineract.currentaccount.domain.account.AccountIdentifier;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,7 +39,4 @@ public interface AccountIdentifierRepository extends JpaRepository<AccountIdenti
 
     AccountIdentifier getByAccountTypeAndAccountIdAndIdentifierType(PortfolioAccountType accountType, String accountId,
             InteropIdentifierType idType);
-
-    @Query("SELECT new org.apache.fineract.currentaccount.data.account.CurrentAccountIdentifiersData(ca.id, ca.accountNumber, ca.externalId) FROM CurrentAccount ca WHERE ca.id = :accountId")
-    Optional<CurrentAccountIdentifiersData> findIdentifiersByAccountId(@Param("accountId") String accountId);
 }

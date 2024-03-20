@@ -16,13 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.transaction.write;
+package org.apache.fineract.portfolio.transaction.domain;
 
-import jakarta.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.List;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 
-public interface CurrentTransactionMetadataWriteService {
+public interface ITransactionParam {
 
-    void assignMetadata(@NotNull String accountId, @NotNull List<String> transactionIds, OffsetDateTime tillDateTime);
+    Long getId();
+
+    PortfolioAccountType getAccountType();
+
+    String getTransactionId();
+
+    String getTransactionName();
+
+    Integer getSequenceNo();
 }

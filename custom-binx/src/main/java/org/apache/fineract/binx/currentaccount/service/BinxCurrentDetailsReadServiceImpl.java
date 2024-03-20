@@ -129,7 +129,7 @@ public class BinxCurrentDetailsReadServiceImpl implements BinxCurrentDetailsRead
     @NotNull
     public List<Map<String, Object>> getTransactionMetadataDetails(@NotNull Long officeId) {
         ArrayList<Map<String, Object>> result = new ArrayList<>();
-        String dataTableName = "dt_current_transaction_metadata";
+        String dataTableName = "dt_current_transaction_metadata_config";
         GenericResultsetData metadataDetails = nonCoreDataService.retrieveDatatableGenericResultSet(dataTableName, officeId, null, null);
         if (metadataDetails == null || metadataDetails.getData().isEmpty()) {
             return result;

@@ -35,4 +35,5 @@
   <include relativeToChangelogFile="true" file="parts/ca_0010_add_current_jobs.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0011_add_current_permissions.xml"/>
   <include relativeToChangelogFile="true" file="parts/ca_0012_add_current_global_configurations.xml"/>
+  <include relativeToChangelogFile="true" file="parts/ca_0013_transaction_param.xml"/>
 </databaseChangeLog>

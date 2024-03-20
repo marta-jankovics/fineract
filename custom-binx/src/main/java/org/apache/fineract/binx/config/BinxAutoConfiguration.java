@@ -20,24 +20,25 @@ package org.apache.fineract.binx.config;
 
 import org.apache.fineract.binx.currentaccount.service.BinxCurrentDetailsReadService;
 import org.apache.fineract.binx.currentaccount.service.BinxCurrentDetailsReadServiceImpl;
-import org.apache.fineract.binx.currentaccount.service.BinxTransactionMetadataWriteService;
+import org.apache.fineract.binx.currentaccount.service.BinxTransactionMetadataService;
 import org.apache.fineract.binx.currentaccount.statement.service.BinxCurrentCamt053StatementGenerator;
 import org.apache.fineract.binx.savings.service.BinxSavingsCamt053StatementGenerator;
 import org.apache.fineract.binx.savings.service.BinxSavingsDetailsReadService;
 import org.apache.fineract.binx.savings.service.BinxSavingsDetailsReadServiceImpl;
 import org.apache.fineract.currentaccount.repository.account.CurrentAccountRepository;
-import org.apache.fineract.currentaccount.repository.accountidentifiers.AccountIdentifierRepository;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountDailyBalanceReadService;
-import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataWriteService;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;
 import org.apache.fineract.currentaccount.statement.service.CurrentCamt053StatementGenerator;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
+import org.apache.fineract.portfolio.account.domain.AccountIdentifierRepository;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepository;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepository;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransactionSummaryWrapper;
 import org.apache.fineract.portfolio.savings.domain.SavingsHelper;
+import org.apache.fineract.portfolio.transaction.domain.TransactionParamRepository;
 import org.apache.fineract.statement.service.SavingsCamt053StatementGenerator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -70,10 +71,10 @@ public class BinxAutoConfiguration {
     @Bean
     @Primary
     public CurrentCamt053StatementGenerator currentCamt053StatementGenerator(CurrentAccountRepository currentAccountRepository,
-            AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
-            CurrentAccountDailyBalanceReadService dailyBalanceReadService, BinxCurrentDetailsReadService detailsReadService) {
+                                                                             AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
+                                                                             CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService, BinxCurrentDetailsReadService detailsReadService) {
         return new BinxCurrentCamt053StatementGenerator(currentAccountRepository, accountIdentifierRepository, transactionRepository,
-                dailyBalanceReadService, detailsReadService);
+                dailyBalanceReadService, transactionMetadataService, detailsReadService);
     }
 
     @Bean
@@ -86,10 +87,10 @@ public class BinxAutoConfiguration {
 
     @Bean
     @Primary
-    public CurrentTransactionMetadataWriteService currentTransactionMetadataWriteService(CurrentAccountRepository currentAccountRepository,
-            CurrentTransactionRepository currentTransactionRepository, BinxCurrentDetailsReadService currentDetailsReadService,
-            PaymentTypeRepository paymentTypeRepository) {
-        return new BinxTransactionMetadataWriteService(currentAccountRepository, currentTransactionRepository, currentDetailsReadService,
-                paymentTypeRepository);
+    public CurrentTransactionMetadataService currentTransactionMetadataService(CurrentAccountRepository currentAccountRepository,
+                                                                                    CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository,
+                                                                                    BinxCurrentDetailsReadService currentDetailsReadService, PaymentTypeRepository paymentTypeRepository) {
+        return new BinxTransactionMetadataService(currentAccountRepository, currentTransactionRepository, transactionParamRepository,
+                currentDetailsReadService, paymentTypeRepository);
     }
 }

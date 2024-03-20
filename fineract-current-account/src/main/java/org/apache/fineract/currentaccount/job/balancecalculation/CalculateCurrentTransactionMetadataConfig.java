@@ -19,7 +19,7 @@
 package org.apache.fineract.currentaccount.job.balancecalculation;
 
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
-import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataWriteService;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.Job;
@@ -45,7 +45,7 @@ public class CalculateCurrentTransactionMetadataConfig {
     @Autowired
     private ConfigurationDomainService configurationService;
     @Autowired
-    private CurrentTransactionMetadataWriteService metadataWriteService;
+    private CurrentTransactionMetadataService transactionMetadataService;
 
     @Bean
     public Job calculateCurrentTransactionMetadataJob() {
@@ -61,6 +61,6 @@ public class CalculateCurrentTransactionMetadataConfig {
 
     @Bean
     public CalculateCurrentTransactionMetadataTasklet calculateCurrentTransactionMetadataTasklet() {
-        return new CalculateCurrentTransactionMetadataTasklet(transactionRepository, configurationService, metadataWriteService);
+        return new CalculateCurrentTransactionMetadataTasklet(transactionRepository, configurationService, transactionMetadataService);
     }
 }

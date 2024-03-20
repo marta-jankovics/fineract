@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.portfolio.account.data;
 
 import java.io.Serializable;
 import lombok.Data;

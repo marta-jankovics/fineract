@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.data.account;
+package org.apache.fineract.portfolio.account.domain;
 
-import java.util.List;
-import lombok.Data;
+public enum EntityActionType {
 
-@Data
-public class IdentifiersResponseData {
-
-    private final List<IdTypeValueSubValueData> primaryIdentifiers;
-    private final List<IdTypeValueSubValueData> secondaryIdentifiers;
+    SUBMIT, //
+    ACTIVATE, //
+    CANCEL, //
+    CLOSE, //
+    ;
 }

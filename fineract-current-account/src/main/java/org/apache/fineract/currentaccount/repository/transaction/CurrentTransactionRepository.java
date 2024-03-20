@@ -38,12 +38,13 @@ import org.springframework.stereotype.Repository;
 public interface CurrentTransactionRepository extends JpaRepository<CurrentTransaction, String> {
 
     String TRANSACTION_DATA_SELECT = "SELECT new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, "
-            + "t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.amount, t.transactionName, t.createdDate, "
+            + "t.externalId, t.transactionType, t.transactionDate, t.submittedOnDate, t.amount, p.transactionName, t.createdDate, "
             + "cp.currency.code, cp.currency.digitsAfterDecimal, cp.currency.inMultiplesOf, curr.name, curr.displaySymbol, "
             + "pt.id, pt.name, pt.description, pt.isCashPayment, pt.codeName) "
             + "FROM CurrentTransaction t JOIN CurrentAccount ca on ca.id = t.accountId "
             + "JOIN CurrentProduct cp on cp.id = ca.productId JOIN ApplicationCurrency curr on curr.code = cp.currency.code "
-            + "LEFT JOIN PaymentType pt on pt.id = t.paymentTypeId ";
+            + "LEFT JOIN PaymentType pt on pt.id = t.paymentTypeId "
+            + "LEFT JOIN TransactionParam p on p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT ";
 
     @Query("SELECT t.id FROM CurrentTransaction t WHERE t.externalId = :externalId")
     String getIdByExternalId(@Param("externalId") ExternalId externalId);
@@ -96,27 +97,29 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
             @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
     @Query("select new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
-            + "t.transactionDate, t.submittedOnDate, t.amount, t.transactionName, t.createdDate, pt.id, pt.name) "
-            + "from CurrentTransaction t left join PaymentType pt on pt.id = t.paymentTypeId "
+            + "t.transactionDate, t.submittedOnDate, t.amount, p.transactionName, t.createdDate, pt.id, pt.name) "
+            + "from CurrentTransaction t "
+            + "left join PaymentType pt on pt.id = t.paymentTypeId "
+            + "left join TransactionParam p on p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT "
             + "where t.accountId = :accountId and t.submittedOnDate >= :fromDate and t.submittedOnDate <= :toDate "
-            + "and t.transactionType in :types order by t.submittedOnDate, t.createdDate, t.id")
+            + "and t.transactionType in :types order by t.transactionDate, t.submittedOnDate, t.createdDate, t.id")
     List<CurrentTransactionData> getTransactionsDataForStatement(@Param("accountId") String accountId,
             @Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate, @Param("types") List<CurrentTransactionType> types);
 
     @Query("select t.accountId, t.id from CurrentTransaction t join CurrentAccount ca on t.accountId = ca.id "
-            + "where t.sequenceNo is null and t.createdDate <= :tillDateTime and ca.status in :statuses")
+            + "where t.createdDate <= :tillDateTime and ca.status in :statuses and not exists "
+            + "(select p.id from TransactionParam p where p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT)")
     List<String[]> getTransactionIdsForMetadata(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.id in :transactionIds order by t.submittedOnDate, t.createdDate, t.id")
+    @Query("select t from CurrentTransaction t " + "where t.accountId = :accountId and t.id in :transactionIds and not exists "
+            + "(select p.id from TransactionParam p where p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT)"
+            + "order by t.submittedOnDate, t.createdDate, t.id")
     List<CurrentTransaction> getTransactionsForMetadata(@Param("accountId") String accountId,
             @Param("transactionIds") List<String> transactionIds);
 
-    @Query("select t from CurrentTransaction t where t.accountId = :accountId and t.id in :transactionIds and t.createdDate <= :tillDateTime "
-            + "order by t.submittedOnDate, t.createdDate, t.id")
-    List<CurrentTransaction> getTransactionsForMetadataTill(@Param("accountId") String accountId,
-            @Param("transactionIds") List<String> transactionIds, @Param("tillDateTime") OffsetDateTime tillDateTime);
-
-    @Query("select max(t.sequenceNo) from CurrentTransaction t where t.accountId = :accountId and t.submittedOnDate = :date")
+    @Query("select max(p.sequenceNo) from CurrentTransaction t "
+            + "join TransactionParam p on p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT "
+            + "where t.accountId = :accountId and t.submittedOnDate = :date")
     Integer getMaxSequenceNo(@Param("accountId") String accountId, @Param("date") LocalDate date);
 }

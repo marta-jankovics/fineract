@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
-import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataWriteService;
+import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
@@ -47,7 +47,7 @@ public class CalculateCurrentTransactionMetadataTasklet implements Tasklet {
 
     private final CurrentTransactionRepository transactionRepository;
     private final ConfigurationDomainService configurationService;
-    private final CurrentTransactionMetadataWriteService metadataWriteService;
+    private final CurrentTransactionMetadataService transactionMetadataService;
 
     @Override
     @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
@@ -59,7 +59,7 @@ public class CalculateCurrentTransactionMetadataTasklet implements Tasklet {
             Map<String, List<String>> byAccountIds = transactionIds.stream().collect(groupingBy(e -> e[0], mapping(e -> e[1], toList())));
             for (Map.Entry<String, List<String>> entry : byAccountIds.entrySet()) {
                 try {
-                    metadataWriteService.assignMetadata(entry.getKey(), entry.getValue(), tillDateTime);
+                    transactionMetadataService.assignMetadata(entry.getKey(), entry.getValue());
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
                     log.error("Calculate transaction metadata for account: " + entry.getKey() + " is failed", e);

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.domain.account;
+package org.apache.fineract.portfolio.account.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,7 +35,6 @@ import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.eclipse.persistence.annotations.Convert;
 import org.eclipse.persistence.annotations.Converter;
 
-//TODO: Move to core when it goes to support other entities as well
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

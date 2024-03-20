@@ -16,22 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.repository.entityaction;
+package org.apache.fineract.portfolio.transaction.domain;
 
-import java.time.LocalDate;
-import java.util.Optional;
-import org.apache.fineract.portfolio.PortfolioProductType;
-import org.apache.fineract.portfolio.account.domain.EntityAction;
-import org.apache.fineract.portfolio.account.domain.EntityActionType;
+import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface EntityActionRepository extends JpaRepository<EntityAction, Long> {
+public interface TransactionParamRepository extends JpaRepository<TransactionParam, Long> {
 
-    @Query("SELECT ea.actionDate FROM EntityAction ea WHERE ea.entityType = :entityType AND ea.entityId = :entityId AND ea.actionType = :actionType")
-    Optional<LocalDate> getActionDateByEntityTypeAndEntityIdAndActionType(@Param("entityType") PortfolioProductType entityType,
-            @Param("entityId") String entityId, @Param("actionType") EntityActionType actionType);
+    TransactionParam getByAccountTypeAndTransactionId(PortfolioAccountType accountType, String transactionId);
 }
