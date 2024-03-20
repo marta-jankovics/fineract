@@ -20,6 +20,7 @@ package org.apache.fineract.currentaccount.search.service;
 
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_VIRTUAL_COLUMN;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_VIRTUAL_COLUMN;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_NAME_VIRTUAL_COLUMN;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_PRODUCT;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_TRANSACTION;
@@ -37,6 +38,8 @@ import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeader
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.apache.fineract.portfolio.search.data.ColumnConditionData;
+import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryServiceImpl;
@@ -105,6 +108,26 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
                 JoinColumnHeaderData joinHeader = new JoinColumnHeaderData(columnHeader, virtualColumn, columnJoins);
                 headersByName.put(virtualColumn, joinHeader);
                 return joinHeader;
+            }
+            case TRANSACTION_NAME_VIRTUAL_COLUMN -> {
+                switch (entity) {
+                    case CURRENT_TRANSACTION -> {
+                        JoinData join = ensureJoin(joins, CURRENT_TRANSACTION.getApptableName(), "id", mainAlias, "m_transaction_param",
+                                "transaction_id", joinType);
+                        columnJoins.add(join);
+                        List<ResultsetColumnHeaderData> columnHeaders = genericDataService
+                                .fillResultsetColumnHeaders("m_transaction_param");
+                        ResultsetColumnHeaderData columnHeader = SearchUtil.getFiltered(columnHeaders, e -> e.isNamed("transaction_name"));
+                        JoinColumnHeaderData joinHeader = new JoinColumnHeaderData(columnHeader, virtualColumn, columnJoins);
+                        headersByName.put(virtualColumn, joinHeader);
+                        ResultsetColumnHeaderData typeHeader = SearchUtil.getFiltered(columnHeaders, e -> e.isNamed("account_type"));
+                        JoinColumnHeaderData typeJoinHeader = new JoinColumnHeaderData(typeHeader, null, columnJoins);
+                        headersByName.put(typeJoinHeader.getVirtualName(), typeJoinHeader);
+                        join.ensureJoinCondition(ColumnConditionData.eq(typeJoinHeader, "CURRENT"));
+                        return joinHeader;
+                    }
+                    default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+                }
             }
             default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
         }

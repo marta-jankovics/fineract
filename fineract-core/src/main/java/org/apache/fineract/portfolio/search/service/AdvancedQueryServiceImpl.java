@@ -166,8 +166,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         String dateTimeFormat = pagedRequest.getDateTimeFormat();
         Locale locale = pagedRequest.getLocaleObject();
         String select = buildSelect(selectColumns, alias);
-        String from = " " + buildFrom(apptable, alias, joins);
         ArrayList<Object> params = new ArrayList<>();
+        String from = " " + buildFrom(apptable, alias, joins, params, dateFormat, dateTimeFormat, locale);
         String where = buildQueryCondition(columnConditions, params, alias, dateFormat, dateTimeFormat, locale);
 
         List<JsonObject> results = new ArrayList<>();
@@ -242,10 +242,19 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                 .collect(Collectors.joining(", "));
     }
 
-    protected String buildFrom(@NotNull String mainTable, String mainAlias, @NotNull List<JoinData> joins) {
-        return "FROM " + sqlGenerator.getFrom(mainTable, mainAlias) + " "
-                + joins.stream().map(e -> sqlGenerator.buildJoin(e.getFromColumn(), e.getFromAlias(), e.getToTable(), e.getToColumn(),
-                        e.getToAlias(), e.getJoinType())).collect(Collectors.joining(" "));
+    protected String buildFrom(@NotNull String mainTable, String mainAlias, @NotNull List<JoinData> joins, @NotNull List<Object> params, String dateFormat, String dateTimeFormat, Locale locale) {
+        StringBuilder from = new StringBuilder("FROM ").append(sqlGenerator.getFrom(mainTable, mainAlias)).append(" ");
+        for (JoinData join : joins) {
+            from.append(sqlGenerator.buildJoin(join.getFromColumn(), join.getFromAlias(), join.getToTable(), join.getToColumn(),
+                    join.getToAlias(), join.getJoinType()));
+            ColumnConditionData joinCondition = join.getJoinCondition();
+            if (joinCondition != null) {
+                from.append(" AND ");
+                buildFilterCondition(joinCondition, from, params, mainAlias, dateFormat, dateTimeFormat, locale);
+            }
+            from.append(" ");
+        }
+        return from.toString();
     }
 
     protected String buildQueryCondition(@NotNull List<ColumnConditionData> columnConditions, @NotNull List<Object> params,

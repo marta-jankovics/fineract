@@ -131,5 +131,6 @@ public class CurrentAccountApiConstants {
     // search
     public static final String CURRENCY_VIRTUAL_COLUMN = "currency";
     public static final String PAYMENT_TYPE_VIRTUAL_COLUMN = "payment_type";
+    public static final String TRANSACTION_NAME_VIRTUAL_COLUMN = "transaction_name";
 
 }

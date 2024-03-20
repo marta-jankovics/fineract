@@ -38,6 +38,7 @@ public final class JoinData implements Serializable {
     private final JoinPart to;
     @NotNull
     private JoinType joinType;
+    private ColumnConditionData joinCondition;
 
     public JoinData(@NotNull String fromTable, @NotNull String fromColumn, String fromAlias, @NotNull String toTable,
             @NotNull String toColumn, @NotNull String toAlias, JoinType joinType) {
@@ -75,6 +76,13 @@ public final class JoinData implements Serializable {
             if (joinType == INNER) {
                 this.joinType = joinType;
             }
+        }
+        return this;
+    }
+
+    public JoinData ensureJoinCondition(@NotNull ColumnConditionData joinCondition) {
+        if (this.joinCondition == null) {
+            this.joinCondition = joinCondition;
         }
         return this;
     }
