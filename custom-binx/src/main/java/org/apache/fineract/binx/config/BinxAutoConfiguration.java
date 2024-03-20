@@ -71,8 +71,9 @@ public class BinxAutoConfiguration {
     @Bean
     @Primary
     public CurrentCamt053StatementGenerator currentCamt053StatementGenerator(CurrentAccountRepository currentAccountRepository,
-                                                                             AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
-                                                                             CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService, BinxCurrentDetailsReadService detailsReadService) {
+            AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
+            CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService,
+            BinxCurrentDetailsReadService detailsReadService) {
         return new BinxCurrentCamt053StatementGenerator(currentAccountRepository, accountIdentifierRepository, transactionRepository,
                 dailyBalanceReadService, transactionMetadataService, detailsReadService);
     }
@@ -88,8 +89,8 @@ public class BinxAutoConfiguration {
     @Bean
     @Primary
     public CurrentTransactionMetadataService currentTransactionMetadataService(CurrentAccountRepository currentAccountRepository,
-                                                                                    CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository,
-                                                                                    BinxCurrentDetailsReadService currentDetailsReadService, PaymentTypeRepository paymentTypeRepository) {
+            CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository,
+            BinxCurrentDetailsReadService currentDetailsReadService, PaymentTypeRepository paymentTypeRepository) {
         return new BinxTransactionMetadataService(currentAccountRepository, currentTransactionRepository, transactionParamRepository,
                 currentDetailsReadService, paymentTypeRepository);
     }

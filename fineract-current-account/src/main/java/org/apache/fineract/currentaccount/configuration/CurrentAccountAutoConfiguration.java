@@ -278,7 +278,7 @@ public class CurrentAccountAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CurrentTransactionMetadataService.class)
     public CurrentTransactionMetadataService currentTransactionMetadataService(CurrentAccountRepository currentAccountRepository,
-                                                                                    CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository) {
+            CurrentTransactionRepository currentTransactionRepository, TransactionParamRepository transactionParamRepository) {
         return new CurrentTransactionMetadataServiceImpl(currentAccountRepository, currentTransactionRepository,
                 transactionParamRepository);
     }

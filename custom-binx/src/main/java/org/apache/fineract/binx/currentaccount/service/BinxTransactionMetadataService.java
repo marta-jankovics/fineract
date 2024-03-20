@@ -37,9 +37,9 @@ public class BinxTransactionMetadataService extends CurrentTransactionMetadataSe
     private final BinxCurrentDetailsReadService detailsReadService;
     private final PaymentTypeRepository paymentTypeRepository;
 
-    public BinxTransactionMetadataService(CurrentAccountRepository accountRepository,
-                                          CurrentTransactionRepository transactionRepository, TransactionParamRepository transactionParamRepository,
-                                          BinxCurrentDetailsReadService detailsReadService, PaymentTypeRepository paymentTypeRepository) {
+    public BinxTransactionMetadataService(CurrentAccountRepository accountRepository, CurrentTransactionRepository transactionRepository,
+            TransactionParamRepository transactionParamRepository, BinxCurrentDetailsReadService detailsReadService,
+            PaymentTypeRepository paymentTypeRepository) {
         super(accountRepository, transactionRepository, transactionParamRepository);
         this.detailsReadService = detailsReadService;
         this.paymentTypeRepository = paymentTypeRepository;

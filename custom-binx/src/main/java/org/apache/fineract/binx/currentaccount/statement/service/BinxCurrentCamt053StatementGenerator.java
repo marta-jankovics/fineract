@@ -74,8 +74,9 @@ public class BinxCurrentCamt053StatementGenerator extends CurrentCamt053Statemen
     private final BinxCurrentDetailsReadService detailsReadService;
 
     public BinxCurrentCamt053StatementGenerator(CurrentAccountRepository accountRepository,
-                                                AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
-                                                CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService, BinxCurrentDetailsReadService detailsReadService) {
+            AccountIdentifierRepository accountIdentifierRepository, CurrentTransactionRepository transactionRepository,
+            CurrentAccountDailyBalanceReadService dailyBalanceReadService, CurrentTransactionMetadataService transactionMetadataService,
+            BinxCurrentDetailsReadService detailsReadService) {
         super(accountRepository, accountIdentifierRepository, transactionRepository, dailyBalanceReadService, transactionMetadataService);
         this.detailsReadService = detailsReadService;
     }

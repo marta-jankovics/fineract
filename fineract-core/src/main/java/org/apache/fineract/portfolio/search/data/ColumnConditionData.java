@@ -35,7 +35,6 @@ public final class ColumnConditionData implements Serializable {
 
     private List<FilterData> filters;
 
-
     public static ColumnConditionData eq(ResultsetColumnHeaderData columnHeader, String value) {
         return new ColumnConditionData(columnHeader, List.of(FilterData.eq(value)));
     }

@@ -24,12 +24,10 @@ import static org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
@@ -71,9 +69,10 @@ public class CurrentTransactionMetadataServiceImpl implements CurrentTransaction
         persistBalances(calculateTransactionParams(account, transactions).values());
     }
 
+    @Override
     @NotNull
     public Map<String, TransactionParamData> calculateTransactionParams(@NotNull CurrentAccountData account,
-                                                                              @NotNull List<? extends ICurrentTransaction> transactions) {
+            @NotNull List<? extends ICurrentTransaction> transactions) {
         int sequence = 0;
         LocalDate submittedOnDate = null;
         String accountId = account.getId();

@@ -242,7 +242,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                 .collect(Collectors.joining(", "));
     }
 
-    protected String buildFrom(@NotNull String mainTable, String mainAlias, @NotNull List<JoinData> joins, @NotNull List<Object> params, String dateFormat, String dateTimeFormat, Locale locale) {
+    protected String buildFrom(@NotNull String mainTable, String mainAlias, @NotNull List<JoinData> joins, @NotNull List<Object> params,
+            String dateFormat, String dateTimeFormat, Locale locale) {
         StringBuilder from = new StringBuilder("FROM ").append(sqlGenerator.getFrom(mainTable, mainAlias)).append(" ");
         for (JoinData join : joins) {
             from.append(sqlGenerator.buildJoin(join.getFromColumn(), join.getFromAlias(), join.getToTable(), join.getToColumn(),

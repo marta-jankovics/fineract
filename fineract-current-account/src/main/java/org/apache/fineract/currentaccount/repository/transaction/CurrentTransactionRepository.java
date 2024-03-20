@@ -98,8 +98,7 @@ public interface CurrentTransactionRepository extends JpaRepository<CurrentTrans
 
     @Query("select new org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData(t.id, t.accountId, t.externalId, t.transactionType, "
             + "t.transactionDate, t.submittedOnDate, t.amount, p.transactionName, t.createdDate, pt.id, pt.name) "
-            + "from CurrentTransaction t "
-            + "left join PaymentType pt on pt.id = t.paymentTypeId "
+            + "from CurrentTransaction t " + "left join PaymentType pt on pt.id = t.paymentTypeId "
             + "left join TransactionParam p on p.transactionId = t.id and p.accountType = org.apache.fineract.portfolio.account.PortfolioAccountType.CURRENT "
             + "where t.accountId = :accountId and t.submittedOnDate >= :fromDate and t.submittedOnDate <= :toDate "
             + "and t.transactionType in :types order by t.transactionDate, t.submittedOnDate, t.createdDate, t.id")

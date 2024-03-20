@@ -21,7 +21,6 @@ package org.apache.fineract.currentaccount.service.transaction.write;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
 import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
 import org.apache.fineract.portfolio.transaction.data.TransactionParamData;
@@ -31,5 +30,5 @@ public interface CurrentTransactionMetadataService {
     void assignMetadata(@NotNull String accountId, @NotNull List<String> transactionIds);
 
     Map<String, TransactionParamData> calculateTransactionParams(@NotNull CurrentAccountData account,
-                                                                 @NotNull List<? extends ICurrentTransaction> transactions);
+            @NotNull List<? extends ICurrentTransaction> transactions);
 }

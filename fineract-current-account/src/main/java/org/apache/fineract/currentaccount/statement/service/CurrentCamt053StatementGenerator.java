@@ -74,7 +74,8 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
         ICurrentAccountDailyBalance dailyBalance = dailyBalanceReadService.getDailyBalance(accountId, toDate);
         String identification = calcIdentification(statement);
         List<CurrentTransactionType> types = CurrentTransactionType.getFiltered(e -> e.isMonetaryDebit() || e.isMonetaryCredit());
-        List<CurrentTransactionData> transactions = transactionRepository.getTransactionsDataForStatement(accountId, fromDate, toDate, types);
+        List<CurrentTransactionData> transactions = transactionRepository.getTransactionsDataForStatement(accountId, fromDate, toDate,
+                types);
         calculateTransactionNames(accountData, transactions);
 
         OffsetDateTime creationDateTime = content.getGroupHeader().getCreationDateTime();
@@ -89,7 +90,8 @@ public class CurrentCamt053StatementGenerator extends Camt053StatementGenerator 
         if (transactionsToCalculate.isEmpty()) {
             return;
         }
-        Map<String, TransactionParamData> transactionParams = transactionMetadataService.calculateTransactionParams(accountData, transactionsToCalculate);
+        Map<String, TransactionParamData> transactionParams = transactionMetadataService.calculateTransactionParams(accountData,
+                transactionsToCalculate);
         for (CurrentTransactionData transactionToCalculate : transactionsToCalculate) {
             TransactionParamData transactionParam = transactionParams.get(transactionToCalculate.getId());
             if (transactionParam != null) { // can not be null

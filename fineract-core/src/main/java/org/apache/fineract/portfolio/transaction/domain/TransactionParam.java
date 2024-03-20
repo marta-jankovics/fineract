@@ -29,14 +29,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
-import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "m_transaction_param", uniqueConstraints = {@UniqueConstraint(columnNames = { "account_type", "transaction_id"}, name = "uk_transaction_param_transaction_id_type") })
+@Table(name = "m_transaction_param", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "account_type", "transaction_id" }, name = "uk_transaction_param_transaction_id_type") })
 public class TransactionParam extends AbstractAuditableWithUTCDateTimeCustom<Long> implements ITransactionParam {
 
     @Enumerated(EnumType.STRING)
@@ -51,6 +51,5 @@ public class TransactionParam extends AbstractAuditableWithUTCDateTimeCustom<Lon
 
     @Column(name = "sequence_no")
     private Integer sequenceNo;
-
 
 }

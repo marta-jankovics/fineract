@@ -57,7 +57,8 @@ public final class BinxCurrentTransactionStatementData extends BinxTransactionSt
                 transactionDetails, paymentTypeCode);
 
         return new BinxCurrentTransactionStatementData(null, transaction.getAmount(), currency,
-                transaction.getTransactionType().getEntryType(), calcTransactionStatus(statementType), transaction.getTransactionName(), paymentTypeCode,
-                transaction.getSubmittedOnDate(), transaction.getTransactionDate(), entryDetails, inputChannel, structuredData);
+                transaction.getTransactionType().getEntryType(), calcTransactionStatus(statementType), transaction.getTransactionName(),
+                paymentTypeCode, transaction.getSubmittedOnDate(), transaction.getTransactionDate(), entryDetails, inputChannel,
+                structuredData);
     }
 }
