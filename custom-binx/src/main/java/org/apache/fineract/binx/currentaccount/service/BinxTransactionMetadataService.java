@@ -71,7 +71,6 @@ public class BinxTransactionMetadataService extends CurrentTransactionMetadataSe
         if (code == null) {
             code = transaction.getId().substring(0, 8);
         }
-        return code + METADATA_SEPARATOR + METADATA_DATE_FORMATTER.format(transaction.getSubmittedOnDate()) + METADATA_SEPARATOR
-                + String.format("%06d", sequence);
+        return code + METADATA_DATE_FORMATTER.format(transaction.getSubmittedOnDate()) + String.format("%06d", sequence);
     }
 }

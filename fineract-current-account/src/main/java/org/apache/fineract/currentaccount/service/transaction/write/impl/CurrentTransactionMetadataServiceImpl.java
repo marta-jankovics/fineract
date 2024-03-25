@@ -66,7 +66,7 @@ public class CurrentTransactionMetadataServiceImpl implements CurrentTransaction
             return;
         }
         List<CurrentTransaction> transactions = transactionRepository.getTransactionsForMetadata(accountId, transactionIds);
-        persistBalances(calculateTransactionParams(account, transactions).values());
+        persistParams(calculateTransactionParams(account, transactions).values());
     }
 
     @Override
@@ -99,7 +99,7 @@ public class CurrentTransactionMetadataServiceImpl implements CurrentTransaction
                 + METADATA_SEPARATOR + String.format("%06d", sequence);
     }
 
-    private void persistBalances(@NotNull Collection<TransactionParamData> params) {
+    private void persistParams(@NotNull Collection<TransactionParamData> params) {
         for (TransactionParamData param : params) {
             TransactionParam transactionParam = new TransactionParam(CURRENT, param.getTransactionId(), param.getTransactionName(),
                     param.getSequenceNo());
