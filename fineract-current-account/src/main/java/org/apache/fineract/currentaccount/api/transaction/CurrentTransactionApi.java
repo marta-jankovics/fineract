@@ -19,6 +19,7 @@
 package org.apache.fineract.currentaccount.api.transaction;
 
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionBalanceResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -60,6 +61,24 @@ public interface CurrentTransactionApi {
             String accountIdentifier, String accountSubIdentifier, String transactionIdentifier);
 
     CurrentTransactionResponseData retrieveOneAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdType, String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdentifierTransactionIdentifier(String accountIdentifier,
+            String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdentifierTransactionIdTypeIdentifier(String accountIdentifier,
+            String transactionIdType, String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdentifier(String accountIdType,
+            String accountIdentifier, String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdTypeIdentifier(String accountIdType,
+            String accountIdentifier, String transactionIdType, String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(String accountIdType,
+            String accountIdentifier, String accountSubIdentifier, String transactionIdentifier);
+
+    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
             String accountIdentifier, String accountSubIdentifier, String transactionIdType, String transactionIdentifier);
 
     CommandProcessingResult transactionByAccountIdentifier(String accountIdentifier, String command, Boolean force, String requestJson);

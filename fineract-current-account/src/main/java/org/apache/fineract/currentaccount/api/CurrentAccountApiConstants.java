@@ -117,7 +117,7 @@ public class CurrentAccountApiConstants {
 
     // API
     public static final String SLASH = "/";
-    public static final String RESERVED_API_WORDS_REGEX = "(?!transactions|identifiers|statements|notes|query|template)([a-zA-Z_0-9-]+)";
+    public static final String RESERVED_API_WORDS_REGEX = "(?!transactions|identifiers|statements|notes|balance|query|template)([a-zA-Z_0-9-]+)";
     public static final String RESERVED_API_REGEX = ":" + RESERVED_API_WORDS_REGEX;
     public static final String ID_TYPE_API_REGEX = "{" + ID_TYPE_PARAM + RESERVED_API_REGEX + "}";
     public static final String IDENTIFIER_API_REGEX = "{" + IDENTIFIER_PARAM + RESERVED_API_REGEX + "}";

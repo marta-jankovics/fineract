@@ -120,7 +120,7 @@ public class CurrentAccountBalanceReadServiceImpl implements CurrentAccountBalan
                 transactions = transactionRepository.getTransactionsSubmittedFromAndTillSorted(accountId, balanceDate, toDateTime);
             }
         }
-        int idx = Iterables.indexOf(transactions, t -> TRANSACTION_COMPARATOR.compare(t, transaction) == 0);
+        int idx = Iterables.indexOf(transactions, t -> t.getId().equals(transactionId));
         // must be found or empty balance is returned
         return calculateData(accountId, transactions.subList(0, idx + 1), balance, toDateTime);
     }

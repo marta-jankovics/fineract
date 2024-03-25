@@ -20,30 +20,21 @@ package org.apache.fineract.currentaccount.data.transaction;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
-import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
-import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 
 /**
  * Immutable data object representing a current transaction.
  */
 @Getter
 @AllArgsConstructor
-public final class CurrentTransactionResponseData implements Serializable {
+public final class CurrentTransactionBalanceResponseData implements Serializable {
 
-    private final String id;
+    private final String transactionId;
     private final String accountId;
-    private final ExternalId externalId;
-    private final PaymentTypeData paymentTypeData;
-    private final StringEnumOptionData transactionType;
-    private final StringEnumOptionData transactionEntryType;
-    private final LocalDate transactionDate;
-    private final LocalDate submittedOnDate;
-    private final BigDecimal transactionAmount;
     private final CurrencyData currency;
-    private final String transactionName;
+    private final BigDecimal accountBalance;
+    private final BigDecimal holdAmount;
+    private final BigDecimal availableBalance;
 }

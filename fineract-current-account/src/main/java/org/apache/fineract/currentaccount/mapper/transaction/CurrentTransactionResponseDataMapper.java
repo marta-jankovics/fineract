@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.mapper.transaction;
 import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
+import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionBalanceResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction;
@@ -42,9 +43,14 @@ public interface CurrentTransactionResponseDataMapper {
     }
 
     default CurrentTransactionResponseData map(CurrentTransactionData transactionData,
+            Function<CurrentAccountResolver, CurrentAccountData> accountRetrieverFunc) {
+        return mapOne(transactionData, accountRetrieverFunc.apply(CurrentAccountResolver.resolveDefault(transactionData.getAccountId())));
+    }
+
+    default CurrentTransactionBalanceResponseData map(CurrentTransactionData transactionData,
             Function<CurrentAccountResolver, CurrentAccountData> accountRetrieverFunc,
             Function<ICurrentTransaction, CurrentAccountBalanceData> balanceRetrieverFunc) {
-        return mapOne(transactionData, accountRetrieverFunc.apply(CurrentAccountResolver.resolveDefault(transactionData.getAccountId())),
+        return mapBalance(accountRetrieverFunc.apply(CurrentAccountResolver.resolveDefault(transactionData.getAccountId())),
                 balanceRetrieverFunc.apply(transactionData));
     }
 
@@ -53,9 +59,6 @@ public interface CurrentTransactionResponseDataMapper {
     @Mapping(target = "transactionEntryType", source = "data", qualifiedByName = "transactionEntryType")
     @Mapping(target = "paymentTypeData", source = "data", qualifiedByName = "mapPaymentTypeData")
     @Mapping(target = "transactionAmount", source = "data.amount")
-    @Mapping(target = "accountBalance", ignore = true)
-    @Mapping(target = "holdAmount", ignore = true)
-    @Mapping(target = "availableBalance", ignore = true)
     CurrentTransactionResponseData mapAll(CurrentTransactionData data);
 
     @Mapping(target = "id", source = "transactionData.id")
@@ -67,16 +70,26 @@ public interface CurrentTransactionResponseDataMapper {
     @Mapping(target = "paymentTypeData", source = "transactionData", qualifiedByName = "mapPaymentTypeData")
     @Mapping(target = "transactionAmount", source = "transactionData.amount")
     @Mapping(target = "transactionName", source = "transactionData.transactionName")
+    CurrentTransactionResponseData mapOne(CurrentTransactionData transactionData, CurrentAccountData accountData);
+
+    @Mapping(target = "transactionId", source = "balanceData.transactionId")
+    @Mapping(target = "accountId", source = "accountData.id")
+    @Mapping(target = "currency", source = "accountData", qualifiedByName = "currency")
     @Mapping(target = "accountBalance", source = "balanceData.accountBalance")
     @Mapping(target = "holdAmount", source = "balanceData.holdAmount")
     @Mapping(target = "availableBalance", expression = "java(accountData.getAvailableBalance(balanceData, false))")
-    CurrentTransactionResponseData mapOne(CurrentTransactionData transactionData, CurrentAccountData accountData,
-            CurrentAccountBalanceData balanceData);
+    CurrentTransactionBalanceResponseData mapBalance(CurrentAccountData accountData, CurrentAccountBalanceData balanceData);
 
     @Named("currency")
     default CurrencyData mapToCurrencyData(CurrentTransactionData data) {
         return new CurrencyData(data.getCurrencyCode(), data.getCurrencyName(), data.getCurrencyDigitsAfterDecimal(), null,
                 data.getCurrencyDisplaySymbol(), null);
+    }
+
+    @Named("currency")
+    default CurrencyData mapToCurrencyData(CurrentAccountData accountData) {
+        return new CurrencyData(accountData.getCurrencyCode(), accountData.getCurrencyName(), accountData.getCurrencyDigitsAfterDecimal(),
+                accountData.getCurrencyInMultiplesOf(), accountData.getCurrencyDisplaySymbol(), null);
     }
 
     @Named("transactionType")

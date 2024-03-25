@@ -63,6 +63,7 @@ import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.currentaccount.api.transaction.CurrentTransactionApi;
+import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionBalanceResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionResponseData;
 import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionTemplateResponseData;
 import org.apache.fineract.currentaccount.mapper.transaction.CurrentTransactionResponseDataMapper;
@@ -261,6 +262,85 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
             @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
         return retrieveOne(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
+                CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/1/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdentifierTransactionIdentifier(
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolveDefault(accountIdentifier),
+                CurrentTransactionResolver.resolveDefault(transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX
+            + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/1/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdentifierTransactionIdTypeIdentifier(
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolveDefault(accountIdentifier),
+                CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/external-id/ExternalId1/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdentifier(
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
+                CurrentTransactionResolver.resolveDefault(transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_ID_TYPE_API_REGEX + "/"
+            + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/external-id/ExternalId1/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdTypeIdentifier(
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, null),
+                CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/iban/123456/S/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
+                CurrentTransactionResolver.resolveDefault(transactionIdentifier));
+    }
+
+    @GET
+    @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/" + ACCOUNT_SUB_IDENTIFIER_API_REGEX + "/transactions/"
+            + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
+    @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/iban/123456/S/transactions/1/balance")
+    @Override
+    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(
+            @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
+            @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
+            @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
+            @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
+            @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
+        return getBalance(CurrentAccountResolver.resolve(accountIdType, accountIdentifier, accountSubIdentifier),
                 CurrentTransactionResolver.resolve(transactionIdType, transactionIdentifier));
     }
 
@@ -476,6 +556,13 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     }
 
     private CurrentTransactionResponseData retrieveOne(@NotNull CurrentAccountResolver accountResolver,
+            @NotNull CurrentTransactionResolver transactionResolver) {
+        context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
+        return currentTransactionResponseDataMapper.map(currentTransactionReadService.retrieve(accountResolver, transactionResolver),
+                currentAccountReadService::retrieve);
+    }
+
+    private CurrentTransactionBalanceResponseData getBalance(@NotNull CurrentAccountResolver accountResolver,
             @NotNull CurrentTransactionResolver transactionResolver) {
         context.authenticatedUser().validateHasReadPermission(CURRENT_TRANSACTION_RESOURCE_NAME);
         return currentTransactionResponseDataMapper.map(currentTransactionReadService.retrieve(accountResolver, transactionResolver),
