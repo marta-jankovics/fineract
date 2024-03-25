@@ -48,6 +48,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -246,7 +247,10 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             final String newValue = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
             actualChanges.put(LOCALE_PARAM, localeAsInput);
-            account.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
+            BalanceCalculationType newBalanceType = BalanceCalculationType.valueOf(newValue);
+            account.setBalanceCalculationType(newBalanceType);
+            OffsetDateTime tillDateTime = accountBalanceReadService.getBalanceCalculationTill();
+            accountBalanceWriteService.updateBalance(account.getId(), tillDateTime);
         }
 
         if (!actualChanges.isEmpty()) {

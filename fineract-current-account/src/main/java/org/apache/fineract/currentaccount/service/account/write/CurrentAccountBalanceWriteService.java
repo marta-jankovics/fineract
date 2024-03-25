@@ -24,6 +24,8 @@ import org.apache.fineract.currentaccount.domain.account.ICurrentAccountBalance;
 
 public interface CurrentAccountBalanceWriteService {
 
+    void updateBalanceInNewTransaction(@NotNull String accountId, OffsetDateTime tillDateTime);
+
     void updateBalance(@NotNull String accountId, OffsetDateTime tillDateTime);
 
     void saveBalance(@NotNull ICurrentAccountBalance iBalance);

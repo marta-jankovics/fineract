@@ -36,13 +36,14 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
             + "LEFT JOIN CurrentTransaction ct on ct.id = cab.transactionId WHERE cab.accountId = :accountId")
     CurrentAccountBalanceData getBalanceDataByAccountId(@Param("accountId") String accountId);
 
-    @Query("select ca.id from CurrentAccount ca where ca.status in :statuses and not exists (select cab.id from CurrentAccountBalance cab where cab.accountId = ca.id)")
+    @Query("SELECT ca.id FROM CurrentAccount ca WHERE ca.status in :statuses AND NOT EXISTS (SELECT 1 FROM CurrentAccountBalance cab WHERE cab.accountId = ca.id)")
     List<String> getAccountIdsNoBalance(@Param("statuses") List<CurrentAccountStatus> statuses);
 
-    @Query("select ca.id from CurrentAccount ca where ca.status in :statuses and "
-            + "exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, CurrentAccountBalance cab where ct.accountId = ca.id and ct.accountId = cab.accountId and "
-            + "(ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) and "
-            + "(cab.transactionId is null or (ct2.id = cab.transactionId and ct.createdDate > ct2.createdDate)))")
+    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalance cab WHERE ca.status IN :statuses AND ca.id = cab.accountId AND "
+            + " EXISTS (SELECT 1 FROM CurrentTransaction ct WHERE ct.accountId = cab.accountId AND cab.transactionId IS NULL AND ct.createdDate <= :tillDateTime) "
+            + " UNION SELECT ca.id FROM CurrentAccount ca, CurrentAccountBalance cab WHERE ca.status IN :statuses AND ca.id = cab.accountId AND "
+            + " EXISTS (SELECT 1 FROM CurrentTransaction ct, CurrentTransaction ct2 WHERE ct.accountId = cab.accountId AND ct.accountId = ct2.accountId "
+            + " AND cab.transactionId IS NOT NULL AND cab.transactionId = ct2.id AND ct.createdDate > ct2.createdDate AND ct.createdDate <= :tillDateTime) ")
     List<String> getAccountIdsBalanceBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }

@@ -39,6 +39,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
 public class CurrentAccountAccountingTasklet implements Tasklet {
 
     private final CurrentAccountAccountingRepository currentAccountAccountingRepository;
@@ -61,15 +62,14 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
-        for (String accountId : accountIds) {
+        accountIds.parallelStream().forEach(accountId -> {
             try {
                 currentAccountAccountingWriteService.createGLEntriesInNewTransaction(accountId, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
-                log.error("Update accounting for current account: " + accountId + " is failed", e);
+                log.error(String.format("Update accounting for current account: %s is failed", accountId), e);
             }
-        }
+        });
     }
 }

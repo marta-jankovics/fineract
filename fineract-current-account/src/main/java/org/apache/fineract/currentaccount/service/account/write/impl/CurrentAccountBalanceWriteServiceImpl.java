@@ -47,6 +47,11 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateBalanceInNewTransaction(@NotNull String accountId, OffsetDateTime tillDateTime) {
+        updateBalance(accountId, tillDateTime);
+    }
+
+    @Override
     public void updateBalance(@NotNull String accountId, OffsetDateTime tillDateTime) {
         final CurrentAccountData account = accountRepository.getAccountDataById(accountId);
         if (account == null) {

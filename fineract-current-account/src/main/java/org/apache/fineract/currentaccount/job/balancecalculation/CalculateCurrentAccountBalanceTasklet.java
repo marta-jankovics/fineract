@@ -41,6 +41,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
 public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
 
     private final CurrentAccountBalanceReadService currentAccountBalanceReadService;
@@ -48,7 +49,6 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
     private final CurrentAccountBalanceRepository currentAccountBalanceRepository;
 
     @Override
-    @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE);
         ThreadLocalContextUtil
@@ -58,14 +58,14 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
             List<String> accountIds = currentAccountBalanceRepository.getAccountIdsBalanceBehind(tillDateTime, statuses);
             accountIds.addAll(currentAccountBalanceRepository.getAccountIdsNoBalance(statuses));
-            for (String accountId : accountIds) {
+            accountIds.parallelStream().forEach(accountId -> {
                 try {
-                    currentAccountBalanceWriteService.updateBalance(accountId, tillDateTime);
+                    currentAccountBalanceWriteService.updateBalanceInNewTransaction(accountId, tillDateTime);
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
-                    log.error("Updating account balance for account: " + accountId + " is failed", e);
+                    log.error(String.format("Updating account balance for account: %s is failed", accountId), e);
                 }
-            }
+            });
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }

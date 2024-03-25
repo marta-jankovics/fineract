@@ -35,17 +35,17 @@ public interface CurrentAccountAccountingRepository extends JpaRepository<GLAcco
     Optional<GLAccountingHistory> findByAccountTypeAndAccountId(PortfolioAccountType accountType, String accountId);
 
     // TODO CURRENT! check not NONE instead of CASH_BASED and validate later if only CASH_BASED is supported
-    @Query("select ca.id from CurrentAccount ca, CurrentProduct cp where "
-            + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
-            + "and not exists (select glah.id from GLAccountingHistory glah where ca.id = glah.accountId)")
+    @Query("SELECT ca.id FROM CurrentProduct cp, CurrentAccount ca LEFT JOIN GLAccountingHistory glah ON glah.accountId = ca.id "
+            + " WHERE glah.accountId IS NULL AND ca.status IN :statuses AND cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED ")
     List<String> getAccountIdsNoAccounting(@Param("statuses") List<CurrentAccountStatus> statuses);
 
     // TODO CURRENT! check not NONE instead of CASH_BASED and validate later if only CASH_BASED is supported
-    @Query("select ca.id from CurrentAccount ca, CurrentProduct cp where "
-            + "ca.status in :statuses and cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
-            + "and exists (select ct.id from CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah where ct.accountId = glah.accountId "
-            + "and (ca.balanceCalculationType = org.apache.fineract.currentaccount.enumeration.product.BalanceCalculationType.STRICT or ct.createdDate <= :tillDateTime) "
-            + "and ct2.id = glah.transactionId and ct.createdDate > ct2.createdDate)")
+    @Query("SELECT ca.id FROM CurrentAccount ca, CurrentProduct cp WHERE "
+            + " ca.status in :statuses AND cp.accountingType = org.apache.fineract.accounting.common.AccountingRuleType.CASH_BASED "
+            + " AND cp.id = ca.productId "
+            + " AND EXISTS (SELECT ct.id FROM CurrentTransaction ct, CurrentTransaction ct2, GLAccountingHistory glah WHERE ct.accountId = glah.accountId "
+            + " AND ct.createdDate <= :tillDateTime AND ca.id = ct.accountId "
+            + " AND ct2.id = glah.transactionId AND ct.createdDate > ct2.createdDate) ")
     List<String> getAccountIdsAccountingBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
 }
