@@ -78,9 +78,9 @@ public class BinxSavingsEntryDetailsData extends EntryDetailsData {
         String partnerIban = (String) transactionDetails.get("partner_account_iban");
         String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
 
-        PartyData party = PartyData.create(shortName, null);
+        PartyData party = PartyData.create(shortName, null, null);
         RelatedAccountData account = RelatedAccountData.create(iban, identifier, scheme, currency);
-        PartyData partner = PartyData.create(partnerName, null);
+        PartyData partner = PartyData.create(partnerName, null, null);
         RelatedAccountData partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, null, currency);
         if (party == null && account == null && partner == null && partnerAccount == null) {
             return null;

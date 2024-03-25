@@ -42,7 +42,7 @@ public class BinxAccountData extends AccountData {
         if (clientDetails != null) {
             String name = (String) clientDetails.get("short_name");
             String address = (String) clientDetails.get("address");
-            owner = PartyIdentificationData.create(name, address);
+            owner = PartyIdentificationData.create(name, address, null);
         }
         return new BinxAccountData(idData, currency, owner);
     }

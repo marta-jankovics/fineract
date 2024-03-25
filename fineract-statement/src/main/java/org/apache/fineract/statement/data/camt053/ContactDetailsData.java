@@ -18,31 +18,39 @@
  */
 package org.apache.fineract.statement.data.camt053;
 
+import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
+import java.util.Arrays;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.statement.StatementUtils;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PartyIdentificationData {
+public class ContactDetailsData {
 
-    @JsonProperty("Name")
-    @Size(min = 1, max = 140)
-    private final String name;
-    @JsonProperty("PostalAddress")
-    private final PostalAddressData address;
-    @JsonProperty("ContactDetails")
-    private final ContactDetailsData contactDetails;
+    @JsonProperty("MobileNumber")
+    @JsonFormat(shape = STRING, pattern = "^\\+[0-9]{1,3}-[0-9()+\\-]{1,30}$")
+    @Size(min = 1, max = 30)
+    private final String mobileNumber;
+    @JsonProperty("EmailAddress")
+    @Size(min = 1, max = 2048)
+    private final String emailAddress;
+    @JsonProperty("Other")
+    private final OtherContactData[] otherContact;
 
-    public static PartyIdentificationData create(String name, String address, ContactDetailsData contactDetails) {
-        name = StatementUtils.ensureSize(name, "Name", 1, 140);
-        PostalAddressData addressLine = PostalAddressData.create(address);
-        if (name == null && address == null && contactDetails == null) {
+    public static ContactDetailsData create(String mobileNumber, String emailAddress, OtherContactData... otherContacts) {
+        if (otherContacts != null
+                && (otherContacts = Arrays.stream(otherContacts).filter(Objects::nonNull).toArray(OtherContactData[]::new)).length == 0) {
+            otherContacts = null;
+        }
+        if (mobileNumber == null && emailAddress == null && otherContacts == null) {
             return null;
         }
-        return new PartyIdentificationData(name, addressLine, contactDetails);
+        return new ContactDetailsData(mobileNumber, emailAddress, otherContacts);
     }
 }

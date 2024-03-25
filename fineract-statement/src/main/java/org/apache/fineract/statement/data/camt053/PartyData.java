@@ -32,8 +32,8 @@ public class PartyData {
     @JsonProperty(value = "Party", required = true)
     private final PartyIdentificationData party;
 
-    public static PartyData create(String name, String address) {
-        PartyIdentificationData party = PartyIdentificationData.create(name, address);
+    public static PartyData create(String name, String address, ContactDetailsData contactDetails) {
+        PartyIdentificationData party = PartyIdentificationData.create(name, address, contactDetails);
         return party == null ? null : new PartyData(party);
     }
 }

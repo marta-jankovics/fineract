@@ -19,30 +19,25 @@
 package org.apache.fineract.statement.data.camt053;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.fineract.statement.StatementUtils;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PartyIdentificationData {
+public class OtherContactData {
 
-    @JsonProperty("Name")
-    @Size(min = 1, max = 140)
-    private final String name;
-    @JsonProperty("PostalAddress")
-    private final PostalAddressData address;
-    @JsonProperty("ContactDetails")
-    private final ContactDetailsData contactDetails;
+    @NotNull
+    @JsonProperty(value = "ChannelType", required = true)
+    @Size(min = 1, max = 4)
+    private final String channelType;
+    @JsonProperty("Identification")
+    @Size(min = 1, max = 128)
+    private final String identification;
 
-    public static PartyIdentificationData create(String name, String address, ContactDetailsData contactDetails) {
-        name = StatementUtils.ensureSize(name, "Name", 1, 140);
-        PostalAddressData addressLine = PostalAddressData.create(address);
-        if (name == null && address == null && contactDetails == null) {
-            return null;
-        }
-        return new PartyIdentificationData(name, addressLine, contactDetails);
+    public static OtherContactData create(@NotNull String channelType, String identification) {
+        return identification == null ? null : new OtherContactData(channelType, identification);
     }
 }

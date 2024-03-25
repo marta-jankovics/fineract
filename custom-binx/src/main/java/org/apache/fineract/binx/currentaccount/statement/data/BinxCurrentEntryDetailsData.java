@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.binx.currentaccount.statement.data;
 
+import static org.apache.fineract.binx.BinxConstants.CHANNEL_TYPE_PARTNER_TAXID;
+import static org.apache.fineract.binx.BinxConstants.CHANNEL_TYPE_PARTNER_TAXNO;
 import static org.apache.fineract.interoperation.domain.InteropIdentifierType.ALIAS;
 import static org.apache.fineract.interoperation.domain.InteropIdentifierType.BBAN;
 import static org.apache.fineract.interoperation.domain.InteropIdentifierType.IBAN;
@@ -31,7 +33,9 @@ import org.apache.fineract.currentaccount.data.transaction.CurrentTransactionDat
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.interoperation.domain.InteropIdentifierType;
 import org.apache.fineract.portfolio.account.domain.AccountIdentifier;
+import org.apache.fineract.statement.data.camt053.ContactDetailsData;
 import org.apache.fineract.statement.data.camt053.EntryDetailsData;
+import org.apache.fineract.statement.data.camt053.OtherContactData;
 import org.apache.fineract.statement.data.camt053.PartyData;
 import org.apache.fineract.statement.data.camt053.RelatedAccountData;
 import org.apache.fineract.statement.data.camt053.RemittanceInfoData;
@@ -84,7 +88,7 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
         CurrentAccountResolver identifier = Optional.ofNullable(identifiers.get(scheme))
                 .map(e -> CurrentAccountResolver.resolveInternal(scheme, e.getValue(), null))
                 .orElse(CurrentAccountResolver.resolveDefault(transaction.getAccountId()));
-        PartyData party = PartyData.create(shortName, null);
+        PartyData party = PartyData.create(shortName, null, null);
         RelatedAccountData account = RelatedAccountData.create(iban, identifier.getIdentifier(), identifier.getTypeName(), currency);
 
         PartyData partner = null;
@@ -94,7 +98,14 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
             String partnerName = (String) transactionDetails.get("partner_name");
             String partnerIban = (String) transactionDetails.get("partner_account_iban");
             String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
-            partner = PartyData.create(partnerName, null);
+            String partnerMobile = (String) transactionDetails.get("partner_secondary_id_mobile");
+            String partnerEmail = (String) transactionDetails.get("partner_secondary_id_email");
+            OtherContactData partnerTaxId = OtherContactData.create(CHANNEL_TYPE_PARTNER_TAXID,
+                    (String) transactionDetails.get("partner_secondary_id_tax_id"));
+            OtherContactData partnerTaxNo = OtherContactData.create(CHANNEL_TYPE_PARTNER_TAXNO,
+                    (String) transactionDetails.get("partner_secondary_id_tax_number"));
+            ContactDetailsData contactDetails = ContactDetailsData.create(partnerMobile, partnerEmail, partnerTaxId, partnerTaxNo);
+            partner = PartyData.create(partnerName, null, contactDetails);
             partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, null, currency);
             outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         }
