@@ -247,10 +247,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
             final String newValue = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
             actualChanges.put(BALANCE_CALCULATION_TYPE_PARAM, newValue);
             actualChanges.put(LOCALE_PARAM, localeAsInput);
-            BalanceCalculationType newBalanceType = BalanceCalculationType.valueOf(newValue);
-            account.setBalanceCalculationType(newBalanceType);
-            OffsetDateTime tillDateTime = accountBalanceReadService.getBalanceCalculationTill();
-            accountBalanceWriteService.updateBalance(account.getId(), tillDateTime);
+            account.setBalanceCalculationType(BalanceCalculationType.valueOf(newValue));
         }
 
         if (!actualChanges.isEmpty()) {
