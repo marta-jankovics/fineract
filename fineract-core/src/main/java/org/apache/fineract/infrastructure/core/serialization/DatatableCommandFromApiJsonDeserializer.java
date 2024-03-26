@@ -111,7 +111,7 @@ public class DatatableCommandFromApiJsonDeserializer {
         this.databaseTypeResolver = databaseTypeResolver;
     }
 
-    public void validateForCreate(final String json) {
+    public void validateForCreate(final String json, boolean isConstraintApproach) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -151,7 +151,7 @@ public class DatatableCommandFromApiJsonDeserializer {
                 baseDataValidator.reset().parameter(API_FIELD_NAME).value(name).notBlank()
                         .isNotOneOfTheseValues(TABLE_FIELD_ID, fkColumnName).matchesRegularExpression(DATATABLE_COLUMN_NAME_REGEX_PATTERN);
 
-                validateType(baseDataValidator, column);
+                validateType(baseDataValidator, column, isConstraintApproach);
 
                 final Boolean mandatory = this.fromApiJsonHelper.extractBooleanNamed(API_FIELD_MANDATORY, column);
                 final Boolean unique = this.fromApiJsonHelper.extractBooleanNamed(API_FIELD_UNIQUE, column);
@@ -168,7 +168,7 @@ public class DatatableCommandFromApiJsonDeserializer {
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
-    public void validateForUpdate(final String json) {
+    public void validateForUpdate(final String json, boolean isConstraintApproach) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -265,7 +265,7 @@ public class DatatableCommandFromApiJsonDeserializer {
                 baseDataValidator.reset().parameter(API_FIELD_NAME).value(name).notBlank()
                         .isNotOneOfTheseValues(TABLE_FIELD_ID, fkColumnName).matchesRegularExpression(DATATABLE_COLUMN_NAME_REGEX_PATTERN);
 
-                validateType(baseDataValidator, column);
+                validateType(baseDataValidator, column, isConstraintApproach);
 
                 final Boolean mandatory = this.fromApiJsonHelper.extractBooleanNamed(API_FIELD_MANDATORY, column);
                 baseDataValidator.reset().parameter(API_FIELD_MANDATORY).value(mandatory).ignoreIfNull().notBlank().isOneOfTheseValues(true,
@@ -300,7 +300,7 @@ public class DatatableCommandFromApiJsonDeserializer {
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
-    private void validateType(DataValidatorBuilder validator, final JsonElement column) {
+    private void validateType(DataValidatorBuilder validator, final JsonElement column, boolean isConstraintApproach) {
         final String type = this.fromApiJsonHelper.extractStringNamed(API_FIELD_TYPE, column);
         validator.reset().parameter(API_FIELD_TYPE).value(type).notBlank().isOneOfTheseStringValues(SUPPORTED_COLUMN_TYPES);
         if (type == null) {
@@ -318,14 +318,13 @@ public class DatatableCommandFromApiJsonDeserializer {
             } // else, the precision is ignored
         }
         final String code = this.fromApiJsonHelper.extractStringNamed(API_FIELD_CODE, column);
-        if (type.equalsIgnoreCase(API_FIELD_TYPE_DROPDOWN)) {
-            if (code != null) {
-                validator.reset().parameter(API_FIELD_CODE).value(code).notBlank().matchesRegularExpression(DATATABLE_NAME_REGEX_PATTERN);
-            } else {
-                validator.reset().parameter(API_FIELD_CODE).value(code).cantBeBlankWhenParameterProvidedIs(API_FIELD_TYPE, type);
-            }
-        } else {
-            validator.reset().parameter(API_FIELD_CODE).value(code).mustBeBlankWhenParameterProvided(API_FIELD_TYPE, type);
+        if (code != null) { // TODO update column with existing code configuration
+            validator.reset().parameter(API_FIELD_CODE).value(code).notBlank().matchesRegularExpression(DATATABLE_NAME_REGEX_PATTERN);
+            List<String> allowedTypes = isConstraintApproach ? List.of(API_FIELD_TYPE_DROPDOWN)
+                    : List.of(API_FIELD_TYPE_DROPDOWN, API_FIELD_TYPE_NUMBER, API_FIELD_TYPE_STRING);
+            validator.reset().parameter(API_FIELD_TYPE).value(type).isOneOfTheseStringValues(allowedTypes);
+        } else if (API_FIELD_TYPE_DROPDOWN.equalsIgnoreCase(type)) {
+            validator.reset().parameter(API_FIELD_CODE).value(code).cantBeBlankWhenParameterProvidedIs(API_FIELD_TYPE, type);
         }
     }
 

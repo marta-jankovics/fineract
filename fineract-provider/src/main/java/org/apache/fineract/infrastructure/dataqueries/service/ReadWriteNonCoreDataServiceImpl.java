@@ -466,7 +466,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         String datatableName = null;
         try {
             this.context.authenticatedUser();
-            this.fromApiJsonDeserializer.validateForCreate(command.json());
+            final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
+            this.fromApiJsonDeserializer.validateForCreate(command.json(), isConstraintApproach);
 
             final JsonElement element = this.fromJsonHelper.parse(command.json());
             final JsonArray columns = this.fromJsonHelper.extractJsonArrayNamed(API_PARAM_COLUMNS, element);
@@ -485,7 +486,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
             validateDatatable(datatableName);
             EntityTables entity = resolveEntity(entityName);
-            final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
             final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
             String fkColumn = sqlGenerator.escape(fkColumnName);
             final String datatableAlias = datatableName.toLowerCase().replaceAll("\\s", "_");
@@ -588,7 +588,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     public void updateDatatable(final String datatable, final JsonCommand command) {
         try {
             this.context.authenticatedUser();
-            this.fromApiJsonDeserializer.validateForUpdate(command.json());
+            final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
+            this.fromApiJsonDeserializer.validateForUpdate(command.json(), isConstraintApproach);
 
             final JsonElement element = this.fromJsonHelper.parse(command.json());
             final JsonArray changeColumns = this.fromJsonHelper.extractJsonArrayNamed(API_PARAM_CHANGECOLUMNS, element);
@@ -601,8 +602,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             int rowCount = getDatatableRowCount(datatable);
             final List<ResultsetColumnHeaderData> columnHeaders = this.genericDataService.fillResultsetColumnHeaders(datatable);
             boolean multiRow = isMultirowDatatable(columnHeaders);
-
-            final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
 
             if (!StringUtils.isBlank(entitySubType)) {
                 jdbcTemplate.update("update x_registered_table SET entity_subtype=? WHERE registered_table_name = ?", // NOSONAR

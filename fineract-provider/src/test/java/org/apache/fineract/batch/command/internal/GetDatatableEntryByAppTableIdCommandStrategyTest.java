@@ -75,7 +75,7 @@ public class GetDatatableEntryByAppTableIdCommandStrategyTest {
         final BatchRequest request = getBatchRequest(loanId, queryParameter, datatableName);
         final String responseBody = "{\\\"columnHeaders\\\":[{}],\\\"data\\\":\\\"{}\\\"}";
 
-        given(testContext.dataTableApiResource.getDatatable(eq(datatableName), eq(loanId.toString()), eq(null), any(UriInfo.class)))
+        given(testContext.dataTableApiResource.getDatatableEntries(eq(datatableName), eq(loanId.toString()), eq(null), any(UriInfo.class)))
                 .willReturn(responseBody);
 
         final BatchResponse response = testContext.subjectToTest.execute(request, testContext.uriInfo);
@@ -85,7 +85,7 @@ public class GetDatatableEntryByAppTableIdCommandStrategyTest {
         assertEquals(request.getHeaders(), response.getHeaders());
         assertEquals(responseBody, response.getBody());
 
-        verify(testContext.dataTableApiResource).getDatatable(eq(datatableName), eq(loanId.toString()), eq(null),
+        verify(testContext.dataTableApiResource).getDatatableEntries(eq(datatableName), eq(loanId.toString()), eq(null),
                 testContext.uriInfoCaptor.capture());
         MutableUriInfo mutableUriInfo = testContext.uriInfoCaptor.getValue();
         assertThat(mutableUriInfo.getAdditionalQueryParameters()).hasSize(numberOfQueryParams);

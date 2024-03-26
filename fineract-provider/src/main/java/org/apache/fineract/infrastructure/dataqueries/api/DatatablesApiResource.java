@@ -251,7 +251,7 @@ public class DatatablesApiResource {
             + "datatables/extra_client_details/1?genericResultSet=true")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = HashMap.class))) })
-    public String getDatatable(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
+    public String getDatatableEntries(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
             @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @QueryParam("order") @Parameter(description = "order") final String order, @Context final UriInfo uriInfo) {
 
