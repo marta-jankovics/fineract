@@ -137,7 +137,8 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
         }
         BinxTransactionEnvelopeData envelope = outgoing
                 ? BinxTransactionEnvelopeData.create(identifier.getIdentifier(), identifier.getTypeName(), partnerIdentifier, partnerScheme)
-                : BinxTransactionEnvelopeData.create(partnerIdentifier, partnerScheme, identifier.getIdentifier(), identifier.getTypeName());
+                : BinxTransactionEnvelopeData.create(partnerIdentifier, partnerScheme, identifier.getIdentifier(),
+                        identifier.getTypeName());
         return SupplementaryData.create(envelope);
     }
 }
