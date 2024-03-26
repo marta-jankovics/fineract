@@ -97,7 +97,6 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
         if (transactionDetails != null) {
             String partnerName = (String) transactionDetails.get("partner_name");
             String partnerIban = (String) transactionDetails.get("partner_account_iban");
-            String partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
             String partnerMobile = (String) transactionDetails.get("partner_secondary_id_mobile");
             String partnerEmail = (String) transactionDetails.get("partner_secondary_id_email");
             OtherContactData partnerTaxId = OtherContactData.create(CHANNEL_TYPE_PARTNER_TAXID,
@@ -106,7 +105,7 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
                     (String) transactionDetails.get("partner_secondary_id_tax_number"));
             ContactDetailsData contactDetails = ContactDetailsData.create(partnerMobile, partnerEmail, partnerTaxId, partnerTaxNo);
             partner = PartyData.create(partnerName, null, contactDetails);
-            partnerAccount = RelatedAccountData.create(partnerIban, partnerIdentifier, null, currency);
+            partnerAccount = RelatedAccountData.create(partnerIban, null, null, currency);
             outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         }
         if (party == null && account == null && partner == null && partnerAccount == null) {
@@ -128,7 +127,6 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
         String partnerIdentifier = null;
         boolean outgoing = transaction.getTransactionType().isDebit();
         if (transactionDetails != null) {
-            partnerIdentifier = (String) transactionDetails.get("partner_secondary_identifier");
             outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
         }
         BinxTransactionEnvelopeData envelope = outgoing
