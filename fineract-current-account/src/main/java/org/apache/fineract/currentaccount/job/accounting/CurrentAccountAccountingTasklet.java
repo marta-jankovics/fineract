@@ -63,13 +63,13 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
     }
 
     private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
-        accountIds.parallelStream().forEach(accountId -> {
+        for (String accountId : accountIds) {
             try {
                 currentAccountAccountingWriteService.createGLEntriesInNewTransaction(accountId, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
                 log.error(String.format("Update accounting for current account: %s is failed", accountId), e);
             }
-        });
+        }
     }
 }
