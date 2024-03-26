@@ -125,13 +125,19 @@ public class BinxCurrentEntryDetailsData extends EntryDetailsData {
                 .map(e -> CurrentAccountResolver.resolveInternal(scheme, e.getValue(), null))
                 .orElse(CurrentAccountResolver.resolveDefault(transaction.getAccountId()));
         String partnerIdentifier = null;
+        String partnerScheme = BBAN.name();
         boolean outgoing = transaction.getTransactionType().isDebit();
         if (transactionDetails != null) {
             outgoing = DIRECTION_OUT.equalsIgnoreCase((String) transactionDetails.get("direction"));
+            String partnerIban = (String) transactionDetails.get("partner_account_iban");
+            if (partnerIban != null) {
+                int length = partnerIban.length();
+                partnerIdentifier = length > 24 ? partnerIban.substring(length - 24) : partnerIban;
+            }
         }
         BinxTransactionEnvelopeData envelope = outgoing
-                ? BinxTransactionEnvelopeData.create(identifier.getIdentifier(), identifier.getTypeName(), partnerIdentifier, null)
-                : BinxTransactionEnvelopeData.create(partnerIdentifier, null, identifier.getIdentifier(), identifier.getTypeName());
+                ? BinxTransactionEnvelopeData.create(identifier.getIdentifier(), identifier.getTypeName(), partnerIdentifier, partnerScheme)
+                : BinxTransactionEnvelopeData.create(partnerIdentifier, partnerScheme, identifier.getIdentifier(), identifier.getTypeName());
         return SupplementaryData.create(envelope);
     }
 }
