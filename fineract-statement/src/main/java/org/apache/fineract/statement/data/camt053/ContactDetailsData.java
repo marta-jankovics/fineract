@@ -35,7 +35,7 @@ public class ContactDetailsData {
 
     @JsonProperty("MobileNumber")
     @JsonFormat(shape = STRING, pattern = "^\\+[0-9]{1,3}-[0-9()+\\-]{1,30}$")
-    @Size(min = 1, max = 30)
+    @Size(min = 1, max = 35)
     private final String mobileNumber;
     @JsonProperty("EmailAddress")
     @Size(min = 1, max = 2048)
