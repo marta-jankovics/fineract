@@ -131,9 +131,14 @@ public final class JsonCommand {
                 command.jobName, command.resourceIdentifier);
     }
 
+    public static JsonCommand fromJsonElement(final Long resourceId, final JsonElement parsedCommand,
+            final FromJsonHelper fromApiJsonHelper) {
+        return new JsonCommand(null, null, parsedCommand, fromApiJsonHelper, null, resourceId, null, null, null, null, null, null, null,
+                null, null, null, null, null);
+    }
+
     public static JsonCommand fromJsonElement(final Long resourceId, final JsonElement parsedCommand) {
-        return new JsonCommand(null, null, parsedCommand, null, null, resourceId, null, null, null, null, null, null, null, null, null,
-                null, null, null);
+        return fromJsonElement(resourceId, parsedCommand, null);
     }
 
     public static JsonCommand from(final String jsonCommand) {

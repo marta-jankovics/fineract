@@ -166,11 +166,11 @@ public class DatatablesStepDef extends AbstractStepDef {
             ResultsetColumnHeaderData columnMetadata = columnMap.get(columnName);
             assertThat(columnMetadata).withFailMessage("Column [%s] not found on datatable", columnName).isNotNull();
 
-            assertThat(columnMetadata.getIsColumnPrimaryKey())
+            assertThat(columnMetadata.getColumnPrimaryKey())
                     .withFailMessage("Primary key definition for column [%s] does not match", columnName).isEqualTo(primaryKey);
-            assertThat(columnMetadata.getIsColumnUnique())
+            assertThat(columnMetadata.getColumnPrimaryKey())
                     .withFailMessage("Unique constraint definition for column [%s] does not match", columnName).isEqualTo(unique);
-            assertThat(columnMetadata.getIsColumnIndexed()).withFailMessage("Index definition for column [%s] does not match", columnName)
+            assertThat(columnMetadata.getColumnIndexed()).withFailMessage("Index definition for column [%s] does not match", columnName)
                     .isEqualTo(indexed);
         }
     }
