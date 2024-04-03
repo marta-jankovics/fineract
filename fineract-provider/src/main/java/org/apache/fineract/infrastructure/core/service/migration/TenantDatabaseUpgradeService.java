@@ -145,16 +145,14 @@ public class TenantDatabaseUpgradeService implements InitializingBean {
         log.info("Upgrade for tenant {} has started", tenant.getTenantIdentifier());
         DataSource tenantDataSource = tenantDataSourceFactory.create(tenant);
         if (databaseStateVerifier.isFirstLiquibaseMigration(tenantDataSource)) {
-            ExtendedSpringLiquibase liquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, INITIAL_SWITCH_CONTEXT,
-                    tenant.getTenantIdentifier());
+            ExtendedSpringLiquibase liquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, CUSTOM_CHANGELOG_CONTEXT,
+                    INITIAL_SWITCH_CONTEXT, tenant.getTenantIdentifier());
             applyInitialLiquibase(tenantDataSource, liquibase, tenant.getTenantIdentifier(),
                     (ds) -> !databaseStateVerifier.isTenantOnLatestUpgradableVersion(ds));
         }
-        SpringLiquibase tenantLiquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, tenant.getTenantIdentifier());
-        tenantLiquibase.afterPropertiesSet();
-        SpringLiquibase customChangelogLiquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, CUSTOM_CHANGELOG_CONTEXT,
+        SpringLiquibase tenantLiquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, CUSTOM_CHANGELOG_CONTEXT,
                 tenant.getTenantIdentifier());
-        customChangelogLiquibase.afterPropertiesSet();
+        tenantLiquibase.afterPropertiesSet();
         log.info("Upgrade for tenant {} has finished", tenant.getTenantIdentifier());
     }
 

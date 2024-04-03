@@ -191,7 +191,4 @@
             <where>short_name is null</where>
         </update>
     </changeSet>
-    <changeSet author="fineract" id="3">
-        <addNotNullConstraint tableName="job" columnName="short_name"/>
-    </changeSet>
 </databaseChangeLog>
