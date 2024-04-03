@@ -20,11 +20,13 @@ package org.apache.fineract.statement.job;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.statement.data.dao.AccountStatementPublishData;
@@ -47,6 +49,7 @@ public class PublishAccountStatementsTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.PUBLISH_STATEMENTS);
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
         for (PortfolioProductType productType : PortfolioProductType.values()) {
             AccountStatementPublishReadService readService = statementServiceProvider.findAccountStatementPublishReadService(productType);
@@ -59,17 +62,31 @@ public class PublishAccountStatementsTasklet implements Tasklet {
                     .retrieveStatementsToPublish(productType, transactionDate);
             log.info("Statements to publish for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
 
-            for (Map.Entry<StatementType, Map<StatementPublishType, List<AccountStatementPublishData>>> statementType : generationsMap
+            for (Map.Entry<StatementType, Map<StatementPublishType, List<AccountStatementPublishData>>> byStatementType : generationsMap
                     .entrySet()) {
-                for (Map.Entry<StatementPublishType, List<AccountStatementPublishData>> publishType : statementType.getValue().entrySet()) {
+                StatementType statementType = byStatementType.getKey();
+                for (Map.Entry<StatementPublishType, List<AccountStatementPublishData>> byPublishType : byStatementType.getValue()
+                        .entrySet()) {
+                    StatementPublishType publishType = byPublishType.getKey();
                     AccountStatementPublisher publisher = statementServiceProvider.getAccountStatementPublishWriteService(productType,
-                            statementType.getKey(), publishType.getKey());
+                            statementType, publishType);
 
-                    log.info("Processing publish statement batch for {} - {} - {}", productType, statementType, publishType.getKey());
-                    publisher.publish(productType, statementType.getKey(), publishType.getKey(), publishType.getValue());
+                    log.info("Processing publish statement batch for {} - {} - {}", productType, statementType, publishType);
+                    List<AccountStatementPublishData> publishList = byPublishType.getValue();
+                    for (AccountStatementPublishData publishData : publishList) {
+                        try {
+                            publisher.publish(productType, statementType, publishType, publishData);
+                        } catch (Exception e) {
+                            Long resultId = publishData.getAccountStatementResultId();
+                            log.error(String.format("Publish statement for %s - %s - %s - %s has failed", productType, statementType,
+                                    publishType, resultId), e);
+                            errors.put(e, List.of(String.valueOf(resultId)));
+                        }
+                    }
                 }
             }
         }
+        JobExecutionException.throwErrors(errors);
         return RepeatStatus.FINISHED;
     }
 }

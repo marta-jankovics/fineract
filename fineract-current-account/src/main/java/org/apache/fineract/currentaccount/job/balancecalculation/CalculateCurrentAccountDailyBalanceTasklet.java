@@ -22,6 +22,7 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
     @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_DAILY_BALANCE);
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
         try {
             LocalDate balanceDate = DateUtils.getBusinessLocalDate().minusDays(1L);
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
@@ -56,12 +58,14 @@ public class CalculateCurrentAccountDailyBalanceTasklet implements Tasklet {
                     dailyBalanceWriteService.createDailyBalance(accountId, balanceDate);
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
-                    log.error("Calculate daily balance for account: " + accountId + " is failed", e);
+                    log.error(String.format("Calculate daily balance for account: %s is failed", accountId), e);
+                    errors.put(e, List.of(accountId));
                 }
             }
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
+        JobExecutionException.throwErrors(errors);
         return RepeatStatus.FINISHED;
     }
 }

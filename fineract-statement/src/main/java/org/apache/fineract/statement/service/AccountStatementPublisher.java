@@ -19,8 +19,6 @@
 package org.apache.fineract.statement.service;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response;
-import java.util.List;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.statement.data.dao.AccountStatementPublishData;
 import org.apache.fineract.statement.domain.StatementPublishType;
@@ -31,6 +29,6 @@ public interface AccountStatementPublisher {
     boolean isSupport(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType);
 
-    Response publish(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
-            @NotNull StatementPublishType publishType, List<AccountStatementPublishData> publishBatch);
+    void publish(@NotNull PortfolioProductType productType, @NotNull StatementType statementType, @NotNull StatementPublishType publishType,
+            AccountStatementPublishData publishData);
 }

@@ -26,6 +26,7 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -54,22 +55,26 @@ public class CalculateCurrentTransactionMetadataTasklet implements Tasklet {
     @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_TRANSACTION_METADATA);
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
         try {
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(METADATA_GENERATION);
             OffsetDateTime tillDateTime = getMetadataCalculationTill();
             List<String[]> transactionIds = transactionRepository.getTransactionIdsForMetadata(tillDateTime, statuses);
             Map<String, List<String>> byAccountIds = transactionIds.stream().collect(groupingBy(e -> e[0], mapping(e -> e[1], toList())));
             for (Map.Entry<String, List<String>> entry : byAccountIds.entrySet()) {
+                List<String> ids = entry.getValue();
                 try {
-                    transactionMetadataService.assignMetadata(entry.getKey(), entry.getValue());
+                    transactionMetadataService.assignMetadata(entry.getKey(), ids);
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
-                    log.error("Calculate transaction metadata for account: " + entry.getKey() + " is failed", e);
+                    log.error(String.format("Calculate transaction metadata for account: %s is failed", entry.getKey()), e);
+                    errors.put(e, ids);
                 }
             }
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
+        JobExecutionException.throwErrors(errors);
         return RepeatStatus.FINISHED;
     }
 

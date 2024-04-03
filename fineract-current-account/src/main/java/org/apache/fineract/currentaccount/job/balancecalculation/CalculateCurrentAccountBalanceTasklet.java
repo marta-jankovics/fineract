@@ -23,6 +23,7 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,7 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
         log.info("Processing {} job", JobName.CALCULATE_CURRENT_ACCOUNT_BALANCE);
         ThreadLocalContextUtil
                 .setCommandContext(CommandActionContext.create(CURRENT_ACCOUNT_ENTITY_NAME, BALANCE_CALCULATION.getActionName()));
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
         try {
             OffsetDateTime tillDateTime = currentAccountBalanceReadService.getBalanceCalculationTill();
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(BALANCE_CALCULATION);
@@ -64,11 +66,13 @@ public class CalculateCurrentAccountBalanceTasklet implements Tasklet {
                 } catch (Exception e) {
                     // We don't care if it failed, the job can continue
                     log.error(String.format("Updating account balance for account: %s is failed", accountId), e);
+                    errors.put(e, List.of(accountId));
                 }
             }
         } catch (Exception e) {
             throw new JobExecutionException(List.of(e));
         }
+        JobExecutionException.throwErrors(errors);
         return RepeatStatus.FINISHED;
     }
 }

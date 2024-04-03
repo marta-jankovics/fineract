@@ -23,7 +23,6 @@ import static lombok.AccessLevel.PROTECTED;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
@@ -54,7 +53,7 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
 
     @Override
     @Transactional(REQUIRES_NEW)
-    public Response generateStatementBatch(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
+    public void generateStatementBatch(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType, @NotNull List<AccountStatementGenerationData> generationBatch,
             boolean deleteResult) {
         HashMap<Long, AccountStatement> statements = new HashMap<>();
@@ -82,8 +81,6 @@ public abstract class AccountStatementGenerationWriteServiceImpl implements Acco
                 }
             }
         }
-
-        return Response.ok().entity(statementResult.getContent()).build();
     }
 
     protected AccountStatementResult generateResult(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,

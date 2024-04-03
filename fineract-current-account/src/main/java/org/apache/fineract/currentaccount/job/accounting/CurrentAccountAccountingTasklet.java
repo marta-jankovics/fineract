@@ -22,6 +22,7 @@ import static org.apache.fineract.currentaccount.enumeration.account.CurrentAcco
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,27 +50,22 @@ public class CurrentAccountAccountingTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         log.info("Processing {} job", JobName.CURRENT_ACCOUNT_ACCOUNTING);
-        try {
-            long accountingCalculationDelay = configurationService.getAccountingCalculationDelaySeconds();
-            OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);
-            List<CurrentAccountStatus> statuses = List.of(ACTIVE);
-            List<String> accountIds = currentAccountAccountingRepository.getAccountIdsAccountingBehind(tillDateTime, statuses);
-            accountIds.addAll(currentAccountAccountingRepository.getAccountIdsNoAccounting(statuses));
-            writeAccounting(accountIds, tillDateTime);
-        } catch (Exception e) {
-            throw new JobExecutionException(List.of(e));
-        }
-        return RepeatStatus.FINISHED;
-    }
-
-    private void writeAccounting(List<String> accountIds, OffsetDateTime tillDateTime) {
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
+        long accountingCalculationDelay = configurationService.getAccountingCalculationDelaySeconds();
+        OffsetDateTime tillDateTime = DateUtils.getAuditOffsetDateTime().minusSeconds(accountingCalculationDelay);
+        List<CurrentAccountStatus> statuses = List.of(ACTIVE);
+        List<String> accountIds = currentAccountAccountingRepository.getAccountIdsAccountingBehind(tillDateTime, statuses);
+        accountIds.addAll(currentAccountAccountingRepository.getAccountIdsNoAccounting(statuses));
         for (String accountId : accountIds) {
             try {
                 currentAccountAccountingWriteService.createGLEntriesInNewTransaction(accountId, tillDateTime);
             } catch (Exception e) {
                 // We don't care if it failed, the job can continue
                 log.error(String.format("Update accounting for current account: %s is failed", accountId), e);
+                errors.put(e, List.of(accountId));
             }
         }
+        JobExecutionException.throwErrors(errors);
+        return RepeatStatus.FINISHED;
     }
 }

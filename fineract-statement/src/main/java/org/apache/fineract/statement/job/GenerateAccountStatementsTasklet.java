@@ -20,11 +20,13 @@ package org.apache.fineract.statement.job;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.statement.data.dao.AccountStatementGenerationData;
@@ -47,7 +49,9 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) throws Exception {
-        log.info("Processing {} job", JobName.GENERATE_STATEMENTS);
+        JobName jobName = JobName.GENERATE_STATEMENTS;
+        log.info("Processing {} job", jobName);
+        HashMap<Throwable, List<String>> errors = new HashMap<>();
         String deleteResultS = (String) chunkContext.getStepContext().getJobParameters().get("auto-delete-result");
         boolean deleteResult = Strings.isEmpty(deleteResultS) || Boolean.parseBoolean(deleteResultS);
         LocalDate transactionDate = DateUtils.getBusinessLocalDate();
@@ -55,30 +59,41 @@ public class GenerateAccountStatementsTasklet implements Tasklet {
             AccountStatementGenerationReadService readService = statementServiceProvider
                     .findAccountStatementGenerationReadService(productType);
             if (readService == null) {
-                log.debug("Read service for {} - {} is not implemented", JobName.GENERATE_STATEMENTS, productType);
+                log.debug("Read service for {} - {} is not implemented", jobName, productType);
                 continue;
             }
-            log.debug("Processing {} - {}", JobName.GENERATE_STATEMENTS, productType);
+            log.debug("Processing {} - {}", jobName, productType);
             Map<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> generationsMap = readService
                     .retrieveStatementsToGenerate(productType, transactionDate);
             log.info("Statements to generate for {} were {}", productType, generationsMap.isEmpty() ? "not found" : "found");
 
-            for (Map.Entry<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> statementType : generationsMap
+            for (Map.Entry<StatementType, Map<StatementPublishType, Map<String, List<AccountStatementGenerationData>>>> byStatementType : generationsMap
                     .entrySet()) {
-                for (Map.Entry<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> publishType : statementType
+                StatementType statementType = byStatementType.getKey();
+                for (Map.Entry<StatementPublishType, Map<String, List<AccountStatementGenerationData>>> byPublishType : byStatementType
                         .getValue().entrySet()) {
+                    StatementPublishType publishType = byPublishType.getKey();
                     AccountStatementGenerationWriteService writeService = statementServiceProvider
-                            .getAccountStatementGenerationWriteService(productType, statementType.getKey(), publishType.getKey());
-                    Map<String, List<AccountStatementGenerationData>> byBatchKey = publishType.getValue();
-                    log.info("Processing {} statement generation batches for {} - {} - {}", byBatchKey.values().size(), productType,
-                            statementType, publishType);
-                    for (List<AccountStatementGenerationData> generationBatch : byBatchKey.values()) {
-                        writeService.generateStatementBatch(productType, statementType.getKey(), publishType.getKey(), generationBatch,
-                                deleteResult);
+                            .getAccountStatementGenerationWriteService(productType, statementType, publishType);
+                    Map<String, List<AccountStatementGenerationData>> byBatchKey = byPublishType.getValue();
+                    log.info("Processing {} statement generation batches for {} - {} - {}", byBatchKey.size(), productType, statementType,
+                            publishType);
+                    for (Map.Entry<String, List<AccountStatementGenerationData>> generationBatch : byBatchKey.entrySet()) {
+                        String batchKey = generationBatch.getKey();
+                        List<AccountStatementGenerationData> statements = generationBatch.getValue();
+                        try {
+                            writeService.generateStatementBatch(productType, statementType, publishType, statements, deleteResult);
+                        } catch (Exception e) {
+                            // The job can continue
+                            log.error(String.format("Generate statements for %s - %s - %s - %s has failed", productType, statementType,
+                                    publishType, batchKey), e);
+                            errors.put(e, statements.stream().map(s -> String.valueOf(s.getAccountStatementId())).toList());
+                        }
                     }
                 }
             }
         }
+        JobExecutionException.throwErrors(errors);
         return RepeatStatus.FINISHED;
     }
 }

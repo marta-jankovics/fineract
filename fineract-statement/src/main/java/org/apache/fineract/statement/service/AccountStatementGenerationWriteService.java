@@ -19,7 +19,6 @@
 package org.apache.fineract.statement.service;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response;
 import java.util.List;
 import org.apache.fineract.portfolio.PortfolioProductType;
 import org.apache.fineract.statement.data.dao.AccountStatementGenerationData;
@@ -31,6 +30,6 @@ public interface AccountStatementGenerationWriteService {
     boolean isSupport(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType);
 
-    Response generateStatementBatch(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
+    void generateStatementBatch(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
             @NotNull StatementPublishType publishType, @NotNull List<AccountStatementGenerationData> generationBatch, boolean deleteResult);
 }

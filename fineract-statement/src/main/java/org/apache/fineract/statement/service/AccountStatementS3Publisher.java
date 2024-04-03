@@ -19,7 +19,6 @@
 package org.apache.fineract.statement.service;
 
 import static jakarta.transaction.Transactional.TxType.REQUIRES_NEW;
-import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.apache.fineract.statement.domain.StatementPublishType.S3;
 import static org.apache.fineract.statement.service.Camt053StatementGenerator.JSON_MAPPER;
 
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -67,9 +65,8 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
 
     @Override
     @Transactional(REQUIRES_NEW)
-    public Response publish(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
-            @NotNull StatementPublishType publishType, List<AccountStatementPublishData> publishBatch) {
-        Response.ResponseBuilder respBuilder = Response.status(NO_CONTENT);
+    public void publish(@NotNull PortfolioProductType productType, @NotNull StatementType statementType,
+            @NotNull StatementPublishType publishType, AccountStatementPublishData publishData) {
         String bucket = properties.getReport().getExport().getS3().getBucketName();
         String filePfx = productType + "_" + statementType;
         String fileExt = ".json";
@@ -77,34 +74,31 @@ public class AccountStatementS3Publisher implements AccountStatementPublisher {
         String s3Folder = s3.getFolder();
         Integer nameLengt = s3.getLength();
 
-        for (AccountStatementPublishData publishData : publishBatch) {
-            Long resultId = publishData.getAccountStatementResultId();
-            log.info("Start to publish statement result for id {}", resultId);
-            AccountStatementResult result = statementResultRepository.findById(resultId)
-                    .orElseThrow(() -> new ResourceNotFoundException("account.statement.result", resultId.toString()));
-            String content = result.getContent();
-            Map<String, String> metadata = buildMetadata(result.getMetadata());
-            String resultPath = result.getResultPath();
-            String folder = s3Folder;
-            if (!StringUtils.isBlank(resultPath)) {
-                folder = StringUtils.isBlank(folder) ? resultPath : (folder + File.separator + resultPath);
-            }
-            String fileName = result.getResultName();
-            if (StringUtils.isBlank(fileName)) {
-                fileName = filePfx + "_" + result.getGeneratedOn() + "_" + result.getResultCode().replaceAll("[^a-zA-Z0-9!\\-_.'()$]", "_")
-                        + fileExt;
-            }
-            if (fileName.length() > nameLengt) {
-                throw new IllegalArgumentException("The statement file name '" + fileName + "' must be shorter than " + nameLengt);
-            }
-            String filePath = StringUtils.isBlank(folder) ? fileName : (folder + File.separator + fileName);
-            log.debug("Statement result is ready to publish to {} for id {}", filePath, resultId);
-            s3Client.putObject(builder -> builder.bucket(bucket).key(filePath).metadata(metadata).build(), RequestBody.fromString(content));
-            result.published();
-            statementResultRepository.save(result);
-            log.info("Statement result is published to {} for id {}", filePath, resultId);
+        Long resultId = publishData.getAccountStatementResultId();
+        log.info("Start to publish statement result for id {}", resultId);
+        AccountStatementResult result = statementResultRepository.findById(resultId)
+                .orElseThrow(() -> new ResourceNotFoundException("account.statement.result", resultId.toString()));
+        String content = result.getContent();
+        Map<String, String> metadata = buildMetadata(result.getMetadata());
+        String resultPath = result.getResultPath();
+        String folder = s3Folder;
+        if (!StringUtils.isBlank(resultPath)) {
+            folder = StringUtils.isBlank(folder) ? resultPath : (folder + File.separator + resultPath);
         }
-        return respBuilder.status(NO_CONTENT).build();
+        String fileName = result.getResultName();
+        if (StringUtils.isBlank(fileName)) {
+            fileName = filePfx + "_" + result.getGeneratedOn() + "_" + result.getResultCode().replaceAll("[^a-zA-Z0-9!\\-_.'()$]", "_")
+                    + fileExt;
+        }
+        if (fileName.length() > nameLengt) {
+            throw new IllegalArgumentException("The statement file name '" + fileName + "' must be shorter than " + nameLengt);
+        }
+        String filePath = StringUtils.isBlank(folder) ? fileName : (folder + File.separator + fileName);
+        log.debug("Statement result is ready to publish to {} for id {}", filePath, resultId);
+        s3Client.putObject(builder -> builder.bucket(bucket).key(filePath).metadata(metadata).build(), RequestBody.fromString(content));
+        result.published();
+        statementResultRepository.save(result);
+        log.info("Statement result is published to {} for id {}", filePath, resultId);
     }
 
     private static Map<String, String> buildMetadata(String metadatas) {
