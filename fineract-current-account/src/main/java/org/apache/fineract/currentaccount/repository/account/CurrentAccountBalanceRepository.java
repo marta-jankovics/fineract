@@ -18,11 +18,10 @@
  */
 package org.apache.fineract.currentaccount.repository.account;
 
+import jakarta.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import jakarta.persistence.LockModeType;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
