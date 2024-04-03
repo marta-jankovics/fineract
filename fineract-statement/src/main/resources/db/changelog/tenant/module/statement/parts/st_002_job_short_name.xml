@@ -20,8 +20,17 @@
 
 -->
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-  <include file="parts/st_001_init_account_statement.xml" relativeToChangelogFile="true"/>
-  <include file="parts/st_002_job_short_name.xml" relativeToChangelogFile="true"/>
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <!--  add statement tables -->
+    <changeSet author="fineract" id="1">
+        <update tableName="job">
+            <column name="short_name" value="STM_GEN"/>
+            <where>name='Generate Account Statements'</where>
+        </update>
+        <update tableName="job">
+            <column name="short_name" value="STM_PUB"/>
+            <where>name='Publish Account Statements'</where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

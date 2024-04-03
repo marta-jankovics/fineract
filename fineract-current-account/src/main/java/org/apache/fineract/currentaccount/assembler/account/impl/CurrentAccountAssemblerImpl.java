@@ -72,8 +72,8 @@ import org.apache.fineract.currentaccount.repository.entityaction.EntityActionRe
 import org.apache.fineract.currentaccount.repository.product.CurrentProductRepository;
 import org.apache.fineract.currentaccount.service.account.read.CurrentAccountBalanceReadService;
 import org.apache.fineract.currentaccount.service.account.write.CurrentAccountBalanceWriteService;
-import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
 import org.apache.fineract.currentaccount.statement.service.CurrentStatementWriteService;
+import org.apache.fineract.infrastructure.core.api.IdTypeResolver;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;

@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.service.common;
-
-import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.ID_TYPE_PARAM;
+package org.apache.fineract.infrastructure.core.api;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -30,6 +28,29 @@ import org.apache.fineract.infrastructure.core.service.DefaultOption;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public abstract class IdTypeResolver {
+
+    public enum IdType implements DefaultOption {
+
+        ID, //
+        EXTERNAL_ID, //
+        SHORT_NAME,; //
+
+        @Override
+        public boolean isDefault() {
+            return this == ID;
+        }
+
+    }
+
+    @NotNull
+    public static IdType resolveDefault() {
+        return IdType.ID;
+    }
+
+    @NotNull
+    public static IdType resolve(String idType) {
+        return resolve(IdType.class, idType);
+    }
 
     @NotNull
     public static <T extends Enum<T>> T resolve(@NotNull Class<T> clazz, String idType) {
@@ -50,6 +71,6 @@ public abstract class IdTypeResolver {
 
     public static RuntimeException resolveFailed(String idType, Exception e) {
         return new PlatformApiDataValidationException("error.msg.id.type.not.found", "Provided type " + idType + " is not supported",
-                ID_TYPE_PARAM, e, idType);
+                "idType", e, idType);
     }
 }

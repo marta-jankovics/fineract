@@ -102,4 +102,22 @@
             <column name="is_mismatched_job" valueBoolean="false"/>
         </insert>
     </changeSet>
+    <changeSet author="fineract" id="5">
+        <update tableName="job">
+            <column name="short_name" value="CA_UBAL"/>
+            <where>name='Update Balance of Current Accounts'</where>
+        </update>
+        <update tableName="job">
+            <column name="short_name" value="CA_ACC"/>
+            <where>name='Current Account Accounting'</where>
+        </update>
+        <update tableName="job">
+            <column name="short_name" value="CA_DBAL"/>
+            <where>name='Calculate Current Daily Balance'</where>
+        </update>
+        <update tableName="job">
+            <column name="short_name" value="CTR_CMTD"/>
+            <where>name='Calculate Current Transaction Metadata'</where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

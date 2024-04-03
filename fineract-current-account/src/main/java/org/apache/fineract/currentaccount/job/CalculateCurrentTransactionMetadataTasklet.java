@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.job.balancecalculation;
+package org.apache.fineract.currentaccount.job;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -36,6 +36,7 @@ import org.apache.fineract.currentaccount.service.transaction.write.CurrentTrans
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
+import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -52,6 +53,7 @@ public class CalculateCurrentTransactionMetadataTasklet implements Tasklet {
     @Override
     @SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        log.info("Processing {} job", JobName.CALCULATE_CURRENT_TRANSACTION_METADATA);
         try {
             List<CurrentAccountStatus> statuses = CurrentAccountStatus.getEnabledStatusList(METADATA_GENERATION);
             OffsetDateTime tillDateTime = getMetadataCalculationTill();

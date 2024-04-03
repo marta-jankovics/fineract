@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.currentaccount.enumeration.product.CurrentProductIdType;
-import org.apache.fineract.currentaccount.service.common.IdTypeResolver;
+import org.apache.fineract.infrastructure.core.api.IdTypeResolver;
 
 @Getter
 @RequiredArgsConstructor

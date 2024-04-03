@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.currentaccount.job.balancecalculation;
+package org.apache.fineract.currentaccount.job;
 
 import org.apache.fineract.currentaccount.repository.transaction.CurrentTransactionRepository;
 import org.apache.fineract.currentaccount.service.transaction.write.CurrentTransactionMetadataService;

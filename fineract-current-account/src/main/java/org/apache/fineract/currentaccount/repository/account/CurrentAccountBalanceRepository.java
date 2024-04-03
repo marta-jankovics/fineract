@@ -20,10 +20,14 @@ package org.apache.fineract.currentaccount.repository.account;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import jakarta.persistence.LockModeType;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.domain.account.CurrentAccountBalance;
 import org.apache.fineract.currentaccount.enumeration.account.CurrentAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -46,4 +50,8 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
             + " AND cab.transactionId IS NOT NULL AND cab.transactionId = ct2.id AND ct.createdDate > ct2.createdDate AND ct.createdDate <= :tillDateTime) ")
     List<String> getAccountIdsBalanceBehind(@Param("tillDateTime") OffsetDateTime tillDateTime,
             @Param("statuses") List<CurrentAccountStatus> statuses);
+
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    @Query("select cab from CurrentAccountBalance cab where cab.id = :id")
+    Optional<CurrentAccountBalance> findByIdForceIncrement(@Param("id") Long id);
 }
