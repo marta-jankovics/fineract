@@ -18,9 +18,11 @@
  */
 package org.apache.fineract.cob.loan;
 
+import static org.apache.fineract.cob.loan.LoanCOBConstant.LOAN_COB_JOB_NAME;
+
 import org.apache.fineract.cob.COBBusinessStepService;
 import org.apache.fineract.cob.common.CustomJobParameterResolver;
-import org.apache.fineract.cob.conditions.LoanCOBManagerCondition;
+import org.apache.fineract.cob.conditions.BatchManagerCondition;
 import org.apache.fineract.cob.listener.COBExecutionListenerRunner;
 import org.apache.fineract.infrastructure.event.business.service.BusinessEventNotifierService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
@@ -47,7 +49,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @EnableBatchIntegration
-@Conditional(LoanCOBManagerCondition.class)
+@Conditional(BatchManagerCondition.class)
 public class LoanCOBManagerConfiguration {
 
     @Autowired
@@ -85,7 +87,8 @@ public class LoanCOBManagerConfiguration {
     @Bean
     public Step loanCOBStep() {
         return stepBuilderFactory.get(LoanCOBConstant.LOAN_COB_PARTITIONER_STEP)
-                .partitioner(LoanCOBConstant.LOAN_COB_WORKER_STEP, partitioner()).outputChannel(outboundRequests).build();
+                .partitioner(LoanCOBConstant.LOAN_COB_WORKER_STEP, partitioner())
+                .pollInterval(propertyService.getPollInterval(LOAN_COB_JOB_NAME)).outputChannel(outboundRequests).build();
     }
 
     @Bean

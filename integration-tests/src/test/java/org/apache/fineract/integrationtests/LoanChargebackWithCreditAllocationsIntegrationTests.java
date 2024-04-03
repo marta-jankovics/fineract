@@ -587,7 +587,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
 
             verifyTransactions(loanId, //
                     transaction(1250.0, "Disbursement", "01 January 2023", 1250.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
-                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
+                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 50.0), //
                     transaction(70.0, "Accrual", "20 January 2023", 0.0, 0.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
                     transaction(100.0, "Chargeback", "02 May 2023", 50.0, 100.0, 0.0, 0.0, 0.0, 0.0, 50.0) //
             );
@@ -653,7 +653,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
 
             verifyTransactions(loanId, //
                     transaction(1250.0, "Disbursement", "01 January 2023", 1250.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
-                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
+                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 50.0), //
                     transaction(70.0, "Accrual", "20 January 2023", 0.0, 0.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
                     transaction(100.0, "Chargeback", "20 January 2023", 30.0, 30.0, 0.0, 50.0, 20.0, 0.0, 50.0) //
             );
@@ -720,7 +720,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
 
             verifyTransactions(loanId, //
                     transaction(1250.0, "Disbursement", "01 January 2023", 1250.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
-                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
+                    transaction(1370.0, "Repayment", "20 January 2023", 0, 1250.0, 0.0, 50.0, 20.0, 0.0, 50.0), //
                     transaction(70.0, "Accrual", "20 January 2023", 0.0, 0.0, 0.0, 50.0, 20.0, 0.0, 0.0), //
                     transaction(100.0, "Chargeback", "20 January 2023", 0.0, 30.0, 0.0, 50.0, 20.0, 0.0, 50.0) //
             );
@@ -1011,6 +1011,770 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
         });
     }
 
+    @Test
+    public void testAccountingChargebackOnPrincipal() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 250.0, "01 March 2023");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 250.0, "30 March 2023");
+
+            // Chargeback 250
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 250.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Chargeback", "30 March 2023", 250, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(loansReceivableAccount, 250), //
+                    credit(fundSource, 250) //
+            );
+
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnPrincipalAndFees() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            Long feeId = addCharge(loanId, false, 30, "15 February 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 30, 0, 280.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 280.0, "01 March 2023");
+
+            // Run periodic accrual
+            schedulerJobHelper.executeAndAwaitJob("Add Accrual Transactions");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 250.0, "30 March 2023");
+
+            // Chargeback 250
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 280.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(30.0, "Accrual", "01 March 2023", 0.0, 0.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Chargeback", "30 March 2023", 250, 250.0, 0.0, 30.0, 0.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 280), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(feeReceivableAccount, 30)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(loansReceivableAccount, 250), //
+                    debit(feeReceivableAccount, 30), //
+                    credit(fundSource, 280) //
+            );
+
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnPrincipalAndPenalties() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            Long feeId = addCharge(loanId, true, 30, "15 February 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 30.0, 280.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 280.0, "01 March 2023");
+
+            // Run periodic accrual
+            schedulerJobHelper.executeAndAwaitJob("Add Accrual Transactions");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 250.0, "30 March 2023");
+
+            // Chargeback 250
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 280.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 30.0, 0.0, 0.0), //
+                    transaction(30.0, "Accrual", "01 March 2023", 0.0, 0.0, 0.0, 0.0, 30.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Chargeback", "30 March 2023", 250, 250.0, 0.0, 0.0, 30.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 280), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(penaltyReceivableAccount, 30)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(loansReceivableAccount, 250), //
+                    debit(penaltyReceivableAccount, 30), //
+                    credit(fundSource, 280) //
+            );
+
+        });
+    }
+
+    @Test
+    public void testAccountingOverpaymentAmountIsSmallerThanChargeback() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 250.0, "01 March 2023");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 400.0, "30 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("31 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 250.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(400.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 150.0), //
+                    transaction(250.0, "Chargeback", "31 March 2023", 100, 250.0, 0.0, 0.0, 0.0, 0.0, 150.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 400), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(overpaymentAccount, 150) //
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(loansReceivableAccount, 100), //
+                    debit(overpaymentAccount, 150), //
+                    credit(fundSource, 250) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingOverpaymentAmountIsBiggerThanChargeback() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 250.0, "01 March 2023");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 400.0, "30 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("31 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 100.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(400.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 150.0), //
+                    transaction(100.0, "Chargeback", "31 March 2023", 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 100.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 400), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(overpaymentAccount, 150) //
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(overpaymentAccount, 100), //
+                    credit(fundSource, 100) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingOverpaidLoansWithFeesWhenOverpaymentAmountIsBiggerThanChargeback() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Add fee & Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long feeId = addCharge(loanId, false, 30, "01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 280.0, "01 March 2023");
+            schedulerJobHelper.executeAndAwaitJob("Add Accrual Transactions");
+
+            // Repayment #3
+            updateBusinessDate("30 March 2023");
+            Long repaymentTransaction3 = addRepaymentForLoan(loanId, 400.0, "30 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("31 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 100.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(30.0, "Accrual", "01 March 2023", 0.0, 0.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(400.0, "Repayment", "30 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 150.0), //
+                    transaction(100.0, "Chargeback", "31 March 2023", 0.0, 70.0, 0.0, 30.0, 0.0, 0.0, 100.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 280), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(feeReceivableAccount, 30) //
+            );
+
+            verifyTRJournalEntries(getTransactionId(loanId, "Accrual", "01 March 2023"), //
+                    debit(feeReceivableAccount, 30), //
+                    credit(feeIncomeAccount, 30) //
+            );
+
+            verifyTRJournalEntries(repaymentTransaction3, //
+                    debit(fundSource, 400), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(overpaymentAccount, 150) //
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(overpaymentAccount, 100), //
+                    credit(fundSource, 100) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnChargeOffWithPrincipal() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 250.0, "01 March 2023");
+
+            // Charge-Off
+            updateBusinessDate("15 March 2023");
+            Long chargeOff = chargeOffLoan(loanId, "15 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("30 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 250.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Charge-off", "15 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Chargeback", "30 March 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(chargeOff, //
+                    debit(chargeOffExpenseAccount, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(chargeOffExpenseAccount, 250), //
+                    credit(fundSource, 250) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnChargeOffFraudWithPrincipal() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Repayment #2
+            updateBusinessDate("01 March 2023");
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 250.0, "01 March 2023");
+
+            // Charge-Off
+            updateBusinessDate("15 March 2023");
+            Long chargeOff = chargeOffLoan(loanId, "15 March 2023");
+            changeLoanFraudState(loanId, true);
+
+            // Chargeback 250
+            updateBusinessDate("30 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 250.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Charge-off", "15 March 2023", 0.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Chargeback", "30 March 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250) //
+            );
+
+            verifyTRJournalEntries(chargeOff, //
+                    debit(chargeOffExpenseAccount, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    debit(chargeOffFraudExpenseAccount, 250), //
+                    credit(fundSource, 250) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnChargeOffWithFees() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Add fee 30
+            updateBusinessDate("01 March 2023");
+            addCharge(loanId, false, 30, "01 March 2023");
+
+            // Repayment #2
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 280.0, "01 March 2023");
+
+            // Run periodic accrual
+            schedulerJobHelper.executeAndAwaitJob("Add Accrual Transactions");
+
+            // Charge-Off
+            updateBusinessDate("15 March 2023");
+            addCharge(loanId, false, 20, "15 March 2023");
+            Long chargeOff = chargeOffLoan(loanId, "15 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("30 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 280.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(30.0, "Accrual", "01 March 2023", 0.0, 0.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 30.0, 0.0, 0.0, 0.0), //
+                    transaction(270.0, "Charge-off", "15 March 2023", 0.0, 250.0, 0.0, 20.0, 0.0, 0.0, 0.0), //
+                    transaction(280.0, "Chargeback", "30 March 2023", 500.0, 250.0, 0.0, 30.0, 0.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 280), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(feeReceivableAccount, 30) //
+            );
+
+            verifyTRJournalEntries(getTransactionId(loanId, "Accrual", "01 March 2023"), //
+                    debit(feeReceivableAccount, 30), //
+                    credit(feeIncomeAccount, 30) //
+            );
+
+            verifyTRJournalEntries(chargeOff, //
+                    debit(chargeOffExpenseAccount, 250), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(feeReceivableAccount, 20), //
+                    debit(feeChargeOffAccount, 20) //
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    credit(fundSource, 280), //
+                    debit(chargeOffExpenseAccount, 250), //
+                    debit(feeChargeOffAccount, 30) //
+            );
+        });
+    }
+
+    @Test
+    public void testAccountingChargebackOnChargeOffWithPenalties() {
+        runAt("01 January 2023", () -> {
+            // Create Client
+            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            // Create Loan Product
+            Long loanProductId = createLoanProduct(//
+                    createDefaultPaymentAllocation(), //
+                    chargebackAllocation("PENALTY", "FEE", "INTEREST", "PRINCIPAL")//
+            );
+            // Apply and Approve Loan
+            Long loanId = applyAndApproveLoan(clientId, loanProductId, 3);
+
+            // Disburse Loan
+            disburseLoan(loanId, BigDecimal.valueOf(750), "01 January 2023");
+
+            verifyRepaymentSchedule(loanId, //
+                    installment(0, null, "01 January 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 February 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 March 2023"), //
+                    installment(250.0, 0, 0, 0, 250.0, false, "01 April 2023") //
+            );
+
+            // Repayment #1
+            updateBusinessDate("01 February 2023");
+            Long repaymentTransaction1 = addRepaymentForLoan(loanId, 250.0, "01 February 2023");
+
+            // Add fee 30
+            updateBusinessDate("01 March 2023");
+            addCharge(loanId, true, 30, "01 March 2023");
+
+            // Repayment #2
+            Long repaymentTransaction2 = addRepaymentForLoan(loanId, 280.0, "01 March 2023");
+
+            // Run periodic accrual
+            schedulerJobHelper.executeAndAwaitJob("Add Accrual Transactions");
+
+            // Charge-Off
+            updateBusinessDate("15 March 2023");
+            addCharge(loanId, true, 20, "15 March 2023");
+            Long chargeOff = chargeOffLoan(loanId, "15 March 2023");
+
+            // Chargeback 250
+            updateBusinessDate("30 March 2023");
+            Long chargeback = addChargebackForLoan(loanId, repaymentTransaction2, 280.0);
+
+            verifyTransactions(loanId, //
+                    transaction(750.0, "Disbursement", "01 January 2023", 750.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(250.0, "Repayment", "01 February 2023", 500.0, 250.0, 0.0, 0.0, 0.0, 0.0, 0.0), //
+                    transaction(30.0, "Accrual", "01 March 2023", 0.0, 0.0, 0.0, 0.0, 30.0, 0.0, 0.0), //
+                    transaction(280.0, "Repayment", "01 March 2023", 250.0, 250.0, 0.0, 0.0, 30.0, 0.0, 0.0), //
+                    transaction(270.0, "Charge-off", "15 March 2023", 0.0, 250.0, 0.0, 0.0, 20.0, 0.0, 0.0), //
+                    transaction(280.0, "Chargeback", "30 March 2023", 500.0, 250.0, 0.0, 0.0, 30.0, 0.0, 0.0) //
+            );
+
+            // Verify GL entries
+            verifyTRJournalEntries(repaymentTransaction1, //
+                    debit(fundSource, 250), //
+                    credit(loansReceivableAccount, 250)//
+            );
+
+            verifyTRJournalEntries(repaymentTransaction2, //
+                    debit(fundSource, 280), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(penaltyReceivableAccount, 30) //
+            );
+
+            verifyTRJournalEntries(getTransactionId(loanId, "Accrual", "01 March 2023"), //
+                    debit(penaltyReceivableAccount, 30), //
+                    credit(penaltyIncomeAccount, 30) //
+            );
+
+            verifyTRJournalEntries(chargeOff, //
+                    debit(chargeOffExpenseAccount, 250), //
+                    credit(loansReceivableAccount, 250), //
+                    credit(penaltyReceivableAccount, 20), //
+                    debit(penaltyChargeOffAccount, 20) //
+            );
+
+            verifyTRJournalEntries(chargeback, //
+                    credit(fundSource, 280), //
+                    debit(chargeOffExpenseAccount, 250), //
+                    debit(penaltyChargeOffAccount, 30) //
+            );
+        });
+    }
+
     private void verifyLoanSummaryAmounts(Long loanId, double creditedPrincipal, double creditedFee, double creditedPenalty,
             double totalOutstanding) {
         GetLoansLoanIdResponse loanResponse = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
@@ -1022,11 +1786,10 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
         Assertions.assertEquals(totalOutstanding, summary.getTotalOutstanding());
     }
 
-    @Nullable
-    private Long applyAndApproveLoan(Long clientId, Long loanProductId) {
-        PostLoansRequest applicationRequest = applyLoanRequest(clientId, loanProductId, "01 January 2023", 1250.0, 4)//
+    private Long applyAndApproveLoan(Long clientId, Long loanProductId, int numberOfRepayments) {
+        PostLoansRequest applicationRequest = applyLoanRequest(clientId, loanProductId, "01 January 2023", 1250.0, numberOfRepayments)//
                 .repaymentEvery(1)//
-                .loanTermFrequency(4)//
+                .loanTermFrequency(numberOfRepayments)//
                 .repaymentFrequencyType(RepaymentFrequencyType.MONTHS)//
                 .loanTermFrequencyType(RepaymentFrequencyType.MONTHS)//
                 .transactionProcessingStrategyCode("advanced-payment-allocation-strategy");
@@ -1035,9 +1798,14 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
 
         PostLoansLoanIdResponse approvedLoanResult = loanTransactionHelper.approveLoan(postLoansResponse.getResourceId(),
                 approveLoanRequest(1250.0, "01 January 2023"));
+        Assertions.assertNotNull(approvedLoanResult);
+        Assertions.assertNotNull(approvedLoanResult.getLoanId());
+        return approvedLoanResult.getLoanId();
+    }
 
-        Long loanId = approvedLoanResult.getLoanId();
-        return loanId;
+    @Nullable
+    private Long applyAndApproveLoan(Long clientId, Long loanProductId) {
+        return applyAndApproveLoan(clientId, loanProductId, 4);
     }
 
     public Long createLoanProduct(AdvancedPaymentData defaultAllocation, CreditAllocationData creditAllocationData) {

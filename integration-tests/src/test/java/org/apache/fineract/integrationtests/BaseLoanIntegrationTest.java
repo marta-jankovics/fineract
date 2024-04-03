@@ -22,6 +22,8 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder.DUE_PENALTY_INTEREST_PRINCIPAL_FEE_IN_ADVANCE_PENALTY_INTEREST_PRINCIPAL_FEE_STRATEGY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,11 +69,13 @@ import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsTransactionIdRequest;
 import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PostLoansResponse;
+import org.apache.fineract.client.models.PutLoansLoanIdResponse;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
 import org.apache.fineract.integrationtests.common.BatchHelper;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
+import org.apache.fineract.integrationtests.common.SchedulerJobHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
@@ -83,8 +87,10 @@ import org.apache.fineract.integrationtests.common.loans.LoanProductHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTestLifecycleExtension;
 import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
+import org.apache.fineract.integrationtests.common.system.CodeHelper;
 import org.apache.fineract.integrationtests.inlinecob.InlineLoanCOBHelper;
 import org.apache.fineract.integrationtests.useradministration.users.UserHelper;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanStatus;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleProcessingType;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
 import org.apache.fineract.portfolio.loanproduct.domain.PaymentAllocationType;
@@ -103,6 +109,7 @@ public abstract class BaseLoanIntegrationTest {
     protected static final String DATETIME_PATTERN = "dd MMMM yyyy";
 
     protected final ResponseSpecification responseSpec = createResponseSpecification(Matchers.is(200));
+    protected final ResponseSpecification responseSpec204 = createResponseSpecification(Matchers.is(204));
 
     private final String fullAdminAuthKey = getFullAdminAuthKey();
 
@@ -114,6 +121,7 @@ public abstract class BaseLoanIntegrationTest {
     protected final LoanProductHelper loanProductHelper = new LoanProductHelper();
     protected JournalEntryHelper journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
     protected ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
+    protected SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
     protected final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
 
     protected BusinessDateHelper businessDateHelper = new BusinessDateHelper();
@@ -123,21 +131,27 @@ public abstract class BaseLoanIntegrationTest {
     protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN);
 
     // asset
-    protected final Account loansReceivableAccount = accountHelper.createAssetAccount();
-    protected final Account interestFeeReceivableAccount = accountHelper.createAssetAccount();
-    protected final Account suspenseAccount = accountHelper.createAssetAccount();
+    protected final Account loansReceivableAccount = accountHelper.createAssetAccount("loanPortfolio");
+
+    protected final Account interestReceivableAccount = accountHelper.createAssetAccount("interestReceivable");
+    protected final Account feeReceivableAccount = accountHelper.createAssetAccount("feeReceivable");
+    protected final Account penaltyReceivableAccount = accountHelper.createAssetAccount("penaltyReceivable");
+    protected final Account suspenseAccount = accountHelper.createAssetAccount("suspense");
     // liability
-    protected final Account suspenseClearingAccount = accountHelper.createLiabilityAccount();
-    protected final Account overpaymentAccount = accountHelper.createLiabilityAccount();
+    protected final Account fundSource = accountHelper.createLiabilityAccount("fundSource");
+    protected final Account overpaymentAccount = accountHelper.createLiabilityAccount("overpayment");
     // income
-    protected final Account interestIncomeAccount = accountHelper.createIncomeAccount();
-    protected final Account feeIncomeAccount = accountHelper.createIncomeAccount();
-    protected final Account feeChargeOffAccount = accountHelper.createIncomeAccount();
-    protected final Account recoveriesAccount = accountHelper.createIncomeAccount();
-    protected final Account interestIncomeChargeOffAccount = accountHelper.createIncomeAccount();
+    protected final Account interestIncomeAccount = accountHelper.createIncomeAccount("interestIncome");
+    protected final Account feeIncomeAccount = accountHelper.createIncomeAccount("feeIncome");
+    protected final Account penaltyIncomeAccount = accountHelper.createIncomeAccount("penaltyIncome");
+    protected final Account feeChargeOffAccount = accountHelper.createIncomeAccount("feeChargeOff");
+    protected final Account penaltyChargeOffAccount = accountHelper.createIncomeAccount("penaltyChargeOff");
+
+    protected final Account recoveriesAccount = accountHelper.createIncomeAccount("recoveries");
+    protected final Account interestIncomeChargeOffAccount = accountHelper.createIncomeAccount("interestIncomeChargeOff");
     // expense
-    protected final Account creditLossBadDebtAccount = accountHelper.createExpenseAccount();
-    protected final Account creditLossBadDebtFraudAccount = accountHelper.createExpenseAccount();
+    protected final Account chargeOffExpenseAccount = accountHelper.createExpenseAccount("chargeOff");
+    protected final Account chargeOffFraudExpenseAccount = accountHelper.createExpenseAccount("chargeOffFraud");
     protected final Account writtenOffAccount = accountHelper.createExpenseAccount();
     protected final Account goodwillExpenseAccount = accountHelper.createExpenseAccount();
 
@@ -208,33 +222,33 @@ public abstract class BaseLoanIntegrationTest {
                 .outstandingLoanBalance(10000.0)//
                 .charges(Collections.emptyList())//
                 .accountingRule(3)//
-                .fundSourceAccountId(suspenseClearingAccount.getAccountID().longValue())//
+                .fundSourceAccountId(fundSource.getAccountID().longValue())//
                 .loanPortfolioAccountId(loansReceivableAccount.getAccountID().longValue())//
                 .transfersInSuspenseAccountId(suspenseAccount.getAccountID().longValue())//
                 .interestOnLoanAccountId(interestIncomeAccount.getAccountID().longValue())//
                 .incomeFromFeeAccountId(feeIncomeAccount.getAccountID().longValue())//
-                .incomeFromPenaltyAccountId(feeIncomeAccount.getAccountID().longValue())//
+                .incomeFromPenaltyAccountId(penaltyIncomeAccount.getAccountID().longValue())//
                 .incomeFromRecoveryAccountId(recoveriesAccount.getAccountID().longValue())//
                 .writeOffAccountId(writtenOffAccount.getAccountID().longValue())//
                 .overpaymentLiabilityAccountId(overpaymentAccount.getAccountID().longValue())//
-                .receivableInterestAccountId(interestFeeReceivableAccount.getAccountID().longValue())//
-                .receivableFeeAccountId(interestFeeReceivableAccount.getAccountID().longValue())//
-                .receivablePenaltyAccountId(interestFeeReceivableAccount.getAccountID().longValue())//
-                .dateFormat(DATETIME_PATTERN)//
-                .locale("en_GB")//
-                .disallowExpectedDisbursements(true)//
-                .allowApprovedDisbursedAmountsOverApplied(true)//
-                .overAppliedCalculationType("percentage")//
-                .overAppliedNumber(50)//
+                .receivableInterestAccountId(interestReceivableAccount.getAccountID().longValue())//
+                .receivableFeeAccountId(feeReceivableAccount.getAccountID().longValue())//
+                .receivablePenaltyAccountId(penaltyReceivableAccount.getAccountID().longValue())//
                 .goodwillCreditAccountId(goodwillExpenseAccount.getAccountID().longValue())//
                 .incomeFromGoodwillCreditInterestAccountId(interestIncomeChargeOffAccount.getAccountID().longValue())//
                 .incomeFromGoodwillCreditFeesAccountId(feeChargeOffAccount.getAccountID().longValue())//
                 .incomeFromGoodwillCreditPenaltyAccountId(feeChargeOffAccount.getAccountID().longValue())//
                 .incomeFromChargeOffInterestAccountId(interestIncomeChargeOffAccount.getAccountID().longValue())//
                 .incomeFromChargeOffFeesAccountId(feeChargeOffAccount.getAccountID().longValue())//
-                .chargeOffExpenseAccountId(creditLossBadDebtAccount.getAccountID().longValue())//
-                .chargeOffFraudExpenseAccountId(creditLossBadDebtFraudAccount.getAccountID().longValue())//
-                .incomeFromChargeOffPenaltyAccountId(feeChargeOffAccount.getAccountID().longValue());
+                .incomeFromChargeOffPenaltyAccountId(penaltyChargeOffAccount.getAccountID().longValue())//
+                .chargeOffExpenseAccountId(chargeOffExpenseAccount.getAccountID().longValue())//
+                .chargeOffFraudExpenseAccountId(chargeOffFraudExpenseAccount.getAccountID().longValue())//
+                .dateFormat(DATETIME_PATTERN)//
+                .locale("en_GB")//
+                .disallowExpectedDisbursements(true)//
+                .allowApprovedDisbursedAmountsOverApplied(true)//
+                .overAppliedCalculationType("percentage")//
+                .overAppliedNumber(50);
     }
 
     protected PostLoanProductsRequest createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation() {
@@ -345,11 +359,12 @@ public abstract class BaseLoanIntegrationTest {
                 boolean found = loanDetails.getTransactions().stream().anyMatch(item -> Objects.equals(item.getAmount(), tr.amount) //
                         && Objects.equals(item.getType().getValue(), tr.type) //
                         && Objects.equals(item.getDate(), LocalDate.parse(tr.date, dateTimeFormatter)) //
-                        && Objects.equals(item.getOutstandingLoanBalance(), tr.outstandingAmount) //
+                        && Objects.equals(item.getOutstandingLoanBalance(), tr.outstandingPrincipal) //
                         && Objects.equals(item.getPrincipalPortion(), tr.principalPortion) //
                         && Objects.equals(item.getInterestPortion(), tr.interestPortion) //
                         && Objects.equals(item.getFeeChargesPortion(), tr.feePortion) //
                         && Objects.equals(item.getPenaltyChargesPortion(), tr.penaltyPortion) //
+                        && Objects.equals(item.getOverpaymentPortion(), tr.overpaymentPortion) //
                         && Objects.equals(item.getUnrecognizedIncomePortion(), tr.unrecognizedPortion) //
                 );
                 Assertions.assertTrue(found, "Required transaction not found: " + tr);
@@ -365,11 +380,12 @@ public abstract class BaseLoanIntegrationTest {
         inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
     }
 
-    protected void reAgeLoan(Long loanId, String frequency, String startDate, Integer numberOfInstallments) {
+    protected void reAgeLoan(Long loanId, String frequencyType, int frequencyNumber, String startDate, Integer numberOfInstallments) {
         PostLoansLoanIdTransactionsRequest request = new PostLoansLoanIdTransactionsRequest();
         request.setDateFormat(DATETIME_PATTERN);
         request.setLocale("en");
-        request.setFrequency(frequency);
+        request.setFrequencyType(frequencyType);
+        request.setFrequencyNumber(frequencyNumber);
         request.setStartDate(startDate);
         request.setNumberOfInstallments(numberOfInstallments);
         loanTransactionHelper.reAge(loanId, request);
@@ -392,13 +408,17 @@ public abstract class BaseLoanIntegrationTest {
 
     protected void verifyLastClosedBusinessDate(Long loanId, String lastClosedBusinessDate) {
         GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
-        Assertions.assertNotNull(loanDetails.getLastClosedBusinessDate());
+        assertNotNull(loanDetails.getLastClosedBusinessDate());
         Assertions.assertEquals(lastClosedBusinessDate, loanDetails.getLastClosedBusinessDate().format(dateTimeFormatter));
     }
 
     protected void disburseLoan(Long loanId, BigDecimal amount, String date) {
         loanTransactionHelper.disburseLoan(loanId, new PostLoansLoanIdRequest().actualDisbursementDate(date).dateFormat(DATETIME_PATTERN)
                 .transactionAmount(amount).locale("en"));
+    }
+
+    protected void undoDisbursement(Integer loanId) {
+        loanTransactionHelper.undoDisbursal(loanId);
     }
 
     protected void verifyJournalEntries(Long loanId, Journal... entries) {
@@ -413,13 +433,25 @@ public abstract class BaseLoanIntegrationTest {
         });
     }
 
+    protected void verifyTRJournalEntries(Long transactionId, Journal... entries) {
+        GetJournalEntriesTransactionIdResponse journalEntriesForLoan = journalEntryHelper.getJournalEntries("L" + transactionId.toString());
+        Assertions.assertEquals(entries.length, journalEntriesForLoan.getPageItems().size());
+        Arrays.stream(entries).forEach(journalEntry -> {
+            boolean found = journalEntriesForLoan.getPageItems().stream()
+                    .anyMatch(item -> Objects.equals(item.getAmount(), journalEntry.amount)
+                            && Objects.equals(item.getGlAccountId(), journalEntry.account.getAccountID().longValue())
+                            && Objects.requireNonNull(item.getEntryType()).getValue().equals(journalEntry.type));
+            Assertions.assertTrue(found, "Required journal entry not found: " + journalEntry);
+        });
+    }
+
     protected Long addCharge(Long loanId, boolean isPenalty, double amount, String dueDate) {
         Integer chargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
                 ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, String.valueOf(amount), isPenalty));
-        Assertions.assertNotNull(chargeId);
+        assertNotNull(chargeId);
         Integer loanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId.intValue(),
                 LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(chargeId), dueDate, String.valueOf(amount)));
-        Assertions.assertNotNull(loanChargeId);
+        assertNotNull(loanChargeId);
         return loanChargeId.longValue();
     }
 
@@ -427,11 +459,12 @@ public abstract class BaseLoanIntegrationTest {
         GetLoansLoanIdResponse loanResponse = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN);
 
-        Assertions.assertNotNull(loanResponse.getRepaymentSchedule());
-        Assertions.assertNotNull(loanResponse.getRepaymentSchedule().getPeriods());
+        assertNotNull(loanResponse.getRepaymentSchedule());
+        assertNotNull(loanResponse.getRepaymentSchedule().getPeriods());
         Assertions.assertEquals(installments.length, loanResponse.getRepaymentSchedule().getPeriods().size(),
                 "Expected installments are not matching with the installments configured on the loan");
 
+        int installmentNumber = 0;
         for (int i = 1; i < installments.length; i++) {
             GetLoansLoanIdRepaymentPeriod period = loanResponse.getRepaymentSchedule().getPeriods().get(i);
             Double principalDue = period.getPrincipalDue();
@@ -516,6 +549,15 @@ public abstract class BaseLoanIntegrationTest {
                                     outstandingTotalExpected, outstandingTotal));
                 }
 
+                Double loanBalanceExpected = installments[i].loanBalance;
+                Double loanBalance = period.getPrincipalLoanBalanceOutstanding();
+                if (loanBalanceExpected != null) {
+                    Assertions.assertEquals(loanBalanceExpected, loanBalance,
+                            "%d. installment's loan balance is different, expected: %.2f, actual: %.2f".formatted(i, loanBalanceExpected,
+                                    loanBalance));
+                }
+                installmentNumber++;
+                Assertions.assertEquals(installmentNumber, period.getPeriod());
             }
             Assertions.assertEquals(installments[i].completed, period.getComplete());
             Assertions.assertEquals(LocalDate.parse(installments[i].dueDate, dateTimeFormatter), period.getDueDate());
@@ -599,9 +641,28 @@ public abstract class BaseLoanIntegrationTest {
         return response.getResourceId();
     }
 
-    protected void addChargebackForLoan(Long loanId, Long transactionId, Double amount) {
-        loanTransactionHelper.chargebackLoanTransaction(loanId, transactionId,
+    protected Long chargeOffLoan(Long loanId, String date) {
+        String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6) + Utils.randomStringGenerator("is", 5);
+        Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+        String transactionExternalId = UUID.randomUUID().toString();
+
+        PostLoansLoanIdTransactionsResponse chargeOffTransaction = this.loanTransactionHelper.chargeOffLoan((long) loanId,
+                new PostLoansLoanIdTransactionsRequest().transactionDate(date).locale("en").dateFormat("dd MMMM yyyy")
+                        .externalId(transactionExternalId).chargeOffReasonId((long) chargeOffReasonId));
+        return chargeOffTransaction.getResourceId();
+    }
+
+    protected void changeLoanFraudState(Long loanId, boolean fraudState) {
+        String payload = loanTransactionHelper.getLoanFraudPayloadAsJSON("fraud", fraudState ? "true" : "false");
+        PutLoansLoanIdResponse response = loanTransactionHelper.modifyLoanCommand(Math.toIntExact(loanId), "markAsFraud", payload,
+                responseSpec);
+        assertNotNull(response);
+    }
+
+    protected Long addChargebackForLoan(Long loanId, Long transactionId, Double amount) {
+        PostLoansLoanIdTransactionsResponse response = loanTransactionHelper.chargebackLoanTransaction(loanId, transactionId,
                 new PostLoansLoanIdTransactionsTransactionIdRequest().locale("en").transactionAmount(amount).paymentTypeId(1L));
+        return response.getResourceId();
     }
 
     protected PostChargesResponse createCharge(Double amount) {
@@ -624,8 +685,22 @@ public abstract class BaseLoanIntegrationTest {
                 new BusinessDateRequest().type(BUSINESS_DATE.getName()).date(date).dateFormat(DATETIME_PATTERN).locale("en"));
     }
 
-    protected Journal journalEntry(double principalAmount, Account account, String type) {
-        return new Journal(principalAmount, account, type);
+    protected Long getTransactionId(Long loanId, String type, String date) {
+        GetLoansLoanIdResponse loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+        return loan.getTransactions().stream().filter(tr -> Objects.equals(tr.getType().getValue(), type)
+                && Objects.equals(tr.getDate(), LocalDate.parse(date, dateTimeFormatter))).findAny().orElseThrow().getId();
+    }
+
+    protected Journal journalEntry(double amount, Account account, String type) {
+        return new Journal(amount, account, type);
+    }
+
+    protected Journal debit(Account account, double amount) {
+        return new Journal(amount, account, "DEBIT");
+    }
+
+    protected Journal credit(Account account, double amount) {
+        return new Journal(amount, account, "CREDIT");
     }
 
     protected Transaction transaction(double principalAmount, String type, String date) {
@@ -636,34 +711,49 @@ public abstract class BaseLoanIntegrationTest {
         return new Transaction(principalAmount, type, date, true);
     }
 
-    protected TransactionExt transaction(double amount, String type, String date, double outstandingAmount, double principalPortion,
+    protected TransactionExt transaction(double amount, String type, String date, double outstandingPrincipal, double principalPortion,
             double interestPortion, double feePortion, double penaltyPortion, double unrecognizedIncomePortion, double overpaymentPortion) {
-        return new TransactionExt(amount, type, date, outstandingAmount, principalPortion, interestPortion, feePortion, penaltyPortion,
-                unrecognizedIncomePortion, overpaymentPortion);
+        return new TransactionExt(amount, type, date, outstandingPrincipal, principalPortion, interestPortion, feePortion, penaltyPortion,
+                unrecognizedIncomePortion, overpaymentPortion, false);
+    }
+
+    protected TransactionExt transaction(double amount, String type, String date, double outstandingPrincipal, double principalPortion,
+            double interestPortion, double feePortion, double penaltyPortion, double unrecognizedIncomePortion, double overpaymentPortion,
+            boolean reversed) {
+        return new TransactionExt(amount, type, date, outstandingPrincipal, principalPortion, interestPortion, feePortion, penaltyPortion,
+                unrecognizedIncomePortion, overpaymentPortion, reversed);
     }
 
     protected Installment installment(double principalAmount, Boolean completed, String dueDate) {
-        return new Installment(principalAmount, null, null, null, null, completed, dueDate, null);
+        return new Installment(principalAmount, null, null, null, null, completed, dueDate, null, null);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double totalOutstandingAmount, Boolean completed,
             String dueDate) {
-        return new Installment(principalAmount, interestAmount, null, null, totalOutstandingAmount, completed, dueDate, null);
+        return new Installment(principalAmount, interestAmount, null, null, totalOutstandingAmount, completed, dueDate, null, null);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double totalOutstandingAmount,
             Boolean completed, String dueDate) {
-        return new Installment(principalAmount, interestAmount, feeAmount, null, totalOutstandingAmount, completed, dueDate, null);
+        return new Installment(principalAmount, interestAmount, feeAmount, null, totalOutstandingAmount, completed, dueDate, null, null);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double penaltyAmount,
             double totalOutstandingAmount, Boolean completed, String dueDate) {
-        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, totalOutstandingAmount, completed, dueDate, null);
+        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, totalOutstandingAmount, completed, dueDate, null,
+                null);
     }
 
     protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double penaltyAmount,
             OutstandingAmounts outstandingAmounts, Boolean completed, String dueDate) {
-        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, null, completed, dueDate, outstandingAmounts);
+        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, null, completed, dueDate, outstandingAmounts,
+                null);
+    }
+
+    protected Installment installment(double principalAmount, double interestAmount, double feeAmount, double penaltyAmount,
+            double totalOutstanding, Boolean completed, String dueDate, double loanBalance) {
+        return new Installment(principalAmount, interestAmount, feeAmount, penaltyAmount, totalOutstanding, completed, dueDate, null,
+                loanBalance);
     }
 
     protected OutstandingAmounts outstanding(double principal, double fee, double penalty, double total) {
@@ -672,6 +762,74 @@ public abstract class BaseLoanIntegrationTest {
 
     protected BatchRequestBuilder batchRequest() {
         return new BatchRequestBuilder(requestSpec, responseSpec);
+    }
+
+    protected void validateLoanSummaryBalances(GetLoansLoanIdResponse loanDetails, Double totalOutstanding, Double totalRepayment,
+            Double principalOutstanding, Double principalPaid, Double totalOverpaid) {
+        assertEquals(totalOutstanding, loanDetails.getSummary().getTotalOutstanding());
+        assertEquals(totalRepayment, loanDetails.getSummary().getTotalRepayment());
+        assertEquals(principalOutstanding, loanDetails.getSummary().getPrincipalOutstanding());
+        assertEquals(principalPaid, loanDetails.getSummary().getPrincipalPaid());
+        assertEquals(totalOverpaid, loanDetails.getTotalOverpaid());
+    }
+
+    protected static void validateRepaymentPeriod(GetLoansLoanIdResponse loanDetails, Integer index, LocalDate dueDate, double principalDue,
+            double principalPaid, double principalOutstanding, double paidInAdvance, double paidLate) {
+        GetLoansLoanIdRepaymentPeriod period = loanDetails.getRepaymentSchedule().getPeriods().stream()
+                .filter(p -> Objects.equals(p.getPeriod(), index)).findFirst().orElseThrow();
+        assertEquals(dueDate, period.getDueDate());
+        assertEquals(principalDue, period.getPrincipalDue());
+        assertEquals(principalPaid, period.getPrincipalPaid());
+        assertEquals(principalOutstanding, period.getPrincipalOutstanding());
+        assertEquals(paidInAdvance, period.getTotalPaidInAdvanceForPeriod());
+        assertEquals(paidLate, period.getTotalPaidLateForPeriod());
+    }
+
+    protected static void validateRepaymentPeriod(GetLoansLoanIdResponse loanDetails, Integer index, double principalDue,
+            double principalPaid, double principalOutstanding, double paidInAdvance, double paidLate) {
+        GetLoansLoanIdRepaymentPeriod period = loanDetails.getRepaymentSchedule().getPeriods().stream()
+                .filter(p -> Objects.equals(p.getPeriod(), index)).findFirst().orElseThrow();
+        assertEquals(principalDue, period.getPrincipalDue());
+        assertEquals(principalPaid, period.getPrincipalPaid());
+        assertEquals(principalOutstanding, period.getPrincipalOutstanding());
+        assertEquals(paidInAdvance, period.getTotalPaidInAdvanceForPeriod());
+        assertEquals(paidLate, period.getTotalPaidLateForPeriod());
+    }
+
+    protected static void validateRepaymentPeriod(GetLoansLoanIdResponse loanDetails, Integer index, LocalDate dueDate, double principalDue,
+            double principalPaid, double principalOutstanding, double feeDue, double feePaid, double feeOutstanding, double penaltyDue,
+            double penaltyPaid, double penaltyOutstanding, double interestDue, double interestPaid, double interestOutstanding,
+            double paidInAdvance, double paidLate) {
+        GetLoansLoanIdRepaymentPeriod period = loanDetails.getRepaymentSchedule().getPeriods().stream()
+                .filter(p -> Objects.equals(p.getPeriod(), index)).findFirst().orElseThrow();
+        assertEquals(dueDate, period.getDueDate());
+        assertEquals(principalDue, period.getPrincipalDue());
+        assertEquals(principalPaid, period.getPrincipalPaid());
+        assertEquals(principalOutstanding, period.getPrincipalOutstanding());
+        assertEquals(feeDue, period.getFeeChargesDue());
+        assertEquals(feePaid, period.getFeeChargesPaid());
+        assertEquals(feeOutstanding, period.getFeeChargesOutstanding());
+        assertEquals(penaltyDue, period.getPenaltyChargesDue());
+        assertEquals(penaltyPaid, period.getPenaltyChargesPaid());
+        assertEquals(penaltyOutstanding, period.getPenaltyChargesOutstanding());
+        assertEquals(interestDue, period.getInterestDue());
+        assertEquals(interestPaid, period.getInterestPaid());
+        assertEquals(interestOutstanding, period.getInterestOutstanding());
+        assertEquals(paidInAdvance, period.getTotalPaidInAdvanceForPeriod());
+        assertEquals(paidLate, period.getTotalPaidLateForPeriod());
+    }
+
+    protected void checkMaturityDates(long loanId, LocalDate expectedMaturityDate, LocalDate actualMaturityDate) {
+        GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
+
+        assertEquals(expectedMaturityDate, loanDetails.getTimeline().getExpectedMaturityDate());
+        assertEquals(actualMaturityDate, loanDetails.getTimeline().getActualMaturityDate());
+    }
+
+    protected void verifyLoanStatus(long loanId, LoanStatus loanStatus) {
+        GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
+
+        assertEquals(loanStatus.getCode(), loanDetails.getStatus().getCode());
     }
 
     @RequiredArgsConstructor
@@ -755,13 +913,14 @@ public abstract class BaseLoanIntegrationTest {
         Double amount;
         String type;
         String date;
-        Double outstandingAmount;
+        Double outstandingPrincipal;
         Double principalPortion;
         Double interestPortion;
         Double feePortion;
         Double penaltyPortion;
         Double unrecognizedPortion;
         Double overpaymentPortion;
+        Boolean reversed;
     }
 
     @ToString
@@ -785,6 +944,7 @@ public abstract class BaseLoanIntegrationTest {
         Boolean completed;
         String dueDate;
         OutstandingAmounts outstandingAmounts;
+        Double loanBalance;
     }
 
     @AllArgsConstructor
@@ -812,6 +972,8 @@ public abstract class BaseLoanIntegrationTest {
 
         public static final Integer MONTHS = 2;
         public static final String MONTHS_STRING = "MONTHS";
+        public static final Integer DAYS = 0;
+        public static final String DAYS_STRING = "DAYS";
     }
 
     public static class InterestCalculationPeriodType {

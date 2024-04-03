@@ -18,8 +18,10 @@
  */
 package org.apache.fineract.commands.domain;
 
+import lombok.Getter;
 import org.apache.fineract.useradministration.api.PasswordPreferencesApiConstants;
 
+@Getter
 public class CommandWrapper {
 
     private final Long commandId;
@@ -84,26 +86,6 @@ public class CommandWrapper {
         return new CommandWrapper(commandId, officeId, groupId, clientId, loanId, savingsId, actionName, entityName, resourceId,
                 subresourceId, resourceGetUrl, json, transactionId, productId, creditBureauId, organisationCreditBureauId, jobName,
                 idempotencyKey, entityIdentifier);
-    }
-
-    public Long getCreditBureauId() {
-        return this.creditBureauId;
-    }
-
-    public Long getOrganisationCreditBureauId() {
-        return this.organisationCreditBureauId;
-    }
-
-    public String getIdempotencyKey() {
-        return idempotencyKey;
-    }
-
-    public String getHref() {
-        return this.href;
-    }
-
-    public String getJson() {
-        return this.json;
     }
 
     public boolean isCreate() {
@@ -173,22 +155,6 @@ public class CommandWrapper {
         return this.entityName.equalsIgnoreCase("CACHE");
     }
 
-    public Long getSubentityId() {
-        return this.subentityId;
-    }
-
-    public String getTransactionId() {
-        return this.transactionId;
-    }
-
-    public String getEntityName() {
-        return this.entityName;
-    }
-
-    public Long getEntityId() {
-        return this.entityId;
-    }
-
     public boolean isUpdateOperation() {
         return this.actionName.equalsIgnoreCase("UPDATE");
     }
@@ -245,34 +211,6 @@ public class CommandWrapper {
         return this.actionName + "_" + this.entityName;
     }
 
-    public String getTaskPermissionName() {
-        return this.taskPermissionName;
-    }
-
-    public Long getOfficeId() {
-        return officeId;
-    }
-
-    public Long getGroupId() {
-        return this.groupId;
-    }
-
-    public Long getClientId() {
-        return this.clientId;
-    }
-
-    public Long getLoanId() {
-        return this.loanId;
-    }
-
-    public Long getSavingsId() {
-        return this.savingsId;
-    }
-
-    public Long getProductId() {
-        return this.productId;
-    }
-
     public boolean isPermissionResource() {
         return this.entityName.equalsIgnoreCase("PERMISSION");
     }
@@ -301,13 +239,5 @@ public class CommandWrapper {
     public boolean addAndDeleteDisbursementDetails() {
         return this.actionName.equalsIgnoreCase("UPDATE") && this.entityName.equalsIgnoreCase("DISBURSEMENTDETAIL")
                 && this.entityId == null;
-    }
-
-    public String getJobName() {
-        return jobName;
-    }
-
-    public String getEntityIdentifier() {
-        return entityIdentifier;
     }
 }

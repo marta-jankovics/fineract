@@ -181,6 +181,12 @@ public abstract class AbstractProgressiveLoanScheduleGenerator implements LoanSc
             // }
         }
 
+        // If the disbursement happened after maturity date
+        if (loanApplicationTerms.isMultiDisburseLoan()) {
+            processDisbursements(loanApplicationTerms, chargesDueAtTimeOfDisbursement, scheduleParams, periods,
+                    DateUtils.getBusinessLocalDate().plusDays(1));
+        }
+
         // determine fees and penalties for charges which depends on total
         // loan interest
         updatePeriodsWithCharges(currency, scheduleParams, periods, nonCompoundingCharges, mc);
@@ -276,8 +282,10 @@ public abstract class AbstractProgressiveLoanScheduleGenerator implements LoanSc
                     periods.add(downPaymentPeriod);
                 }
             } else {
+                Money disbursedAmount = loanScheduleParams.getDisburseDetailMap().getOrDefault(disbursementData.disbursementDate(),
+                        Money.zero(loanApplicationTerms.getCurrency()));
                 loanScheduleParams.getDisburseDetailMap().put(disbursementData.disbursementDate(),
-                        Money.of(loanApplicationTerms.getCurrency(), disbursementData.getPrincipal()));
+                        disbursedAmount.add(Money.of(loanApplicationTerms.getCurrency(), disbursementData.getPrincipal())));
             }
         }
 

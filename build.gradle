@@ -38,6 +38,8 @@ buildscript {
                 'oauth2-tests',
                 'fineract-client',
                 'fineract-avro-schemas',
+                'fineract-e2e-tests-core',
+                'fineract-e2e-tests-runner',
                 'fineract-statement',
                 'fineract-current-account',
                 'custom-binx'
@@ -288,7 +290,8 @@ allprojects  {
             ".mailmap",
             '**/images/diag-*.svg',
             '**/*.avsc',
-            "**/generated/**/*MapperImpl.java"
+            "**/generated/**/*MapperImpl.java",
+            '**/META-INF/fineract-test.config'
         ]
     }
 }
@@ -444,7 +447,7 @@ configure(project.fineractJavaProjects) {
     // Configuration for the Checkstyle plugin
     // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
     dependencies {
-        checkstyle 'com.puppycrawl.tools:checkstyle:10.13.0'
+        checkstyle 'com.puppycrawl.tools:checkstyle:10.14.2'
         checkstyle 'com.github.sevntu-checkstyle:sevntu-checks:1.44.1'
     }
 
@@ -466,7 +469,7 @@ configure(project.fineractJavaProjects) {
     // Configuration for the errorprone plugin
     // https://github.com/tbroyer/gradle-errorprone-plugin
     dependencies {
-        errorprone "com.google.errorprone:error_prone_core:2.25.0"
+        errorprone "com.google.errorprone:error_prone_core:2.26.1"
     }
 
     tasks.withType(JavaCompile) {
