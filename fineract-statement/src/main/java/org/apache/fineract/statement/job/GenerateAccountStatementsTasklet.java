@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.statement.job;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings({ "SLF4J_FORMAT_SHOULD_BE_CONST" })
 public class GenerateAccountStatementsTasklet implements Tasklet {
 
     private final AccountStatementServiceProvider statementServiceProvider;
