@@ -428,9 +428,7 @@ public class CurrentAccountAssemblerImpl implements CurrentAccountAssembler {
         }
         boolean hasDelay = account.hasBalanceDelay(action);
         CurrentAccountBalanceData balance = hasDelay ? balanceData.getDelayData() : balanceData.getTotalData();
-        if (balance.isChanged()) {
-            accountBalanceWriteService.saveBalance(balance);
-        }
+        accountBalanceWriteService.saveBalance(balance);
     }
 
     private void persistEntityAction(CurrentAccount account, EntityActionType actionType, LocalDate actionDate) {

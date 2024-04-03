@@ -210,9 +210,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         if (account.isBalancePersist(action)) {
             boolean hasDelay = account.hasBalanceDelay(action);
             CurrentAccountBalanceData balanceData = hasDelay ? balance.getDelayData() : balance.getTotalData();
-            if (balanceData.isChanged()) {
-                accountBalanceWriteService.saveBalance(balanceData);
-            }
+            accountBalanceWriteService.saveBalance(balanceData);
         }
         return balance;
     }

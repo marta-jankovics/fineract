@@ -80,7 +80,7 @@ public class CurrentAccountBalanceWriteServiceImpl implements CurrentAccountBala
                 balance = new CurrentAccountBalance(iBalance.getAccountId(), iBalance.getAccountBalance(), iBalance.getHoldAmount(),
                         iBalance.getTransactionId());
             } else {
-                balance = accountBalanceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("current.account.balance",
+                balance = accountBalanceRepository.findByIdForceIncrement(id).orElseThrow(() -> new ResourceNotFoundException("current.account.balance",
                         "Current account balance with id: %s cannot be found", id));
                 balance.setAccountBalance(iBalance.getAccountBalance());
                 balance.setHoldAmount(iBalance.getHoldAmount());
