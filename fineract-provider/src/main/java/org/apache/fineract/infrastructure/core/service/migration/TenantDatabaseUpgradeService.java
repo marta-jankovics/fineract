@@ -144,6 +144,8 @@ public class TenantDatabaseUpgradeService implements InitializingBean {
     private void upgradeIndividualTenant(FineractPlatformTenant tenant) throws LiquibaseException {
         log.info("Upgrade for tenant {} has started", tenant.getTenantIdentifier());
         DataSource tenantDataSource = tenantDataSourceFactory.create(tenant);
+        // 'initial_switch' and 'custom_changelog' contexts should be controlled by the application configuration settings,
+        // and we should not use them to control the script order
         if (databaseStateVerifier.isFirstLiquibaseMigration(tenantDataSource)) {
             ExtendedSpringLiquibase liquibase = liquibaseFactory.create(tenantDataSource, TENANT_DB_CONTEXT, CUSTOM_CHANGELOG_CONTEXT,
                     INITIAL_SWITCH_CONTEXT, tenant.getTenantIdentifier());

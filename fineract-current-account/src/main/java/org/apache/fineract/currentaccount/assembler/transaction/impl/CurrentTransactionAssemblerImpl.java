@@ -90,17 +90,17 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     @Override
     public CurrentTransaction deposit(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
-        return assemble(command, account, DEPOSIT, false);
+        return assemble(account, command, changes, DEPOSIT, false);
     }
 
     @Override
     public CurrentTransaction withdrawal(CurrentAccount account, JsonCommand command, Map<String, Object> changes, boolean force) {
-        return assemble(command, account, WITHDRAWAL, force);
+        return assemble(account, command, changes, WITHDRAWAL, force);
     }
 
     @Override
     public CurrentTransaction hold(CurrentAccount account, JsonCommand command, Map<String, Object> changes) {
-        return assemble(command, account, AMOUNT_HOLD, false);
+        return assemble(account, command, changes, AMOUNT_HOLD, false);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
                 holdTransaction.getAmount());
 
         account.setNextStatus(TRANSACTION_AMOUNT_RELEASE);
-        handleBalance(account, transaction, false, TRANSACTION_AMOUNT_RELEASE);
+        handleBalance(account, transaction, false, TRANSACTION_AMOUNT_RELEASE, changes);
 
         transaction = currentTransactionRepository.save(transaction);
         String transactionId = transaction.getId();
@@ -136,8 +136,8 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     }
 
     @NotNull
-    private CurrentTransaction assemble(JsonCommand command, CurrentAccount account, CurrentTransactionType transactionType,
-            boolean force) {
+    private CurrentTransaction assemble(CurrentAccount account, JsonCommand command, Map<String, Object> changes,
+                                        CurrentTransactionType transactionType, boolean force) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
         final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 
@@ -161,7 +161,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
         }
 
         account.setNextStatus(action);
-        handleBalance(account, transaction, force, action);
+        handleBalance(account, transaction, force, action, changes);
 
         JsonArray datatables = command.arrayOfParameterNamed(DATATABLES_PARAM);
         if (datatables != null && !datatables.isEmpty()) {
@@ -195,7 +195,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
     }
 
     private BalanceCalculationData handleBalance(@NotNull CurrentAccount account, @NotNull CurrentTransaction transaction, boolean force,
-            @NotNull CurrentAccountAction action) {
+            @NotNull CurrentAccountAction action, Map<String, Object> changes) {
         CurrentTransactionType transactionType = transaction.getTransactionType();
         if (!transactionType.isDebit() && !account.isBalancePersist(action)) {
             return null;
@@ -211,6 +211,11 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
             boolean hasDelay = account.hasBalanceDelay(action);
             CurrentAccountBalanceData balanceData = hasDelay ? balance.getDelayData() : balance.getTotalData();
             accountBalanceWriteService.saveBalance(balanceData);
+        }
+        if (changes != null) {
+            changes.put("accountBalance", balance.getAccountBalance());
+            changes.put("holdAmount", balance.getHoldAmount());
+            changes.put("availableBalance", account.getAvailableBalance(balance, false));
         }
         return balance;
     }
@@ -231,7 +236,6 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
             throw new GeneralPlatformDomainRuleException(pfx + "balance", "Insufficient funds! Current balance: " + origBalance);
         }
         BigDecimal newAvailableBalance = account.getAvailableBalance(balance, true);
-
         if (MathUtil.isLessThanZero(newAvailableBalance)) {
             String code = pfx + (!MathUtil.isEmpty(account.getMinimumRequiredBalance()) ? "minrequiredbalance" : "maxoverdraft");
             throw new GeneralPlatformDomainRuleException(code,
