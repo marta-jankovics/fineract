@@ -186,9 +186,5 @@
             <column name="short_name" value="COM_PURG"/>
             <where>name='Purge Processed Commands'</where>
         </update>
-        <update tableName="job">
-            <column name="short_name" valueComputed="id"/>
-            <where>short_name is null</where>
-        </update>
     </changeSet>
 </databaseChangeLog>
