@@ -24,5 +24,5 @@ public class BinxConstants {
     public static final String CONVERSION_ACCOUNT_DISCRIMINATOR = "K";
     public static final String DISPOSAL_ACCOUNT_DISCRIMINATOR = "R";
     public static final String CHANNEL_TYPE_PARTNER_TAXID = "TXID";
-    public static final String CHANNEL_TYPE_PARTNER_TAXNO = "TXNO";
+    public static final String CHANNEL_TYPE_PARTNER_TAXNO = "TXNB";
 }
