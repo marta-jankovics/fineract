@@ -137,7 +137,7 @@ public class CurrentTransactionAssemblerImpl implements CurrentTransactionAssemb
 
     @NotNull
     private CurrentTransaction assemble(CurrentAccount account, JsonCommand command, Map<String, Object> changes,
-                                        CurrentTransactionType transactionType, boolean force) {
+            CurrentTransactionType transactionType, boolean force) {
         ExternalId externalId = externalIdFactory.createFromCommand(command, EXTERNAL_ID_PARAM);
         final Long paymentTypeId = command.longValueOfParameterNamed(PaymentDetailConstants.paymentTypeParamName);
 

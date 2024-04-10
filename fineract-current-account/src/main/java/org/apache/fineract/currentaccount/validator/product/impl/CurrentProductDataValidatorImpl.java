@@ -66,6 +66,7 @@ import org.apache.fineract.currentaccount.validator.product.CurrentProductDataVa
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 
 @RequiredArgsConstructor
 public class CurrentProductDataValidatorImpl implements CurrentProductDataValidator {
@@ -95,7 +96,7 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         command.checkForUnsupportedParameters(typeOfMap, command.json(), CURRENT_PRODUCT_REQUEST_DATA_PARAMETERS);
 
-        final DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_PRODUCT_RESOURCE_NAME);
+        DataValidatorBuilder dataValidator = new DataValidatorBuilder().resource(CURRENT_PRODUCT_RESOURCE_NAME);
 
         final String name = command.stringValueOfParameterNamedAllowingNull(NAME_PARAM);
         dataValidator.reset().parameter(NAME_PARAM).value(name).notBlank().notExceedingLengthOf(100);
@@ -124,17 +125,21 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             dataValidator.reset().parameter(ALLOW_FORCE_TRANSACTION_PARAM).value(allowForceTransactions).notNull();
         }
 
-        if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
-            final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
-            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
-        }
-
-        final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
-        dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
+        final boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+        dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).validateForBooleanValue();
 
         if (allowOverdraft) {
             final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
             dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+        }
+
+        if (command.parameterExists(MINIMUM_REQUIRED_BALANCE_PARAM)) {
+            final BigDecimal minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
+            dataValidator = dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance)
+                    .zeroOrPositiveAmount();
+            if (allowOverdraft && !MathUtil.isEmpty(minimumRequiredBalance)) {
+                dataValidator.mustBeBlankWhenParameterProvidedIs(ALLOW_OVERDRAFT_PARAM, allowOverdraft);
+            }
         }
 
         final String balanceCalculationType = command.stringValueOfParameterNamedAllowingNull(BALANCE_CALCULATION_TYPE_PARAM);
@@ -215,26 +220,28 @@ public class CurrentProductDataValidatorImpl implements CurrentProductDataValida
             dataValidator.reset().parameter(ALLOW_FORCE_TRANSACTION_PARAM).value(allowForceTransactions).notNull();
         }
 
-        if (command.isChangeInBigDecimalParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM, product.getMinimumRequiredBalance())) {
-            final BigDecimal minimumRequiredBalance = command
-                    .bigDecimalValueOfParameterNamedDefaultToNullIfZero(MINIMUM_REQUIRED_BALANCE_PARAM);
-            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance);
+        boolean allowOverdraft = product.isAllowOverdraft();
+        if (command.isChangeInBooleanParameterNamed(ALLOW_OVERDRAFT_PARAM, allowOverdraft)) {
+            allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
+            dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).validateForBooleanValue();
         }
 
-        if (command.isChangeInBooleanParameterNamed(ALLOW_OVERDRAFT_PARAM, product.isAllowOverdraft())) {
-            final Boolean allowOverdraft = command.booleanPrimitiveValueOfParameterNamed(ALLOW_OVERDRAFT_PARAM);
-            dataValidator.reset().parameter(ALLOW_OVERDRAFT_PARAM).value(allowOverdraft).notNull().validateForBooleanValue();
-
-            if (allowOverdraft) {
-                final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-                dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+        if (allowOverdraft) {
+            BigDecimal overdraftLimit = product.getOverdraftLimit();
+            if (command.isChangeInBigDecimalParameterNamed(OVERDRAFT_LIMIT_PARAM, overdraftLimit)) {
+                overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
             }
+            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
         }
 
-        if (!command.parameterExists(ALLOW_OVERDRAFT_PARAM)
-                && command.isChangeInBigDecimalParameterNamed(OVERDRAFT_LIMIT_PARAM, product.getOverdraftLimit())) {
-            final BigDecimal overdraftLimit = command.bigDecimalValueOfParameterNamed(OVERDRAFT_LIMIT_PARAM);
-            dataValidator.reset().parameter(OVERDRAFT_LIMIT_PARAM).value(overdraftLimit).notNull().positiveAmount();
+        BigDecimal minimumRequiredBalance = product.getMinimumRequiredBalance();
+        if (command.isChangeInBigDecimalParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM, minimumRequiredBalance)) {
+            minimumRequiredBalance = command.bigDecimalValueOfParameterNamed(MINIMUM_REQUIRED_BALANCE_PARAM);
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance).zeroOrPositiveAmount();
+        }
+        if (allowOverdraft && !MathUtil.isEmpty(minimumRequiredBalance)) {
+            dataValidator.reset().parameter(MINIMUM_REQUIRED_BALANCE_PARAM).value(minimumRequiredBalance)
+                    .mustBeBlankWhenParameterProvidedIs(ALLOW_OVERDRAFT_PARAM, allowOverdraft);
         }
 
         if (command.isChangeInStringParameterNamed(BALANCE_CALCULATION_TYPE_PARAM, product.getBalanceCalculationType().name())) {
