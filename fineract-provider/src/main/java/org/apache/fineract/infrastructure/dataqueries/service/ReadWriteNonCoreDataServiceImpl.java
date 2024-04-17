@@ -605,6 +605,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
     @Transactional
     @Override
+    @CacheEvict(value = "columnHeaders", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#datatable)")
     public void updateDatatable(final String datatable, final JsonCommand command) {
         try {
             this.context.authenticatedUser();
