@@ -135,11 +135,14 @@ public class ResultsetColumnHeaderData implements Serializable {
         return !this.isColumnNullable;
     }
 
-    public boolean hasColumnValues() {
-        return columnValues != null && !columnValues.isEmpty();
+    public boolean isColumnCode() {
+        return columnCode != null;
     }
 
     public boolean isColumnValueAllowed(final String match) {
+        if (columnValues == null) {
+            return false;
+        }
         for (final ResultsetColumnValueData allowedValue : this.columnValues) {
             if (allowedValue.matches(match)) {
                 return true;
@@ -149,6 +152,9 @@ public class ResultsetColumnHeaderData implements Serializable {
     }
 
     public boolean isColumnCodeAllowed(final Integer match) {
+        if (columnValues == null) {
+            return false;
+        }
         for (final ResultsetColumnValueData allowedValue : this.columnValues) {
             if (allowedValue.codeMatches(match)) {
                 return true;

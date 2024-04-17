@@ -75,7 +75,6 @@ public final class DataTableApiConstant {
     public static final String API_FIELD_INDEXED = "indexed";
     public static final String API_FIELD_AFTER = "after";
     public static final String API_FIELD_CODE = "code";
-    public static final String API_FIELD_NEWCODE = "newCode";
 
     public static final String API_FIELD_TYPE_STRING = "string";
     public static final String API_FIELD_TYPE_NUMBER = "number";

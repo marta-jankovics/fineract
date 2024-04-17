@@ -104,7 +104,7 @@
                                  onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id"
                                  referencedTableName="m_current_transaction" validate="true"/>
     </changeSet>
-    <changeSet id="4" author="fineract">
+    <changeSet author="fineract" id="4">
         <createIndex tableName="m_current_transaction" indexName="idx_current_transaction_account_id">
             <column name="account_id"/>
         </createIndex>

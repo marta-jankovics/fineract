@@ -30,7 +30,6 @@ import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataServiceImpl;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
-import org.apache.fineract.infrastructure.security.service.SqlInjectionPreventerService;
 import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -49,10 +48,9 @@ public class DataQueriesAutoConfiguration {
             final DatatableCommandFromApiJsonDeserializer fromApiJsonDeserializer,
             final ConfigurationDomainService configurationDomainService, final CodeReadPlatformService codeReadPlatformService,
             final DataTableValidator dataTableValidator, final ColumnValidator columnValidator,
-            final NamedParameterJdbcTemplate namedParameterJdbcTemplate, final SqlInjectionPreventerService preventSqlInjectionService,
-            DatatableKeywordGenerator datatableKeywordGenerator) {
+            final NamedParameterJdbcTemplate namedParameterJdbcTemplate, DatatableKeywordGenerator datatableKeywordGenerator) {
         return new ReadWriteNonCoreDataServiceImpl(jdbcTemplate, databaseTypeResolver, sqlGenerator, context, fromJsonHelper,
                 genericDataService, fromApiJsonDeserializer, configurationDomainService, codeReadPlatformService, dataTableValidator,
-                columnValidator, namedParameterJdbcTemplate, preventSqlInjectionService, datatableKeywordGenerator);
+                columnValidator, namedParameterJdbcTemplate, datatableKeywordGenerator);
     }
 }

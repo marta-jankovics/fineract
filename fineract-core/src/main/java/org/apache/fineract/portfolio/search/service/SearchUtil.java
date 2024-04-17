@@ -271,7 +271,7 @@ public final class SearchUtil {
             SQLInjectionValidator.validateDynamicQuery(columnValue);
         }
 
-        if (columnHeader.hasColumnValues()) {
+        if (columnHeader.isColumnCode()) {
             if (columnHeader.isCodeValueDisplayType()) {
                 if (!columnHeader.isColumnValueAllowed(columnValue)) {
                     ApiParameterError error = ApiParameterError.parameterError("error.msg.invalid.columnValue",

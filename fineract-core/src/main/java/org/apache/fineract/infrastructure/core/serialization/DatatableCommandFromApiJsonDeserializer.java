@@ -33,7 +33,6 @@ import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiCon
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_LENGTH;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_MANDATORY;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NAME;
-import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NEWCODE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NEWNAME;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_TYPE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_TYPE_BOOLEAN;
@@ -96,7 +95,7 @@ public class DatatableCommandFromApiJsonDeserializer {
     private static final Set<String> SUPPORTED_PARAMETERS_FOR_ADD_COLUMNS = Set.of(API_FIELD_NAME, API_FIELD_TYPE, API_FIELD_LENGTH,
             API_FIELD_MANDATORY, API_FIELD_AFTER, API_FIELD_CODE, API_FIELD_UNIQUE, API_FIELD_INDEXED);
     private static final Set<String> SUPPORTED_PARAMETERS_FOR_CHANGE_COLUMNS = Set.of(API_FIELD_NAME, API_FIELD_NEWNAME, API_FIELD_LENGTH,
-            API_FIELD_MANDATORY, API_FIELD_AFTER, API_FIELD_CODE, API_FIELD_NEWCODE, API_FIELD_UNIQUE, API_FIELD_INDEXED);
+            API_FIELD_MANDATORY, API_FIELD_AFTER, API_FIELD_CODE, API_FIELD_UNIQUE, API_FIELD_INDEXED);
     private static final Set<String> SUPPORTED_PARAMETERS_FOR_DROP_COLUMNS = Set.of(API_FIELD_NAME);
     private static final Object[] SUPPORTED_COLUMN_TYPES = { API_FIELD_TYPE_STRING, API_FIELD_TYPE_NUMBER, API_FIELD_TYPE_BOOLEAN,
             API_FIELD_TYPE_DECIMAL, API_FIELD_TYPE_DATE, API_FIELD_TYPE_DATETIME, API_FIELD_TYPE_TEXT, API_FIELD_TYPE_JSON,
@@ -227,15 +226,6 @@ public class DatatableCommandFromApiJsonDeserializer {
                 final String code = this.fromApiJsonHelper.extractStringNamed(API_FIELD_CODE, column);
                 baseDataValidator.reset().parameter(API_FIELD_CODE).value(code).ignoreIfNull().notBlank().notExceedingLengthOf(100)
                         .matchesRegularExpression(DATATABLE_COLUMN_NAME_REGEX_PATTERN);
-
-                final String newCode = this.fromApiJsonHelper.extractStringNamed(API_FIELD_NEWCODE, column);
-                baseDataValidator.reset().parameter(API_FIELD_NEWCODE).value(newCode).ignoreIfNull().notBlank().notExceedingLengthOf(100)
-                        .matchesRegularExpression(DATATABLE_COLUMN_NAME_REGEX_PATTERN);
-
-                if (StringUtils.isBlank(code) && StringUtils.isNotBlank(newCode)) {
-                    baseDataValidator.reset().parameter(API_FIELD_CODE).value(code).cantBeBlankWhenParameterProvidedIs(API_FIELD_NEWCODE,
-                            newCode);
-                }
 
                 final Boolean mandatory = this.fromApiJsonHelper.extractBooleanNamed(API_FIELD_MANDATORY, column);
                 baseDataValidator.reset().parameter(API_FIELD_MANDATORY).value(mandatory).ignoreIfNull().notBlank().isOneOfTheseValues(true,

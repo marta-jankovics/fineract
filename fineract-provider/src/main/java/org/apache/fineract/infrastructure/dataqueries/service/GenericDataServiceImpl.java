@@ -119,7 +119,7 @@ public class GenericDataServiceImpl implements GenericDataService {
                     || isExplicitlyIndexed(tableName, columnName, indexDefinitions);
             JdbcJavaType jdbcType = JdbcJavaType.getByTypeName(dialect, columnType, false);
 
-            List<ResultsetColumnValueData> columnValues = new ArrayList<>();
+            List<ResultsetColumnValueData> columnValues = null;
             String codeName = null;
             final int codePosition = columnName.indexOf("_cd");
             if (codePosition > 0 && jdbcType != null && (jdbcType.isVarcharType() || jdbcType.isIntegerType())) {

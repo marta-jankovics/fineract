@@ -29,7 +29,6 @@ import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiCon
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_LENGTH;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_MANDATORY;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NAME;
-import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NEWCODE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_NEWNAME;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_TYPE;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_TYPE_DROPDOWN;
@@ -72,7 +71,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.infrastructure.codes.service.CodeReadPlatformService;
@@ -107,13 +105,13 @@ import org.apache.fineract.infrastructure.dataqueries.exception.DatatableEntryRe
 import org.apache.fineract.infrastructure.dataqueries.exception.DatatableNotFoundException;
 import org.apache.fineract.infrastructure.dataqueries.exception.DatatableSystemErrorException;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
-import org.apache.fineract.infrastructure.security.service.SqlInjectionPreventerService;
 import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.useradministration.domain.AppUser;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -146,7 +144,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     private final DataTableValidator datatableValidator;
     private final ColumnValidator columnValidator;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final SqlInjectionPreventerService preventSqlInjectionService;
     private final DatatableKeywordGenerator datatableKeywordGenerator;
 
     @Override
@@ -423,51 +420,10 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         this.jdbcTemplate.batchUpdate(sqlArray); // NOSONAR
     }
 
-    private void parseDatatableColumnObjectForCreate(final JsonObject column, StringBuilder sqlBuilder,
-            final StringBuilder constrainBuilder, final String datatableAlias, final Map<String, Long> codeMappings,
-            final boolean isConstraintApproach) {
-        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
-        final String type = column.has(API_FIELD_TYPE) ? column.get(API_FIELD_TYPE).getAsString().toLowerCase() : null;
-        final Integer length = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsInt() : null;
-        final boolean mandatory = column.has(API_FIELD_MANDATORY) && column.get(API_FIELD_MANDATORY).getAsBoolean();
-        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
-        final String code = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
-
-        if (StringUtils.isNotBlank(code)) {
-            if (isConstraintApproach) {
-                codeMappings.put(datatableAlias + "_" + name, this.codeReadPlatformService.retriveCode(code).getId());
-                String fkName = "fk_" + datatableAlias + "_" + name;
-                constrainBuilder.append(", CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ").append("FOREIGN KEY (")
-                        .append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ").append(sqlGenerator.escape(CODE_VALUES_TABLE))
-                        .append(" (id)");
-            } else {
-                name = datatableColumnNameToCodeValueName(name, code);
-            }
-        }
-        sqlBuilder.append(sqlGenerator.escape(name));
-        if (type != null) {
-            sqlBuilder.append(" ").append(mapApiTypeToDbType(type, length));
-        }
-
-        if (unique) {
-            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, name);
-            constrainBuilder.append(", CONSTRAINT ").append(sqlGenerator.escape(uniqueKeyName)).append(" ").append("UNIQUE (")
-                    .append(sqlGenerator.escape(name)).append(")");
-        }
-
-        if (mandatory) {
-            sqlBuilder.append(" NOT NULL");
-        } else {
-            sqlBuilder.append(" DEFAULT NULL");
-        }
-
-        sqlBuilder.append(", ");
-    }
-
     @Transactional
     @Override
     public CommandProcessingResult createDatatable(final JsonCommand command) {
-        String datatableName = null;
+        String datatable = null;
         try {
             this.context.authenticatedUser();
             final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
@@ -475,7 +431,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
             final JsonElement element = this.fromJsonHelper.parse(command.json());
             final JsonArray columns = this.fromJsonHelper.extractJsonArrayNamed(API_PARAM_COLUMNS, element);
-            datatableName = this.fromJsonHelper.extractStringNamed(API_PARAM_DATATABLE_NAME, element);
+            datatable = this.fromJsonHelper.extractStringNamed(API_PARAM_DATATABLE_NAME, element);
             String entitySubType = this.fromJsonHelper.extractStringNamed(API_PARAM_SUBTYPE, element);
             final String entityName = this.fromJsonHelper.extractStringNamed(API_PARAM_APPTABLE_NAME, element);
             Boolean multiRow = this.fromJsonHelper.extractBooleanNamed(API_PARAM_MULTIROW, element);
@@ -488,16 +444,15 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 multiRow = false;
             }
 
-            validateDatatable(datatableName);
+            validateDatatable(datatable);
             EntityTables entity = resolveEntity(entityName);
-            final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
-            String fkColumn = sqlGenerator.escape(fkColumnName);
-            final String datatableAlias = datatableName.toLowerCase().replaceAll("\\s", "_");
             StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.append("CREATE TABLE ").append(sqlGenerator.escape(datatableName)).append(" (");
+            String sqlDatatable = sqlGenerator.escape(datatable);
+            sqlBuilder.append("CREATE TABLE ").append(sqlDatatable).append(" (");
             DatabaseType dialect = databaseTypeResolver.databaseType();
+            boolean mySql = dialect.isMySql();
             if (multiRow) {
-                if (dialect.isMySql()) {
+                if (mySql) {
                     sqlBuilder.append(TABLE_FIELD_ID).append(" BIGINT NOT NULL AUTO_INCREMENT, ");
                 } else if (dialect.isPostgres()) {
                     sqlBuilder.append(TABLE_FIELD_ID).append(
@@ -506,7 +461,15 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     throw new IllegalStateException("Current database is not supported");
                 }
             }
-            sqlBuilder.append(fkColumn).append(" ").append(entity.getRefColumnType().formatSql(dialect)).append(" NOT NULL, ");
+            final List<ResultsetColumnHeaderData> apptableHeaders = this.genericDataService
+                    .fillResultsetColumnHeaders(entity.getApptableName());
+            final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
+            String fkColumn = sqlGenerator.escape(fkColumnName);
+            ResultsetColumnHeaderData fkHeader = SearchUtil.getFiltered(apptableHeaders, e -> e.isNamed(entity.getRefColumn()));
+            Long fkLength = fkHeader.getColumnLength();
+            sqlBuilder.append(fkColumn).append(" ")
+                    .append(fkHeader.getColumnType().formatSql(dialect, fkLength == null ? null : fkLength.intValue()))
+                    .append(" NOT NULL, ");
 
             // Add Created At and Updated At
             columns.add(addColumn(CREATEDAT_FIELD_NAME, DATETIME, false, null, false, false));
@@ -514,46 +477,46 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
             final Map<String, Long> codeMappings = new HashMap<>();
             final StringBuilder constrainBuilder = new StringBuilder();
+            final StringBuilder indexBuilder = new StringBuilder();
             for (final JsonElement column : columns) {
-                parseDatatableColumnObjectForCreate(column.getAsJsonObject(), sqlBuilder, constrainBuilder, datatableAlias, codeMappings,
-                        isConstraintApproach);
+                parseDatatableColumnObjectForCreate(column.getAsJsonObject(), sqlBuilder, constrainBuilder, indexBuilder, datatable,
+                        codeMappings, isConstraintApproach);
             }
 
-            // Remove trailing comma and space
-            sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length());
-
+            String datatableAlias = datatableAliasName(datatable);
             String fkConstraintName = sqlGenerator.escape("fk_" + datatableAlias + "_" + fkColumnName);
-            String fkName = sqlGenerator.escape("fk_" + fkColumnName);
-            if (multiRow) {
-                sqlBuilder.append(", PRIMARY KEY (").append(TABLE_FIELD_ID).append(")");
-                if (databaseTypeResolver.isMySQL()) {
-                    sqlBuilder.append(", KEY ").append(fkName).append(" (").append(fkColumn).append(")");
-                }
-            } else {
-                sqlBuilder.append(", PRIMARY KEY (").append(fkColumn).append(")");
-            }
-            sqlBuilder.append(", CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(fkColumn).append(") ")
+            sqlBuilder.append("PRIMARY KEY (").append(multiRow ? TABLE_FIELD_ID : fkColumn).append(')').append(", ");
+            sqlBuilder.append("CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(fkColumn).append(") ")
                     .append("REFERENCES ").append(sqlGenerator.escape(entity.getApptableName())).append(" (").append(entity.getRefColumn())
-                    .append(")");
+                    .append(')').append(", ");
+
+            if (multiRow) {
+                // in case of non-multirow, the primary key of the table is the FK and MySQL and PostgreSQL
+                // automatically puts an index onto it so no need to create it explicitly
+                String indexName = datatableKeywordGenerator.generateIndexName(datatable, fkColumnName);
+                String indexStr = addIndexString(datatable, indexName, fkColumnName, true, false);
+                if (mySql) {
+                    constrainBuilder.append(indexStr);
+                } else {
+                    indexBuilder.append(indexStr);
+                }
+            }
 
             sqlBuilder.append(constrainBuilder);
+            statementEnd(sqlBuilder, null);
             sqlBuilder.append(")");
-            if (databaseTypeResolver.isMySQL()) {
+            if (mySql) {
                 sqlBuilder.append(" ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;");
+            } else {
+                sqlBuilder.append("; ");
             }
+            sqlBuilder.append(indexBuilder);
+
             log.debug("SQL:: {}", sqlBuilder);
 
             jdbcTemplate.execute(sqlBuilder.toString());
 
-            // create indexes
-            if (multiRow) {
-                createFkIndex(datatableName, fkColumnName);
-            }
-            // in case of non-multirow, the primary key of the table is the FK and MySQL and PostgreSQL
-            // automatically puts an index onto it so no need to create it explicitly
-
-            createIndexesForTable(datatableName, columns);
-            registerDatatable(datatableName, entity, entitySubType);
+            registerDatatable(datatable, entity, entitySubType);
             registerColumnCodeMapping(codeMappings);
         } catch (final PersistenceException | DataAccessException e) {
             final Throwable realCause = e.getCause();
@@ -564,7 +527,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 baseDataValidator.reset().parameter(API_FIELD_NAME).failWithCode("duplicate.column.name");
             } else if ((realCause.getMessage().contains("Table") || realCause.getMessage().contains("relation"))
                     && realCause.getMessage().contains("already exists")) {
-                baseDataValidator.reset().parameter(API_PARAM_DATATABLE_NAME).value(datatableName).failWithCode("datatable.already.exists");
+                baseDataValidator.reset().parameter(API_PARAM_DATATABLE_NAME).value(datatable).failWithCode("datatable.already.exists");
             } else if (realCause.getMessage().contains("Column") && realCause.getMessage().contains("big")) {
                 baseDataValidator.reset().parameter("column").failWithCode("length.too.big");
             } else if (realCause.getMessage().contains("Row") && realCause.getMessage().contains("large")) {
@@ -573,7 +536,60 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             baseDataValidator.throwValidationErrors();
         }
 
-        return new CommandProcessingResultBuilder().withCommandId(command.commandId()).withResourceIdentifier(datatableName).build();
+        return new CommandProcessingResultBuilder().withCommandId(command.commandId()).withResourceIdentifier(datatable).build();
+    }
+
+    private void parseDatatableColumnObjectForCreate(final JsonObject column, StringBuilder sqlBuilder,
+            final StringBuilder constrainBuilder, StringBuilder indexBuilder, final String datatable, final Map<String, Long> codeMappings,
+            final boolean isConstraintApproach) {
+        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
+        final String type = column.has(API_FIELD_TYPE) ? column.get(API_FIELD_TYPE).getAsString().toLowerCase() : null;
+        final Integer length = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsInt() : null;
+        final boolean mandatory = column.has(API_FIELD_MANDATORY) && column.get(API_FIELD_MANDATORY).getAsBoolean();
+        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
+        final String codeName = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
+
+        String datatableAlias = datatableAliasName(datatable);
+        if (StringUtils.isNotBlank(codeName)) {
+            if (isConstraintApproach) {
+                codeMappings.put(datatableColumnToCodeMappingName(datatable, name),
+                        this.codeReadPlatformService.retriveCode(codeName).getId());
+                String fkName = "fk_" + datatableAlias + '_' + name;
+                constrainBuilder.append("CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(' ').append("FOREIGN KEY (")
+                        .append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ").append(sqlGenerator.escape(CODE_VALUES_TABLE))
+                        .append(" (id)").append(", ");
+            } else {
+                name = datatableColumnNameToCodeValueName(name, codeName);
+            }
+        }
+        String sqlName = sqlGenerator.escape(name);
+        sqlBuilder.append(sqlName);
+        if (type != null) {
+            sqlBuilder.append(' ').append(mapApiTypeToDbType(type, length));
+        }
+        if (mandatory) {
+            sqlBuilder.append(" NOT NULL");
+        } else {
+            sqlBuilder.append(" DEFAULT NULL");
+        }
+        sqlBuilder.append(", ");
+
+        if (unique) {
+            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, name);
+            constrainBuilder.append("CONSTRAINT ").append(sqlGenerator.escape(uniqueKeyName)).append(' ').append("UNIQUE (").append(sqlName)
+                    .append(')').append(", ");
+        }
+        boolean mySql = databaseTypeResolver.isMySQL();
+        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
+        if (indexed && !unique) {
+            String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
+            String indexStr = addIndexString(datatable, indexName, name, true, false);
+            if (mySql) {
+                constrainBuilder.append(indexStr);
+            } else {
+                indexBuilder.append(indexStr);
+            }
+        }
     }
 
     private JsonElement addColumn(final String name, final JdbcJavaType dataType, final boolean isMandatory, final Integer length,
@@ -613,51 +629,61 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             }
 
             String sqlDatatable = sqlGenerator.escape(datatable);
+            DatabaseType dialect = databaseTypeResolver.databaseType();
+            boolean mySql = dialect.isMySql();
+            String alterTable = "ALTER TABLE " + sqlDatatable + " ";
+            String stmStart = mySql ? "" : alterTable;
+            String stmEnd = mySql ? ", " : "; ";
+            String datatableAlias = datatableAliasName(datatable);
             if (!StringUtils.isBlank(entityName)) {
                 EntityTables oldEntityTable = queryForApplicationEntity(datatable);
                 EntityTables entity = resolveEntity(entityName);
                 if (entity != oldEntityTable) {
-                    JdbcJavaType fkColumnType = entity.getRefColumnType();
+                    StringBuilder sqlBuilder = new StringBuilder();
+                    if (mySql) {
+                        sqlBuilder.append(alterTable);
+                    }
                     final String oldFkColumnName = oldEntityTable.getForeignKeyColumnNameOnDatatable();
                     final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
 
-                    String oldFkName = sqlGenerator.escape("fk_" + oldFkColumnName);
-                    String oldFkConstraintName = sqlGenerator
-                            .escape("fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + oldFkColumnName);
-                    String fkName = sqlGenerator.escape("fk_" + fkColumnName);
-                    String fkConstraintName = sqlGenerator
-                            .escape("fk_" + datatable.toLowerCase().replaceAll("\\s", "_") + "_" + fkColumnName);
+                    String oldFkConstraintName = sqlGenerator.escape("fk_" + datatableAlias + "_" + oldFkColumnName);
+                    String fkConstraintName = sqlGenerator.escape("fk_" + datatableAlias + "_" + fkColumnName);
+
+                    sqlBuilder.append(stmStart).append(mySql ? "DROP FOREIGN KEY " : "DROP CONSTRAINT ").append(oldFkConstraintName)
+                            .append(stmEnd);
                     if (multiRow) {
-                        dropIndex(datatable, datatableKeywordGenerator.generateIndexName(datatable, oldFkColumnName));
+                        String indexName = datatableKeywordGenerator.generateIndexName(datatable, oldFkColumnName);
+                        sqlBuilder.append(dropIndexString(datatable, indexName, true));
+                        // in case of non-multirow, the primary key of the table is the FK and MySQL and PostgreSQL
+                        // automatically puts an index onto it so no need to create it explicitly
                     }
 
-                    DatabaseType dialect = databaseTypeResolver.databaseType();
-                    String sep = dialect.isMySql() ? ", " : " ";
-                    StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE ").append(sqlDatatable);
-                    if (multiRow) {
-                        sqlBuilder.append(" DROP KEY ").append(oldFkName).append(sep);
-                    }
-                    sqlBuilder.append("DROP FOREIGN KEY ").append(oldFkConstraintName).append(sep);
                     String oldFkColumn = sqlGenerator.escape(oldFkColumnName);
                     String newFkColumn = sqlGenerator.escape(fkColumnName);
-                    if (dialect.isMySql()) {
-                        sqlBuilder.append("CHANGE ").append(oldFkColumn).append(" ").append(newFkColumn).append(" ")
-                                .append(fkColumnType.formatSql(dialect)).append(" NOT NULL").append(sep);
+                    final List<ResultsetColumnHeaderData> apptableHeaders = this.genericDataService
+                            .fillResultsetColumnHeaders(entity.getApptableName());
+                    ResultsetColumnHeaderData fkHeader = SearchUtil.getFiltered(apptableHeaders, e -> e.isNamed(entity.getRefColumn()));
+                    Long fkLength = fkHeader.getColumnLength();
+                    String fkType = fkHeader.getColumnType().formatSql(dialect, fkLength == null ? null : fkLength.intValue());
+                    if (mySql) {
+                        sqlBuilder.append(stmStart).append("CHANGE ").append(oldFkColumn).append(" ").append(newFkColumn).append(" ")
+                                .append(fkType).append(" NOT NULL").append(stmEnd);
                     } else {
-                        sqlBuilder.append("RENAME COLUMN ").append(oldFkColumn).append(" TO ").append(newFkColumn).append(" ALTER ")
-                                .append(fkColumnName).append(" type ").append(fkColumnType.formatSql(dialect)).append(sep);
+                        sqlBuilder.append(stmStart).append("RENAME COLUMN ").append(oldFkColumn).append(" TO ").append(newFkColumn)
+                                .append(stmEnd);
+                        sqlBuilder.append(stmStart).append("ALTER ").append(newFkColumn).append(" type ").append(fkType).append(stmEnd);
                     }
+                    sqlBuilder.append(stmStart).append("ADD CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (")
+                            .append(newFkColumn).append(") REFERENCES ").append(sqlGenerator.escape(entity.getApptableName())).append(" (")
+                            .append(sqlGenerator.escape(entity.getRefColumn())).append(")").append(stmEnd);
                     if (multiRow) {
-                        sqlBuilder.append("ADD KEY ").append(fkName).append(" (").append(newFkColumn).append("),").append(sep);
+                        // in case of non-multirow, the primary key of the table is the FK and MySQL and PostgreSQL
+                        // automatically puts an index onto it so no need to create it explicitly
+                        String indexName = datatableKeywordGenerator.generateIndexName(datatable, fkColumnName);
+                        sqlBuilder.append(addIndexString(datatable, indexName, fkColumnName, true, true));
                     }
-                    sqlBuilder.append("ADD CONSTRAINT ").append(fkConstraintName).append(" FOREIGN KEY (").append(newFkColumn).append(") ")
-                            .append("REFERENCES ").append(entity.getApptableName()).append(" (").append(entity.getRefColumn()).append(")");
-
+                    statementEnd(sqlBuilder);
                     this.jdbcTemplate.execute(sqlBuilder.toString());
-
-                    if (multiRow) {
-                        createFkIndex(datatable, datatableKeywordGenerator.generateIndexName(datatable, fkColumnName));
-                    }
 
                     deregisterDatatable(datatable);
                     registerDatatable(datatable, entity, entitySubType);
@@ -673,25 +699,17 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                     throw new GeneralPlatformDomainRuleException("error.msg.non.empty.datatable.column.cannot.be.deleted",
                             "Non-empty datatable columns can not be deleted.");
                 }
-                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlDatatable);
-                final StringBuilder constrainBuilder = new StringBuilder();
+                StringBuilder sqlBuilder = new StringBuilder();
                 final List<String> codeMappings = new ArrayList<>();
                 for (final JsonElement column : dropColumns) {
-                    parseDatatableColumnForDrop(column.getAsJsonObject(), sqlBuilder, datatable, constrainBuilder, codeMappings);
+                    parseDatatableColumnForDrop(column.getAsJsonObject(), sqlBuilder, datatable, codeMappings);
                 }
-
-                // Remove the first comma, right after ALTER TABLE datatable
-                final int indexOfFirstComma = sqlBuilder.indexOf(",");
-                if (indexOfFirstComma != -1) {
-                    sqlBuilder.deleteCharAt(indexOfFirstComma);
-                }
-                sqlBuilder.append(constrainBuilder);
+                statementEnd(sqlBuilder);
                 this.jdbcTemplate.execute(sqlBuilder.toString());
                 deleteColumnCodeMapping(codeMappings);
             }
             if (addColumns != null) {
-                StringBuilder sqlBuilder = new StringBuilder("ALTER TABLE " + sqlDatatable);
-                final StringBuilder constrainBuilder = new StringBuilder();
+                StringBuilder sqlBuilder = new StringBuilder();
                 final Map<String, Long> codeMappings = new HashMap<>();
                 for (final JsonElement column : addColumns) {
                     JsonObject columnAsJson = column.getAsJsonObject();
@@ -699,56 +717,31 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                         throw new GeneralPlatformDomainRuleException("error.msg.non.empty.datatable.mandatory.column.cannot.be.added",
                                 "Non empty datatable mandatory columns can not be added.");
                     }
-                    parseDatatableColumnForAdd(columnAsJson, sqlBuilder, datatable.toLowerCase().replaceAll("\\s", "_"), constrainBuilder,
-                            codeMappings, isConstraintApproach);
+                    parseDatatableColumnForAdd(columnAsJson, sqlBuilder, datatable, codeMappings, isConstraintApproach);
                 }
 
-                // Remove the first comma, right after ALTER TABLE datatable
-                final int indexOfFirstComma = sqlBuilder.indexOf(",");
-                if (indexOfFirstComma != -1) {
-                    sqlBuilder.deleteCharAt(indexOfFirstComma);
-                }
-                sqlBuilder.append(constrainBuilder);
+                statementEnd(sqlBuilder);
                 jdbcTemplate.execute(sqlBuilder.toString());
-                createIndexesForTable(datatable, addColumns);
                 registerColumnCodeMapping(codeMappings);
             }
             if (changeColumns != null) {
-                final StringBuilder renameBuilder = new StringBuilder();
-                StringBuilder changeBuilder = new StringBuilder();
-                final StringBuilder constrainBuilder = new StringBuilder();
+                StringBuilder sqlBuilder = new StringBuilder();
                 final Map<String, Long> codeMappings = new HashMap<>();
                 final List<String> removeMappings = new ArrayList<>();
                 final Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil.mapHeadersToName(columnHeaders);
                 for (final JsonElement column : changeColumns) {
                     // remove NULL values from column where mandatory is true
                     removeNullValuesFromStringColumn(datatable, column.getAsJsonObject(), headersByName);
-                    parseDatatableColumnForUpdate(column.getAsJsonObject(), headersByName, datatable, renameBuilder, changeBuilder,
-                            constrainBuilder, codeMappings, removeMappings, isConstraintApproach);
+                    parseDatatableColumnForUpdate(column.getAsJsonObject(), headersByName, datatable, sqlBuilder, codeMappings,
+                            removeMappings, isConstraintApproach);
                 }
-
-                // Remove the first comma, right after ALTER TABLE datatable
-                StringBuilder sqlBuilder = renameBuilder;
-                if (!changeBuilder.isEmpty() || !constrainBuilder.isEmpty()) {
-                    int idx = changeBuilder.indexOf(",");
-                    if (idx > -1) {
-                        changeBuilder.deleteCharAt(idx);
-                    } else if ((idx = constrainBuilder.indexOf(",")) > -1) {
-                        constrainBuilder.deleteCharAt(idx);
-                    }
-                    sqlBuilder.append("ALTER TABLE ").append(sqlDatatable).append(changeBuilder).append(constrainBuilder);
-                }
-
                 try {
+                    statementEnd(sqlBuilder);
                     if (!sqlBuilder.isEmpty()) {
                         jdbcTemplate.execute(sqlBuilder.toString());
                     }
                     deleteColumnCodeMapping(removeMappings);
                     registerColumnCodeMapping(codeMappings);
-                    // update unique constraint
-                    updateUniqueConstraintsForTable(datatable, changeColumns, headersByName);
-                    // update indexes
-                    updateIndexesForTable(datatable, changeColumns, headersByName);
                 } catch (final Exception e) {
                     log.error("Exception while modifying a datatable", e);
                     // throw a 503 HTTP error - PlatformServiceUnavailableException
@@ -794,169 +787,222 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         }
     }
 
-    private void parseDatatableColumnForAdd(final JsonObject column, StringBuilder sqlBuilder, final String datatableAlias,
-            final StringBuilder constrainBuilder, final Map<String, Long> codeMappings, final boolean isConstraintApproach) {
+    private void parseDatatableColumnForAdd(final JsonObject column, StringBuilder sqlBuilder, final String datatable,
+            final Map<String, Long> codeMappings, final boolean isConstraintApproach) {
         String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
         final String type = column.has(API_FIELD_TYPE) ? column.get(API_FIELD_TYPE).getAsString().toLowerCase() : null;
         final Integer length = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsInt() : null;
         final boolean mandatory = column.has(API_FIELD_MANDATORY) && column.get(API_FIELD_MANDATORY).getAsBoolean();
-        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
         final String after = column.has(API_FIELD_AFTER) ? column.get(API_FIELD_AFTER).getAsString() : null;
-        final String code = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
+        final String codeName = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
+        boolean mySql = databaseTypeResolver.isMySQL();
 
-        if (StringUtils.isNotBlank(code)) {
+        String datatableAlias = datatableAliasName(datatable);
+        String sqlDatatable = sqlGenerator.escape(datatable);
+        String alterTable = "ALTER TABLE " + sqlDatatable + " ";
+        if (sqlBuilder.isEmpty() && mySql) {
+            sqlBuilder.append(alterTable);
+        }
+        String stmStart = mySql ? "" : alterTable;
+        String stmEnd = mySql ? ", " : "; ";
+        if (StringUtils.isNotBlank(codeName)) {
             if (isConstraintApproach) {
+                codeMappings.put(datatableColumnToCodeMappingName(datatable, name),
+                        this.codeReadPlatformService.retriveCode(codeName).getId());
                 String fkName = "fk_" + datatableAlias + "_" + name;
-                codeMappings.put(datatableAlias + "_" + name, this.codeReadPlatformService.retriveCode(code).getId());
-                constrainBuilder.append(",ADD CONSTRAINT  ").append(sqlGenerator.escape(fkName)).append(" ").append("FOREIGN KEY (")
-                        .append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ").append(sqlGenerator.escape(CODE_VALUES_TABLE))
-                        .append(" (").append(TABLE_FIELD_ID).append(")");
+                sqlBuilder.append(stmStart).append("ADD CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ")
+                        .append("FOREIGN KEY (").append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ")
+                        .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")").append(stmEnd);
             } else {
-                name = datatableColumnNameToCodeValueName(name, code);
+                name = datatableColumnNameToCodeValueName(name, codeName);
             }
         }
-        sqlBuilder.append(", ADD ").append(sqlGenerator.escape(name)).append(" ").append(mapApiTypeToDbType(type, length));
-
-        if (unique) {
-            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, name);
-            constrainBuilder.append(",ADD CONSTRAINT  ").append(sqlGenerator.escape(uniqueKeyName)).append(" ").append("UNIQUE (")
-                    .append(sqlGenerator.escape(name)).append(")");
+        String sqlName = sqlGenerator.escape(name);
+        sqlBuilder.append(stmStart).append("ADD ").append(sqlName);
+        if (type != null) {
+            sqlBuilder.append(" ").append(mapApiTypeToDbType(type, length));
         }
-
         if (mandatory) {
             sqlBuilder.append(" NOT NULL");
         } else {
             sqlBuilder.append(" DEFAULT NULL");
         }
-
-        if (after != null) {
+        if (mySql && after != null) {
             sqlBuilder.append(" AFTER ").append(sqlGenerator.escape(after));
+        }
+        sqlBuilder.append(stmEnd);
+
+        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
+        if (unique) {
+            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, name);
+            sqlBuilder.append(stmStart).append("ADD CONSTRAINT  ").append(sqlGenerator.escape(uniqueKeyName)).append(" ").append("UNIQUE (")
+                    .append(sqlName).append(")").append(stmEnd);
+        }
+        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
+        if (indexed && !unique) {
+            String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
+            sqlBuilder.append(addIndexString(datatable, indexName, name, true, true));
         }
     }
 
     private void parseDatatableColumnForUpdate(final JsonObject column,
-            final Map<String, ResultsetColumnHeaderData> mapColumnNameDefinition, final String datatable, StringBuilder renameBuilder,
-            StringBuilder changeBuilder, final StringBuilder constrainBuilder, final Map<String, Long> codeMappings,
-            final List<String> removeMappings, final boolean isConstraintApproach) {
-        String oldName = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
+            final Map<String, ResultsetColumnHeaderData> mapColumnNameDefinition, final String datatable, StringBuilder sqlBuilder,
+            final Map<String, Long> codeMappings, final List<String> removeMappings, final boolean isConstraintApproach) {
+        final String oldName = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
         if (!mapColumnNameDefinition.containsKey(oldName)) {
             throw new PlatformDataIntegrityException("error.msg.datatable.column.missing.update.parse",
                     "Column " + oldName + " does not exist.", oldName);
         }
-        final String lengthStr = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsString() : null;
-        Long length = StringUtils.isNotBlank(lengthStr) ? Long.parseLong(lengthStr) : null;
+        ResultsetColumnHeaderData columnHeader = mapColumnNameDefinition.get(oldName);
+        StringBuilder dropConstraints = new StringBuilder();
+        StringBuilder addConstraints = new StringBuilder();
+        StringBuilder columnChange = new StringBuilder();
+        final String datatableAlias = datatableAliasName(datatable);
+        final Object oldCode = isConstraintApproach ? getCodeIdForColumn(datatableAlias, oldName) : columnHeader.getColumnCode();
+        final String codeName = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
+        Object newCode = null;
+        boolean codeChanged = false;
+        if (codeName == null) {
+            newCode = oldCode;
+        } else if (StringUtils.isBlank(codeName)) {
+            codeChanged = oldCode != null;
+        } else if (isConstraintApproach) {
+            newCode = codeReadPlatformService.retriveCode(codeName).getId();
+            codeChanged = !newCode.equals(oldCode);
+        } else {
+            newCode = codeName;
+            codeChanged = !StringUtils.equalsIgnoreCase((String) oldCode, codeName);
+        }
         String newName = column.has(API_FIELD_NEWNAME) ? column.get(API_FIELD_NEWNAME).getAsString() : null;
-        final Boolean newMandatory = column.has(API_FIELD_MANDATORY) ? column.get(API_FIELD_MANDATORY).getAsBoolean() : null;
-        final String after = column.has(API_FIELD_AFTER) ? column.get(API_FIELD_AFTER).getAsString() : null;
-        final String code = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
-        final String newCode = column.has(API_FIELD_NEWCODE) ? column.get(API_FIELD_NEWCODE).getAsString() : null;
-        final String datatableAlias = datatable.toLowerCase().replaceAll("\\s", "_");
-        if (isConstraintApproach) {
-            if (StringUtils.isBlank(newName)) {
-                newName = oldName;
-            }
+        if (StringUtils.isBlank(newName)) {
+            newName = oldName;
+        } else if (!isConstraintApproach && newCode != null) {
+            newName = datatableColumnNameToCodeValueName(newName, (String) newCode);
+        }
+        boolean nameChanged = !StringUtils.equalsIgnoreCase(oldName, newName);
+
+        boolean mySql = databaseTypeResolver.isMySQL();
+        String sqlDatatable = sqlGenerator.escape(datatable);
+        String alterTable = "ALTER TABLE " + sqlDatatable + " ";
+        if (sqlBuilder.isEmpty() && mySql) {
+            sqlBuilder.append(alterTable);
+        }
+        String stmStart = mySql ? "" : alterTable;
+        String stmEnd = mySql ? ", " : "; ";
+        String sqlNewName = sqlGenerator.escape(newName);
+        if (isConstraintApproach && (nameChanged || codeChanged) && (oldCode != null || newCode != null)) {
             String fkName = "fk_" + datatableAlias + "_" + oldName;
             String newFkName = "fk_" + datatableAlias + "_" + newName;
-            if (!StringUtils.equalsIgnoreCase(code, newCode) || !StringUtils.equalsIgnoreCase(oldName, newName)) {
-                if (StringUtils.equalsIgnoreCase(code, newCode)) {
-                    final int codeId = getCodeIdForColumn(datatableAlias, oldName);
-                    if (codeId > 0) {
-                        removeMappings.add(datatableAlias + "_" + oldName);
-                        constrainBuilder.append(", DROP CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ");
-                        codeMappings.put(datatableAlias + "_" + newName, (long) codeId);
-                        constrainBuilder.append(", ADD CONSTRAINT ").append(sqlGenerator.escape(newFkName)).append(" ")
-                                .append("FOREIGN KEY (").append(sqlGenerator.escape(newName)).append(") ").append("REFERENCES ")
-                                .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")");
-                    }
-
-                } else {
-                    if (code != null) {
-                        removeMappings.add(datatableAlias + "_" + oldName);
-                        if (newCode == null || !StringUtils.equalsIgnoreCase(oldName, newName)) {
-                            constrainBuilder.append(", DROP CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ");
-                        }
-                    }
-                    if (newCode != null) {
-                        codeMappings.put(datatableAlias + "_" + newName, this.codeReadPlatformService.retriveCode(newCode).getId());
-                        if (code == null || !StringUtils.equalsIgnoreCase(oldName, newName)) {
-                            constrainBuilder.append(", ADD CONSTRAINT  ").append(sqlGenerator.escape(newFkName)).append(" ")
-                                    .append("FOREIGN KEY (").append(sqlGenerator.escape(newName)).append(") ").append("REFERENCES ")
-                                    .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")");
-                        }
-                    }
-                }
+            if (oldCode != null) {
+                removeMappings.add(datatableAlias + "_" + oldName);
+                dropConstraints.append(stmStart).append("DROP CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(stmEnd);
             }
-        } else {
-            if (StringUtils.isNotBlank(code)) {
-                oldName = datatableColumnNameToCodeValueName(oldName, code);
-                if (StringUtils.isNotBlank(newCode)) {
-                    newName = datatableColumnNameToCodeValueName(newName, newCode);
-                } else {
-                    newName = datatableColumnNameToCodeValueName(newName, code);
-                }
+            if (newCode != null) {
+                codeMappings.put(datatableAlias + "_" + newName, (Long) newCode);
+                addConstraints.append(stmStart).append("ADD CONSTRAINT ").append(sqlGenerator.escape(newFkName)).append(" ")
+                        .append("FOREIGN KEY (").append(sqlNewName).append(") ").append("REFERENCES ")
+                        .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")").append(stmEnd);
             }
         }
+        boolean oldUnique = columnHeader.isColumnUnique();
+        boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
+        if (oldUnique != unique || nameChanged) {
+            if (oldUnique) {
+                String uniqueKeyName = sqlGenerator.escape(datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, oldName));
+                dropConstraints.append(stmStart).append(" DROP CONSTRAINT ").append(uniqueKeyName).append(stmEnd);
+            }
+            if (unique) {
+                String uniqueKeyName = sqlGenerator.escape(datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, newName));
+                addConstraints.append(stmStart).append("ADD CONSTRAINT ").append(uniqueKeyName).append(" ").append("UNIQUE (")
+                        .append(sqlNewName).append(")").append(stmEnd);
+            }
+        }
+        final boolean oldIndexed = genericDataService.isExplicitlyIndexed(datatable, oldName);
+        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
+        if (oldIndexed != indexed || nameChanged) {
+            if (oldIndexed) {
+                String indexName = datatableKeywordGenerator.generateIndexName(datatable, oldName);
+                dropConstraints.append(dropIndexString(datatable, indexName, true));
+            }
+            if (indexed && !unique) {
+                String indexName = datatableKeywordGenerator.generateIndexName(datatable, newName);
+                addConstraints.append(addIndexString(datatable, indexName, newName, true, true));
+            }
+        }
+
         DatabaseType dialect = databaseTypeResolver.databaseType();
-        ResultsetColumnHeaderData columnHeader = mapColumnNameDefinition.get(oldName);
         final JdbcJavaType type = columnHeader.getColumnType();
-        boolean nameChanged = !StringUtils.isBlank(newName) && !newName.equals(oldName);
+
+        final String lengthStr = column.has(API_FIELD_LENGTH) ? column.get(API_FIELD_LENGTH).getAsString() : null;
+        Long length = lengthStr == null ? null : Long.parseLong(lengthStr);
         boolean lengthChanged = length != null && !length.equals(columnHeader.getColumnLength()) && type.hasPrecision(dialect);
-        boolean nullityChanged = newMandatory != null && newMandatory != columnHeader.isMandatory();
-        boolean afterChanged = after != null && databaseTypeResolver.isMySQL();
+
+        Boolean mandatory = column.has(API_FIELD_MANDATORY) ? column.get(API_FIELD_MANDATORY).getAsBoolean() : null;
+        boolean nullityChanged = mandatory != null && mandatory != columnHeader.isMandatory();
+
+        final String after = column.has(API_FIELD_AFTER) ? column.get(API_FIELD_AFTER).getAsString() : null;
+        boolean afterChanged = after != null && mySql;
+
         if (nameChanged || lengthChanged || nullityChanged || afterChanged) {
+            length = length == null ? columnHeader.getColumnLength() : length;
             Integer precision = length == null ? null : length.intValue();
             Integer scale = null;
             if (type.isDecimalType()) {
                 precision = 19;
                 scale = 6;
             }
-            String colName = StringUtils.isBlank(newName) ? oldName : newName;
-            boolean mandatory = newMandatory == null ? columnHeader.isMandatory() : newMandatory;
-            if (databaseTypeResolver.isMySQL()) {
-                String modifySql = nameChanged ? ("CHANGE " + sqlGenerator.escape(oldName) + " " + sqlGenerator.escape(colName))
-                        : (" MODIFY " + sqlGenerator.escape(colName));
-                changeBuilder.append(", ").append(modifySql).append(" ").append(type.formatSql(dialect, precision, scale))
+            mandatory = mandatory == null ? columnHeader.isMandatory() : mandatory;
+            if (mySql) {
+                String modifySql = nameChanged ? ("CHANGE " + sqlGenerator.escape(oldName) + " " + sqlNewName) : (" MODIFY " + sqlNewName);
+                columnChange.append(stmStart).append(modifySql).append(" ").append(type.formatSql(dialect, precision, scale))
                         .append(mandatory ? " NOT NULL" : " DEFAULT NULL");
                 if (after != null) {
-                    changeBuilder.append(" AFTER ").append(sqlGenerator.escape(after));
+                    columnChange.append(" AFTER ").append(sqlGenerator.escape(after));
                 }
+                columnChange.append(stmEnd);
             } else {
                 if (nameChanged) {
-                    renameBuilder.append("ALTER TABLE ").append(sqlGenerator.escape(datatable)).append(" RENAME COLUMN ")
-                            .append(sqlGenerator.escape(oldName)).append(" TO ").append(sqlGenerator.escape(newName)).append("; ");
+                    columnChange.append(stmStart).append("RENAME COLUMN ").append(sqlGenerator.escape(oldName)).append(" TO ")
+                            .append(sqlNewName).append(stmEnd);
                 }
                 if (lengthChanged) {
-                    changeBuilder.append(", ALTER ").append(sqlGenerator.escape(colName)).append(" type ")
-                            .append(type.formatSql(dialect, precision, scale));
+                    columnChange.append(stmStart).append("ALTER ").append(sqlNewName).append(" type ")
+                            .append(type.formatSql(dialect, precision, scale)).append(stmEnd);
                 }
                 if (nullityChanged) {
-                    changeBuilder.append(", ALTER ").append(sqlGenerator.escape(colName))
-                            .append(mandatory ? " set not null" : " drop not null");
+                    columnChange.append(stmStart).append("ALTER ").append(sqlNewName).append(mandatory ? " set not null" : " drop not null")
+                            .append(stmEnd);
                 }
             }
         }
+        sqlBuilder.append(dropConstraints).append(columnChange).append(addConstraints);
     }
 
     private void parseDatatableColumnForDrop(final JsonObject column, StringBuilder sqlBuilder, final String datatable,
-            final StringBuilder constrainBuilder, final List<String> codeMappings) {
-        final String datatableAlias = datatable.toLowerCase().replaceAll("\\s", "_");
+            final List<String> codeMappings) {
         final String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
         if (name == null) {
             throw new GeneralPlatformDomainRuleException("error.msg.missing.datatable.column.name",
                     "Datatable column name to drop is missing.");
         }
-        sqlBuilder.append(", DROP COLUMN ").append(sqlGenerator.escape(name)).append(" ");
+        String sqlDatatable = sqlGenerator.escape(datatable);
+        boolean mySql = databaseTypeResolver.isMySQL();
+        String alterTable = "ALTER TABLE " + sqlDatatable + " ";
+        String stmStart = mySql ? "" : alterTable;
+        String stmEnd = mySql ? ", " : "; ";
+        if (sqlBuilder.isEmpty() && mySql) {
+            sqlBuilder.append(alterTable);
+        }
+        sqlBuilder.append(stmStart).append("DROP COLUMN ").append(sqlGenerator.escape(name)).append(stmEnd);
 
-        String fkName = "fk_" + datatableAlias + "_" + name;
-        String schemaSql = databaseTypeResolver.isMySQL() ? "i.TABLE_SCHEMA = SCHEMA()"
-                : "i.table_catalog = current_catalog AND i.table_schema = current_schema";
+        String fkName = "fk_" + datatableAliasName(datatable) + "_" + name;
+        String schemaSql = mySql ? "i.TABLE_SCHEMA = SCHEMA()" : "i.table_catalog = current_catalog AND i.table_schema = current_schema";
         String findFKSql = "SELECT count(*) FROM information_schema.TABLE_CONSTRAINTS i" + " WHERE i.CONSTRAINT_TYPE = 'FOREIGN KEY' AND "
                 + schemaSql + " AND i.TABLE_NAME = '" + datatable + "' AND i.CONSTRAINT_NAME = '" + fkName + "' ";
-
         final Integer count = this.jdbcTemplate.queryForObject(findFKSql, Integer.class); // NOSONAR
         if (count != null && count > 0) {
-            codeMappings.add(datatableAlias + "_" + name);
-            constrainBuilder.append(", DROP FOREIGN KEY ").append(sqlGenerator.escape(fkName)).append(" ");
+            codeMappings.add(datatableColumnToCodeMappingName(datatable, name));
+            sqlBuilder.append(stmStart).append("DROP FOREIGN KEY ").append(sqlGenerator.escape(fkName)).append(stmEnd);
         }
     }
 
@@ -985,17 +1031,16 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         }
     }
 
-    private int getCodeIdForColumn(final String datatableAlias, final String name) {
+    private Long getCodeIdForColumn(final String datatableAlias, final String name) {
         final StringBuilder checkColumnCodeMapping = new StringBuilder();
         checkColumnCodeMapping.append("select ccm.code_id from x_table_column_code_mappings ccm where ccm.column_alias_name='")
-                .append(datatableAlias).append("_").append(name).append("'");
-        Integer codeId = 0;
+                .append(datatableColumnToCodeMappingName(datatableAlias, name)).append("'");
         try {
-            codeId = this.jdbcTemplate.queryForObject(checkColumnCodeMapping.toString(), Integer.class);
+            return this.jdbcTemplate.queryForObject(checkColumnCodeMapping.toString(), Long.class);
         } catch (final EmptyResultDataAccessException e) {
             log.warn("Error occurred.", e);
+            return null;
         }
-        return ObjectUtils.defaultIfNull(codeId, 0);
     }
 
     /**
@@ -1021,173 +1066,32 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         }
     }
 
-    private void updateUniqueConstraintsForTable(String datatable, JsonArray changeColumns,
-            Map<String, ResultsetColumnHeaderData> mapColumnNameDefinition) {
-        for (final JsonElement column : changeColumns) {
-            String name = column.getAsJsonObject().has(API_FIELD_NAME) ? column.getAsJsonObject().get(API_FIELD_NAME).getAsString() : null;
-
-            if (!mapColumnNameDefinition.containsKey(name)) {
-                throw new PlatformDataIntegrityException("error.msg.datatable.column.missing.update.parse",
-                        "Column " + name + " does not exist.", name);
-            }
-
-            updateColumnUniqueConstraints(datatable, column.getAsJsonObject(),
-                    mapColumnNameDefinition.get(column.getAsJsonObject().get(API_FIELD_NAME).getAsString()));
-        }
-    }
-
-    private void updateColumnUniqueConstraints(String datatable, JsonObject column, ResultsetColumnHeaderData columnMetaData) {
-        // check for unique constraint update
-        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
-        String columnNewName = column.has(API_FIELD_NEWNAME) ? column.get(API_FIELD_NEWNAME).getAsString() : null;
-
-        final boolean isAlreadyUnique = genericDataService.isExplicitlyUnique(datatable, name);
-        boolean setUnique = column.has(API_FIELD_UNIQUE) ? column.get(API_FIELD_UNIQUE).getAsBoolean() : isAlreadyUnique;
-        String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatable, name);
-
-        if (isAlreadyUnique) {
-            if (!setUnique) {
-                // drop existing constraint
-                dropUniqueConstraint(datatable, uniqueKeyName);
-            } else {
-                // if columnname changed
-                checkColumnRenameAndModifyUniqueConstraint(datatable, columnNewName, uniqueKeyName);
-            }
-        } else if (setUnique) {
-            checkColumnRenameAndCreateUniqueConstraint(datatable, name, columnNewName, uniqueKeyName);
-        }
-    }
-
-    private void checkColumnRenameAndCreateUniqueConstraint(String datatable, String name, String columnNewName, String constraintKey) {
-        if (columnNewName != null) {
-            // create constraint with new column name
-            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatable, columnNewName);
-            createUniqueConstraint(datatable, columnNewName, uniqueKeyName);
-        } else {
-            // create constraint for column
-            createUniqueConstraint(datatable, name, constraintKey);
-        }
-    }
-
-    private void checkColumnRenameAndModifyUniqueConstraint(String datatable, String columnNewName, String existingConstraint) {
-        if (columnNewName != null) {
-            // drop existing constraint
-            dropUniqueConstraint(datatable, existingConstraint);
-            // create constraint with new column name
-            String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatable, columnNewName);
-            createUniqueConstraint(datatable, columnNewName, uniqueKeyName);
-        }
-    }
-
-    private void createUniqueConstraint(String datatable, String columnName, String uniqueKeyName) {
-        String sql = "ALTER TABLE " + sqlGenerator.escape(datatable) + " ADD CONSTRAINT " + sqlGenerator.escape(uniqueKeyName) + " UNIQUE ("
-                + sqlGenerator.escape(columnName) + ");";
-        this.jdbcTemplate.execute(sql); // NOSONAR
-    }
-
-    private void dropUniqueConstraint(String datatable, String uniqueKeyName) {
-        String sql = "ALTER TABLE " + sqlGenerator.escape(datatable) + " DROP CONSTRAINT " + sqlGenerator.escape(uniqueKeyName) + ";";
-        this.jdbcTemplate.execute(sql); // NOSONAR
-    }
-
-    private void createFkIndex(String datatable, String fkColumnName) {
-        String indexName = datatableKeywordGenerator.generateIndexName(datatable, fkColumnName);
-        createIndex(indexName, datatable, fkColumnName);
-    }
-
-    private void createIndexesForTable(String datatable, JsonArray columns) {
-        for (final JsonElement column : columns) {
-            createIndexForColumn(datatable, column.getAsJsonObject());
-        }
-    }
-
-    private void createIndexForColumn(String datatable, JsonObject column) {
-        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
-        final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
-        final boolean indexed = column.has(API_FIELD_INDEXED) && column.get(API_FIELD_INDEXED).getAsBoolean();
-        if (!unique && indexed) {
-            String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
-            createIndex(indexName, datatable, name);
-        }
-    }
-
-    private void updateIndexesForTable(String datatable, JsonArray changeColumns,
-            Map<String, ResultsetColumnHeaderData> mapColumnNameDefinition) {
-        for (final JsonElement column : changeColumns) {
-            String name = column.getAsJsonObject().has(API_FIELD_NAME) ? column.getAsJsonObject().get(API_FIELD_NAME).getAsString() : null;
-            if (!mapColumnNameDefinition.containsKey(name)) {
-                throw new PlatformDataIntegrityException("error.msg.datatable.column.missing.update.parse",
-                        "Column " + name + " does not exist.", name);
-            }
-            updateIndexForColumn(datatable, column.getAsJsonObject(),
-                    mapColumnNameDefinition.get(column.getAsJsonObject().get(API_FIELD_NAME).getAsString()));
-        }
-    }
-
-    private void updateIndexForColumn(String datatable, JsonObject column, ResultsetColumnHeaderData columnMetaData) {
-        String name = column.has(API_FIELD_NAME) ? column.get(API_FIELD_NAME).getAsString() : null;
-        String columnNewName = column.has(API_FIELD_NEWNAME) ? column.get(API_FIELD_NEWNAME).getAsString() : null;
-        final boolean isAlreadyUnique = genericDataService.isExplicitlyUnique(datatable, name);
-        final boolean setForUnique = column.has(API_FIELD_UNIQUE) ? column.get(API_FIELD_UNIQUE).getAsBoolean() : isAlreadyUnique;
-        if (setForUnique) {
-            return;
-        }
-        final boolean isAlreadyIndexed = genericDataService.isExplicitlyIndexed(datatable, name);
-        boolean setForIndexed = column.has(API_FIELD_INDEXED) ? column.get(API_FIELD_INDEXED).getAsBoolean() : isAlreadyIndexed;
-
-        String indexName = datatableKeywordGenerator.generateIndexName(datatable, name);
-        if (isAlreadyIndexed) {
-            if (!setForIndexed) {
-                // drop index
-                dropIndex(datatable, indexName);
-            } else { // if column name changed
-                checkColumnRenameAndModifyIndex(datatable, columnNewName, indexName);
-            }
-        } else if (setForIndexed) {
-            checkColumnRenameAndCreateIndex(datatable, name, columnNewName, indexName);
-        }
-    }
-
-    private void checkColumnRenameAndCreateIndex(String datatable, String columnExistingName, String columnNewName, String indexName) {
-        if (columnNewName != null) {
-            String newIndexName = datatableKeywordGenerator.generateIndexName(datatable, columnNewName);
-            // create index with new column name
-            createIndex(newIndexName, datatable, columnNewName);
-        } else {
-            // create index with previous name
-            createIndex(indexName, datatable, columnExistingName);
-        }
-    }
-
-    private void checkColumnRenameAndModifyIndex(String datatable, String columnNewName, String existingIndex) {
-        if (columnNewName != null) {
-            // drop index with previous name
-            dropIndex(datatable, existingIndex);
-            // create index with new name
-            String newIndexName = datatableKeywordGenerator.generateIndexName(datatable, columnNewName);
-            createIndex(newIndexName, datatable, columnNewName);
-        }
-    }
-
-    private void createIndex(String indexName, String tableName, String columnName) {
-        String safeIndexName = sqlGenerator.escape(indexName);
-        String safeTableName = sqlGenerator.escape(tableName);
-        String safeColumnName = sqlGenerator.escape(columnName);
-        String sqlIndexUpdateBuilder = "CREATE INDEX %s ON %s (%s);".formatted(safeIndexName, safeTableName, safeColumnName);
-        jdbcTemplate.execute(sqlIndexUpdateBuilder);
-    }
-
-    private void dropIndex(String datatable, String uniqueIndexName) {
-        StringBuilder sqlIndexUpdateBuilder = new StringBuilder();
+    private String addIndexString(String datatable, String indexName, String columnName, boolean embedded, boolean update) {
+        String sql = "";
+        datatable = sqlGenerator.escape(datatable);
+        indexName = sqlGenerator.escape(indexName);
+        columnName = sqlGenerator.escape(columnName);
         if (databaseTypeResolver.isMySQL()) {
-            sqlIndexUpdateBuilder.append("ALTER TABLE ").append(sqlGenerator.escape(datatable)).append(" ");
+            sql = (embedded ? "" : "ALTER TABLE " + datatable + ' ') + (update ? "ADD INDEX " : "INDEX ") + indexName + " (" + columnName
+                    + ')' + (embedded ? ", " : "; ");
+        } else {
+            sql = "CREATE INDEX " + indexName + " ON " + datatable + " (" + columnName + "); ";
         }
-        sqlIndexUpdateBuilder.append("DROP INDEX ").append(sqlGenerator.escape(uniqueIndexName)).append(";");
-        jdbcTemplate.execute(sqlIndexUpdateBuilder.toString());
+        return sql;
+    }
+
+    private String dropIndexString(String datatable, String indexName, boolean embedded) {
+        String sql = "";
+        boolean mySql = databaseTypeResolver.isMySQL();
+        if (mySql && !embedded) {
+            sql = "ALTER TABLE " + sqlGenerator.escape(datatable) + ' ';
+        }
+        return sql + "DROP INDEX " + sqlGenerator.escape(indexName) + (mySql && embedded ? ", " : "; ");
     }
 
     @Transactional
     @Override
+    @CacheEvict(value = "columnHeaders", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#datatable)")
     public void deleteDatatable(final String datatable) {
         try {
             this.context.authenticatedUser();
@@ -1197,7 +1101,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             String[] sqlArray;
             if (this.configurationDomainService.isConstraintApproachEnabledForDatatables()) {
                 final String deleteColumnCodeSql = "delete from x_table_column_code_mappings where column_alias_name like'"
-                        + datatable.toLowerCase().replaceAll("\\s", "_") + "_%'";
+                        + datatableAliasName(datatable) + "_%'";
                 sqlArray = new String[2];
                 sqlArray[1] = deleteColumnCodeSql;
             } else {
@@ -1736,11 +1640,43 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         return code + "_cd_" + columnName;
     }
 
+    private String datatableColumnToCodeMappingName(String datatableName, String columnName) {
+        return datatableAliasName(datatableName) + "_" + columnName;
+    }
+
+    private String datatableAliasName(String datatableName) {
+        return datatableName.toLowerCase().replaceAll("\\s", "_");
+    }
+
     private Object parseAppTableId(Serializable appTableId, EntityTables entity, ResultsetColumnHeaderData header, String dateFormat,
             String dateTimeFormat, Locale locale) {
         return appTableId instanceof String && !entity.getRefColumnType().isStringType()
                 ? SearchUtil.parseJdbcColumnValue(header, (String) appTableId, dateFormat, dateTimeFormat, locale, false, sqlGenerator)
                 : appTableId;
+    }
+
+    private void statementEnd(StringBuilder sqlBuilder) {
+        statementEnd(sqlBuilder, ';');
+    }
+
+    private void statementEnd(StringBuilder sqlBuilder, Character endChar) {
+        if (!sqlBuilder.isEmpty()) {
+            char c;
+            int idx = sqlBuilder.length() - 1;
+            while (Character.isWhitespace(sqlBuilder.charAt(idx))) {
+                sqlBuilder.deleteCharAt(idx);
+                idx = sqlBuilder.length() - 1;
+            }
+            // Change last comma
+            char lastChar = sqlBuilder.charAt(idx);
+            if (',' == lastChar) {
+                if (endChar == null) {
+                    sqlBuilder.deleteCharAt(idx);
+                } else {
+                    sqlBuilder.setCharAt(idx, endChar);
+                }
+            }
+        }
     }
 
     private void handleDataIntegrityIssues(String datatable, Serializable appTableId, final Throwable realCause, final Exception e) {
