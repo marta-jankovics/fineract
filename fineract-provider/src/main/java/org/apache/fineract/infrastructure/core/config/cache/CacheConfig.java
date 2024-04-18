@@ -61,68 +61,58 @@ public class CacheConfig {
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10000))
                         .withExpiry(ExpiryPolicyBuilder.noExpiration()).build());
 
-        if (cacheManager.getCache("users") == null) {
-            cacheManager.createCache("users", defaultTemplate);
-        }
-        if (cacheManager.getCache("usersByUsername") == null) {
-            cacheManager.createCache("usersByUsername", defaultTemplate);
-        }
         if (cacheManager.getCache("tenantsById") == null) {
             cacheManager.createCache("tenantsById", defaultTemplate);
         }
+
+        javax.cache.configuration.Configuration<Object, Object> keyTemplate = Eh107Configuration.fromEhcacheCacheConfiguration(
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10000))
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build());
+
+        if (cacheManager.getCache("users") == null) {
+            cacheManager.createCache("users", keyTemplate);
+        }
+        if (cacheManager.getCache("usersByUsername") == null) {
+            cacheManager.createCache("usersByUsername", keyTemplate);
+        }
         if (cacheManager.getCache("offices") == null) {
-            cacheManager.createCache("offices", defaultTemplate);
+            cacheManager.createCache("offices", keyTemplate);
         }
         if (cacheManager.getCache("officesForDropdown") == null) {
-            cacheManager.createCache("officesForDropdown", defaultTemplate);
+            cacheManager.createCache("officesForDropdown", keyTemplate);
         }
         if (cacheManager.getCache("officesById") == null) {
-            cacheManager.createCache("officesById", defaultTemplate);
+            cacheManager.createCache("officesById", keyTemplate);
         }
         if (cacheManager.getCache("charges") == null) {
-            cacheManager.createCache("charges", defaultTemplate);
+            cacheManager.createCache("charges", keyTemplate);
         }
         if (cacheManager.getCache("funds") == null) {
-            cacheManager.createCache("funds", defaultTemplate);
+            cacheManager.createCache("funds", keyTemplate);
         }
         if (cacheManager.getCache("code_values") == null) {
-            cacheManager.createCache("code_values", defaultTemplate);
+            cacheManager.createCache("code_values", keyTemplate);
         }
         if (cacheManager.getCache("codes") == null) {
-            cacheManager.createCache("codes", defaultTemplate);
+            cacheManager.createCache("codes", keyTemplate);
         }
         if (cacheManager.getCache("hooks") == null) {
-            cacheManager.createCache("hooks", defaultTemplate);
+            cacheManager.createCache("hooks", keyTemplate);
         }
         if (cacheManager.getCache("tfConfig") == null) {
-            cacheManager.createCache("tfConfig", defaultTemplate);
+            cacheManager.createCache("tfConfig", keyTemplate);
         }
         if (cacheManager.getCache(CONFIG_BY_NAME_CACHE_NAME) == null) {
-            cacheManager.createCache(CONFIG_BY_NAME_CACHE_NAME, defaultTemplate);
+            cacheManager.createCache(CONFIG_BY_NAME_CACHE_NAME, keyTemplate);
         }
         if (cacheManager.getCache("columnHeaders") == null) {
-            cacheManager.createCache("columnHeaders", defaultTemplate);
+            cacheManager.createCache("columnHeaders", keyTemplate);
         }
         if (cacheManager.getCache("payment_types") == null) {
-            cacheManager.createCache("payment_types", defaultTemplate);
-        }
-        if (cacheManager.getCache("accountTypesByName") == null) {
-            cacheManager.createCache("accountTypesByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("jobsByName") == null) {
-            cacheManager.createCache("jobsByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("loanProductsByName") == null) {
-            cacheManager.createCache("loanProductsByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("paymentTypesByName") == null) {
-            cacheManager.createCache("paymentTypesByName", defaultTemplate);
+            cacheManager.createCache("payment_types", keyTemplate);
         }
         if (cacheManager.getCache("paymentTypesWithCode") == null) {
-            cacheManager.createCache("paymentTypesWithCode", defaultTemplate);
-        }
-        if (cacheManager.getCache("tellers") == null) {
-            cacheManager.createCache("tellers", defaultTemplate);
+            cacheManager.createCache("paymentTypesWithCode", keyTemplate);
         }
 
         javax.cache.configuration.Configuration<Object, Object> accessTokenTemplate = Eh107Configuration.fromEhcacheCacheConfiguration(
