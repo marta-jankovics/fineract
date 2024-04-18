@@ -61,14 +61,19 @@ public class CacheConfig {
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10000))
                         .withExpiry(ExpiryPolicyBuilder.noExpiration()).build());
 
+        if (cacheManager.getCache("tenantsById") == null) {
+            cacheManager.createCache("tenantsById", defaultTemplate);
+        }
+
+        javax.cache.configuration.Configuration<Object, Object> keyTemplate = Eh107Configuration.fromEhcacheCacheConfiguration(
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10000))
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build());
+
         if (cacheManager.getCache("users") == null) {
             cacheManager.createCache("users", defaultTemplate);
         }
         if (cacheManager.getCache("usersByUsername") == null) {
             cacheManager.createCache("usersByUsername", defaultTemplate);
-        }
-        if (cacheManager.getCache("tenantsById") == null) {
-            cacheManager.createCache("tenantsById", defaultTemplate);
         }
         if (cacheManager.getCache("offices") == null) {
             cacheManager.createCache("offices", defaultTemplate);
@@ -106,23 +111,8 @@ public class CacheConfig {
         if (cacheManager.getCache("payment_types") == null) {
             cacheManager.createCache("payment_types", defaultTemplate);
         }
-        if (cacheManager.getCache("accountTypesByName") == null) {
-            cacheManager.createCache("accountTypesByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("jobsByName") == null) {
-            cacheManager.createCache("jobsByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("loanProductsByName") == null) {
-            cacheManager.createCache("loanProductsByName", defaultTemplate);
-        }
-        if (cacheManager.getCache("paymentTypesByName") == null) {
-            cacheManager.createCache("paymentTypesByName", defaultTemplate);
-        }
         if (cacheManager.getCache("paymentTypesWithCode") == null) {
             cacheManager.createCache("paymentTypesWithCode", defaultTemplate);
-        }
-        if (cacheManager.getCache("tellers") == null) {
-            cacheManager.createCache("tellers", defaultTemplate);
         }
 
         javax.cache.configuration.Configuration<Object, Object> accessTokenTemplate = Eh107Configuration.fromEhcacheCacheConfiguration(

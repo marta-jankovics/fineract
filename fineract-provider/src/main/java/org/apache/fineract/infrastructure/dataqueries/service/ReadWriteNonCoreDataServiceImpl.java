@@ -1422,37 +1422,49 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     }
 
     private CommandProcessingResult checkMainResourceExistsWithinScope(@NotNull EntityTables entity, final Serializable appTableId) {
-        final String sql = dataScopedSQL(entity, appTableId);
-        log.debug("data scoped sql: {}", sql);
-        final SqlRowSet rs = this.jdbcTemplate.queryForRowSet(sql);
+        if (isUserOfficeRestricted(entity)) {
+            final String sql = userOfficeRestrictedSql(entity, appTableId);
+            log.debug("data scoped sql: {}", sql);
+            final SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
 
-        if (!rs.next()) {
-            throw new DatatableNotFoundException(entity, appTableId);
+            if (!rs.next()) {
+                throw new DatatableNotFoundException(entity, appTableId);
+            }
+            final Long officeId = (Long) rs.getObject("officeId");
+            final Long groupId = (Long) rs.getObject("groupId");
+            final Long clientId = (Long) rs.getObject("clientId");
+            final Long savingsId = (Long) rs.getObject("savingsId");
+            final Long loanId = (Long) rs.getObject("loanId");
+            final Object transactionId = rs.getObject("transactionId");
+            final Object entityId = rs.getObject("entityId");
+
+            if (rs.next()) {
+                throw new DatatableSystemErrorException("System Error: More than one row returned from data scoping query");
+            }
+
+            return new CommandProcessingResultBuilder() //
+                    .withOfficeId(officeId) //
+                    .withGroupId(groupId) //
+                    .withClientId(clientId) //
+                    .withSavingsId(savingsId) //
+                    .withLoanId(loanId) //
+                    .withTransactionId(transactionId == null ? null : String.valueOf(transactionId)) //
+                    .withResource(entityId) //
+                    .build();
+        } else {
+            JdbcJavaType refColumnType = entity.getRefColumnType();
+            String sqlId = sqlGenerator.formatValue(refColumnType, appTableId);
+            String refColumn = entity.getRefColumn();
+            String sql = "select " + refColumn + " from " + entity.getName() + " WHERE " + refColumn + " = " + sqlId;
+            Object id = jdbcTemplate.queryForObject(sql, refColumnType.getJavaType().getTypeClass());
+            if (id == null) {
+                throw new DatatableNotFoundException(entity, appTableId);
+            }
+            return new CommandProcessingResultBuilder().withResource(appTableId).build();
         }
-        final Long officeId = (Long) rs.getObject("officeId");
-        final Long groupId = (Long) rs.getObject("groupId");
-        final Long clientId = (Long) rs.getObject("clientId");
-        final Long savingsId = (Long) rs.getObject("savingsId");
-        final Long loanId = (Long) rs.getObject("loanId");
-        final Object transactionId = rs.getObject("transactionId");
-        final Object entityId = rs.getObject("entityId");
-
-        if (rs.next()) {
-            throw new DatatableSystemErrorException("System Error: More than one row returned from data scoping query");
-        }
-
-        return new CommandProcessingResultBuilder() //
-                .withOfficeId(officeId) //
-                .withGroupId(groupId) //
-                .withClientId(clientId) //
-                .withSavingsId(savingsId) //
-                .withLoanId(loanId) //
-                .withTransactionId(transactionId == null ? null : String.valueOf(transactionId)) //
-                .withResource(entityId) //
-                .build();
     }
 
-    private String dataScopedSQL(@NotNull EntityTables entity, final Serializable appTableId) {
+    private String userOfficeRestrictedSql(@NotNull EntityTables entity, final Serializable appTableId) {
         // unfortunately have to, one way or another, be able to restrict data to the users office hierarchy. Here, a
         // few key tables are done. But if additional fields are needed on other tables the same pattern applies
         String sqlId = sqlGenerator.formatValue(entity.getRefColumnType(), appTableId);
@@ -1502,6 +1514,13 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                         + entity.getName() + " as p WHERE p.id = " + sqlId;
             default -> throw new PlatformDataIntegrityException("error.msg.invalid.dataScopeCriteria",
                     "Application Table: " + entity.getName() + " not catered for in data Scoping");
+        };
+    }
+
+    private boolean isUserOfficeRestricted(EntityTables entity) {
+        return switch (entity) {
+            case CLIENT, GROUP, CENTER, OFFICE -> true;
+            default -> false;
         };
     }
 
