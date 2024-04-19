@@ -293,7 +293,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
     @Path(ACCOUNT_ID_TYPE_API_REGEX + "/" + ACCOUNT_IDENTIFIER_API_REGEX + "/transactions/" + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
     @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/external-id/ExternalId1/transactions/1/balance")
     @Override
-    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdentifier(
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierTransactionIdentifier(
             @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @PathParam(TRANSACTION_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the transaction", required = true) final String transactionIdentifier) {
@@ -306,7 +306,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
     @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/external-id/ExternalId1/transactions/1/balance")
     @Override
-    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdTypeIdentifier(
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierTransactionIdTypeIdentifier(
             @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @PathParam(TRANSACTION_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the transaction", example = "id | external-id", required = true) final String transactionIdType,
@@ -320,7 +320,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
     @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/iban/123456/S/transactions/1/balance")
     @Override
-    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(
             @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,
@@ -334,7 +334,7 @@ public class CurrentTransactionsApiResource implements CurrentTransactionApi {
             + TRANSACTION_ID_TYPE_API_REGEX + "/" + TRANSACTION_IDENTIFIER_API_REGEX + "/balance")
     @Operation(operationId = "getBalanceCurrentTransaction", summary = "Retrieve balance of a current transaction/account", description = "Retrieves balance of a current transaction/account\n\nExample Requests :\n\ncurrent-accounts/iban/123456/S/transactions/1/balance")
     @Override
-    public CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(
+    public CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(
             @PathParam(ACCOUNT_ID_TYPE_PARAM) @Parameter(description = "Identifier type of the account", example = "id | external-id | account-number | msisdn | email | personal-id | business | device | account-id | iban | alias | bban", required = true) final String accountIdType,
             @PathParam(ACCOUNT_IDENTIFIER_PARAM) @Parameter(description = "Identifier of the account", required = true) final String accountIdentifier,
             @PathParam(ACCOUNT_SUB_IDENTIFIER_PARAM) @Parameter(description = "Sub-identifier of the account", required = true) final String accountSubIdentifier,

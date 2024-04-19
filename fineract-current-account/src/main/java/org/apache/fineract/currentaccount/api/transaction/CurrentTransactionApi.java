@@ -69,16 +69,16 @@ public interface CurrentTransactionApi {
     CurrentTransactionBalanceResponseData getBalanceByAccountIdentifierTransactionIdTypeIdentifier(String accountIdentifier,
             String transactionIdType, String transactionIdentifier);
 
-    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdentifier(String accountIdType,
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierTransactionIdentifier(String accountIdType,
             String accountIdentifier, String transactionIdentifier);
 
-    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierTransactionIdTypeIdentifier(String accountIdType,
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierTransactionIdTypeIdentifier(String accountIdType,
             String accountIdentifier, String transactionIdType, String transactionIdentifier);
 
-    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(String accountIdType,
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierSubIdentifierTransactionIdentifier(String accountIdType,
             String accountIdentifier, String accountSubIdentifier, String transactionIdentifier);
 
-    CurrentTransactionBalanceResponseData getBalanceAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
+    CurrentTransactionBalanceResponseData getBalanceByAccountIdTypeIdentifierSubIdentifierTransactionIdTypeIdentifier(String accountIdType,
             String accountIdentifier, String accountSubIdentifier, String transactionIdType, String transactionIdentifier);
 
     CommandProcessingResult transactionByAccountIdentifier(String accountIdentifier, String command, Boolean force, String requestJson);
