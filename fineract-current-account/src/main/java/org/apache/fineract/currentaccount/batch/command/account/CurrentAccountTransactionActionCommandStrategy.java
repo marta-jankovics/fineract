@@ -88,10 +88,10 @@ public class CurrentAccountTransactionActionCommandStrategy implements CommandSt
         } else {
             String accountId = accountParameters.get(1);
             responseBody = transactionIdType == null
-                    ? currentTransactionsApiResource.actionByAccountIdentifierTransactionIdentifier(accountId,
-                            transactionIdentifier, command, body)
-                    : currentTransactionsApiResource.actionByAccountIdentifierTransactionIdTypeIdentifier(accountId,
-                            transactionIdType, transactionIdentifier, command, body);
+                    ? currentTransactionsApiResource.actionByAccountIdentifierTransactionIdentifier(accountId, transactionIdentifier,
+                            command, body)
+                    : currentTransactionsApiResource.actionByAccountIdentifierTransactionIdTypeIdentifier(accountId, transactionIdType,
+                            transactionIdentifier, command, body);
         }
 
         return new BatchResponse().setRequestId(batchRequest.getRequestId()).setStatusCode(HttpStatus.SC_OK)

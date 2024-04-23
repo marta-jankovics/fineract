@@ -610,7 +610,8 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         try {
             this.context.authenticatedUser();
             final boolean isConstraintApproach = this.configurationDomainService.isConstraintApproachEnabledForDatatables();
-            this.fromApiJsonDeserializer.validateForUpdate(command.json(), isConstraintApproach);
+            EntityTables oldEntity = queryForApplicationEntity(datatable);
+            this.fromApiJsonDeserializer.validateForUpdate(command.json(), isConstraintApproach, oldEntity);
 
             final JsonElement element = this.fromJsonHelper.parse(command.json());
             final JsonArray changeColumns = this.fromJsonHelper.extractJsonArrayNamed(API_PARAM_CHANGECOLUMNS, element);
@@ -637,14 +638,13 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             String stmEnd = mySql ? ", " : "; ";
             String datatableAlias = datatableAliasName(datatable);
             if (!StringUtils.isBlank(entityName)) {
-                EntityTables oldEntityTable = queryForApplicationEntity(datatable);
                 EntityTables entity = resolveEntity(entityName);
-                if (entity != oldEntityTable) {
+                if (entity != oldEntity) {
                     StringBuilder sqlBuilder = new StringBuilder();
                     if (mySql) {
                         sqlBuilder.append(alterTable);
                     }
-                    final String oldFkColumnName = oldEntityTable.getForeignKeyColumnNameOnDatatable();
+                    final String oldFkColumnName = oldEntity.getForeignKeyColumnNameOnDatatable();
                     final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
 
                     String oldFkConstraintName = sqlGenerator.escape("fk_" + datatableAlias + "_" + oldFkColumnName);
@@ -796,7 +796,12 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         final boolean mandatory = column.has(API_FIELD_MANDATORY) && column.get(API_FIELD_MANDATORY).getAsBoolean();
         final String after = column.has(API_FIELD_AFTER) ? column.get(API_FIELD_AFTER).getAsString() : null;
         final String codeName = column.has(API_FIELD_CODE) ? column.get(API_FIELD_CODE).getAsString() : null;
+        boolean hasCode = StringUtils.isNotBlank(codeName);
         boolean mySql = databaseTypeResolver.isMySQL();
+
+        if (hasCode && !isConstraintApproach) {
+            name = datatableColumnNameToCodeValueName(name, codeName);
+        }
 
         String datatableAlias = datatableAliasName(datatable);
         String sqlDatatable = sqlGenerator.escape(datatable);
@@ -806,18 +811,6 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         }
         String stmStart = mySql ? "" : alterTable;
         String stmEnd = mySql ? ", " : "; ";
-        if (StringUtils.isNotBlank(codeName)) {
-            if (isConstraintApproach) {
-                codeMappings.put(datatableColumnToCodeMappingName(datatable, name),
-                        this.codeReadPlatformService.retriveCode(codeName).getId());
-                String fkName = "fk_" + datatableAlias + "_" + name;
-                sqlBuilder.append(stmStart).append("ADD CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ")
-                        .append("FOREIGN KEY (").append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ")
-                        .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")").append(stmEnd);
-            } else {
-                name = datatableColumnNameToCodeValueName(name, codeName);
-            }
-        }
         String sqlName = sqlGenerator.escape(name);
         sqlBuilder.append(stmStart).append("ADD ").append(sqlName);
         if (type != null) {
@@ -832,7 +825,13 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             sqlBuilder.append(" AFTER ").append(sqlGenerator.escape(after));
         }
         sqlBuilder.append(stmEnd);
-
+        if (isConstraintApproach && hasCode) {
+            codeMappings.put(datatableColumnToCodeMappingName(datatable, name), this.codeReadPlatformService.retriveCode(codeName).getId());
+            String fkName = "fk_" + datatableAlias + "_" + name;
+            sqlBuilder.append(stmStart).append("ADD CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ").append("FOREIGN KEY (")
+                    .append(sqlGenerator.escape(name)).append(") ").append("REFERENCES ").append(sqlGenerator.escape(CODE_VALUES_TABLE))
+                    .append(" (").append(TABLE_FIELD_ID).append(")").append(stmEnd);
+        }
         final boolean unique = column.has(API_FIELD_UNIQUE) && column.get(API_FIELD_UNIQUE).getAsBoolean();
         if (unique) {
             String uniqueKeyName = datatableKeywordGenerator.generateUniqueKeyName(datatableAlias, name);

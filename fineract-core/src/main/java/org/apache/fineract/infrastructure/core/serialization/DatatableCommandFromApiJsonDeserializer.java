@@ -167,7 +167,7 @@ public class DatatableCommandFromApiJsonDeserializer {
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
-    public void validateForUpdate(final String json, boolean isConstraintApproach) {
+    public void validateForUpdate(final String json, boolean isConstraintApproach, EntityTables oldEntity) {
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
@@ -189,14 +189,19 @@ public class DatatableCommandFromApiJsonDeserializer {
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors).resource("datatable");
 
         final JsonElement element = this.fromApiJsonHelper.parse(json);
-        final String apptableName = this.fromApiJsonHelper.extractStringNamed(API_PARAM_APPTABLE_NAME, element);
-        baseDataValidator.reset().parameter(API_PARAM_APPTABLE_NAME).value(apptableName).ignoreIfNull().notBlank()
-                .isOneOfTheseStringValues(EntityTables.getEntityNames());
+        EntityTables entity = oldEntity;
+        if (this.fromApiJsonHelper.parameterExists(API_PARAM_APPTABLE_NAME, element)) {
+            final String apptableName = this.fromApiJsonHelper.extractStringNamed(API_PARAM_APPTABLE_NAME, element);
+            baseDataValidator.reset().parameter(API_PARAM_APPTABLE_NAME).value(apptableName).notBlank()
+                    .isOneOfTheseStringValues(EntityTables.getEntityNames());
 
-        EntityTables entityTable = EntityTables.fromEntityName(apptableName);
-        validateEntitySubType(baseDataValidator, element, entityTable);
+            entity = EntityTables.fromEntityName(apptableName);
+        }
+        if (entity != oldEntity || this.fromApiJsonHelper.parameterExists(API_PARAM_SUBTYPE, element)) {
+            validateEntitySubType(baseDataValidator, element, entity);
+        }
 
-        final String fkColumnName = entityTable.getForeignKeyColumnNameOnDatatable();
+        final String fkColumnName = entity.getForeignKeyColumnNameOnDatatable();
 
         final JsonArray changeColumns = this.fromApiJsonHelper.extractJsonArrayNamed(API_PARAM_CHANGECOLUMNS, element);
         baseDataValidator.reset().parameter(API_PARAM_CHANGECOLUMNS).value(changeColumns).ignoreIfNull().jsonArrayNotEmpty();
@@ -302,7 +307,7 @@ public class DatatableCommandFromApiJsonDeserializer {
             validator = validator.reset().parameter(API_FIELD_LENGTH).value(length);
             if (jdbcType.hasPrecision(databaseTypeResolver.databaseType())) {
                 if (jdbcType.isStringType() && length == null) {
-                    validator.failWithCode("must.be.provided.when.type.is.String");
+                    validator.failWithCode("must.be.provided.when.type.is.String", API_FIELD_LENGTH + " is not provided.");
                 }
                 validator.ignoreIfNull().positiveAmount();
             } // else, the precision is ignored

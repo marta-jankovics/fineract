@@ -44,8 +44,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMapper, ExceptionMapper<PlatformDataIntegrityException> {
 
-    private static final String GENERIC_MESSAGE = "Something went wrong...";
-
     @Override
     public Response toResponse(final PlatformDataIntegrityException exception) {
         log.warn("Exception occurred", ErrorHandler.findMostSpecificException(exception));
@@ -58,7 +56,7 @@ public class PlatformDataIntegrityExceptionMapper implements FineractExceptionMa
         }
         // This must be last one!
         if (message.equals(originalExceptionMessage)) {
-            message = GENERIC_MESSAGE;
+            message = originalExceptionMessage;
         }
         final ApiGlobalErrorResponse dataIntegrityError = ApiGlobalErrorResponse.dataIntegrityError(exception.getGlobalisationMessageCode(),
                 message, exception.getParameterName(), exception.getDefaultUserMessageArgs());
