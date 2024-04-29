@@ -39,7 +39,7 @@ public enum CustomDateTimeProvider implements DateTimeProvider {
 
         switch (this) {
             case INSTANCE -> {
-                return Optional.of(DateUtils.getLocalDateTimeOfSystem());
+                return Optional.of(DateUtils.getAuditLocalDateTime());
             }
             case UTC -> {
                 return Optional.of(DateUtils.getAuditOffsetDateTime());
