@@ -19,9 +19,7 @@
 package org.apache.fineract.infrastructure.dataqueries.service;
 
 import static java.lang.String.format;
-import static org.apache.fineract.infrastructure.core.service.database.JdbcJavaType.DATE;
-import static org.apache.fineract.infrastructure.core.service.database.JdbcJavaType.DATETIME;
-import static org.apache.fineract.infrastructure.core.service.database.JdbcJavaType.TIMESTAMP;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.toTenantOffsetDateTime;
 import static org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData.DisplayType.CODELOOKUP;
 import static org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData.DisplayType.DECIMAL;
 import static org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData.DisplayType.INTEGER;
@@ -32,11 +30,14 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseIndependentQueryService;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseType;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseTypeResolver;
@@ -152,13 +153,16 @@ public class GenericDataServiceImpl implements GenericDataService {
             for (int i = 0; i < rsmd.getColumnCount(); i++) {
                 final String columnName = rsmd.getColumnName(i + 1);
                 final JdbcJavaType colType = columnHeaders.get(i).getColumnType();
-                if (colType == DATE) {
+                if (colType.isDateTimeType()) {
+                    Timestamp tmpDate = rs.getTimestamp(columnName);
+                    if (colType.isOffsetDateTimeType()) {
+                        columnValues.add(toTenantOffsetDateTime(tmpDate));
+                    } else {
+                        columnValues.add(tmpDate == null ? null : tmpDate.toLocalDateTime());
+                    }
+                } else if (colType.isDateType()) {
                     Date tmpDate = (Date) rs.getObject(columnName);
                     columnValues.add(tmpDate == null ? null : tmpDate.toLocalDate());
-                } else if (colType == DATETIME || colType == TIMESTAMP) {
-                    Object tmpDate = rs.getObject(columnName);
-                    columnValues.add(
-                            tmpDate == null ? null : (tmpDate instanceof Timestamp ? ((Timestamp) tmpDate).toLocalDateTime() : tmpDate));
                 } else {
                     columnValues.add(rs.getObject(columnName));
                 }
@@ -228,7 +232,16 @@ public class GenericDataServiceImpl implements GenericDataService {
                 }
                 currVal = row.get(j);
                 if (currVal != null && colDisplayType != null) {
-                    if (colDisplayType == ResultsetColumnHeaderData.DisplayType.DATE) {
+                    if (colType.isDateTimeType()) {
+                        if (colType.isOffsetDateTimeType()) {
+                            writer.append(DateUtils.format((OffsetDateTime) currVal));
+                        } else {
+                            final LocalDateTime localDateTime = ((LocalDateTime) currVal).atZone(ZoneOffset.UTC).toLocalDateTime();
+                            writer.append(format("[%d,%d,%d,%d,%d,%d,%d]", localDateTime.getYear(), localDateTime.getMonthValue(),
+                                    localDateTime.getDayOfMonth(), localDateTime.getHour(), localDateTime.getMinute(),
+                                    localDateTime.getSecond(), localDateTime.getNano()));
+                        }
+                    } else if (colDisplayType == ResultsetColumnHeaderData.DisplayType.DATE) {
                         final LocalDate localDate = (LocalDate) currVal;
                         writer.append(format("[%d,%d,%d]", localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth()));
                     } else if (colDisplayType == ResultsetColumnHeaderData.DisplayType.DATETIME) {
