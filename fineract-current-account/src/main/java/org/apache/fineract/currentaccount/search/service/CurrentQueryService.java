@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.search.service;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.CURRENCY_VIRTUAL_COLUMN;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.PAYMENT_TYPE_VIRTUAL_COLUMN;
 import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_NAME_VIRTUAL_COLUMN;
+import static org.apache.fineract.currentaccount.api.CurrentAccountApiConstants.TRANSACTION_STATUS_VIRTUAL_COLUMN;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_PRODUCT;
 import static org.apache.fineract.infrastructure.dataqueries.data.EntityTables.CURRENT_TRANSACTION;
@@ -31,7 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionStatus;
+import org.apache.fineract.currentaccount.enumeration.transaction.CurrentTransactionType;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
+import org.apache.fineract.infrastructure.core.service.database.DatabaseType;
+import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.dataqueries.data.DataTableValidator;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData;
@@ -41,6 +46,7 @@ import org.apache.fineract.infrastructure.security.service.PlatformSecurityConte
 import org.apache.fineract.portfolio.search.data.ColumnConditionData;
 import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
+import org.apache.fineract.portfolio.search.data.WithData;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryServiceImpl;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -60,10 +66,10 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
 
     @Override
     public ResultsetColumnHeaderData resolveCustomColumn(EntityTables entity, @NotNull String virtualColumn,
-            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<JoinData> joins, String mainAlias,
-            JoinType joinType, boolean allowEmpty) {
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<JoinData> joins, @NotNull List<WithData> withs,
+            String mainAlias, JoinType joinType, boolean allowEmpty) {
         if (entity == null) {
-            return super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+            return super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
         }
         String column = virtualColumn.substring(CUSTOM_COLUMN_PREFIX.length());
         ArrayList<JoinData> columnJoins = new ArrayList<>();
@@ -84,7 +90,8 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
                     case CURRENT_PRODUCT -> {
                         return headersByName.get("currency_code");
                     }
-                    default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+                    default ->
+                        super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
                 }
                 List<ResultsetColumnHeaderData> columnHeaders = genericDataService
                         .fillResultsetColumnHeaders(CURRENT_PRODUCT.getApptableName());
@@ -96,11 +103,11 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
             case PAYMENT_TYPE_VIRTUAL_COLUMN -> {
                 switch (entity) {
                     case CURRENT_TRANSACTION -> {
-                        JoinData join = ensureJoin(joins, CURRENT_TRANSACTION.getApptableName(), "payment_type_id", mainAlias,
-                                "m_payment_type", "id", joinType);
-                        columnJoins.add(join);
+                        columnJoins.add(ensureJoin(joins, CURRENT_TRANSACTION.getApptableName(), "payment_type_id", mainAlias,
+                                "m_payment_type", "id", joinType));
                     }
-                    default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+                    default ->
+                        super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
                 }
                 List<ResultsetColumnHeaderData> columnHeaders = genericDataService.fillResultsetColumnHeaders("m_payment_type");
                 ResultsetColumnHeaderData columnHeader = SearchUtil.getFiltered(columnHeaders, e -> e.isNamed("value"));
@@ -125,10 +132,42 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
                         join.ensureJoinCondition(ColumnConditionData.eq(typeJoinHeader, "CURRENT"));
                         return joinHeader;
                     }
-                    default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+                    default ->
+                        super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
                 }
             }
-            default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, mainAlias, joinType, allowEmpty);
+            case TRANSACTION_STATUS_VIRTUAL_COLUMN -> {
+                switch (entity) {
+                    case CURRENT_TRANSACTION -> {
+                        WithData with = ensureWith(withs, virtualColumn, joins, CURRENT_TRANSACTION.getApptableName(), "id", mainAlias,
+                                "id", joinType);
+                        columnJoins.add(with.getJoin());
+                        JdbcJavaType type = JdbcJavaType.VARCHAR;
+                        if (with.getSelect() == null) {
+                            with.setSelect("select wm.id, coalesce((select case when ws.transaction_type_enum = "
+                                    + sqlGenerator.formatValue(type, CurrentTransactionType.AMOUNT_RELEASE.name()) + " then "
+                                    + sqlGenerator.formatValue(type, CurrentTransactionStatus.RELEASED.name()) + " else "
+                                    + sqlGenerator.formatValue(type, "INVALID") + " end "
+                                    + "from m_current_transaction ws where ws.reference_id = wm.id), "
+                                    + sqlGenerator.formatValue(type, CurrentTransactionStatus.EXECUTED.name()) + ") as status "
+                                    + "from m_current_transaction wm");
+                        }
+                        ResultsetColumnHeaderData columnHeader = with.getSelectColumn();
+                        if (columnHeader == null) {
+                            DatabaseType dialect = sqlGenerator.getDialect();
+                            columnHeader = ResultsetColumnHeaderData.detailed("status", type.formatSql(dialect), 50L, false, false, null,
+                                    null, false, false, dialect);
+                            with.setSelectColumn(columnHeader);
+                        }
+                        JoinColumnHeaderData joinHeader = new JoinColumnHeaderData(columnHeader, virtualColumn, columnJoins);
+                        headersByName.put(virtualColumn, joinHeader);
+                        return joinHeader;
+                    }
+                    default ->
+                        super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
+                }
+            }
+            default -> super.resolveCustomColumn(entity, virtualColumn, headersByName, joins, withs, mainAlias, joinType, allowEmpty);
         }
         return null;
     }
@@ -145,5 +184,17 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
             join.ensureType(joinType);
         }
         return join;
+    }
+
+    @NotNull
+    private static WithData ensureWith(@NotNull List<WithData> withs, @NotNull String identifier, @NotNull List<JoinData> joins,
+            @NotNull String fromTable, @NotNull String fromColumn, String fromAlias, @NotNull String toColumn, JoinType joinType) {
+        WithData with = withs.stream().filter(e -> e.getIdentifier().equals(identifier)).findFirst().orElse(null);
+        if (with == null) {
+            with = WithData.of(identifier, ("w" + withs.size()));
+            withs.add(with);
+        }
+        with.setJoin(ensureJoin(joins, fromTable, fromColumn, fromAlias, with.getAlias(), toColumn, joinType));
+        return with;
     }
 }
