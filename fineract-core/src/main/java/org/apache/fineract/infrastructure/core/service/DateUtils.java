@@ -21,7 +21,6 @@ package org.apache.fineract.infrastructure.core.service;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 import jakarta.validation.constraints.NotNull;
-
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -43,8 +42,8 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 public final class DateUtils {
 
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
-    public static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + " HH:mm:ss";
-    public static final String DEFAULT_OFFSET_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT + ".SSSXXX";
+    public static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + " HH[:mm][:ss][.SSS]";
+    public static final String DEFAULT_OFFSET_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT + "XXX";
     public static final DateTimeFormatter DEFAULT_DATE_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT);
     public static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATETIME_FORMAT);
     public static final DateTimeFormatter DEFAULT_OFFSET_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_OFFSET_DATETIME_FORMAT);
@@ -62,7 +61,7 @@ public final class DateUtils {
         return ZoneId.of(tenant.getTimezoneId());
     }
 
-    public static ZoneId getAuditZoneId() {
+    public static ZoneOffset getAuditZoneId() {
         return ZoneOffset.UTC;
     }
 
@@ -383,6 +382,28 @@ public final class DateUtils {
 
     // Parse, format
 
+    public static LocalDateTime parseLocalDateTime(String stringDateTime) {
+        return parseLocalDateTime(stringDateTime, null);
+    }
+
+    public static LocalDateTime parseLocalDateTime(String stringDateTime, String format) {
+        return parseLocalDateTime(stringDateTime, format, null);
+    }
+
+    public static LocalDateTime parseLocalDateTime(String stringDateTime, String format, Locale locale) {
+        if (stringDateTime == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = getDateTimeFormatter(format, locale);
+        try {
+            return LocalDateTime.parse(stringDateTime, formatter);
+        } catch (final DateTimeParseException e) {
+            final List<ApiParameterError> errors = List.of(ApiParameterError.parameterError("validation.msg.invalid.datetime.pattern",
+                    "The parameter dateTime (" + stringDateTime + ") format is invalid", "dateTime", stringDateTime));
+            throw new PlatformApiDataValidationException("validation.msg.validation.errors.exist", "Validation errors exist.", errors, e);
+        }
+    }
+
     public static LocalDate parseLocalDate(String stringDate) {
         return parseLocalDate(stringDate, null);
     }
@@ -403,6 +424,14 @@ public final class DateUtils {
                     "The parameter date (" + stringDate + ") format is invalid", "date", stringDate));
             throw new PlatformApiDataValidationException("validation.msg.validation.errors.exist", "Validation errors exist.", errors, e);
         }
+    }
+
+    public static OffsetDateTime parseOffsetDateTime(String stringDate) {
+        return parseOffsetDateTime(stringDate, null);
+    }
+
+    public static OffsetDateTime parseOffsetDateTime(String stringDate, String format) {
+        return parseOffsetDateTime(stringDate, format, null);
     }
 
     public static OffsetDateTime parseOffsetDateTime(String stringDateTime, String format, Locale locale) {
@@ -481,12 +510,9 @@ public final class DateUtils {
 
     @NotNull
     private static DateTimeFormatter getOffsetDateTimeFormatter(String format, Locale locale) {
-        DateTimeFormatter formatter = DEFAULT_OFFSET_DATETIME_FORMATTER;
-        if (format != null || locale != null) {
-            if (format == null) {
-                format = DEFAULT_OFFSET_DATETIME_FORMAT;
-            }
-            formatter = locale == null ? DateTimeFormatter.ofPattern(format) : DateTimeFormatter.ofPattern(format, locale);
+        DateTimeFormatter formatter = format == null ? DEFAULT_OFFSET_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format);
+        if (locale != null) {
+            formatter = formatter.withLocale(locale);
         }
         return formatter;
     }

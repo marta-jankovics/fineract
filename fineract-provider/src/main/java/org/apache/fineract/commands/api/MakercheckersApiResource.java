@@ -37,6 +37,9 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -49,9 +52,11 @@ import org.apache.fineract.commands.service.AuditReadPlatformService;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
 import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.security.utils.SQLBuilder;
 import org.springframework.stereotype.Component;
 
@@ -87,11 +92,11 @@ public class MakercheckersApiResource {
             @QueryParam("makerId") @Parameter(description = "makerId") final Long makerId,
             @QueryParam("makerDateTimeFrom") @Parameter(description = "makerDateTimeFrom") final String makerDateTimeFrom,
             @QueryParam("makerDateTimeTo") @Parameter(description = "makerDateTimeTo") final String makerDateTimeTo,
-            @QueryParam("officeId") @Parameter(description = "officeId") final Integer officeId,
-            @QueryParam("groupId") @Parameter(description = "groupId") final Integer groupId,
-            @QueryParam("clientId") @Parameter(description = "clientId") final Integer clientId,
-            @QueryParam("loanid") @Parameter(description = "loanid") final Integer loanId,
-            @QueryParam("savingsAccountId") @Parameter(description = "savingsAccountId") final Integer savingsAccountId) {
+            @QueryParam("officeId") @Parameter(description = "officeId") final Long officeId,
+            @QueryParam("groupId") @Parameter(description = "groupId") final Long groupId,
+            @QueryParam("clientId") @Parameter(description = "clientId") final Long clientId,
+            @QueryParam("loanid") @Parameter(description = "loanid") final Long loanId,
+            @QueryParam("savingsAccountId") @Parameter(description = "savingsAccountId") final Long savingsAccountId) {
 
         final SQLBuilder extraCriteria = getExtraCriteria(actionName, entityName, resourceId, makerId, makerDateTimeFrom, makerDateTimeTo,
                 officeId, groupId, clientId, loanId, savingsAccountId);
@@ -164,8 +169,8 @@ public class MakercheckersApiResource {
     }
 
     private SQLBuilder getExtraCriteria(final String actionName, final String entityName, final Long resourceId, final Long makerId,
-            final String makerDateTimeFrom, final String makerDateTimeTo, final Integer officeId, final Integer groupId,
-            final Integer clientId, final Integer loanId, final Integer savingsAccountId) {
+            final String makerDateTimeFrom, final String makerDateTimeTo, final Long officeId, final Long groupId, final Long clientId,
+            final Long loanId, final Long savingsAccountId) {
 
         SQLBuilder extraCriteria = new SQLBuilder();
         extraCriteria.addNonNullCriteria("aud.action_name = ", actionName);
@@ -174,8 +179,8 @@ public class MakercheckersApiResource {
         }
         extraCriteria.addNonNullCriteria("aud.resource_id = ", resourceId);
         extraCriteria.addNonNullCriteria("aud.maker_id = ", makerId);
-        extraCriteria.addNonNullCriteria("aud.made_on_date >= ", makerDateTimeFrom);
-        extraCriteria.addNonNullCriteria("aud.made_on_date <= ", makerDateTimeTo);
+        extraCriteria.addNonNullCriteria("aud.made_on_date_utc >= ", parseOffsetDateTime(makerDateTimeFrom, true));
+        extraCriteria.addNonNullCriteria("aud.made_on_date_utc <= ", parseOffsetDateTime(makerDateTimeTo, false));
         extraCriteria.addNonNullCriteria("aud.office_id = ", officeId);
         extraCriteria.addNonNullCriteria("aud.group_id = ", groupId);
         extraCriteria.addNonNullCriteria("aud.client_id = ", clientId);
@@ -183,5 +188,23 @@ public class MakercheckersApiResource {
         extraCriteria.addNonNullCriteria("aud.savings_account_id = ", savingsAccountId);
 
         return extraCriteria;
+    }
+
+    private OffsetDateTime parseOffsetDateTime(String makerDateTime, boolean from) {
+        try {
+            return DateUtils.parseOffsetDateTime(makerDateTime);
+        } catch (PlatformApiDataValidationException e1) {
+            ZoneOffset auditZoneId = DateUtils.getAuditZoneId();
+            try {
+                return OffsetDateTime.of(DateUtils.parseLocalDateTime(makerDateTime), auditZoneId);
+            } catch (PlatformApiDataValidationException e2) {
+                try {
+                    LocalTime localTime = from ? LocalTime.MIN : LocalTime.MAX;
+                    return OffsetDateTime.of(DateUtils.parseLocalDate(makerDateTime), localTime, auditZoneId);
+                } catch (PlatformApiDataValidationException e3) {
+                    throw e1;
+                }
+            }
+        }
     }
 }
