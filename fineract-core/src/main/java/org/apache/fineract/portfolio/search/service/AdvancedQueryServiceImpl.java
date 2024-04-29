@@ -94,10 +94,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         String alias = "m";
         ArrayList<JoinData> joins = new ArrayList<>();
         final ArrayList<ColumnConditionData> columnConditions = new ArrayList<>();
-        List<String> resultColumns;
-        List<ResultsetColumnHeaderData> selectColumns;
+        List<SelectColumnData> selectColumns;
         if (baseQuery == null) {
-            resultColumns = new ArrayList<>();
             selectColumns = new ArrayList<>();
         } else {
             List<ColumnFilterData> columnFilters = baseQuery.getNonNullFilters();
@@ -110,9 +108,8 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
             addFilters.forEach(e -> columnConditions.add(new ColumnConditionData(
                     resolveToJdbcColumn(entity, e.getColumn(), headersByName, joins, alias, INNER, false), e.getFilters())));
         }
-        if (resultColumns.isEmpty() && !queryRequest.hasResultColumn()) {
-            resultColumns.add(pkColumn.getColumnName());
-            selectColumns.add(pkColumn);
+        if (selectColumns.isEmpty() && !queryRequest.hasResultColumn()) {
+            selectColumns.add(SelectColumnData.of(pkColumn));
         }
         PageRequest pageable = pagedRequest.toPageable();
         final ArrayList<ColumnSortData> columnSorts = new ArrayList<>();
@@ -146,15 +143,18 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                         .map(e -> new JoinColumnHeaderData(e, null, dtJoins)).collect(Collectors.toList());
                 Map<String, ResultsetColumnHeaderData> dtHeadersByName = SearchUtil.mapHeadersToName(dtColumnHeaders);
 
-                List<ResultsetColumnHeaderData> selectHeaders = resolveToJdbcColumns(null, dtResultColumns, dtHeadersByName, dtJoins,
-                        dtAlias, LEFT, true);
-                selectColumns.addAll(selectHeaders);
-                for (String dtResultColumn : dtResultColumns) {
-                    if (resultColumns.contains(dtResultColumn)) {
-                        dtResultColumn = dtTable + "." + dtResultColumn;
+                List<SelectColumnData> dtSelectColumns = resolveToSelectColumns(null, dtResultColumns, dtHeadersByName, dtJoins, dtWiths,
+                        dtAlias);
+                for (SelectColumnData dtSelectColumn : dtSelectColumns) {
+                    for (SelectColumnData selectColumn : selectColumns) {
+                        String dtResultColumn = dtSelectColumn.getResultColumn();
+                        if (dtResultColumn.equals(selectColumn.getResultColumn())) {
+                            dtSelectColumn.setResultColumn(dtTable + "." + dtResultColumn);
+                            break;
+                        }
                     }
-                    resultColumns.add(dtResultColumn);
                 }
+                selectColumns.addAll(dtSelectColumns);
                 if (dtColumnFilters != null) {
                     dtColumnFilters.forEach(e -> columnConditions.add(new ColumnConditionData(
                             resolveToJdbcColumn(null, e.getColumn(), dtHeadersByName, dtJoins, dtAlias, INNER, false), e.getFilters())));
@@ -195,23 +195,15 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         return PageableExecutionUtils.getPage(results, pageable, () -> totalElements);
     }
 
-    protected List<ResultsetColumnHeaderData> resolveToJdbcColumns(EntityTables entity, List<String> columns,
-            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<JoinData> joins, String mainAlias,
-            JoinType joinType, boolean allowEmpty) {
-        if (columns != null) {
-            columns = columns.stream()
-                    .map(e -> e != null && e.startsWith(CUSTOM_COLUMN_PREFIX)
-                            ? calcAs(resolveCustomColumn(entity, e, headersByName, joins, mainAlias, joinType, allowEmpty), true)
-                            : e)
-                    .collect(Collectors.toList());
+    protected List<SelectColumnData> resolveToSelectColumns(EntityTables entity, @NotNull List<String> columns,
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<JoinData> joins, @NotNull List<WithData> withs,
+            String mainAlias) {
+        ArrayList<SelectColumnData> result = new ArrayList<>(columns.size());
+        for (String column : columns) {
+            result.add(
+                    SelectColumnData.of(resolveToJdbcColumn(entity, column, headersByName, joins, withs, mainAlias, LEFT, true), column));
         }
-        List<ResultsetColumnHeaderData> columnHeaders = SearchUtil.resolveToJdbcColumns(columns, headersByName, allowEmpty);
-        for (ResultsetColumnHeaderData columnHeader : columnHeaders) {
-            if (columnHeader instanceof JoinColumnHeaderData) {
-                ((JoinColumnHeaderData) columnHeader).getJoins().forEach(e -> e.ensureType(joinType));
-            }
-        }
-        return columnHeaders;
+        return result;
     }
 
     protected ResultsetColumnHeaderData resolveToJdbcColumn(EntityTables entity, String column,
@@ -258,6 +250,22 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         return from.toString();
     }
 
+    protected String buildFrom(@NotNull String mainTable, String mainAlias, @NotNull List<JoinData> joins, @NotNull List<Object> params,
+            String dateFormat, String dateTimeFormat, Locale locale) {
+        StringBuilder from = new StringBuilder("FROM ").append(sqlGenerator.getFrom(mainTable, mainAlias)).append(" ");
+        for (JoinData join : joins) {
+            from.append(sqlGenerator.buildJoin(join.getFromColumn(), join.getFromAlias(), join.getToTable(), join.getToColumn(),
+                    join.getToAlias(), join.getJoinType()));
+            ColumnConditionData joinCondition = join.getJoinCondition();
+            if (joinCondition != null) {
+                from.append(" AND ");
+                buildFilterCondition(joinCondition, from, params, mainAlias, dateFormat, dateTimeFormat, locale);
+            }
+            from.append(" ");
+        }
+        return from.toString();
+    }
+
     protected String buildQueryCondition(@NotNull List<ColumnConditionData> columnConditions, @NotNull List<Object> params,
             String mainAlias, String dateFormat, String dateTimeFormat, Locale locale) {
         StringBuilder where = new StringBuilder();
@@ -279,7 +287,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         int size = filters.size();
         for (int i = 0; i < size; i++) {
             if (where.isEmpty()) {
-                where.append(" WHERE ");
+                where.append("WHERE ");
             }
             FilterData filter = filters.get(i);
             SqlOperator operator = filter.getOperator();
@@ -289,7 +297,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
                             e -> SearchUtil.parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false, sqlGenerator))
                             .toList();
 
-            SearchUtil.buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params,
+            buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params,
                     calcAlias(columnHeader, mainAlias), sqlGenerator);
             if (i < size - 1) {
                 where.append(" AND ");

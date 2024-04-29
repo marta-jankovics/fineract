@@ -35,6 +35,10 @@ public final class MathUtil {
         return value == null ? def : value;
     }
 
+    public static <E extends Number> E defaultToNull(E value, E def) {
+        return value == null || value.equals(def) ? null : value;
+    }
+
     public static Long nullToZero(Long value) {
         return nullToDefault(value, 0L);
     }

@@ -180,6 +180,10 @@ public enum JavaType {
         return this == DATETIME || this == LOCAL_DATETIME || this == OFFSET_DATETIME;
     }
 
+    public boolean isOffsetDateTimeType() {
+        return this == OFFSET_DATETIME;
+    }
+
     public boolean isAnyDateType() {
         return isDateType() || isTimeType() || isDateTimeType();
     }

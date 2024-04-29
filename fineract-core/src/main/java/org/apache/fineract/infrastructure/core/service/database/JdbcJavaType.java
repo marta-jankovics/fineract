@@ -239,6 +239,10 @@ public enum JdbcJavaType {
         return getJavaType().isDateTimeType();
     }
 
+    public boolean isOffsetDateTimeType() {
+        return getJavaType().isOffsetDateTimeType();
+    }
+
     public boolean isAnyDateType() {
         return getJavaType().isAnyDateType();
     }

@@ -48,6 +48,8 @@ import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiCon
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_DATETIME_FORMAT;
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_DATE_FORMAT;
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_LOCALE;
+import static org.apache.fineract.portfolio.search.service.SearchUtil.buildSelect;
+import static org.apache.fineract.portfolio.search.service.SearchUtil.parseJdbcColumnValue;
 
 import com.google.common.base.Splitter;
 import com.google.gson.JsonArray;
@@ -109,6 +111,7 @@ import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
 import org.apache.fineract.portfolio.search.data.AdvancedQueryData;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
+import org.apache.fineract.portfolio.search.data.SelectColumnData;
 import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.cache.annotation.CacheEvict;
@@ -213,18 +216,17 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(datatable));
 
-        List<String> resultColumns = asList(resultColumnsString.split(","));
-        List<String> selectColumns = SearchUtil.resolveToJdbcColumnNames(resultColumns, headersByName, false);
-        ResultsetColumnHeaderData column = SearchUtil.resolveToJdbcColumn(columnName, headersByName, false);
+        List<SelectColumnData> selectColumns = resolveToSelectColumns(asList(resultColumnsString.split(",")), headersByName);
+        ResultsetColumnHeaderData filterColumn = SearchUtil.resolveToJdbcColumn(columnName, headersByName, false);
 
-        Object columnValue = SearchUtil.parseJdbcColumnValue(column, columnValueString, null, null, null, false, sqlGenerator);
-        String sql = sqlGenerator.buildSelect(selectColumns, null, false) + " " + sqlGenerator.buildFrom(datatable, null, false) + " WHERE "
-                + EQ.formatPlaceholder(sqlGenerator, column.getColumnName(), 1, null);
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, columnValue); // NOSONAR
+        Object filterValue = parseJdbcColumnValue(filterColumn, columnValueString, null, null, null, false, sqlGenerator);
+        String sql = buildSelect(selectColumns, null, false, sqlGenerator) + " " + sqlGenerator.buildFrom(datatable, null, false)
+                + " WHERE " + EQ.formatPlaceholder(sqlGenerator, filterColumn.getColumnName(), 1, null);
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, filterValue); // NOSONAR
 
         List<JsonObject> results = new ArrayList<>();
         while (rowSet.next()) {
-            SearchUtil.extractJsonResult(rowSet, selectColumns, resultColumns, results);
+            SearchUtil.extractJsonResult(rowSet, selectColumns, results);
         }
         return results;
     }
@@ -239,19 +241,18 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
 
         Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(datatable));
-        String pkColumn = SearchUtil.getFiltered(headersByName.values(), ResultsetColumnHeaderData::isColumnPrimaryKey).getColumnName();
+        ResultsetColumnHeaderData pkColumn = SearchUtil.getFiltered(headersByName.values(), ResultsetColumnHeaderData::isColumnPrimaryKey);
 
         List<ColumnFilterData> columnFilters = request.getNonNullFilters();
         columnFilters.forEach(e -> e.setColumn(SearchUtil.resolveToJdbcColumnName(e.getColumn(), headersByName, false)));
 
         List<String> resultColumns = request.getNonNullResultColumns();
-        List<String> selectColumns;
+        List<SelectColumnData> selectColumns;
         if (resultColumns.isEmpty()) {
-            resultColumns.add(pkColumn);
             selectColumns = new ArrayList<>();
-            selectColumns.add(pkColumn);
+            selectColumns.add(SelectColumnData.of(pkColumn));
         } else {
-            selectColumns = SearchUtil.resolveToJdbcColumnNames(resultColumns, headersByName, false);
+            selectColumns = resolveToSelectColumns(resultColumns, headersByName);
         }
         PageRequest pageable = pagedRequest.toPageable();
         PageRequest sortPageable;
@@ -260,7 +261,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
             sortPageable = pageable.withSort(Sort.by(orders.stream()
                     .map(e -> e.withProperty(SearchUtil.resolveToJdbcColumnName(e.getProperty(), headersByName, false))).toList()));
         } else {
-            pageable = pageable.withSort(Sort.Direction.DESC, pkColumn);
+            pageable = pageable.withSort(Sort.Direction.DESC, pkColumn.getColumnName());
             sortPageable = pageable;
         }
 
@@ -268,7 +269,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         String dateTimeFormat = pagedRequest.getDateTimeFormat();
         Locale locale = pagedRequest.getLocaleObject();
 
-        String select = sqlGenerator.buildSelect(selectColumns, null, false);
+        String select = buildSelect(selectColumns, null, false, sqlGenerator);
         String from = " " + sqlGenerator.buildFrom(datatable, null, false);
         StringBuilder where = new StringBuilder();
         ArrayList<Object> params = new ArrayList<>();
@@ -294,9 +295,15 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(query.toString(), args);
 
         while (rowSet.next()) {
-            SearchUtil.extractJsonResult(rowSet, selectColumns, resultColumns, results);
+            SearchUtil.extractJsonResult(rowSet, selectColumns, results);
         }
         return PageableExecutionUtils.getPage(results, pageable, () -> totalElements);
+    }
+
+    protected List<SelectColumnData> resolveToSelectColumns(@NotNull List<String> columns,
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName) {
+        List<ResultsetColumnHeaderData> selectHeaders = SearchUtil.resolveToJdbcColumns(columns, headersByName, false);
+        return selectHeaders.stream().map(SelectColumnData::of).toList();
     }
 
     @Transactional
@@ -1172,8 +1179,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
                 continue;
             }
             insertColumns.add(columnHeader.getColumnName());
-            params.add(SearchUtil.parseJdbcColumnValue(columnHeader, entry.getValue(), dateFormat, dateTimeFormat, locale, false,
-                    sqlGenerator));
+            params.add(parseJdbcColumnValue(columnHeader, entry.getValue(), dateFormat, dateTimeFormat, locale, false, sqlGenerator));
         }
         if (addScore) {
             List<Object> scoreIds = params.stream().filter(e -> e != null && !String.valueOf(e).isBlank()).toList();
@@ -1670,7 +1676,7 @@ public class ReadWriteNonCoreDataServiceImpl implements ReadWriteNonCoreDataServ
     private Object parseAppTableId(Serializable appTableId, EntityTables entity, ResultsetColumnHeaderData header, String dateFormat,
             String dateTimeFormat, Locale locale) {
         return appTableId instanceof String && !entity.getRefColumnType().isStringType()
-                ? SearchUtil.parseJdbcColumnValue(header, (String) appTableId, dateFormat, dateTimeFormat, locale, false, sqlGenerator)
+                ? parseJdbcColumnValue(header, (String) appTableId, dateFormat, dateTimeFormat, locale, false, sqlGenerator)
                 : appTableId;
     }
 

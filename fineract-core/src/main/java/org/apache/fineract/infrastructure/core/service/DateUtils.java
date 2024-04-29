@@ -21,11 +21,16 @@ package org.apache.fineract.infrastructure.core.service;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 import jakarta.validation.constraints.NotNull;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -39,14 +44,14 @@ public final class DateUtils {
 
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
     public static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + " HH:mm:ss";
+    public static final String DEFAULT_OFFSET_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT + ".SSSXXX";
     public static final DateTimeFormatter DEFAULT_DATE_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT);
     public static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATETIME_FORMAT);
+    public static final DateTimeFormatter DEFAULT_OFFSET_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_OFFSET_DATETIME_FORMAT);
 
     private DateUtils() {
 
     }
-
-    // DateTime
 
     public static ZoneId getSystemZoneId() {
         return ZoneId.systemDefault();
@@ -57,9 +62,11 @@ public final class DateUtils {
         return ZoneId.of(tenant.getTimezoneId());
     }
 
-    public static LocalDate getLocalDateOfTenant() {
-        return LocalDate.now(getDateTimeZoneOfTenant());
+    public static ZoneId getAuditZoneId() {
+        return ZoneOffset.UTC;
     }
+
+    // LocalDateTime
 
     public static LocalDateTime getLocalDateTimeOfTenant() {
         return getLocalDateTimeOfTenant(null);
@@ -67,15 +74,6 @@ public final class DateUtils {
 
     public static LocalDateTime getLocalDateTimeOfTenant(ChronoUnit truncate) {
         LocalDateTime now = LocalDateTime.now(getDateTimeZoneOfTenant());
-        return truncate == null ? now : now.truncatedTo(truncate);
-    }
-
-    public static OffsetDateTime getOffsetDateTimeOfTenant() {
-        return getOffsetDateTimeOfTenant(null);
-    }
-
-    public static OffsetDateTime getOffsetDateTimeOfTenant(ChronoUnit truncate) {
-        OffsetDateTime now = OffsetDateTime.now(getDateTimeZoneOfTenant());
         return truncate == null ? now : now.truncatedTo(truncate);
     }
 
@@ -89,11 +87,7 @@ public final class DateUtils {
     }
 
     public static LocalDateTime getAuditLocalDateTime() {
-        return LocalDateTime.now(ZoneId.of("UTC"));
-    }
-
-    public static OffsetDateTime getAuditOffsetDateTime() {
-        return OffsetDateTime.now(ZoneOffset.UTC);
+        return LocalDateTime.now(getAuditZoneId());
     }
 
     public static int compare(LocalDateTime first, LocalDateTime second) {
@@ -182,6 +176,33 @@ public final class DateUtils {
         return isAfter(dateTime, getLocalDateTimeOfSystem(), truncate);
     }
 
+    public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
+        return timestamp == null ? null : timestamp.toLocalDateTime();
+    }
+
+    public static LocalTime toLocalTime(Timestamp timestamp) {
+        return timestamp == null ? null : toLocalDateTime(timestamp).toLocalTime();
+    }
+
+    public static ZonedDateTime toTenantZonedDateTime(LocalDateTime dateTime) {
+        return dateTime == null ? null : ZonedDateTime.of(dateTime, DateUtils.getDateTimeZoneOfTenant());
+    }
+
+    // OffsetDateTime
+
+    public static OffsetDateTime getOffsetDateTimeOfTenant() {
+        return getOffsetDateTimeOfTenant(null);
+    }
+
+    public static OffsetDateTime getOffsetDateTimeOfTenant(ChronoUnit truncate) {
+        OffsetDateTime now = OffsetDateTime.now(getDateTimeZoneOfTenant());
+        return truncate == null ? now : now.truncatedTo(truncate);
+    }
+
+    public static OffsetDateTime getAuditOffsetDateTime() {
+        return OffsetDateTime.now(getAuditZoneId());
+    }
+
     public static int compare(OffsetDateTime first, OffsetDateTime second) {
         return compare(first, second, null);
     }
@@ -246,7 +267,37 @@ public final class DateUtils {
         return isAfter(dateTime, getOffsetDateTimeOfTenant(), truncate);
     }
 
-    // Date
+    public static OffsetDateTime toTenantOffsetDateTime(Timestamp timestamp) {
+        return toTenantOffsetDateTime(timestamp, getSystemZoneId());
+    }
+
+    public static OffsetDateTime toTenantOffsetDateTime(Timestamp timestamp, @NotNull ZoneId from) {
+        return timestamp == null ? null : toTenantOffsetDateTime(timestamp.toLocalDateTime(), from);
+    }
+
+    public static OffsetDateTime toTenantOffsetDateTime(LocalDateTime localDateTime) {
+        return toTenantOffsetDateTime(localDateTime, getSystemZoneId());
+    }
+
+    public static OffsetDateTime toTenantOffsetDateTime(LocalDateTime localDateTime, @NotNull ZoneId from) {
+        if (localDateTime == null) {
+            return null;
+        }
+        OffsetDateTime fromOffset = OffsetDateTime.of(localDateTime, from.getRules().getOffset(localDateTime));
+        return toTenantOffsetDateTime(fromOffset);
+    }
+
+    public static OffsetDateTime toTenantOffsetDateTime(OffsetDateTime offsetDateTime) {
+        return offsetDateTime == null ? null
+                : offsetDateTime
+                        .withOffsetSameInstant(DateUtils.getDateTimeZoneOfTenant().getRules().getOffset(offsetDateTime.toInstant()));
+    }
+
+    // LocalDate
+
+    public static LocalDate getLocalDateOfTenant() {
+        return LocalDate.now(getDateTimeZoneOfTenant());
+    }
 
     public static LocalDate getBusinessLocalDate() {
         return ThreadLocalContextUtil.getBusinessDate();
@@ -304,6 +355,32 @@ public final class DateUtils {
         return DAYS.between(localDateBefore, localDateAfter);
     }
 
+    public static LocalDate toLocalDate(Date date) {
+        return date == null ? null : date.toLocalDate();
+    }
+
+    public static ZonedDateTime toTenantZonedDateTime(Timestamp timestamp) {
+        return toTenantZonedDateTime(toLocalDateTime(timestamp));
+    }
+
+    /**
+     * Checks if a specific date falls within a given range (inclusive).
+     *
+     * @param targetDate
+     *            the date to be checked
+     * @param startDate
+     *            the start date of the range
+     * @param endDate
+     *            the end date of the range
+     * @return true if targetDate is within range or equal to start/end dates, otherwise false
+     */
+    public static boolean isDateWithinRange(LocalDate targetDate, LocalDate startDate, LocalDate endDate) {
+        if (targetDate == null || startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Dates must not be null");
+        }
+        return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    }
+
     // Parse, format
 
     public static LocalDate parseLocalDate(String stringDate) {
@@ -324,6 +401,20 @@ public final class DateUtils {
         } catch (final DateTimeParseException e) {
             final List<ApiParameterError> errors = List.of(ApiParameterError.parameterError("validation.msg.invalid.date.pattern",
                     "The parameter date (" + stringDate + ") format is invalid", "date", stringDate));
+            throw new PlatformApiDataValidationException("validation.msg.validation.errors.exist", "Validation errors exist.", errors, e);
+        }
+    }
+
+    public static OffsetDateTime parseOffsetDateTime(String stringDateTime, String format, Locale locale) {
+        if (stringDateTime == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = getOffsetDateTimeFormatter(format, locale);
+        try {
+            return OffsetDateTime.parse(stringDateTime, formatter);
+        } catch (final DateTimeParseException e) {
+            final List<ApiParameterError> errors = List.of(ApiParameterError.parameterError("validation.msg.invalid.datetime.pattern",
+                    "The parameter dateTime (" + stringDateTime + ") format is invalid", "dateTime", stringDateTime));
             throw new PlatformApiDataValidationException("validation.msg.validation.errors.exist", "Validation errors exist.", errors, e);
         }
     }
@@ -352,22 +443,16 @@ public final class DateUtils {
         return dateTime == null ? null : dateTime.format(getDateTimeFormatter(format, locale));
     }
 
-    /**
-     * Checks if a specific date falls within a given range (inclusive).
-     *
-     * @param targetDate
-     *            the date to be checked
-     * @param startDate
-     *            the start date of the range
-     * @param endDate
-     *            the end date of the range
-     * @return true if targetDate is within range or equal to start/end dates, otherwise false
-     */
-    public static boolean isDateWithinRange(LocalDate targetDate, LocalDate startDate, LocalDate endDate) {
-        if (targetDate == null || startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Dates must not be null");
-        }
-        return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    public static String format(OffsetDateTime offsetDateTime) {
+        return format(offsetDateTime, null);
+    }
+
+    public static String format(OffsetDateTime offsetDateTime, String format) {
+        return format(offsetDateTime, format, null);
+    }
+
+    public static String format(OffsetDateTime offsetDateTime, String format, Locale locale) {
+        return offsetDateTime == null ? null : offsetDateTime.format(getOffsetDateTimeFormatter(format, locale));
     }
 
     @NotNull
@@ -388,6 +473,18 @@ public final class DateUtils {
         if (format != null || locale != null) {
             if (format == null) {
                 format = DEFAULT_DATETIME_FORMAT;
+            }
+            formatter = locale == null ? DateTimeFormatter.ofPattern(format) : DateTimeFormatter.ofPattern(format, locale);
+        }
+        return formatter;
+    }
+
+    @NotNull
+    private static DateTimeFormatter getOffsetDateTimeFormatter(String format, Locale locale) {
+        DateTimeFormatter formatter = DEFAULT_OFFSET_DATETIME_FORMATTER;
+        if (format != null || locale != null) {
+            if (format == null) {
+                format = DEFAULT_OFFSET_DATETIME_FORMAT;
             }
             formatter = locale == null ? DateTimeFormatter.ofPattern(format) : DateTimeFormatter.ofPattern(format, locale);
         }

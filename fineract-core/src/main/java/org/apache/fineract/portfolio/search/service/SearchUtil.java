@@ -20,8 +20,12 @@ package org.apache.fineract.portfolio.search.service;
 
 import static java.util.Locale.ENGLISH;
 import static org.apache.fineract.infrastructure.core.data.ApiParameterError.parameterErrorWithValue;
-import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATETIME_FORMAT;
 import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMAT;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.format;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.getAuditZoneId;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.getSystemZoneId;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.parseOffsetDateTime;
+import static org.apache.fineract.infrastructure.core.service.DateUtils.toTenantOffsetDateTime;
 import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_MANDATORY;
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_COLUMN;
 
@@ -32,6 +36,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +51,6 @@ import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.infrastructure.core.serialization.JsonParserHelper;
-import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
@@ -53,7 +58,9 @@ import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeader
 import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.FilterData;
+import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
+import org.apache.fineract.portfolio.search.data.SelectColumnData;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 public final class SearchUtil {
@@ -95,27 +102,33 @@ public final class SearchUtil {
         return filtered;
     }
 
-    public static void extractJsonResult(@NotNull SqlRowSet rowSet, @NotNull List<String> selectColumns,
-            @NotNull List<String> resultColumns, @NotNull List<JsonObject> results) {
+    public static void extractJsonResult(@NotNull SqlRowSet rowSet, @NotNull List<SelectColumnData> selectColumns,
+            @NotNull List<JsonObject> results) {
         JsonObject json = new JsonObject();
         for (int i = 0; i < selectColumns.size(); i++) {
-            Object rowValue = rowSet.getObject(selectColumns.get(i));
+            SelectColumnData selectColumn = selectColumns.get(i);
+            Object rowValue = rowSet.getObject(selectColumn.calcAs());
             if (rowValue != null) {
-                String rCol = resultColumns.get(i);
-                if (rowValue instanceof Character) {
+                ResultsetColumnHeaderData columnHeader = selectColumn.getColumnHeader();
+                String rCol = selectColumn.getResultColumn();
+                JdbcJavaType columnType = columnHeader.getColumnType();
+                if (columnType.isDateTimeType()) {
+                    ZoneId zoneId = columnType.isOffsetDateTimeType() ? getSystemZoneId() : getAuditZoneId();
+                    if (rowValue instanceof LocalDateTime) {
+                        json.addProperty(rCol, format(toTenantOffsetDateTime((LocalDateTime) rowValue, zoneId)));
+                    } else if (rowValue instanceof Timestamp) {
+                        json.addProperty(rCol, format(toTenantOffsetDateTime((Timestamp) rowValue, zoneId)));
+                    }
+                } else if (rowValue instanceof Character) {
                     json.addProperty(rCol, (Character) rowValue);
                 } else if (rowValue instanceof Number) {
                     json.addProperty(rCol, new BigDecimal(rowValue.toString()));
                 } else if (rowValue instanceof Boolean) {
                     json.addProperty(rCol, (Boolean) rowValue);
-                } else if (rowValue instanceof LocalDateTime) {
-                    json.addProperty(rCol, DateUtils.format((LocalDateTime) rowValue));
-                } else if (rowValue instanceof Timestamp) {
-                    json.addProperty(rCol, DateUtils.format(((Timestamp) rowValue).toLocalDateTime()));
                 } else if (rowValue instanceof LocalDate) {
-                    json.addProperty(rCol, DateUtils.format((LocalDate) rowValue));
+                    json.addProperty(rCol, format((LocalDate) rowValue));
                 } else if (rowValue instanceof Date) {
-                    json.addProperty(rCol, DateUtils.format(((Date) rowValue).toLocalDate()));
+                    json.addProperty(rCol, format(((Date) rowValue).toLocalDate()));
                 } else {
                     json.addProperty(rCol, rowValue.toString());
                 }
@@ -185,6 +198,20 @@ public final class SearchUtil {
             errors.add(parameterErrorWithValue("error.msg.invalid.column", "Column not exist in database", API_PARAM_COLUMN, column));
         }
         return columnHeader;
+    }
+
+    public static String buildSelect(@NotNull Collection<SelectColumnData> columns, String mainAlias, boolean embedded,
+            @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+        if (columns.isEmpty()) {
+            return "";
+        }
+        String select = "";
+        if (!embedded) {
+            select = "SELECT ";
+        }
+        return select + columns.stream()
+                .map(e -> sqlGenerator.getSelect(e.getColumnName(), calcAlias(e.getColumnHeader(), mainAlias), e.calcAs(false)))
+                .collect(Collectors.joining(", "));
     }
 
     public static boolean buildQueryCondition(List<ColumnFilterData> columnFilters, @NotNull StringBuilder where,
@@ -293,13 +320,17 @@ public final class SearchUtil {
             }
         }
         locale = locale == null ? ENGLISH : locale;
+        if (colType.isDateTimeType()) {
+            OffsetDateTime offsetDateTime = parseOffsetDateTime(columnValue, dateTimeFormat, locale);
+            if (colType.isOffsetDateTimeType()) {
+                return offsetDateTime;
+            }
+            return offsetDateTime.withOffsetSameInstant(getAuditZoneId().getRules().getOffset(offsetDateTime.toInstant()))
+                    .toLocalDateTime();
+        }
         if (colType.isDateType()) {
             String format = dateFormat == null ? DEFAULT_DATE_FORMAT : dateFormat;
             return JsonParserHelper.convertFrom(columnValue, columnHeader.getColumnName(), format, locale);
-        }
-        if (colType.isDateTimeType()) {
-            String format = dateTimeFormat == null ? DEFAULT_DATETIME_FORMAT : dateTimeFormat;
-            return JsonParserHelper.convertDateTimeFrom(columnValue, columnHeader.getColumnName(), format, locale);
         }
         if (colType.getJavaType().isLongType()) {
             return Long.valueOf(columnValue);
@@ -334,5 +365,14 @@ public final class SearchUtil {
     public static String camelToSnake(final String camelStr) {
         return camelStr == null ? null
                 : camelStr.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+
+    public static String calcAlias(ResultsetColumnHeaderData columnHeader, String mainAlias) {
+        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getAlias() : mainAlias;
+    }
+
+    public static String calcAs(ResultsetColumnHeaderData columnHeader, boolean addDefault) {
+        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getVirtualName()
+                : (addDefault ? columnHeader.getColumnName() : null);
     }
 }
