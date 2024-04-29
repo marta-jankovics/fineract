@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.currentaccount.mapper.transaction;
 
+import java.time.OffsetDateTime;
 import java.util.function.Function;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountBalanceData;
 import org.apache.fineract.currentaccount.data.account.CurrentAccountData;
@@ -28,6 +29,7 @@ import org.apache.fineract.currentaccount.domain.transaction.ICurrentTransaction
 import org.apache.fineract.currentaccount.service.account.CurrentAccountResolver;
 import org.apache.fineract.infrastructure.core.config.MapstructMapperConfig;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.portfolio.paymenttype.data.PaymentTypeData;
 import org.mapstruct.Mapper;
@@ -70,6 +72,7 @@ public interface CurrentTransactionResponseDataMapper {
     @Mapping(target = "paymentTypeData", source = "transactionData", qualifiedByName = "mapPaymentTypeData")
     @Mapping(target = "transactionAmount", source = "transactionData.amount")
     @Mapping(target = "transactionName", source = "transactionData.transactionName")
+    @Mapping(target = "createdDateTime", source = "transactionData", qualifiedByName = "mapTenantDateTime")
     CurrentTransactionResponseData mapOne(CurrentTransactionData transactionData, CurrentAccountData accountData);
 
     @Mapping(target = "transactionId", source = "balanceData.transactionId")
@@ -106,5 +109,10 @@ public interface CurrentTransactionResponseDataMapper {
     default PaymentTypeData mapPaymentTypeData(CurrentTransactionData data) {
         Long paymentTypeId = data.getPaymentTypeId();
         return paymentTypeId == null ? null : PaymentTypeData.instance(paymentTypeId, data.getPaymentTypeName());
+    }
+
+    @Named("mapTenantDateTime")
+    default OffsetDateTime mapTenantDateTime(CurrentTransactionData data) {
+        return DateUtils.toTenantOffsetDateTime(data.getCreatedDateTime());
     }
 }

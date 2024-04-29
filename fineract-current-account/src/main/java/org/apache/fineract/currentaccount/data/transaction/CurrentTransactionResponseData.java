@@ -21,6 +21,7 @@ package org.apache.fineract.currentaccount.data.transaction;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
@@ -46,4 +47,5 @@ public final class CurrentTransactionResponseData implements Serializable {
     private final BigDecimal transactionAmount;
     private final CurrencyData currency;
     private final String transactionName;
+    private final OffsetDateTime createdDateTime;
 }
