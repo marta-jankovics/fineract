@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.commands.data;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,9 +36,9 @@ public final class AuditData {
     private final Long resourceId;
     private final Long subresourceId;
     private final String maker;
-    private final ZonedDateTime madeOnDate;
+    private final OffsetDateTime madeOnDate;
     private final String checker;
-    private final ZonedDateTime checkedOnDate;
+    private final OffsetDateTime checkedOnDate;
     private final String processingResult;
     @Setter
     private String commandAsJson;

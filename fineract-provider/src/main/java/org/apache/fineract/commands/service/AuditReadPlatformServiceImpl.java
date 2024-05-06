@@ -135,11 +135,11 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
             final Long loanId = JdbcSupport.getLong(rs, "loanId");
             final Long subresourceId = JdbcSupport.getLong(rs, "subresourceId");
             final String maker = rs.getString("maker");
-            final ZonedDateTime madeOnDateTenant = JdbcSupport.getDateTime(rs, "madeOnDate");
-            final OffsetDateTime madeOnDateUTC = JdbcSupport.getOffsetDateTime(rs, "madeOnDateUTC");
+            final ZonedDateTime madeOnDateOld = JdbcSupport.getDateTime(rs, "madeOnDate");
+            final OffsetDateTime madeOnDateNew = JdbcSupport.getOffsetDateTime(rs, "madeOnDateUTC");
             final String checker = rs.getString("checker");
-            final ZonedDateTime checkedOnDateTenant = JdbcSupport.getDateTime(rs, "checkedOnDate");
-            final OffsetDateTime checkedOnDateUTC = JdbcSupport.getOffsetDateTime(rs, "checkedOnDateUTC");
+            final ZonedDateTime checkedOnDateOld = JdbcSupport.getDateTime(rs, "checkedOnDate");
+            final OffsetDateTime checkedOnDateNew = JdbcSupport.getOffsetDateTime(rs, "checkedOnDateUTC");
             final String processingResult = rs.getString("processingResult");
             final String resourceGetUrl = rs.getString("resourceGetUrl");
             String commandAsJson;
@@ -157,8 +157,8 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
             final String loanAccountNo = rs.getString("loanAccountNo");
             final String savingsAccountNo = rs.getString("savingsAccountNo");
 
-            ZonedDateTime madeOnDate = madeOnDateUTC != null ? madeOnDateUTC.toZonedDateTime() : madeOnDateTenant;
-            ZonedDateTime checkedOnDate = checkedOnDateUTC != null ? checkedOnDateUTC.toZonedDateTime() : checkedOnDateTenant;
+            OffsetDateTime madeOnDate = madeOnDateOld == null ? madeOnDateNew : madeOnDateOld.toOffsetDateTime();
+            OffsetDateTime checkedOnDate = checkedOnDateOld == null ? checkedOnDateNew : checkedOnDateOld.toOffsetDateTime();
 
             return new AuditData(id, actionName, entityName, resourceId, subresourceId, maker, madeOnDate, checker, checkedOnDate,
                     processingResult, commandAsJson, officeName, groupLevelName, groupName, clientName, loanAccountNo, savingsAccountNo,
