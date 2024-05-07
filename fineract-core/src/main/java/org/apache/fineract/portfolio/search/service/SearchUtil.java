@@ -36,7 +36,6 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -321,12 +320,10 @@ public final class SearchUtil {
         }
         locale = locale == null ? ENGLISH : locale;
         if (colType.isDateTimeType()) {
-            OffsetDateTime offsetDateTime = parseOffsetDateTime(columnValue, dateTimeFormat, locale);
             if (colType.isOffsetDateTimeType()) {
-                return offsetDateTime;
+                return parseOffsetDateTime(columnValue, dateTimeFormat, locale);
             }
-            return offsetDateTime.withOffsetSameInstant(getAuditZoneId().getRules().getOffset(offsetDateTime.toInstant()))
-                    .toLocalDateTime();
+            return JsonParserHelper.convertDateTimeFrom(columnValue, columnHeader.getColumnName(), dateTimeFormat, locale);
         }
         if (colType.isDateType()) {
             String format = dateFormat == null ? DEFAULT_DATE_FORMAT : dateFormat;
