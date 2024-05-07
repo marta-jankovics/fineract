@@ -323,7 +323,7 @@ public class CollectionSheetReadPlatformServiceImpl implements CollectionSheetRe
 
         final Long calendarId = query.longValueOfParameterNamed(calendarIdParamName);
         final LocalDate transactionDate = query.localDateValueOfParameterNamed(transactionDateParamName);
-        final String transactionDateStr = DateUtils.DEFAULT_DATE_FORMATTER.format(transactionDate);
+        final String transactionDateStr = DateUtils.format(transactionDate);
 
         final Calendar calendar = this.calendarRepositoryWrapper.findOneWithNotFoundDetection(calendarId);
         // check if transaction against calendar effective from date
@@ -458,7 +458,7 @@ public class CollectionSheetReadPlatformServiceImpl implements CollectionSheetRe
         final CenterData center = this.centerReadPlatformService.retrieveOne(centerId);
 
         final LocalDate transactionDate = query.localDateValueOfParameterNamed(transactionDateParamName);
-        final String dueDateStr = DateUtils.DEFAULT_DATE_FORMATTER.format(transactionDate);
+        final String dueDateStr = DateUtils.format(transactionDate);
 
         final JLGCollectionSheetFaltDataMapper mapper = new JLGCollectionSheetFaltDataMapper(sqlGenerator);
 
@@ -675,7 +675,7 @@ public class CollectionSheetReadPlatformServiceImpl implements CollectionSheetRe
         this.collectionSheetGenerateCommandFromApiJsonDeserializer.validateForGenerateCollectionSheetOfIndividuals(query.json());
 
         final LocalDate transactionDate = query.localDateValueOfParameterNamed(transactionDateParamName);
-        final String transactionDateStr = DateUtils.DEFAULT_DATE_FORMATTER.format(transactionDate);
+        final String transactionDateStr = DateUtils.format(transactionDate);
 
         final AppUser currentUser = this.context.authenticatedUser();
         final String hierarchy = currentUser.getOffice().getHierarchy();

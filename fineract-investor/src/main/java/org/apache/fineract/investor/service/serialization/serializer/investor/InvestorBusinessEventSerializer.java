@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.investor.service.serialization.serializer.investor;
 
-import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMATTER;
 import static org.apache.fineract.investor.data.ExternalTransferStatus.ACTIVE;
 import static org.apache.fineract.investor.data.ExternalTransferStatus.BUYBACK;
 import static org.apache.fineract.investor.data.ExternalTransferStatus.CANCELLED;
@@ -34,6 +33,7 @@ import org.apache.fineract.avro.generator.ByteBufferSerializable;
 import org.apache.fineract.avro.generic.v1.CurrencyDataV1;
 import org.apache.fineract.avro.loan.v1.LoanOwnershipTransferDataV1;
 import org.apache.fineract.avro.loan.v1.UnpaidChargeDataV1;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.event.business.domain.BusinessEvent;
 import org.apache.fineract.infrastructure.event.external.service.serialization.serializer.BusinessEventSerializer;
 import org.apache.fineract.investor.data.ExternalTransferData;
@@ -84,8 +84,8 @@ public class InvestorBusinessEventSerializer implements BusinessEventSerializer 
                 .setLoanExternalId(transferData.getLoan().getExternalId()).setTransferExternalId(transferData.getTransferExternalId())
                 .setAssetOwnerExternalId(transferData.getOwner().getExternalId())
                 .setPurchasePriceRatio(transferData.getPurchasePriceRatio()).setCurrency(getCurrencyFromEvent(event))
-                .setSettlementDate(transferData.getSettlementDate().format(DEFAULT_DATE_FORMATTER))
-                .setSubmittedDate(transferData.getSettlementDate().format(DEFAULT_DATE_FORMATTER)).setType(transferType)
+                .setSettlementDate(DateUtils.format(transferData.getSettlementDate()))
+                .setSubmittedDate(DateUtils.format(transferData.getSettlementDate())).setType(transferType)
                 .setTransferStatus(getStatus(transferData.getStatus()))
                 .setTransferStatusReason(getTransferStatusReason(transferData.getSubStatus()));
 

@@ -42,11 +42,12 @@ import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidati
 public final class DateUtils {
 
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
-    public static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + " HH[:mm][:ss][.SSS]";
-    public static final String DEFAULT_OFFSET_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT + "XXX";
-    public static final DateTimeFormatter DEFAULT_DATE_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT);
-    public static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATETIME_FORMAT);
-    public static final DateTimeFormatter DEFAULT_OFFSET_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_OFFSET_DATETIME_FORMAT);
+    public static final String DATETIME_FORMAT_SECONDS = DEFAULT_DATE_FORMAT + " HH:mm:ss";
+    static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + " HH[:mm][:ss][.SSS]";
+    static final String DEFAULT_OFFSET_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT + "XXX";
+    static final DateTimeFormatter DEFAULT_DATE_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT);
+    static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_DATETIME_FORMAT);
+    static final DateTimeFormatter DEFAULT_OFFSET_DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_OFFSET_DATETIME_FORMAT);
 
     private DateUtils() {
 

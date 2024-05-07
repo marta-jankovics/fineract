@@ -122,7 +122,7 @@ public class StandingInstructionHistoryReadPlatformServiceImpl implements Standi
                 sqlBuilder.append(" and ");
             }
             sqlBuilder.append(" atsih.execution_time >= ? ");
-            paramObj.add(DateUtils.DEFAULT_DATE_FORMATTER.format(standingInstructionDTO.startDateRange()));
+            paramObj.add(DateUtils.format(standingInstructionDTO.startDateRange()));
             addAndCaluse = true;
         }
 
@@ -131,7 +131,7 @@ public class StandingInstructionHistoryReadPlatformServiceImpl implements Standi
                 sqlBuilder.append(" and ");
             }
             sqlBuilder.append(" atsih.execution_time < ? ");
-            paramObj.add(DateUtils.DEFAULT_DATE_FORMATTER.format(standingInstructionDTO.endDateRange()));
+            paramObj.add(DateUtils.format(standingInstructionDTO.endDateRange()));
             addAndCaluse = true;
         }
 

@@ -1681,9 +1681,8 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
                     continue;
                 }
 
-                list.add(new OverdueLoanScheduleData(loan.getId(), penaltyCharge.get().getId(),
-                        DateUtils.DEFAULT_DATE_FORMATTER.format(installment.getDueDate()), penaltyCharge.get().getAmount(),
-                        DateUtils.DEFAULT_DATE_FORMAT, Locale.ENGLISH.toLanguageTag(),
+                list.add(new OverdueLoanScheduleData(loan.getId(), penaltyCharge.get().getId(), DateUtils.format(installment.getDueDate()),
+                        penaltyCharge.get().getAmount(), DateUtils.DEFAULT_DATE_FORMAT, Locale.ENGLISH.toLanguageTag(),
                         installment.getPrincipalOutstanding(loan.getCurrency()).getAmount(),
                         installment.getInterestOutstanding(loan.getCurrency()).getAmount(), installment.getInstallmentNumber()));
             }

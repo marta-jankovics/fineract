@@ -174,8 +174,8 @@ public class EmailReadPlatformServiceImpl implements EmailReadPlatformService {
         String fromDateString = null;
         String toDateString = null;
         if (dateFrom != null && dateTo != null) {
-            fromDateString = DateUtils.DEFAULT_DATE_FORMATTER.format(dateFrom);
-            toDateString = DateUtils.DEFAULT_DATE_FORMATTER.format(dateTo);
+            fromDateString = DateUtils.format(dateFrom);
+            toDateString = DateUtils.format(dateTo);
             sqlBuilder.append(" and emo.submittedon_date >= ? and emo.submittedon_date <= ? ");
         }
         final String sqlPlusLimit = (limit > 0) ? " " + sqlGenerator.limit(limit) : "";

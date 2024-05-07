@@ -75,7 +75,7 @@ public class BinxCurrentDetailsReadServiceImpl implements BinxCurrentDetailsRead
                 .collect(Collectors.joining(", "));
         String noPurpose = sqlGenerator.formatValue(headersByName.get("category_purpose_code").getColumnType(), "NA");
         String dbname = sqlGenerator.escape(dataTableName);
-        String where = "dt.current_transaction_id IN (" + ids + ") and not exists (select 1 from dt_current_transaction_details dt2 "
+        String where = "dt.current_transaction_id IN (" + ids + ") and not exists (select 1 from " + dbname + " dt2 "
                 + "join m_current_transaction t on dt2.current_transaction_id = t.id "
                 + "where dt.internal_correlation_id = dt2.internal_correlation_id "
                 + "and dt.current_transaction_id <> dt2.current_transaction_id and t.account_id = "

@@ -33,21 +33,21 @@ public final class ReportMailingJobDateUtil {
      * get the current date as string using the mysql date format yyyy-MM-dd
      **/
     public static String getTodayDateAsString() {
-        return DateUtils.getLocalDateOfTenant().format(DateUtils.DEFAULT_DATE_FORMATTER);
+        return DateUtils.format(DateUtils.getLocalDateOfTenant());
     }
 
     /**
      * get the yesterday's date as string using the mysql date format yyyy-MM-dd
      **/
     public static String getYesterdayDateAsString() {
-        return DateUtils.getLocalDateOfTenant().minusDays(1).format(DateUtils.DEFAULT_DATE_FORMATTER);
+        return DateUtils.format(DateUtils.getLocalDateOfTenant().minusDays(1));
     }
 
     /**
      * get the tomorrow's date as string using the mysql date format yyyy-MM-dd
      **/
     public static String getTomorrowDateAsString() {
-        return DateUtils.getLocalDateOfTenant().plusDays(1).format(DateUtils.DEFAULT_DATE_FORMATTER);
+        return DateUtils.format(DateUtils.getLocalDateOfTenant().plusDays(1));
     }
 
     /**

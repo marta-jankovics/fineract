@@ -103,24 +103,26 @@ public final class CalendarUtils {
     }
 
     private static LocalDateTime getNextRecurringDate(final Recur recur, final LocalDateTime seedDate, final LocalDateTime startDate) {
-        final DateTime periodStart = new DateTime(java.util.Date.from(startDate.atZone(ZoneId.systemDefault()).toInstant()));
-        final Date seed = convertToiCal4JCompatibleDate(seedDate);
+        ZoneId tenantZoneId = DateUtils.getDateTimeZoneOfTenant();
+        final DateTime periodStart = new DateTime(java.util.Date.from(startDate.atZone(tenantZoneId).toInstant()));
+        final Date seed = convertToCal4JCompatibleDate(seedDate);
         final Date nextRecDate = recur.getNextDate(seed, periodStart);
-        return nextRecDate == null ? null : LocalDateTime.ofInstant(nextRecDate.toInstant(), DateUtils.getDateTimeZoneOfTenant());
+        return nextRecDate == null ? null : LocalDateTime.ofInstant(nextRecDate.toInstant(), tenantZoneId);
     }
 
     private static LocalDate getNextRecurringDate(final Recur recur, final LocalDate seedDate, final LocalDate startDate) {
-        final DateTime periodStart = new DateTime(java.util.Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        final Date seed = convertToiCal4JCompatibleDate(seedDate.atStartOfDay());
+        ZoneId tenantZoneId = DateUtils.getDateTimeZoneOfTenant();
+        final DateTime periodStart = new DateTime(java.util.Date.from(startDate.atStartOfDay(tenantZoneId).toInstant()));
+        final Date seed = convertToCal4JCompatibleDate(seedDate.atStartOfDay());
         final Date nextRecDate = recur.getNextDate(seed, periodStart);
-        return nextRecDate == null ? null : LocalDate.ofInstant(nextRecDate.toInstant(), DateUtils.getDateTimeZoneOfTenant());
+        return nextRecDate == null ? null : LocalDate.ofInstant(nextRecDate.toInstant(), tenantZoneId);
     }
 
-    private static Date convertToiCal4JCompatibleDate(final LocalDateTime inputDate) {
+    private static Date convertToCal4JCompatibleDate(final LocalDateTime inputDate) {
         Date formattedDate = null;
-        final String seedDateStr = DateUtils.DEFAULT_DATETIME_FORMATTER.format(inputDate);
+        final String seedDateStr = DateUtils.format(inputDate);
         try {
-            formattedDate = new Date(seedDateStr, DateUtils.DEFAULT_DATETIME_FORMAT);
+            formattedDate = new Date(seedDateStr, DateUtils.DATETIME_FORMAT_SECONDS);
         } catch (final ParseException e) {
             log.error("Invalid date: {}", seedDateStr, e);
         }
@@ -163,7 +165,7 @@ public final class CalendarUtils {
         if (recur == null) {
             return null;
         }
-        final Date seed = convertToiCal4JCompatibleDate(seedDate.atStartOfDay());
+        final Date seed = convertToCal4JCompatibleDate(seedDate.atStartOfDay());
         final DateTime periodStart = new DateTime(java.util.Date.from(periodStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
         final DateTime periodEnd = new DateTime(java.util.Date.from(periodEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 

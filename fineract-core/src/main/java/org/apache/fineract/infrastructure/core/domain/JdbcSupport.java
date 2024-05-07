@@ -41,6 +41,10 @@ public final class JdbcSupport {
         return DateUtils.toTenantZonedDateTime(rs.getTimestamp(columnName));
     }
 
+    public static OffsetDateTime getOffsetDateTime(ResultSet rs, String columnName) throws SQLException {
+        return DateUtils.toTenantOffsetDateTime(rs.getTimestamp(columnName), DateUtils.getSystemZoneId());
+    }
+
     public static LocalDate getLocalDate(final ResultSet rs, final String columnName) throws SQLException {
         return DateUtils.toLocalDate(rs.getDate(columnName));
     }
@@ -71,9 +75,5 @@ public final class JdbcSupport {
 
     public static BigDecimal getBigDecimalDefaultToNullIfZero(final ResultSet rs, final String columnName) throws SQLException {
         return MathUtil.zeroToNull(rs.getBigDecimal(columnName));
-    }
-
-    public static OffsetDateTime getOffsetDateTime(ResultSet rs, String columnName) throws SQLException {
-        return DateUtils.toTenantOffsetDateTime(rs.getTimestamp(columnName), DateUtils.getSystemZoneId());
     }
 }

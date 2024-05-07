@@ -18,14 +18,13 @@
  */
 package org.apache.fineract.statement.data.camt053;
 
-import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMATTER;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.fineract.infrastructure.core.service.DateUtils;
 
 @Getter
 @AllArgsConstructor
@@ -45,7 +44,6 @@ public class DateTimePeriodData {
     private final String toDateTime;
 
     public static DateTimePeriodData create(@NotNull LocalDate fromDate, @NotNull LocalDate toDate) {
-        return new DateTimePeriodData(fromDate.format(DEFAULT_DATE_FORMATTER) + START_OF_DAY,
-                toDate.format(DEFAULT_DATE_FORMATTER) + END_OF_DAY);
+        return new DateTimePeriodData(DateUtils.format(fromDate) + START_OF_DAY, DateUtils.format(toDate) + END_OF_DAY);
     }
 }

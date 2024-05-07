@@ -202,7 +202,7 @@ public class MakercheckersApiResource {
                     LocalTime localTime = from ? LocalTime.MIN : LocalTime.MAX;
                     return OffsetDateTime.of(DateUtils.parseLocalDate(makerDateTime), localTime, auditZoneId);
                 } catch (PlatformApiDataValidationException e3) {
-                    throw e1;
+                    throw e3;
                 }
             }
         }

@@ -217,7 +217,7 @@ public class DelinquencyAndChargebackIntegrationTest {
 
             List<LocalDate> expectedDates = new ArrayList();
 
-            LocalDate businessDate = LocalDate.parse("2022-01-01", DateUtils.DEFAULT_DATE_FORMATTER);
+            LocalDate businessDate = DateUtils.parseLocalDate("2022-01-01");
             log.info("Current Business date {}", businessDate);
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
 
@@ -303,7 +303,7 @@ public class DelinquencyAndChargebackIntegrationTest {
             validateLoanAccount(getLoansLoanIdResponse, amountVal, "800.00", 23, Double.valueOf("800.00"));
 
             // Move the Business date few days to apply the repayment for Chargeback
-            businessDate = LocalDate.parse("2022-03-20", DateUtils.DEFAULT_DATE_FORMATTER);
+            businessDate = DateUtils.parseLocalDate("2022-03-20");
             expectedDates.add(businessDate);
             operationDate = Utils.dateFormatter.format(businessDate);
             loanIdTransactionsResponse = loanTransactionHelper.makeLoanRepayment(operationDate, transactionAmount, loanId);

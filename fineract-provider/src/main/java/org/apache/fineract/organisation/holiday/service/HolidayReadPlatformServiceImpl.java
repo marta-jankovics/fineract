@@ -21,7 +21,6 @@ package org.apache.fineract.organisation.holiday.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -83,8 +82,6 @@ public class HolidayReadPlatformServiceImpl implements HolidayReadPlatformServic
             final LocalDate toDate) {
         this.context.authenticatedUser();
 
-        final DateTimeFormatter df = DateUtils.DEFAULT_DATE_FORMATTER;
-
         final Object[] objectArray = new Object[3];
         int arrayPos = 0;
 
@@ -100,14 +97,14 @@ public class HolidayReadPlatformServiceImpl implements HolidayReadPlatformServic
             if (fromDate != null) {
                 sql += "h.from_Date >= ? ";
 
-                objectArray[arrayPos] = df.format(fromDate);
+                objectArray[arrayPos] = DateUtils.format(fromDate);
                 arrayPos = arrayPos + 1;
             }
 
             if (toDate != null) {
                 sql += fromDate != null ? "and " : "";
                 sql += "h.to_date <= ? ";
-                objectArray[arrayPos] = df.format(toDate);
+                objectArray[arrayPos] = DateUtils.format(toDate);
                 arrayPos = arrayPos + 1;
             }
         }
