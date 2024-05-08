@@ -39,7 +39,7 @@ public interface CurrentAccountBalanceRepository extends JpaRepository<CurrentAc
             + "LEFT JOIN CurrentTransaction ct on ct.id = cab.transactionId WHERE cab.accountId = :accountId")
     CurrentAccountBalanceData getBalanceDataByAccountId(@Param("accountId") String accountId);
 
-    @Query("SELECT ca.id FROM CurrentAccount ca " + "LEFT JOIN CurrentAccountBalance cab ON cab.accountId = ca.id "
+    @Query("SELECT ca.id FROM CurrentAccount ca LEFT JOIN CurrentAccountBalance cab ON cab.accountId = ca.id "
             + "WHERE cab.id IS NULL AND ca.status in :statuses")
     List<String> getAccountIdsNoBalance(@Param("statuses") List<CurrentAccountStatus> statuses);
 
