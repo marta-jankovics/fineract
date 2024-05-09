@@ -58,6 +58,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
     private final GenericDataService genericDataService;
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final JdbcTemplate jdbcTemplate;
+    private final SearchUtil searchUtil;
 
     @Override
     public Page<SavingsAccountTransactionData> searchTransactions(@NotNull Long savingsId,
@@ -65,7 +66,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
         context.authenticatedUser().validateHasReadPermission(SAVINGS_ACCOUNT_RESOURCE_NAME);
 
         String apptable = EntityTables.SAVINGS_TRANSACTION.getApptableName();
-        Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
+        Map<String, ResultsetColumnHeaderData> headersByName = searchUtil
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(apptable));
 
         PageRequest pageable = searchParameters.getPageable();
@@ -97,7 +98,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
         String alias = "tr";
         StringBuilder where = new StringBuilder();
         ArrayList<Object> params = new ArrayList<>();
-        SearchUtil.buildQueryCondition(columnFilters, where, params, alias, headersByName, null, null, null, false, sqlGenerator);
+        searchUtil.buildQueryCondition(columnFilters, where, params, alias, headersByName, null, null, null, false, sqlGenerator);
 
         SavingsAccountReadPlatformServiceImpl.SavingsAccountTransactionsMapper tm = new SavingsAccountReadPlatformServiceImpl.SavingsAccountTransactionsMapper();
         Object[] args = params.toArray();

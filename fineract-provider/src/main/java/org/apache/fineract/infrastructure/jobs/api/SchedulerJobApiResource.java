@@ -69,6 +69,7 @@ import org.apache.fineract.infrastructure.jobs.service.JobRegisterService;
 import org.apache.fineract.infrastructure.jobs.service.SchedulerJobRunnerReadService;
 import org.apache.fineract.infrastructure.security.exception.NoAuthorizationException;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
+import org.apache.fineract.infrastructure.security.service.SqlValidator;
 import org.springframework.stereotype.Component;
 
 @Path("/v1/jobs")
@@ -87,6 +88,7 @@ public class SchedulerJobApiResource {
     private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
     private final PlatformSecurityContext context;
     private final FineractProperties fineractProperties;
+    private final SqlValidator sqlValidator;
 
     @GET
     @Operation(summary = "Retrieve Scheduler Jobs", description = "Returns the list of jobs.\n" + "\n" + "Example Requests:\n" + "\n"
@@ -208,12 +210,16 @@ public class SchedulerJobApiResource {
 
     private String retrieveHistory(@NotNull IdTypeResolver.IdType idType, String identifier, Integer offset, Integer limit, String orderBy,
             String sortOrder, UriInfo uriInfo) {
-        context.authenticatedUser().validateHasReadPermission(SCHEDULER_RESOURCE_NAME);
-        final SearchParameters searchParameters = SearchParameters.forPagination(offset, limit, orderBy, sortOrder);
-        final Page<JobDetailHistoryData> jobHistoryData = schedulerJobRunnerReadService.retrieveJobHistory(idType, identifier,
+        this.context.authenticatedUser().validateHasReadPermission(SchedulerJobApiConstants.SCHEDULER_RESOURCE_NAME);
+        sqlValidator.validate(orderBy);
+        sqlValidator.validate(sortOrder);
+        final SearchParameters searchParameters = SearchParameters.builder().limit(limit).offset(offset).orderBy(orderBy)
+                .sortOrder(sortOrder).build();
+        final Page<JobDetailHistoryData> jobhistoryDetailData = this.schedulerJobRunnerReadService.retrieveJobHistory(jobId,
                 searchParameters);
-        final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-        return jobHistoryToApiJsonSerializer.serialize(settings, jobHistoryData, JOB_HISTORY_RESPONSE_DATA_PARAMETERS);
+        final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+        return this.jobHistoryToApiJsonSerializer.serialize(settings, jobhistoryDetailData,
+                SchedulerJobApiConstants.JOB_HISTORY_RESPONSE_DATA_PARAMETERS);
     }
 
     private Response executeJob(@NotNull IdTypeResolver.IdType idType, String identifier, String commandParam, String jsonRequestBody) {

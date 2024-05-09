@@ -76,12 +76,12 @@ public final class SearchUtil {
     }
 
     public static ResultsetColumnHeaderData findFiltered(@NotNull Collection<ResultsetColumnHeaderData> columnHeaders,
-            @NotNull Predicate<ResultsetColumnHeaderData> filter) {
+                                                         @NotNull Predicate<ResultsetColumnHeaderData> filter) {
         return columnHeaders.stream().filter(filter).findFirst().orElse(null);
     }
 
     public static ResultsetColumnHeaderData getFiltered(@NotNull Collection<ResultsetColumnHeaderData> columnHeaders,
-            @NotNull Predicate<ResultsetColumnHeaderData> filter) {
+                                                        @NotNull Predicate<ResultsetColumnHeaderData> filter) {
         ResultsetColumnHeaderData filtered = findFiltered(columnHeaders, filter);
         if (filtered == null) {
             throw new PlatformDataIntegrityException("error.msg.column.not.exists", "Column filtered does not exist");
@@ -102,7 +102,7 @@ public final class SearchUtil {
     }
 
     public static void extractJsonResult(@NotNull SqlRowSet rowSet, @NotNull List<SelectColumnData> selectColumns,
-            @NotNull List<JsonObject> results) {
+                                         @NotNull List<JsonObject> results) {
         JsonObject json = new JsonObject();
         for (int i = 0; i < selectColumns.size(); i++) {
             SelectColumnData selectColumn = selectColumns.get(i);
@@ -141,14 +141,14 @@ public final class SearchUtil {
 
     @NotNull
     public static List<String> resolveToJdbcColumnNames(List<String> columns, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
-            boolean allowEmpty) {
+                                                        boolean allowEmpty) {
         List<ResultsetColumnHeaderData> columnHeaders = resolveToJdbcColumns(columns, headersByName, allowEmpty);
         return columnHeaders.stream().map(e -> e == null ? null : e.getColumnName()).toList();
     }
 
     @NotNull
     public static List<ResultsetColumnHeaderData> resolveToJdbcColumns(List<String> columns,
-            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
+                                                                       @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
 
         List<ResultsetColumnHeaderData> result = new ArrayList<>();
@@ -166,13 +166,13 @@ public final class SearchUtil {
     }
 
     public static String resolveToJdbcColumnName(String column, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
-            boolean allowEmpty) {
+                                                 boolean allowEmpty) {
         ResultsetColumnHeaderData columnHeader = resolveToJdbcColumn(column, headersByName, allowEmpty);
         return columnHeader == null ? null : columnHeader.getColumnName();
     }
 
     public static ResultsetColumnHeaderData resolveToJdbcColumn(String column,
-            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
+                                                                @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
         ResultsetColumnHeaderData columnHeader = resolveToJdbcColumnImpl(column, headersByName, errors, allowEmpty);
         if (!errors.isEmpty()) {
@@ -182,7 +182,7 @@ public final class SearchUtil {
     }
 
     private static ResultsetColumnHeaderData resolveToJdbcColumnImpl(String column,
-            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<ApiParameterError> errors, boolean allowEmpty) {
+                                                                     @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<ApiParameterError> errors, boolean allowEmpty) {
         if (!allowEmpty && column == null) {
             errors.add(parameterErrorWithValue("error.msg.column.empty", "Column filter is empty", API_PARAM_COLUMN, null));
         }
@@ -200,7 +200,7 @@ public final class SearchUtil {
     }
 
     public static String buildSelect(@NotNull Collection<SelectColumnData> columns, String mainAlias, boolean embedded,
-            @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                     @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         if (columns.isEmpty()) {
             return "";
         }
@@ -214,8 +214,8 @@ public final class SearchUtil {
     }
 
     public static boolean buildQueryCondition(List<ColumnFilterData> columnFilters, @NotNull StringBuilder where,
-            @NotNull List<Object> params, String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat,
-            String dateTimeFormat, Locale locale, boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                              @NotNull List<Object> params, String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat,
+                                              String dateTimeFormat, Locale locale, boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         if (columnFilters == null) {
             return false;
         }
@@ -233,8 +233,8 @@ public final class SearchUtil {
     }
 
     public static boolean buildFilterCondition(ColumnFilterData columnFilter, @NotNull StringBuilder where, @NotNull List<Object> params,
-            String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat, String dateTimeFormat, Locale locale,
-            boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                               String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat, String dateTimeFormat, Locale locale,
+                                               boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         String columnName = columnFilter.getColumn();
         List<FilterData> filters = columnFilter.getFilters();
         int size = filters.size();
@@ -249,8 +249,8 @@ public final class SearchUtil {
             List<String> values = filter.getValues();
             List<Object> objectValues = values == null ? null
                     : values.stream()
-                            .map(e -> parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false, sqlGenerator))
-                            .toList();
+                    .map(e -> parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false, sqlGenerator))
+                    .toList();
 
             buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params, alias,
                     sqlGenerator);
@@ -262,8 +262,8 @@ public final class SearchUtil {
     }
 
     public static void buildCondition(@NotNull String definition, JdbcJavaType columnType, @NotNull SqlOperator operator,
-            List<Object> values, @NotNull StringBuilder where, @NotNull List<Object> params, String alias,
-            @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                      List<Object> values, @NotNull StringBuilder where, @NotNull List<Object> params, String alias,
+                                      @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         int paramCount = values == null ? 0 : values.size();
         where.append(operator.formatPlaceholder(sqlGenerator, definition, paramCount, alias, "?"));
         if (values != null) {
@@ -272,13 +272,13 @@ public final class SearchUtil {
     }
 
     public static Object parseJdbcColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
-            String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                              String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         return columnHeader.getColumnType().toJdbcValue(sqlGenerator.getDialect(),
                 parseColumnValue(columnHeader, columnValue, dateFormat, dateTimeFormat, locale, strict, sqlGenerator), false);
     }
 
     public static Object parseColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
-            String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+                                          String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
         JdbcJavaType colType = columnHeader.getColumnType();
         if (!colType.isStringType() || !columnHeader.isMandatory()) {
             columnValue = StringUtils.trimToNull(columnValue);

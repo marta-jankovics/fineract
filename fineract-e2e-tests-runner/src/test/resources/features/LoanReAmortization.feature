@@ -1,7 +1,7 @@
 @LoanReAmortizationFeature
 Feature: LoanReAmortization
 
-  @TestRailId:C3069 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - re-amortization happy path
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -32,8 +32,8 @@ Feature: LoanReAmortization
       |    |      | 01 January 2024  |                 | 500.0           |               |          | 0.0  |           | 0.0   | 0.0   |            |      |             |
       | 1  | 0    | 01 January 2024  | 01 January 2024 | 375.0           | 125.0         | 0.0      | 0.0  | 0.0       | 125.0 | 125.0 | 0.0        | 0.0  | 0.0         |
       | 2  | 15   | 16 January 2024  | 25 January 2024 | 375.0           | 0.0           | 0.0      | 0.0  | 0.0       | 0.0   | 0.0   | 0.0        | 0.0  | 0.0         |
-      | 3  | 15   | 31 January 2024  |                 | 187.0           | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
-      | 4  | 15   | 15 February 2024 |                 | 0.0             | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 3  | 15   | 31 January 2024  |                 | 188.0           | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 4  | 15   | 15 February 2024 |                 | 0.0             | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
     Then Loan Repayment schedule has the following data in Total row:
       | Principal due | Interest | Fees | Penalties | Due   | Paid  | In advance | Late | Outstanding |
       | 500.0         | 0.0      | 0.0  | 0.0       | 500.0 | 125.0 | 0.0        | 0.0  | 375.0       |
@@ -43,7 +43,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 25 January 2024  | Re-amortize      | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3070 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - re-amortization happy path with loan externalId
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -74,8 +74,8 @@ Feature: LoanReAmortization
       |    |      | 01 January 2024  |                 | 500.0           |               |          | 0.0  |           | 0.0   | 0.0   |            |      |             |
       | 1  | 0    | 01 January 2024  | 01 January 2024 | 375.0           | 125.0         | 0.0      | 0.0  | 0.0       | 125.0 | 125.0 | 0.0        | 0.0  | 0.0         |
       | 2  | 15   | 16 January 2024  | 25 January 2024 | 375.0           | 0.0           | 0.0      | 0.0  | 0.0       | 0.0   | 0.0   | 0.0        | 0.0  | 0.0         |
-      | 3  | 15   | 31 January 2024  |                 | 187.0           | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
-      | 4  | 15   | 15 February 2024 |                 | 0.0             | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 3  | 15   | 31 January 2024  |                 | 188.0           | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 4  | 15   | 15 February 2024 |                 | 0.0             | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
     Then Loan Repayment schedule has the following data in Total row:
       | Principal due | Interest | Fees | Penalties | Due   | Paid  | In advance | Late | Outstanding |
       | 500.0         | 0.0      | 0.0  | 0.0       | 500.0 | 125.0 | 0.0        | 0.0  | 375.0       |
@@ -85,7 +85,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 25 January 2024  | Re-amortize      | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3071 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - re-amortization undo happy path
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -102,8 +102,8 @@ Feature: LoanReAmortization
       |    |      | 01 January 2024  |                 | 500.0           |               |          | 0.0  |           | 0.0   | 0.0   |            |      |             |
       | 1  | 0    | 01 January 2024  | 01 January 2024 | 375.0           | 125.0         | 0.0      | 0.0  | 0.0       | 125.0 | 125.0 | 0.0        | 0.0  | 0.0         |
       | 2  | 15   | 16 January 2024  | 25 January 2024 | 375.0           | 0.0           | 0.0      | 0.0  | 0.0       | 0.0   | 0.0   | 0.0        | 0.0  | 0.0         |
-      | 3  | 15   | 31 January 2024  |                 | 187.0           | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
-      | 4  | 15   | 15 February 2024 |                 | 0.0             | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 3  | 15   | 31 January 2024  |                 | 188.0           | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 4  | 15   | 15 February 2024 |                 | 0.0             | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
     Then Loan Repayment schedule has the following data in Total row:
       | Principal due | Interest | Fees | Penalties | Due   | Paid  | In advance | Late | Outstanding |
       | 500.0         | 0.0      | 0.0  | 0.0       | 500.0 | 125.0 | 0.0        | 0.0  | 375.0       |
@@ -131,7 +131,7 @@ Feature: LoanReAmortization
       | 25 January 2024  | Re-amortize      | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 0.0          | true     |
     Then Admin checks that delinquency range is: "RANGE_3" and has delinquentDate "2024-01-19"
 
-  @TestRailId:C3072 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - delinquency calculation triggered upon re-amortization transaction
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -148,7 +148,7 @@ Feature: LoanReAmortization
     When When Admin creates a Loan re-amortization transaction on current business date
     Then Admin checks that delinquency range is: "NO_DELINQUENCY" and has delinquentDate ""
 
-  @TestRailId:C3073 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC1: re-amortization after charge applied on loan
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -167,8 +167,8 @@ Feature: LoanReAmortization
       |    |      | 01 January 2024  |                 | 500.0           |               |          | 0.0  |           | 0.0   | 0.0   |            |      |             |
       | 1  | 0    | 01 January 2024  | 01 January 2024 | 375.0           | 125.0         | 0.0      | 0.0  | 0.0       | 125.0 | 125.0 | 0.0        | 0.0  | 0.0         |
       | 2  | 15   | 16 January 2024  |                 | 375.0           | 0.0           | 0.0      | 0.0  | 10.0      | 10.0  | 0.0   | 0.0        | 0.0  | 10.0        |
-      | 3  | 15   | 31 January 2024  |                 | 187.0           | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
-      | 4  | 15   | 15 February 2024 |                 | 0.0             | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 3  | 15   | 31 January 2024  |                 | 188.0           | 187.0         | 0.0      | 0.0  | 0.0       | 187.0 | 0.0   | 0.0        | 0.0  | 187.0       |
+      | 4  | 15   | 15 February 2024 |                 | 0.0             | 188.0         | 0.0      | 0.0  | 0.0       | 188.0 | 0.0   | 0.0        | 0.0  | 188.0       |
     Then Loan Repayment schedule has the following data in Total row:
       | Principal due | Interest | Fees | Penalties | Due   | Paid  | In advance | Late | Outstanding |
       | 500.0         | 0.0      | 0.0  | 10.0      | 510.0 | 125.0 | 0.0        | 0.0  | 385.0       |
@@ -178,7 +178,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 25 January 2024  | Re-amortize      | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3074 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC2: complete past due principal amount reamortization scenario
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -206,7 +206,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 01 February 2024 | Re-amortize      | 250.0  | 250.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3075 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC3: reverse replay scenario
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -250,9 +250,9 @@ Feature: LoanReAmortization
       | 01 January 2024  | Disbursement     | 500.0  | 0.0       | 0.0      | 0.0  | 0.0       | 500.0        |
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 15 January 2024  | Repayment        | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 250.0        |
-      | 01 February 2024 | Re-amortize      | 375.0  | 375.0     | 0.0      | 0.0  | 0.0       | 0.0          |
+      | 01 February 2024 | Re-amortize      | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3076 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC4: N+1 Installment scenario
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -282,7 +282,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 01 February 2024 | Re-amortize      | 250.0  | 250.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3077 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC5: re-amortization on same day of installment
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -312,7 +312,7 @@ Feature: LoanReAmortization
       | 01 January 2024  | Down Payment     | 125.0  | 125.0     | 0.0      | 0.0  | 0.0       | 375.0        |
       | 31 January 2024  | Re-amortize      | 250.0  | 250.0     | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3078 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - UC6: Parital Paid Scenario
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -358,7 +358,7 @@ Feature: LoanReAmortization
       | 17 January 2024  | Repayment        | 50.0   | 50.0      | 0.0      | 0.0  | 0.0       | 325.0        |
       | 30 January 2024  | Re-amortize      | 75.0   | 75.0      | 0.0      | 0.0  | 0.0       | 0.0          |
 
-  @TestRailId:C3089 @AdvancedPaymentAllocation
+   @AdvancedPaymentAllocation
   Scenario: Verify Loan re-amortization transaction - Event check
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data

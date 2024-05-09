@@ -32,6 +32,7 @@ import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecific
 import org.apache.fineract.infrastructure.dataqueries.service.EntityDatatableChecksReadService;
 import org.apache.fineract.infrastructure.dataqueries.service.EntityDatatableChecksWritePlatformService;
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
+import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.infrastructure.entityaccess.service.FineractEntityAccessUtil;
 import org.apache.fineract.infrastructure.event.business.service.BusinessEventNotifierService;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
@@ -136,6 +137,7 @@ import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPos
 import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPosterTask;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionSearchService;
 import org.apache.fineract.portfolio.savings.service.search.SavingsAccountTransactionsSearchServiceImpl;
+import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.apache.fineract.statement.service.ProductStatementWriteService;
 import org.apache.fineract.statement.service.SavingsStatementWriteService;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
@@ -151,8 +153,10 @@ public class SavingsConfiguration {
     @Bean
     @ConditionalOnMissingBean(SavingsAccountTransactionSearchService.class)
     public SavingsAccountTransactionSearchService savingsAccountTransactionSearchService(PlatformSecurityContext context,
-            GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, JdbcTemplate jdbcTemplate) {
-        return new SavingsAccountTransactionsSearchServiceImpl(context, genericDataService, sqlGenerator, jdbcTemplate);
+            GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService,
+            DataTableValidator dataTableValidator, JdbcTemplate jdbcTemplate, SearchUtil searchUtil) {
+        return new SavingsAccountTransactionsSearchServiceImpl(context, genericDataService, sqlGenerator, datatableService,
+                dataTableValidator, jdbcTemplate, searchUtil);
     }
 
     @Bean

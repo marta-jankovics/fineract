@@ -30,6 +30,8 @@ buildscript {
                 'fineract-core',
                 'fineract-accounting',
                 'fineract-provider',
+                'fineract-branch',
+                'fineract-document',
                 'fineract-investor',
                 'fineract-loan',
                 'fineract-savings',
@@ -56,6 +58,8 @@ buildscript {
                 'fineract-investor',
                 'fineract-loan',
                 'fineract-savings',
+                'fineract-branch',
+                'fineract-document',
                 'fineract-statement',
                 'fineract-current-account',
                 'custom-binx'
