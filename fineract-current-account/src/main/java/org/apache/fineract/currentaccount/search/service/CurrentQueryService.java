@@ -60,8 +60,8 @@ public class CurrentQueryService extends AdvancedQueryServiceImpl {
 
     public CurrentQueryService(PlatformSecurityContext securityContext, GenericDataService genericDataService,
             DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
-            JdbcTemplate jdbcTemplate) {
-        super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate);
+            JdbcTemplate jdbcTemplate, SearchUtil searchUtil) {
+        super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate, searchUtil);
     }
 
     @Override

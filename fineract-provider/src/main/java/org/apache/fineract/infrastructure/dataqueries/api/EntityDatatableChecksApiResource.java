@@ -80,7 +80,7 @@ public class EntityDatatableChecksApiResource {
             @QueryParam("productId") @Parameter(description = "productId") final Long productId,
             @QueryParam("offset") @Parameter(description = "offset") final Integer offset,
             @QueryParam("limit") @Parameter(description = "limit") final Integer limit) {
-        final SearchParameters searchParameters = SearchParameters.forPagination(offset, limit);
+        final SearchParameters searchParameters = SearchParameters.builder().limit(limit).offset(offset).build();
         StatusEnum statusEnum = null;
         if (status != null) {
             statusEnum = StatusEnum.fromInt(status);

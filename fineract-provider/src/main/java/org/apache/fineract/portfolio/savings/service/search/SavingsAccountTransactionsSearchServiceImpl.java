@@ -66,7 +66,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
         context.authenticatedUser().validateHasReadPermission(SAVINGS_ACCOUNT_RESOURCE_NAME);
 
         String apptable = EntityTables.SAVINGS_TRANSACTION.getApptableName();
-        Map<String, ResultsetColumnHeaderData> headersByName = searchUtil
+        Map<String, ResultsetColumnHeaderData> headersByName = SearchUtil
                 .mapHeadersToName(genericDataService.fillResultsetColumnHeaders(apptable));
 
         PageRequest pageable = searchParameters.getPageable();
@@ -98,7 +98,7 @@ public class SavingsAccountTransactionsSearchServiceImpl implements SavingsAccou
         String alias = "tr";
         StringBuilder where = new StringBuilder();
         ArrayList<Object> params = new ArrayList<>();
-        searchUtil.buildQueryCondition(columnFilters, where, params, alias, headersByName, null, null, null, false, sqlGenerator);
+        searchUtil.buildQueryCondition(columnFilters, where, params, alias, headersByName, null, null, null, false);
 
         SavingsAccountReadPlatformServiceImpl.SavingsAccountTransactionsMapper tm = new SavingsAccountReadPlatformServiceImpl.SavingsAccountTransactionsMapper();
         Object[] args = params.toArray();

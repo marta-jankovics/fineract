@@ -32,7 +32,6 @@ import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecific
 import org.apache.fineract.infrastructure.dataqueries.service.EntityDatatableChecksReadService;
 import org.apache.fineract.infrastructure.dataqueries.service.EntityDatatableChecksWritePlatformService;
 import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService;
-import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.infrastructure.entityaccess.service.FineractEntityAccessUtil;
 import org.apache.fineract.infrastructure.event.business.service.BusinessEventNotifierService;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
@@ -153,10 +152,9 @@ public class SavingsConfiguration {
     @Bean
     @ConditionalOnMissingBean(SavingsAccountTransactionSearchService.class)
     public SavingsAccountTransactionSearchService savingsAccountTransactionSearchService(PlatformSecurityContext context,
-            GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService,
-            DataTableValidator dataTableValidator, JdbcTemplate jdbcTemplate, SearchUtil searchUtil) {
-        return new SavingsAccountTransactionsSearchServiceImpl(context, genericDataService, sqlGenerator, datatableService,
-                dataTableValidator, jdbcTemplate, searchUtil);
+            GenericDataService genericDataService, DatabaseSpecificSQLGenerator sqlGenerator, JdbcTemplate jdbcTemplate,
+            SearchUtil searchUtil) {
+        return new SavingsAccountTransactionsSearchServiceImpl(context, genericDataService, sqlGenerator, jdbcTemplate, searchUtil);
     }
 
     @Bean

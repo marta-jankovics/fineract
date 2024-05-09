@@ -21,7 +21,6 @@ package org.apache.fineract.portfolio.search.service;
 import static jakarta.persistence.criteria.JoinType.INNER;
 import static jakarta.persistence.criteria.JoinType.LEFT;
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_COLUMN;
-import static org.apache.fineract.portfolio.search.service.SearchUtil.buildCondition;
 import static org.apache.fineract.portfolio.search.service.SearchUtil.calcAlias;
 import static org.apache.fineract.portfolio.search.service.SearchUtil.calcAs;
 
@@ -80,6 +79,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
     private final ReadWriteNonCoreDataService datatableService;
     private final DataTableValidator dataTableValidator;
     private final JdbcTemplate jdbcTemplate;
+    private final SearchUtil searchUtil;
 
     @Override
     public Page<JsonObject> query(@NotNull EntityTables entity, @NotNull PagedLocalRequest<AdvancedQueryRequest> pagedRequest,
@@ -173,7 +173,7 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
         String dateTimeFormat = pagedRequest.getDateTimeFormat();
         Locale locale = pagedRequest.getLocaleObject();
         String with = buildWith(withs);
-        String select = SearchUtil.buildSelect(selectColumns, alias, false, sqlGenerator);
+        String select = searchUtil.buildSelect(selectColumns, alias, false);
         ArrayList<Object> params = new ArrayList<>();
         String from = "\n" + buildFrom(apptable, alias, joins, params, dateFormat, dateTimeFormat, locale);
         String where = "\n" + buildQueryCondition(columnConditions, params, alias, dateFormat, dateTimeFormat, locale);
@@ -285,12 +285,11 @@ public class AdvancedQueryServiceImpl implements AdvancedQueryService {
             SqlOperator operator = filter.getOperator();
             List<String> values = filter.getValues();
             List<Object> objectValues = values == null ? null
-                    : values.stream().map(
-                            e -> SearchUtil.parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false, sqlGenerator))
+                    : values.stream().map(e -> searchUtil.parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false))
                             .toList();
 
-            buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params,
-                    calcAlias(columnHeader, mainAlias), sqlGenerator);
+            searchUtil.buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params,
+                    calcAlias(columnHeader, mainAlias));
             if (i < size - 1) {
                 where.append(" AND ");
             }

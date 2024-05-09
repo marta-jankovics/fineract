@@ -44,6 +44,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
@@ -54,21 +56,26 @@ import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecific
 import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 import org.apache.fineract.infrastructure.core.service.database.SqlOperator;
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnHeaderData;
-import org.apache.fineract.infrastructure.security.utils.SQLInjectionValidator;
+import org.apache.fineract.infrastructure.security.service.SqlValidator;
 import org.apache.fineract.portfolio.search.data.ColumnFilterData;
 import org.apache.fineract.portfolio.search.data.FilterData;
 import org.apache.fineract.portfolio.search.data.JoinColumnHeaderData;
 import org.apache.fineract.portfolio.search.data.JoinData;
 import org.apache.fineract.portfolio.search.data.SelectColumnData;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 
-public final class SearchUtil {
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class SearchUtil {
 
     public static final int DEFAULT_PAGE_SIZE = 50;
 
     private static final JsonParserHelper helper = new JsonParserHelper();
 
-    private SearchUtil() {}
+    private final SqlValidator sqlValidator;
+    private final DatabaseSpecificSQLGenerator sqlGenerator;
 
     @NotNull
     public static Map<String, ResultsetColumnHeaderData> mapHeadersToName(@NotNull Collection<ResultsetColumnHeaderData> columnHeaders) {
@@ -76,12 +83,12 @@ public final class SearchUtil {
     }
 
     public static ResultsetColumnHeaderData findFiltered(@NotNull Collection<ResultsetColumnHeaderData> columnHeaders,
-                                                         @NotNull Predicate<ResultsetColumnHeaderData> filter) {
+            @NotNull Predicate<ResultsetColumnHeaderData> filter) {
         return columnHeaders.stream().filter(filter).findFirst().orElse(null);
     }
 
     public static ResultsetColumnHeaderData getFiltered(@NotNull Collection<ResultsetColumnHeaderData> columnHeaders,
-                                                        @NotNull Predicate<ResultsetColumnHeaderData> filter) {
+            @NotNull Predicate<ResultsetColumnHeaderData> filter) {
         ResultsetColumnHeaderData filtered = findFiltered(columnHeaders, filter);
         if (filtered == null) {
             throw new PlatformDataIntegrityException("error.msg.column.not.exists", "Column filtered does not exist");
@@ -102,7 +109,7 @@ public final class SearchUtil {
     }
 
     public static void extractJsonResult(@NotNull SqlRowSet rowSet, @NotNull List<SelectColumnData> selectColumns,
-                                         @NotNull List<JsonObject> results) {
+            @NotNull List<JsonObject> results) {
         JsonObject json = new JsonObject();
         for (int i = 0; i < selectColumns.size(); i++) {
             SelectColumnData selectColumn = selectColumns.get(i);
@@ -141,14 +148,14 @@ public final class SearchUtil {
 
     @NotNull
     public static List<String> resolveToJdbcColumnNames(List<String> columns, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
-                                                        boolean allowEmpty) {
+            boolean allowEmpty) {
         List<ResultsetColumnHeaderData> columnHeaders = resolveToJdbcColumns(columns, headersByName, allowEmpty);
         return columnHeaders.stream().map(e -> e == null ? null : e.getColumnName()).toList();
     }
 
     @NotNull
     public static List<ResultsetColumnHeaderData> resolveToJdbcColumns(List<String> columns,
-                                                                       @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
 
         List<ResultsetColumnHeaderData> result = new ArrayList<>();
@@ -166,13 +173,13 @@ public final class SearchUtil {
     }
 
     public static String resolveToJdbcColumnName(String column, @NotNull Map<String, ResultsetColumnHeaderData> headersByName,
-                                                 boolean allowEmpty) {
+            boolean allowEmpty) {
         ResultsetColumnHeaderData columnHeader = resolveToJdbcColumn(column, headersByName, allowEmpty);
         return columnHeader == null ? null : columnHeader.getColumnName();
     }
 
     public static ResultsetColumnHeaderData resolveToJdbcColumn(String column,
-                                                                @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, boolean allowEmpty) {
         final List<ApiParameterError> errors = new ArrayList<>();
         ResultsetColumnHeaderData columnHeader = resolveToJdbcColumnImpl(column, headersByName, errors, allowEmpty);
         if (!errors.isEmpty()) {
@@ -182,7 +189,7 @@ public final class SearchUtil {
     }
 
     private static ResultsetColumnHeaderData resolveToJdbcColumnImpl(String column,
-                                                                     @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<ApiParameterError> errors, boolean allowEmpty) {
+            @NotNull Map<String, ResultsetColumnHeaderData> headersByName, @NotNull List<ApiParameterError> errors, boolean allowEmpty) {
         if (!allowEmpty && column == null) {
             errors.add(parameterErrorWithValue("error.msg.column.empty", "Column filter is empty", API_PARAM_COLUMN, null));
         }
@@ -199,8 +206,21 @@ public final class SearchUtil {
         return columnHeader;
     }
 
-    public static String buildSelect(@NotNull Collection<SelectColumnData> columns, String mainAlias, boolean embedded,
-                                     @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public static String camelToSnake(final String camelStr) {
+        return camelStr == null ? null
+                : camelStr.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+
+    public static String calcAlias(ResultsetColumnHeaderData columnHeader, String mainAlias) {
+        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getAlias() : mainAlias;
+    }
+
+    public static String calcAs(ResultsetColumnHeaderData columnHeader, boolean addDefault) {
+        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getVirtualName()
+                : (addDefault ? columnHeader.getColumnName() : null);
+    }
+
+    public String buildSelect(@NotNull Collection<SelectColumnData> columns, String mainAlias, boolean embedded) {
         if (columns.isEmpty()) {
             return "";
         }
@@ -213,9 +233,9 @@ public final class SearchUtil {
                 .collect(Collectors.joining(", "));
     }
 
-    public static boolean buildQueryCondition(List<ColumnFilterData> columnFilters, @NotNull StringBuilder where,
-                                              @NotNull List<Object> params, String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat,
-                                              String dateTimeFormat, Locale locale, boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public boolean buildQueryCondition(List<ColumnFilterData> columnFilters, @NotNull StringBuilder where, @NotNull List<Object> params,
+            String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat, String dateTimeFormat, Locale locale,
+            boolean embedded) {
         if (columnFilters == null) {
             return false;
         }
@@ -223,7 +243,7 @@ public final class SearchUtil {
         int isize = columnFilters.size();
         for (int i = 0; i < isize; i++) {
             boolean addedFilter = buildFilterCondition(columnFilters.get(i), where, params, alias, headersByName, dateFormat,
-                    dateTimeFormat, locale, embedded, sqlGenerator);
+                    dateTimeFormat, locale, embedded);
             if (addedFilter && i < isize - 1) {
                 where.append(" AND ");
             }
@@ -232,9 +252,9 @@ public final class SearchUtil {
         return added;
     }
 
-    public static boolean buildFilterCondition(ColumnFilterData columnFilter, @NotNull StringBuilder where, @NotNull List<Object> params,
-                                               String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat, String dateTimeFormat, Locale locale,
-                                               boolean embedded, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public boolean buildFilterCondition(ColumnFilterData columnFilter, @NotNull StringBuilder where, @NotNull List<Object> params,
+            String alias, Map<String, ResultsetColumnHeaderData> headersByName, String dateFormat, String dateTimeFormat, Locale locale,
+            boolean embedded) {
         String columnName = columnFilter.getColumn();
         List<FilterData> filters = columnFilter.getFilters();
         int size = filters.size();
@@ -248,12 +268,9 @@ public final class SearchUtil {
             SqlOperator operator = filter.getOperator();
             List<String> values = filter.getValues();
             List<Object> objectValues = values == null ? null
-                    : values.stream()
-                    .map(e -> parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false, sqlGenerator))
-                    .toList();
+                    : values.stream().map(e -> parseJdbcColumnValue(columnHeader, e, dateFormat, dateTimeFormat, locale, false)).toList();
 
-            buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params, alias,
-                    sqlGenerator);
+            buildCondition(columnHeader.getColumnName(), columnHeader.getColumnType(), operator, objectValues, where, params, alias);
             if (i < size - 1) {
                 where.append(" AND ");
             }
@@ -261,9 +278,8 @@ public final class SearchUtil {
         return size > 0;
     }
 
-    public static void buildCondition(@NotNull String definition, JdbcJavaType columnType, @NotNull SqlOperator operator,
-                                      List<Object> values, @NotNull StringBuilder where, @NotNull List<Object> params, String alias,
-                                      @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public void buildCondition(@NotNull String definition, JdbcJavaType columnType, @NotNull SqlOperator operator, List<Object> values,
+            @NotNull StringBuilder where, @NotNull List<Object> params, String alias) {
         int paramCount = values == null ? 0 : values.size();
         where.append(operator.formatPlaceholder(sqlGenerator, definition, paramCount, alias, "?"));
         if (values != null) {
@@ -271,14 +287,14 @@ public final class SearchUtil {
         }
     }
 
-    public static Object parseJdbcColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
-                                              String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public Object parseJdbcColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
+            String dateTimeFormat, Locale locale, boolean strict) {
         return columnHeader.getColumnType().toJdbcValue(sqlGenerator.getDialect(),
-                parseColumnValue(columnHeader, columnValue, dateFormat, dateTimeFormat, locale, strict, sqlGenerator), false);
+                parseColumnValue(columnHeader, columnValue, dateFormat, dateTimeFormat, locale, strict), false);
     }
 
-    public static Object parseColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
-                                          String dateTimeFormat, Locale locale, boolean strict, @NotNull DatabaseSpecificSQLGenerator sqlGenerator) {
+    public Object parseColumnValue(@NotNull ResultsetColumnHeaderData columnHeader, String columnValue, String dateFormat,
+            String dateTimeFormat, Locale locale, boolean strict) {
         JdbcJavaType colType = columnHeader.getColumnType();
         if (!colType.isStringType() || !columnHeader.isMandatory()) {
             columnValue = StringUtils.trimToNull(columnValue);
@@ -294,7 +310,7 @@ public final class SearchUtil {
             return columnValue;
         }
         if (strict) {
-            SQLInjectionValidator.validateDynamicQuery(columnValue);
+            sqlValidator.validate(columnValue);
         }
 
         if (columnHeader.isColumnCode()) {
@@ -357,19 +373,5 @@ public final class SearchUtil {
             }
         }
         return columnValue;
-    }
-
-    public static String camelToSnake(final String camelStr) {
-        return camelStr == null ? null
-                : camelStr.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
-    }
-
-    public static String calcAlias(ResultsetColumnHeaderData columnHeader, String mainAlias) {
-        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getAlias() : mainAlias;
-    }
-
-    public static String calcAs(ResultsetColumnHeaderData columnHeader, boolean addDefault) {
-        return columnHeader instanceof JoinColumnHeaderData ? ((JoinColumnHeaderData) columnHeader).getVirtualName()
-                : (addDefault ? columnHeader.getColumnName() : null);
     }
 }

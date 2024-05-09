@@ -25,6 +25,7 @@ import org.apache.fineract.infrastructure.dataqueries.service.GenericDataService
 import org.apache.fineract.infrastructure.dataqueries.service.ReadWriteNonCoreDataService;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.search.service.AdvancedQueryServiceImpl;
+import org.apache.fineract.portfolio.search.service.SearchUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,7 @@ public class SavingsQueryService extends AdvancedQueryServiceImpl {
 
     public SavingsQueryService(PlatformSecurityContext securityContext, GenericDataService genericDataService,
             DatabaseSpecificSQLGenerator sqlGenerator, ReadWriteNonCoreDataService datatableService, DataTableValidator dataTableValidator,
-            JdbcTemplate jdbcTemplate) {
-        super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate);
+            JdbcTemplate jdbcTemplate, SearchUtil searchUtil) {
+        super(securityContext, genericDataService, sqlGenerator, datatableService, dataTableValidator, jdbcTemplate, searchUtil);
     }
 }
