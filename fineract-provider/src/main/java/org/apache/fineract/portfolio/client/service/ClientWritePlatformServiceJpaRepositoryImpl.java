@@ -324,13 +324,13 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
             }
 
             if (command.parameterExists(ClientApiConstants.datatables)) {
-                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE.getValue(), EntityTables.CLIENT.getName(),
-                        newClient.getId(), null, command.arrayOfParameterNamed(ClientApiConstants.datatables));
+                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE, EntityTables.CLIENT, newClient.getId(),
+                        null, command.arrayOfParameterNamed(ClientApiConstants.datatables));
             }
 
             legalForm = LegalForm.fromInt(newClient.getLegalForm());
-            entityDatatableChecksWritePlatformService.runTheCheck(newClient.getId(), EntityTables.CLIENT.getName(),
-                    StatusEnum.CREATE.getValue(), EntityTables.CLIENT.getForeignKeyColumnNameOnDatatable(), legalForm.getLabel());
+            entityDatatableChecksWritePlatformService.runTheCheck(StatusEnum.CREATE, EntityTables.CLIENT, newClient.getId(),
+                    legalForm.getLabel());
             businessEventNotifierService.notifyPostBusinessEvent(new ClientCreateBusinessEvent(newClient));
             if (newClient.isActive()) {
                 businessEventNotifierService.notifyPostBusinessEvent(new ClientActivateBusinessEvent(newClient));
@@ -855,8 +855,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                         closureDate, client.getActivationDate());
             }
             final LegalForm legalForm = LegalForm.fromInt(client.getLegalForm());
-            entityDatatableChecksWritePlatformService.runTheCheck(clientId, EntityTables.CLIENT.getName(), StatusEnum.CLOSE.getValue(),
-                    EntityTables.CLIENT.getForeignKeyColumnNameOnDatatable(), legalForm.getLabel());
+            entityDatatableChecksWritePlatformService.runTheCheck(StatusEnum.CLOSE, EntityTables.CLIENT, clientId, legalForm.getLabel());
 
             final List<Loan> clientLoans = this.loanRepositoryWrapper.findLoanByClientId(clientId);
             for (final Loan loan : clientLoans) {
@@ -874,14 +873,12 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                 }
             }
             final List<SavingsAccount> clientSavingAccounts = this.savingsRepositoryWrapper.findSavingAccountByClientId(clientId);
-
             for (final SavingsAccount saving : clientSavingAccounts) {
                 if (saving.isActive() || saving.isSubmittedAndPendingApproval() || saving.isApproved()) {
                     final String errorMessage = "Client cannot be closed because of non-closed savings account.";
                     throw new InvalidClientStateTransitionException("close", "non-closed.savings.account", errorMessage);
                 }
             }
-
             client.close(currentUser, closureReason, closureDate);
             this.clientRepository.saveAndFlush(client);
             return new CommandProcessingResultBuilder() //
@@ -954,8 +951,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
 
     private void runEntityDatatableCheck(final Long clientId, final Integer legalFormId) {
         final LegalForm legalForm = LegalForm.fromInt(legalFormId);
-        entityDatatableChecksWritePlatformService.runTheCheck(clientId, EntityTables.CLIENT.getName(), StatusEnum.ACTIVATE.getValue(),
-                EntityTables.CLIENT.getForeignKeyColumnNameOnDatatable(), legalForm.getLabel());
+        entityDatatableChecksWritePlatformService.runTheCheck(StatusEnum.ACTIVATE, EntityTables.CLIENT, clientId, legalForm.getLabel());
     }
 
     @Override

@@ -19,11 +19,17 @@
 package org.apache.fineract.infrastructure.core.data;
 
 import java.util.Map;
+import java.util.Optional;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 
 /**
  * Represents the successful result of an REST API call that results in processing a command.
  */
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class CommandProcessingResultBuilder {
 
     private Long commandId;
@@ -33,8 +39,8 @@ public class CommandProcessingResultBuilder {
     private Long loanId;
     private Long savingsId;
     private String resourceIdentifier;
-    private Long entityId;
-    private Long subEntityId;
+    private Long resourceId;
+    private Long subResourceId;
     private Long gsimId;
     private Long glimId;
     private String transactionId;
@@ -42,14 +48,23 @@ public class CommandProcessingResultBuilder {
     private Map<String, Object> creditBureauReportData;
     private Long productId;
     private boolean rollbackTransaction = false;
-    private ExternalId entityExternalId = ExternalId.empty();
-
-    private ExternalId subEntityExternalId = ExternalId.empty();
+    private ExternalId resourceExternalId;
+    private ExternalId subResourceExternalId;
 
     public CommandProcessingResult build() {
         return CommandProcessingResult.fromDetails(this.commandId, this.officeId, this.groupId, this.clientId, this.loanId, this.savingsId,
-                this.resourceIdentifier, this.entityId, this.gsimId, this.glimId, this.creditBureauReportData, this.transactionId,
-                this.changes, this.productId, this.rollbackTransaction, this.subEntityId, this.entityExternalId, this.subEntityExternalId);
+                this.resourceIdentifier, this.resourceId, this.gsimId, this.glimId, this.creditBureauReportData, this.transactionId,
+                this.changes, this.productId, this.rollbackTransaction, this.subResourceId, this.resourceExternalId,
+                this.subResourceExternalId);
+    }
+
+    public static CommandProcessingResultBuilder fromResult(CommandProcessingResult result) {
+        return new CommandProcessingResultBuilder(result.getCommandId(), result.getOfficeId(), result.getGroupId(), result.getClientId(),
+                result.getLoanId(), result.getSavingsId(), result.getResourceIdentifier(), result.getResourceId(),
+                result.getSubResourceId(), result.getGsimId(), result.getGlimId(), result.getTransactionId(), result.getChanges(),
+                result.getCreditBureauReportData(), result.getProductId(),
+                Optional.ofNullable(result.getRollbackTransaction()).orElse(false), result.getResourceExternalId(),
+                result.getSubResourceExternalId());
     }
 
     public CommandProcessingResultBuilder withCommandId(final Long withCommandId) {
@@ -62,18 +77,37 @@ public class CommandProcessingResultBuilder {
         return this;
     }
 
-    public CommandProcessingResultBuilder withResourceIdAsString(final String withResourceIdentifier) {
+    public CommandProcessingResultBuilder withResourceIdentifier(final String withResourceIdentifier) {
         this.resourceIdentifier = withResourceIdentifier;
         return this;
     }
 
     public CommandProcessingResultBuilder withEntityId(final Long withEntityId) {
-        this.entityId = withEntityId;
+        return withResourceId(withEntityId);
+    }
+
+    public CommandProcessingResultBuilder withResourceId(final Long resourceId) {
+        this.resourceId = resourceId;
+        return this;
+    }
+
+    public CommandProcessingResultBuilder withResource(final Object resource) {
+        if (resource instanceof Long) {
+            this.resourceId = (Long) resource;
+        } else if (resource instanceof Integer) {
+            this.resourceId = ((Integer) resource).longValue();
+        } else if (resource != null) {
+            this.resourceIdentifier = String.valueOf(resource);
+        }
         return this;
     }
 
     public CommandProcessingResultBuilder withSubEntityId(final Long withSubEntityId) {
-        this.subEntityId = withSubEntityId;
+        return withSubResourceId(withSubEntityId);
+    }
+
+    public CommandProcessingResultBuilder withSubResourceId(final Long subResourceId) {
+        this.subResourceId = subResourceId;
         return this;
     }
 
@@ -133,13 +167,20 @@ public class CommandProcessingResultBuilder {
     }
 
     public CommandProcessingResultBuilder withEntityExternalId(final ExternalId entityExternalId) {
-        this.entityExternalId = entityExternalId;
+        return withResourceExternalId(entityExternalId);
+    }
+
+    public CommandProcessingResultBuilder withResourceExternalId(final ExternalId resourceExternalId) {
+        this.resourceExternalId = resourceExternalId;
         return this;
     }
 
     public CommandProcessingResultBuilder withSubEntityExternalId(final ExternalId subEntityExternalId) {
-        this.subEntityExternalId = subEntityExternalId;
-        return this;
+        return withSubResourceExternalId(subEntityExternalId);
     }
 
+    public CommandProcessingResultBuilder withSubResourceExternalId(final ExternalId subResourceExternalId) {
+        this.subResourceExternalId = subResourceExternalId;
+        return this;
+    }
 }

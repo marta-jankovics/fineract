@@ -127,7 +127,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult submitApplication(final JsonCommand command) {
-
         try {
             // Validations (prior assembling)
             this.loanApplicationValidator.validateForCreate(command);
@@ -153,14 +152,14 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
             createSavingsAccountAssociation(savingsAccountId, loan);
             // Save related datatable entries
             if (command.parameterExists(LoanApiConstants.datatables)) {
-                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE.getValue(), EntityTables.LOAN.getName(),
-                        loan.getId(), loan.productId(), command.arrayOfParameterNamed(LoanApiConstants.datatables));
+                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE, EntityTables.LOAN, loan.getId(),
+                        loan.productId(), command.arrayOfParameterNamed(LoanApiConstants.datatables));
             }
             // TODO: review whether we really need this
             loanRepositoryWrapper.flush();
             // Check mandatory datatable entries were created
-            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(loan.getId(), EntityTables.LOAN.getName(),
-                    StatusEnum.CREATE.getValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CREATE, EntityTables.LOAN, loan.getId(),
+                    loan.productId());
             // Trigger business event
             businessEventNotifierService.notifyPostBusinessEvent(new LoanCreatedBusinessEvent(loan));
             // Building response
@@ -461,7 +460,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult deleteApplication(final Long loanId) {
-
         final Loan loan = retrieveLoanBy(loanId);
         loanApplicationTransitionValidator.checkClientOrGroupActive(loan);
 
@@ -503,7 +501,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult approveGLIMLoanAppication(final Long loanId, final JsonCommand command) {
-
         final Long parentLoanId = loanId;
         GroupLoanIndividualMonitoringAccount parentLoan = glimRepository.findById(parentLoanId).orElseThrow();
         JsonArray approvalFormData = command.arrayOfParameterNamed("approvalFormData");
@@ -608,7 +605,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult undoApplicationApproval(final Long loanId, final JsonCommand command) {
-
         this.loanApplicationValidator.validateForUndo(command.json());
 
         Loan loan = retrieveLoanBy(loanId);
@@ -682,7 +678,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult rejectApplication(final Long loanId, final JsonCommand command) {
-
         // retrieve loan
         Loan loan = retrieveLoanBy(loanId);
 
@@ -690,8 +685,7 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
         loanApplicationTransitionValidator.validateRejection(command, loan);
 
         // check for mandatory entities
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(), StatusEnum.REJECTED.getValue(),
-                EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.REJECTED, EntityTables.LOAN, loanId, loan.productId());
 
         // loan application rejection
         final AppUser currentUser = getAppUserIfPresent();
@@ -720,7 +714,6 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
     @Transactional
     @Override
     public CommandProcessingResult applicantWithdrawsFromApplication(final Long loanId, final JsonCommand command) {
-
         // retrieve loan
         final Loan loan = retrieveLoanBy(loanId);
 
@@ -728,8 +721,7 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
         loanApplicationTransitionValidator.validateApplicantWithdrawal(command, loan);
 
         // check for mandatory entities
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(),
-                StatusEnum.WITHDRAWN.getValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.WITHDRAWN, EntityTables.LOAN, loanId, loan.productId());
 
         // loan application withdrawal
         final AppUser currentUser = getAppUserIfPresent();
@@ -857,5 +849,4 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
         }
         loan.updateLoanCollateral(loanCollateralManagements);
     }
-
 }

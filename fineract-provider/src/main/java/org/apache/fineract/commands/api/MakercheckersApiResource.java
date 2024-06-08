@@ -87,11 +87,11 @@ public class MakercheckersApiResource {
             @QueryParam("makerId") @Parameter(description = "makerId") final Long makerId,
             @QueryParam("makerDateTimeFrom") @Parameter(description = "makerDateTimeFrom") final String makerDateTimeFrom,
             @QueryParam("makerDateTimeTo") @Parameter(description = "makerDateTimeTo") final String makerDateTimeTo,
-            @QueryParam("officeId") @Parameter(description = "officeId") final Integer officeId,
-            @QueryParam("groupId") @Parameter(description = "groupId") final Integer groupId,
-            @QueryParam("clientId") @Parameter(description = "clientId") final Integer clientId,
-            @QueryParam("loanid") @Parameter(description = "loanid") final Integer loanId,
-            @QueryParam("savingsAccountId") @Parameter(description = "savingsAccountId") final Integer savingsAccountId) {
+            @QueryParam("officeId") @Parameter(description = "officeId") final Long officeId,
+            @QueryParam("groupId") @Parameter(description = "groupId") final Long groupId,
+            @QueryParam("clientId") @Parameter(description = "clientId") final Long clientId,
+            @QueryParam("loanid") @Parameter(description = "loanid") final Long loanId,
+            @QueryParam("savingsAccountId") @Parameter(description = "savingsAccountId") final Long savingsAccountId) {
 
         final SQLBuilder extraCriteria = getExtraCriteria(actionName, entityName, resourceId, makerId, makerDateTimeFrom, makerDateTimeTo,
                 officeId, groupId, clientId, loanId, savingsAccountId);
@@ -164,8 +164,8 @@ public class MakercheckersApiResource {
     }
 
     private SQLBuilder getExtraCriteria(final String actionName, final String entityName, final Long resourceId, final Long makerId,
-            final String makerDateTimeFrom, final String makerDateTimeTo, final Integer officeId, final Integer groupId,
-            final Integer clientId, final Integer loanId, final Integer savingsAccountId) {
+            final String makerDateTimeFrom, final String makerDateTimeTo, final Long officeId, final Long groupId, final Long clientId,
+            final Long loanId, final Long savingsAccountId) {
 
         SQLBuilder extraCriteria = new SQLBuilder();
         extraCriteria.addNonNullCriteria("aud.action_name = ", actionName);

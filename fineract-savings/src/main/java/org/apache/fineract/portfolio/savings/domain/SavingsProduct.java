@@ -384,7 +384,7 @@ public class SavingsProduct extends AbstractPersistableCustom<Long> {
             this.name = newValue;
         }
 
-        if (command.isChangeInStringParameterNamed(shortNameParamName, this.name)) {
+        if (command.isChangeInStringParameterNamed(shortNameParamName, this.shortName)) {
             final String newValue = command.stringValueOfParameterNamed(shortNameParamName);
             actualChanges.put(shortNameParamName, newValue);
             this.shortName = newValue;

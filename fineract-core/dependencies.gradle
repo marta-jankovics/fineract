@@ -128,4 +128,5 @@ dependencies {
     implementation(
             project(path: ':fineract-avro-schemas')
             )
+    implementation('com.aventrix.jnanoid:jnanoid')
 }

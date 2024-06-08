@@ -414,8 +414,8 @@ public class LoansApiResource {
             newLoanAccount = LoanAccountData.associationsAndTemplate(newLoanAccount, productOptions, allowedLoanOfficers, calendarOptions,
                     accountLinkingOptions, isRatesEnabled);
         }
-        final List<DatatableData> datatableTemplates = this.entityDatatableChecksReadService.retrieveTemplates(StatusEnum.CREATE.getValue(),
-                EntityTables.LOAN.getName(), productId);
+        final List<DatatableData> datatableTemplates = this.entityDatatableChecksReadService.retrieveTemplates(StatusEnum.CREATE,
+                EntityTables.LOAN, productId);
         newLoanAccount.setDatatables(datatableTemplates);
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
@@ -1002,7 +1002,7 @@ public class LoansApiResource {
 
             if (associationParameters.contains(DataTableApiConstant.notesAssociateParamName)) {
                 mandatoryResponseParameters.add(DataTableApiConstant.notesAssociateParamName);
-                notes = this.noteReadPlatformService.retrieveNotesByResource(resolvedLoanId, NoteType.LOAN.getValue());
+                notes = this.noteReadPlatformService.retrieveNotesByResource(resolvedLoanId.toString(), NoteType.LOAN);
                 if (CollectionUtils.isEmpty(notes)) {
                     notes = null;
                 }

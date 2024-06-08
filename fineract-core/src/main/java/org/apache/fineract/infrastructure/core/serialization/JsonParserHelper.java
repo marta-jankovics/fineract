@@ -590,9 +590,8 @@ public class JsonParserHelper {
 
     }
 
-    public Integer convertToInteger(final String numericalValueFormatted, final String parameterName,
+    public static Integer convertToInteger(final String numericalValueFormatted, final String parameterName,
             final Locale clientApplicationLocale) {
-
         if (clientApplicationLocale == null) {
 
             final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
@@ -678,8 +677,8 @@ public class JsonParserHelper {
         }
     }
 
-    public BigDecimal convertFrom(final String numericalValueFormatted, final String parameterName, final Locale clientApplicationLocale) {
-
+    public static BigDecimal convertFrom(final String numericalValueFormatted, final String parameterName,
+            final Locale clientApplicationLocale) {
         if (clientApplicationLocale == null) {
 
             final List<ApiParameterError> dataValidationErrors = new ArrayList<>();

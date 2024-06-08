@@ -16,23 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.jobs.service;
+package org.apache.fineract.infrastructure.core.data;
 
-import java.util.List;
-import org.apache.fineract.infrastructure.core.service.Page;
-import org.apache.fineract.infrastructure.core.service.SearchParameters;
-import org.apache.fineract.infrastructure.jobs.data.JobDetailData;
-import org.apache.fineract.infrastructure.jobs.data.JobDetailHistoryData;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public interface SchedulerJobRunnerReadService {
+@Getter
+@AllArgsConstructor
+public class RequestData {
 
-    List<JobDetailData> findAllJobDeatils();
-
-    JobDetailData retrieveOne(Long jobId);
-
-    JobDetailData retrieveOneByName(String jobName);
-
-    Page<JobDetailHistoryData> retrieveJobHistory(Long jobId, SearchParameters searchParameters);
-
-    boolean isUpdatesAllowed();
+    protected final String locale;
+    protected final String dateFormat;
 }

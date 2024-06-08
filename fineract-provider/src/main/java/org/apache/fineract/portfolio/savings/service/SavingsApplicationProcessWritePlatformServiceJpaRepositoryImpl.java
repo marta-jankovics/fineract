@@ -19,6 +19,7 @@
 package org.apache.fineract.portfolio.savings.service;
 
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
+import static org.apache.fineract.portfolio.savings.domain.SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -176,8 +177,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimAccount = gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO,
-                                    Long.valueOf(1), true, SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(),
-                                    applicationId);
+                                    Long.valueOf(1), true, SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimAccount);
                             this.savingAccountRepository.saveAndFlush(account);
 
@@ -186,7 +186,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO, Long.valueOf(1), true,
-                                    SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
+                                    SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimRepository.findOneByAccountNumber(accountNumber));
                             this.savingAccountRepository.saveAndFlush(account);
                         }
@@ -207,7 +207,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
                             accountNumber = this.accountNumberGenerator.generate(account, accountNumberFormat);
                             account.updateAccountNo(accountNumber + "1");
                             gsimWritePlatformService.addGSIMAccountInfo(accountNumber, group, BigDecimal.ZERO, Long.valueOf(1), true,
-                                    SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
+                                    SUBMITTED_AND_PENDING_APPROVAL.getValue(), applicationId);
                             account.setGsim(gsimAccount);
                             this.savingAccountRepository.saveAndFlush(account);
                         }
@@ -226,11 +226,11 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             // end of gsim
             final Long savingsId = account.getId();
             if (command.parameterExists(SavingsApiConstants.datatables)) {
-                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE.getValue(), EntityTables.SAVINGS.getName(),
-                        savingsId, account.productId(), command.arrayOfParameterNamed(SavingsApiConstants.datatables));
+                this.entityDatatableChecksWritePlatformService.saveDatatables(StatusEnum.CREATE, EntityTables.SAVINGS, savingsId,
+                        account.productId(), command.arrayOfParameterNamed(SavingsApiConstants.datatables));
             }
-            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                    StatusEnum.CREATE.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), account.productId());
+            this.entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CREATE, EntityTables.SAVINGS, savingsId,
+                    account.productId());
 
             businessEventNotifierService.notifyPostBusinessEvent(new SavingsCreateBusinessEvent(account));
 
@@ -292,7 +292,6 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             account.validateAccountValuesWithProduct();
 
             if (!changes.isEmpty()) {
-
                 if (changes.containsKey(SavingsApiConstants.clientIdParamName)) {
                     final Long clientId = command.longValueOfParameterNamed(SavingsApiConstants.clientIdParamName);
                     if (clientId != null) {
@@ -444,8 +443,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
         final SavingsAccount savingsAccount = this.savingAccountAssembler.assembleFrom(savingsId, false);
         checkClientOrGroupActive(savingsAccount);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                StatusEnum.APPROVE.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), savingsAccount.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.APPROVE, EntityTables.SAVINGS, savingsId,
+                savingsAccount.productId());
 
         final Map<String, Object> changes = savingsAccount.approveApplication(currentUser, command);
         if (!changes.isEmpty()) {
@@ -487,7 +486,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             if (result != null) {
                 count++;
                 if (count == parentSavings.getChildAccountsCount()) {
-                    parentSavings.setSavingsStatus(SavingsAccountStatusType.SUBMITTED_AND_PENDING_APPROVAL.getValue());
+                    parentSavings.setSavingsStatus(SUBMITTED_AND_PENDING_APPROVAL.getValue());
                     gsimRepository.save(parentSavings);
                 }
             }
@@ -566,8 +565,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
         final SavingsAccount savingsAccount = this.savingAccountAssembler.assembleFrom(savingsId, false);
         checkClientOrGroupActive(savingsAccount);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                StatusEnum.REJECTED.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), savingsAccount.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.REJECTED, EntityTables.SAVINGS, savingsId,
+                savingsAccount.productId());
 
         final Map<String, Object> changes = savingsAccount.rejectApplication(currentUser, command);
         if (!changes.isEmpty()) {
@@ -602,8 +601,8 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
         final SavingsAccount savingsAccount = this.savingAccountAssembler.assembleFrom(savingsId, false);
         checkClientOrGroupActive(savingsAccount);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                StatusEnum.WITHDRAWN.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), savingsAccount.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.WITHDRAWN, EntityTables.SAVINGS, savingsId,
+                savingsAccount.productId());
 
         final Map<String, Object> changes = savingsAccount.applicantWithdrawsFromApplication(currentUser, command);
         if (!changes.isEmpty()) {
@@ -683,7 +682,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
      * Guaranteed to throw an exception no matter what the data integrity issue is.
      */
     private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
-        String msgCode = "error.msg." + SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
+        String msgCode = "error.msg." + SAVINGS_ACCOUNT_RESOURCE_NAME;
         String msg = "Unknown data integrity issue with savings account.";
         String param = null;
         Object[] msgArgs;

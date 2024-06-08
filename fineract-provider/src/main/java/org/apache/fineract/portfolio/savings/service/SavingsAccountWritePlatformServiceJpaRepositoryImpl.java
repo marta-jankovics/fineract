@@ -207,8 +207,8 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
 
         final Map<String, Object> changes = account.activate(user, command);
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                StatusEnum.ACTIVATE.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), account.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.ACTIVATE, EntityTables.SAVINGS, savingsId,
+                account.productId());
 
         if (!changes.isEmpty()) {
             final Locale locale = command.extractLocale();
@@ -903,8 +903,8 @@ public class SavingsAccountWritePlatformServiceJpaRepositoryImpl implements Savi
             throw new SavingsAccountClosingNotAllowedException("linked", defaultUserMessage, savingsId);
         }
 
-        entityDatatableChecksWritePlatformService.runTheCheckForProduct(savingsId, EntityTables.SAVINGS.getName(),
-                StatusEnum.CLOSE.getValue(), EntityTables.SAVINGS.getForeignKeyColumnNameOnDatatable(), account.productId());
+        entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.CLOSE, EntityTables.SAVINGS, savingsId,
+                account.productId());
 
         final boolean isWithdrawBalance = command.booleanPrimitiveValueOfParameterNamed(withdrawBalanceParamName);
 

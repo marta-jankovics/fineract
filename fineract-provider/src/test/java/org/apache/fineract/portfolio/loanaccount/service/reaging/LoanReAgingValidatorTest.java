@@ -473,7 +473,7 @@ class LoanReAgingValidatorTest {
 
     private JsonCommand makeJsonCommand(String json) {
         FromJsonHelper fromJsonHelper = new FromJsonHelper();
-        return new JsonCommand(1L, fromJsonHelper.parse(json), fromJsonHelper);
+        return JsonCommand.fromJsonElement(1L, fromJsonHelper.parse(json), fromJsonHelper);
     }
 
     private LoanTransaction loanTransaction(LoanTransactionType type, LocalDate txDate, OffsetDateTime creationTime) {

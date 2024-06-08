@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.fineract.accounting.common.AccountingConstants.CashAccountsForLoan;
 import org.apache.fineract.accounting.common.AccountingConstants.LoanProductAccountingParams;
 import org.apache.fineract.accounting.glaccount.domain.GLAccount;
-import org.apache.fineract.accounting.glaccount.domain.GLAccountRepository;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountRepositoryWrapper;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountType;
 import org.apache.fineract.accounting.producttoaccountmapping.domain.ProductToGLAccountMapping;
@@ -52,13 +51,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProductToGLAccountMappingHelper {
 
-    protected static final List<GLAccountType> ASSET_LIABILITY_TYPES = List.of(GLAccountType.ASSET, GLAccountType.LIABILITY);
-
-    protected final GLAccountRepository accountRepository;
-    protected final ProductToGLAccountMappingRepository accountMappingRepository;
-    protected final FromJsonHelper fromApiJsonHelper;
+    private final ProductToGLAccountMappingRepository accountMappingRepository;
+    private final FromJsonHelper fromApiJsonHelper;
     private final ChargeRepositoryWrapper chargeRepositoryWrapper;
-    protected final GLAccountRepositoryWrapper accountRepositoryWrapper;
+    private final GLAccountRepositoryWrapper accountRepositoryWrapper;
     private final PaymentTypeRepositoryWrapper paymentTypeRepositoryWrapper;
 
     public void saveProductToAccountMapping(final JsonElement element, final String paramName, final Long productId,

@@ -198,7 +198,8 @@ public class JournalEntryReadPlatformServiceImpl implements JournalEntryReadPlat
                 final Long noteId = JdbcSupport.getLong(rs, "noteId");
                 if (noteId != null) {
                     final String note = rs.getString("transactionNote");
-                    noteData = new NoteData(noteId, null, null, null, null, null, null, null, note, null, null, null, null, null, null);
+                    noteData = new NoteData(noteId, null, null, null, null, null, null, null, null, null, (EnumOptionData) null, note, null,
+                            null, null, null, null, null);
                 }
                 Long transaction = null;
                 if (entityType != null && transactionId != null) {
@@ -516,19 +517,5 @@ public class JournalEntryReadPlatformServiceImpl implements JournalEntryReadPlat
         return retrieveAll(searchParameters, contraId, onlyManualEntries, fromDate, toDate, submittedOnDateFrom, submittedOnDateTo,
                 transactionId, entityType, associationParametersData);
 
-    }
-
-    @Override
-    public Page<JournalEntryData> retrieveJournalEntriesByEntityId(String transactionId, Long entityId, Integer entityType) {
-        JournalEntryAssociationParametersData associationParametersData = new JournalEntryAssociationParametersData(true, true);
-        try {
-            final GLJournalEntryMapper rm = new GLJournalEntryMapper(associationParametersData);
-            final String sql = "select " + rm.schema()
-                    + " where journalEntry.transaction_id = ? and journalEntry.entity_id = ? and journalEntry.entity_type_enum = ?";
-            Object[] data = { transactionId, entityId, entityType };
-            return this.paginationHelper.fetchPage(this.jdbcTemplate, sql, data, rm);
-        } catch (final EmptyResultDataAccessException e) {
-            throw new JournalEntriesNotFoundException(entityId, e);
-        }
     }
 }

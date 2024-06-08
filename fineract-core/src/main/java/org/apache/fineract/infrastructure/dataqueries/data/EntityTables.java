@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.apache.fineract.infrastructure.core.service.database.JdbcJavaType;
 
 public enum EntityTables {
 
@@ -65,16 +66,24 @@ public enum EntityTables {
     private final String foreignKeyColumnNameOnDatatable;
     @NotNull
     private final String refColumn; // referenced column name on apptable
+    @NotNull
+    private final JdbcJavaType refColumnType; // referenced column type on apptable
 
     private final ImmutableList<StatusEnum> checkStatuses;
 
     EntityTables(@NotNull String name, @NotNull String apptableName, @NotNull String foreignKeyColumnNameOnDatatable,
-            @NotNull String refColumn, StatusEnum... statuses) {
+            @NotNull String refColumn, @NotNull JdbcJavaType refColumnType, StatusEnum... statuses) {
         this.name = name;
         this.apptableName = apptableName;
         this.foreignKeyColumnNameOnDatatable = foreignKeyColumnNameOnDatatable;
         this.refColumn = refColumn;
+        this.refColumnType = refColumnType;
         this.checkStatuses = statuses == null ? ImmutableList.of() : ImmutableList.copyOf(statuses);
+    }
+
+    EntityTables(@NotNull String name, @NotNull String apptableName, @NotNull String foreignKeyColumnNameOnDatatable,
+            @NotNull String refColumn, StatusEnum... statuses) {
+        this(name, apptableName, foreignKeyColumnNameOnDatatable, refColumn, JdbcJavaType.BIGINT, statuses);
     }
 
     EntityTables(@NotNull String name, @NotNull String foreignKeyColumnNameOnDatatable, @NotNull String refColumn, StatusEnum... statuses) {
@@ -99,6 +108,11 @@ public enum EntityTables {
     @NotNull
     public String getRefColumn() {
         return refColumn;
+    }
+
+    @NotNull
+    public JdbcJavaType getRefColumnType() {
+        return refColumnType;
     }
 
     public List<StatusEnum> getCheckStatuses() {

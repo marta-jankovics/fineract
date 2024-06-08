@@ -227,7 +227,5 @@ public class SchedulerJobRunnerReadServiceImpl implements SchedulerJobRunnerRead
                     .setJobRunErrorLog(jobRunErrorLog);
             return jobDetailHistory;
         }
-
     }
-
 }

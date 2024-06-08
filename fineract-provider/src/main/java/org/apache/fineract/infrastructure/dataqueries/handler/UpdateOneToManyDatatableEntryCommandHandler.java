@@ -39,9 +39,7 @@ public class UpdateOneToManyDatatableEntryCommandHandler implements NewCommandSo
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-
-        return this.writePlatformService.updateDatatableEntryOneToMany(command.entityName(), command.entityId(), command.subentityId(),
-                command);
-
+        return this.writePlatformService.updateDatatableEntryOneToMany(command.entityName(), command.getResourceIdentifier(),
+                command.subentityId(), command);
     }
 }

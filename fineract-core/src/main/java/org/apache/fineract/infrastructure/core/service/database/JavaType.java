@@ -132,6 +132,10 @@ public enum JavaType {
         return isByteType() || isShortType() || isIntegerType() || isLongType() || this == BIGINTEGER;
     }
 
+    public boolean isAnyLongType() {
+        return isLongType() || this == BIGINTEGER;
+    }
+
     public boolean isFloatType() {
         return this == FLOAT || this == FLOAT_OBJ;
     }

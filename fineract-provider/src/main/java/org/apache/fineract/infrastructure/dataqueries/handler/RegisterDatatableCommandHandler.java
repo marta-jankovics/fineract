@@ -40,10 +40,8 @@ public class RegisterDatatableCommandHandler implements NewCommandSourceHandler 
     @Transactional
     @Override
     public CommandProcessingResult processCommand(final JsonCommand command) {
-
         this.writePlatformService.registerDatatable(command);
-
-        return new CommandProcessingResultBuilder().withResourceIdAsString(this.writePlatformService.getDataTableName(command.getUrl()))
+        return new CommandProcessingResultBuilder().withResourceIdentifier(this.writePlatformService.parseDatatableName(command.getUrl()))
                 .build();
     }
 }

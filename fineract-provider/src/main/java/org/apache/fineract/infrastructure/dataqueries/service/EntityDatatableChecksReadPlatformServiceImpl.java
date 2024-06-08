@@ -85,23 +85,23 @@ public class EntityDatatableChecksReadPlatformServiceImpl implements EntityDatat
     }
 
     @Override
-    public Page<EntityDataTableChecksData> retrieveAll(@NotNull SearchParameters searchParameters, final Integer status,
-            final String entity, final Long productId) {
+    public Page<EntityDataTableChecksData> retrieveAll(@NotNull SearchParameters searchParameters, StatusEnum status,
+            EntityTables entityTable, final Long productId) {
         final StringBuilder sqlBuilder = new StringBuilder(200);
         sqlBuilder.append("select ").append(sqlGenerator.calcFoundRows()).append(" ").append(this.entityDataTableChecksMapper.schema());
 
-        if (status != null || entity != null || productId != null) {
+        if (status != null || entityTable != null || productId != null) {
             sqlBuilder.append(" where ");
         }
         List<Object> paramList = new ArrayList<>();
         if (status != null) {
             sqlBuilder.append(" status_enum = ? ");
-            paramList.add(status);
+            paramList.add(status.getValue());
         }
 
-        if (entity != null) {
+        if (entityTable != null) {
             sqlBuilder.append(" and t.application_table_name = ? ");
-            paramList.add(entity);
+            paramList.add(entityTable.getName());
         }
 
         if (productId != null) {
@@ -122,14 +122,16 @@ public class EntityDatatableChecksReadPlatformServiceImpl implements EntityDatat
     }
 
     @Override
-    public List<DatatableData> retrieveTemplates(final Integer status, final String entity, final Long productId) {
+    public List<DatatableData> retrieveTemplates(@NotNull StatusEnum status, @NotNull EntityTables entityTable, final Long productId) {
         List<EntityDatatableChecks> tableRequiredBeforeAction = null;
+        Integer statusId = status.getValue();
+        String entityName = entityTable.getName();
         if (productId != null) {
-            tableRequiredBeforeAction = this.entityDatatableChecksRepository.findByEntityStatusAndProduct(entity, status, productId);
+            tableRequiredBeforeAction = this.entityDatatableChecksRepository.findByEntityStatusAndProduct(entityName, statusId, productId);
         }
 
         if (tableRequiredBeforeAction == null || tableRequiredBeforeAction.size() < 1) {
-            tableRequiredBeforeAction = this.entityDatatableChecksRepository.findByEntityStatusAndNoProduct(entity, status);
+            tableRequiredBeforeAction = this.entityDatatableChecksRepository.findByEntityStatusAndNoProduct(entityName, statusId);
         }
         if (tableRequiredBeforeAction != null && tableRequiredBeforeAction.size() > 0) {
             List<DatatableData> ret = new ArrayList<>();

@@ -200,12 +200,10 @@ public class LoanChargeAssembler {
                             loanCharge.update(amount, dueDate, numberOfRepayments);
                             loanCharges.add(loanCharge);
                         }
-
                     }
                 }
             }
         }
-
         return loanCharges;
     }
 

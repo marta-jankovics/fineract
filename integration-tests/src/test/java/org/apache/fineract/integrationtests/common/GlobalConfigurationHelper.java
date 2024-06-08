@@ -123,7 +123,6 @@ public class GlobalConfigurationHelper {
         Assertions.assertEquals(54, actualGlobalConfigurations.size());
 
         for (int i = 0; i < expectedGlobalConfigurations.size(); i++) {
-
             HashMap expectedGlobalConfiguration = expectedGlobalConfigurations.get(i);
             HashMap actualGlobalConfiguration = actualGlobalConfigurations.get(i);
 

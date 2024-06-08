@@ -528,5 +528,4 @@ public class ConfigurationDomainServiceJpa implements ConfigurationDomainService
         }
         return value;
     }
-
 }

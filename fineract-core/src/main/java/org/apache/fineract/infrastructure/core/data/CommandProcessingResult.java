@@ -31,8 +31,8 @@ import org.apache.fineract.infrastructure.core.domain.ExternalId;
 @Getter
 public class CommandProcessingResult implements Serializable {
 
-    private Long commandId;
-    private Long officeId;
+    private final Long commandId;
+    private final Long officeId;
     private final Long groupId;
     private final Long clientId;
     private final Long loanId;
@@ -89,16 +89,12 @@ public class CommandProcessingResult implements Serializable {
         this(resourceId, null, null, null);
     }
 
-    public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult, final Long resourceId) {
+    public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult) {
         return new CommandProcessingResult(commandResult.commandId, commandResult.officeId, commandResult.groupId, commandResult.clientId,
-                commandResult.loanId, commandResult.savingsId, commandResult.resourceIdentifier, resourceId, commandResult.transactionId,
-                commandResult.changes, commandResult.productId, commandResult.gsimId, commandResult.glimId,
+                commandResult.loanId, commandResult.savingsId, commandResult.resourceIdentifier, commandResult.resourceId,
+                commandResult.transactionId, commandResult.changes, commandResult.productId, commandResult.gsimId, commandResult.glimId,
                 commandResult.creditBureauReportData, commandResult.rollbackTransaction, commandResult.subResourceId,
                 commandResult.resourceExternalId, commandResult.subResourceExternalId);
-    }
-
-    public static CommandProcessingResult fromCommandProcessingResult(CommandProcessingResult commandResult) {
-        return fromCommandProcessingResult(commandResult, commandResult.getResourceId());
     }
 
     public static CommandProcessingResult fromDetails(final Long commandId, final Long officeId, final Long groupId, final Long clientId,
@@ -115,28 +111,12 @@ public class CommandProcessingResult implements Serializable {
         return new CommandProcessingResult(null, null, commandId, null);
     }
 
-    public static CommandProcessingResult resourceResult(final Long resourceId, final Long commandId, final Map<String, Object> changes) {
-        return new CommandProcessingResult(resourceId, null, commandId, changes);
-    }
-
-    public static CommandProcessingResult resourceResult(final Long resourceId, final Long commandId) {
-        return new CommandProcessingResult(resourceId, null, commandId, null);
-    }
-
     public static CommandProcessingResult resourceResult(final Long resourceId) {
         return new CommandProcessingResult(resourceId);
     }
 
-    public static CommandProcessingResult withChanges(final Long resourceId, final Map<String, Object> changes) {
-        return new CommandProcessingResult(resourceId, null, null, changes);
-    }
-
     public static CommandProcessingResult empty() {
         return new CommandProcessingResult(null, null, null, null);
-    }
-
-    public void setOfficeId(final Long officeId) {
-        this.officeId = officeId;
     }
 
     public Map<String, Object> getChanges() {

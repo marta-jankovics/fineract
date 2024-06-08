@@ -22,7 +22,6 @@ import static java.util.Locale.ENGLISH;
 import static org.apache.fineract.infrastructure.core.data.ApiParameterError.parameterErrorWithValue;
 import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATETIME_FORMAT;
 import static org.apache.fineract.infrastructure.core.service.DateUtils.DEFAULT_DATE_FORMAT;
-import static org.apache.fineract.infrastructure.dataqueries.api.DataTableApiConstant.API_FIELD_MANDATORY;
 import static org.apache.fineract.portfolio.search.SearchConstants.API_PARAM_COLUMN;
 
 import com.google.gson.JsonObject;
@@ -248,12 +247,10 @@ public class SearchUtil {
         if (!colType.isStringType() || !columnHeader.isMandatory()) {
             columnValue = StringUtils.trimToNull(columnValue);
         }
-        String errorCode = "validation.msg.validation.errors.exist";
-        String errorMsg = "Validation errors exist.";
+        String columnName = columnHeader.getColumnName();
         if (columnValue == null && columnHeader.isMandatory()) {
-            ApiParameterError error = ApiParameterError.parameterError("error.msg.column.mandatory", API_FIELD_MANDATORY,
-                    columnHeader.getColumnName());
-            throw new PlatformApiDataValidationException(errorCode, errorMsg, List.of(error));
+            throw new PlatformApiDataValidationException("error.msg.column.mandatory", "The parameter " + columnName + " is mandatory.",
+                    columnName);
         }
         if (StringUtils.isEmpty(columnValue)) {
             return columnValue;
@@ -265,55 +262,51 @@ public class SearchUtil {
         if (columnHeader.hasColumnValues()) {
             if (columnHeader.isCodeValueDisplayType()) {
                 if (!columnHeader.isColumnValueAllowed(columnValue)) {
-                    ApiParameterError error = ApiParameterError.parameterError("error.msg.invalid.columnValue",
-                            "Value not found in Allowed Value list", columnHeader.getColumnName(), columnValue);
-                    throw new PlatformApiDataValidationException(errorCode, errorMsg, List.of(error));
+                    throw new PlatformApiDataValidationException("error.msg.invalid.columnValue", "Value not found in Allowed Value list",
+                            columnName, columnValue);
                 }
                 return columnValue;
             } else if (columnHeader.isCodeLookupDisplayType()) {
                 final Integer codeLookup = Integer.valueOf(columnValue);
                 if (!columnHeader.isColumnCodeAllowed(codeLookup)) {
-                    ApiParameterError error = ApiParameterError.parameterError("error.msg.invalid.columnValue",
-                            "Value not found in Allowed Value list", columnHeader.getColumnName(), columnValue);
-                    throw new PlatformApiDataValidationException(errorCode, errorMsg, List.of(error));
+                    throw new PlatformApiDataValidationException("error.msg.invalid.columnValue", "Value not found in Allowed Value list",
+                            columnName, columnValue);
                 }
                 return codeLookup;
             } else {
-                throw new PlatformDataIntegrityException("error.msg.invalid.columnType.", "Code: " + columnHeader.getColumnName()
-                        + " - Invalid Type " + colType.getJdbcName(sqlGenerator.getDialect()) + " (neither varchar nor int)");
+                throw new PlatformDataIntegrityException("error.msg.invalid.columnType.", "Code: " + columnName + " - Invalid Type "
+                        + colType.getJdbcName(sqlGenerator.getDialect()) + " (neither varchar nor int)");
             }
         }
         locale = locale == null ? ENGLISH : locale;
         if (colType.isDateType()) {
             String format = dateFormat == null ? DEFAULT_DATE_FORMAT : dateFormat;
-            return JsonParserHelper.convertFrom(columnValue, columnHeader.getColumnName(), format, locale);
+            return JsonParserHelper.convertFrom(columnValue, columnName, format, locale);
         }
         if (colType.isDateTimeType()) {
             String format = dateTimeFormat == null ? DEFAULT_DATETIME_FORMAT : dateTimeFormat;
-            return JsonParserHelper.convertDateTimeFrom(columnValue, columnHeader.getColumnName(), format, locale);
+            return JsonParserHelper.convertDateTimeFrom(columnValue, columnName, format, locale);
         }
         if (colType.isAnyIntegerType()) {
-            return helper.convertToInteger(columnValue, columnHeader.getColumnName(), locale);
+            return JsonParserHelper.convertToInteger(columnValue, columnName, locale);
         }
         if (colType.isDecimalType()) {
-            return helper.convertFrom(columnValue, columnHeader.getColumnName(), locale);
+            return JsonParserHelper.convertFrom(columnValue, columnName, locale);
         }
         if (colType.isBooleanType()) {
             final Boolean boolValue = BooleanUtils.toBooleanObject(columnValue);
             if (boolValue == null) {
-                ApiParameterError error = ApiParameterError.parameterError("validation.msg.invalid.boolean.format",
-                        "The parameter " + columnHeader.getColumnName() + " has value: " + columnValue + " which is invalid boolean value.",
-                        columnHeader.getColumnName(), columnValue);
-                throw new PlatformApiDataValidationException(errorCode, errorMsg, List.of(error));
+                throw new PlatformApiDataValidationException("validation.msg.invalid.boolean.format",
+                        "The parameter " + columnName + " has value: " + columnValue + " which is invalid boolean value.", columnName,
+                        columnValue);
             }
             return boolValue;
         }
         if (colType.isStringType()) {
-            if (columnHeader.getColumnLength() > 0 && columnValue.length() > columnHeader.getColumnLength()) {
-                ApiParameterError error = ApiParameterError.parameterError("validation.msg.datatable.entry.column.exceeds.maxlength",
-                        "The column `" + columnHeader.getColumnName() + "` exceeds its defined max-length ", columnHeader.getColumnName(),
-                        columnValue);
-                throw new PlatformApiDataValidationException(errorCode, errorMsg, List.of(error));
+            Long maxLength = columnHeader.getColumnLength();
+            if (maxLength > 0 && columnValue.length() > maxLength) {
+                throw new PlatformApiDataValidationException("validation.msg.datatable.entry.column.exceeds.maxlength",
+                        "The column `" + columnName + "` exceeds its defined max-length " + maxLength, columnName, columnValue, maxLength);
             }
         }
         return columnValue;

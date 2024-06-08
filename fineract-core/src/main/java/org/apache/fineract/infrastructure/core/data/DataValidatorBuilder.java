@@ -60,7 +60,6 @@ public class DataValidatorBuilder {
      * @param dataValidationErrors
      *            an existing list of {@link ApiParameterError} to add new validation errors to
      */
-
     public DataValidatorBuilder(final List<ApiParameterError> dataValidationErrors) {
         this.dataValidationErrors = dataValidationErrors;
     }
@@ -977,8 +976,9 @@ public class DataValidatorBuilder {
         }
         final Iterable<String> inputs = Splitter.onPattern(VALID_INPUT_SEPERATOR).split(validInputs);
         boolean validationErr = true;
+        String formatValue = this.value != null ? this.value.toString().trim() : null;
         for (final String input : inputs) {
-            if (input.equalsIgnoreCase(this.value.toString().trim())) {
+            if (input.equalsIgnoreCase(formatValue)) {
                 validationErr = false;
                 break;
             }

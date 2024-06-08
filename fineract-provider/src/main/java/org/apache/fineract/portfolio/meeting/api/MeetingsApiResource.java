@@ -194,7 +194,7 @@ public class MeetingsApiResource {
             final CommandWrapper commandRequest = builder.saveOrUpdateAttendance(meetingId, entityType, entityId).build();
             result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
         } else {
-            throw new UnrecognizedQueryParamException("command", commandParam, new Object[] { "saveOrUpdateAttendance" });
+            throw new UnrecognizedQueryParamException("command", commandParam, "saveOrUpdateAttendance");
         }
 
         return this.toApiJsonSerializer.serialize(result);

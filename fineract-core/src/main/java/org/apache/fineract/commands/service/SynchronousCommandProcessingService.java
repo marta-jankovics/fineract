@@ -42,6 +42,7 @@ import org.apache.fineract.commands.provider.CommandHandlerProvider;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.domain.BatchRequestContextHolder;
 import org.apache.fineract.infrastructure.core.domain.FineractRequestContextHolder;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
@@ -264,19 +265,14 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
     }
 
     protected void publishHookEvent(final String entityName, final String actionName, JsonCommand command, final Object result) {
-
-        final AppUser appUser = context.authenticatedUser(CommandWrapper.wrap(actionName, entityName, null, null));
-
+        final AppUser appUser = context.authenticatedUser(CommandWrapper.wrap(actionName, entityName));
         final HookEventSource hookEventSource = new HookEventSource(entityName, actionName);
 
         // TODO: Add support for publishing array events
         if (command.json() != null) {
-            Type type = new TypeToken<Map<String, Object>>() {
-
-            }.getType();
+            Type type = new TypeToken<Map<String, Object>>() {}.getType();
 
             Map<String, Object> myMap;
-
             try {
                 myMap = gson.fromJson(command.json(), type);
             } catch (Exception e) {
@@ -290,36 +286,28 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
             reqmap.put("createdBy", context.authenticatedUser().getId());
             reqmap.put("createdByName", context.authenticatedUser().getUsername());
             reqmap.put("createdByFullName", context.authenticatedUser().getDisplayName());
-
             reqmap.put("request", myMap);
             if (result instanceof CommandProcessingResult) {
-                CommandProcessingResult resultCopy = CommandProcessingResult.fromCommandProcessingResult((CommandProcessingResult) result);
-
-                reqmap.put("officeId", resultCopy.getOfficeId());
-                reqmap.put("clientId", resultCopy.getClientId());
-                resultCopy.setOfficeId(null);
-                reqmap.put("response", resultCopy);
+                CommandProcessingResult commandResult = (CommandProcessingResult) result;
+                reqmap.put("officeId", commandResult.getOfficeId());
+                reqmap.put("clientId", commandResult.getClientId());
+                reqmap.put("response", CommandProcessingResultBuilder.fromResult(commandResult).withOfficeId(null).build());
             } else if (result instanceof ErrorInfo ex) {
                 reqmap.put("status", "Exception");
-
                 Map<String, Object> errorMap = new HashMap<>();
-
                 try {
                     errorMap = gson.fromJson(ex.getMessage(), type);
                 } catch (Exception e) {
                     errorMap.put("errorMessage", ex.getMessage());
                 }
-
                 errorMap.put("errorCode", ex.getErrorCode());
                 errorMap.put("statusCode", ex.getStatusCode());
 
                 reqmap.put("response", errorMap);
             }
-
             reqmap.put("timestamp", Instant.now().toString());
 
             final String serializedResult = toApiResultJsonSerializer.serialize(reqmap);
-
             final HookEvent applicationEvent = new HookEvent(hookEventSource, serializedResult, appUser,
                     ThreadLocalContextUtil.getContext());
 

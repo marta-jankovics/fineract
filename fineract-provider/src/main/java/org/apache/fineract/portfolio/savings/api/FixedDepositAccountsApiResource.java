@@ -200,7 +200,7 @@ public class FixedDepositAccountsApiResource {
         this.context.authenticatedUser().validateHasReadPermission(DepositsApiConstants.FIXED_DEPOSIT_ACCOUNT_RESOURCE_NAME);
 
         if (!(is(chargeStatus, "all") || is(chargeStatus, "active") || is(chargeStatus, "inactive"))) {
-            throw new UnrecognizedQueryParamException("status", chargeStatus, new Object[] { "all", "active", "inactive" });
+            throw new UnrecognizedQueryParamException("status", chargeStatus, "all", "active", "inactive");
         }
 
         final FixedDepositAccountData account = (FixedDepositAccountData) this.depositAccountReadPlatformService

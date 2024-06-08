@@ -182,8 +182,6 @@ public class ReadSurveyServiceImpl implements ReadSurveyService {
 
     @Override
     public GenericResultsetData retrieveSurveyEntry(String surveyName, Long clientId, Long entryId) {
-
-        return readWriteNonCoreDataService.retrieveDataTableGenericResultSet(surveyName, clientId, null, entryId);
-
+        return readWriteNonCoreDataService.retrieveDatatableGenericResultSet(surveyName, clientId, null, entryId);
     }
 }

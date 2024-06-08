@@ -592,7 +592,6 @@ public final class LoanApplicationValidator {
                                     && BigDecimal.valueOf(0).compareTo(clientCollateralManagement.getQuantity()) >= 0) {
                                 throw new InvalidAmountOfCollateralQuantity(clientCollateralManagement.getQuantity());
                             }
-
                         }
                     } else {
                         baseDataValidator.reset().parameter(LoanApiConstants.collateralParameterName).expectedArrayButIsNot();
@@ -1661,7 +1660,6 @@ public final class LoanApplicationValidator {
                         .extractIntegerSansLocaleNamed(LoanApiConstants.interestTypeParameterName, element);
                 baseDataValidator.reset().parameter(LoanApiConstants.interestTypeParameterName).value(interestType).ignoreIfNull()
                         .integerSameAsNumber(InterestMethod.DECLINING_BALANCE.getValue());
-
             }
         }
     }
@@ -1720,7 +1718,6 @@ public final class LoanApplicationValidator {
                             .failWithCode("not.supported.for.selected.interest.calcualtion.type");
                 }
             }
-
         }
     }
 
@@ -1735,13 +1732,11 @@ public final class LoanApplicationValidator {
             if (officeToLoanProductMappingList == null) {
                 throw new NotOfficeSpecificProductException(productId, officeId);
             }
-
         }
     }
 
     private void validateTransactionProcessingStrategy(final String transactionProcessingStrategy, final LoanProduct loanProduct,
             final DataValidatorBuilder baseDataValidator) {
-
         baseDataValidator.reset().parameter(LoanApiConstants.transactionProcessingStrategyCodeParameterName)
                 .value(transactionProcessingStrategy).notNull();
 
@@ -1776,7 +1771,6 @@ public final class LoanApplicationValidator {
     }
 
     public void checkForProductMixRestrictions(final JsonElement element) {
-
         final List<Long> activeLoansLoanProductIds;
         final Long productId = this.fromApiJsonHelper.extractLongNamed(LoanApiConstants.productIdParameterName, element);
         final Long groupId = this.fromApiJsonHelper.extractLongNamed(LoanApiConstants.groupIdParameterName, element);
@@ -1793,7 +1787,6 @@ public final class LoanApplicationValidator {
     }
 
     private void checkForProductMixRestrictions(final List<Long> activeLoansLoanProductIds, final Long productId) {
-
         if (!CollectionUtils.isEmpty(activeLoansLoanProductIds)) {
             final Collection<LoanProductData> restrictedProductsList = this.loanProductReadPlatformService
                     .retrieveRestrictedProductsForMix(productId);
@@ -2003,8 +1996,8 @@ public final class LoanApplicationValidator {
                 validateDisbursementDateWithMeetingDates(expectedDisbursementDate, calendar, isSkipRepaymentOnFirstMonth, numberOfDays);
             }
 
-            entityDatatableChecksWritePlatformService.runTheCheckForProduct(loanId, EntityTables.LOAN.getName(),
-                    StatusEnum.APPROVE.getValue(), EntityTables.LOAN.getForeignKeyColumnNameOnDatatable(), loan.productId());
+            entityDatatableChecksWritePlatformService.runTheCheckForProduct(StatusEnum.APPROVE, EntityTables.LOAN, loanId,
+                    loan.productId());
 
             if (loan.isTopup() && loan.getClientId() != null) {
                 validateTopupLoan(loan, expectedDisbursementDate);

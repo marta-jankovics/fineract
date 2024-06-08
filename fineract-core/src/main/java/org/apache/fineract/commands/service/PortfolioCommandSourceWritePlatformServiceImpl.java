@@ -57,7 +57,7 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
         // check if is update of own account details
         if (wrapper.isUpdateOfOwnUserDetails(this.context.authenticatedUser(wrapper).getId())) {
             // then allow this operation to proceed.
-            // maker checker doesnt mean anything here.
+            // maker checker doesn't mean anything here.
             isApprovedByChecker = true; // set to true in case permissions have
                                         // been maker-checker enabled by
                                         // accident.
@@ -73,7 +73,7 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
         JsonCommand command = JsonCommand.from(json, parsedCommand, this.fromApiJsonHelper, wrapper.getEntityName(), wrapper.getEntityId(),
                 wrapper.getSubentityId(), wrapper.getGroupId(), wrapper.getClientId(), wrapper.getLoanId(), wrapper.getSavingsId(),
                 wrapper.getTransactionId(), wrapper.getHref(), wrapper.getProductId(), wrapper.getCreditBureauId(),
-                wrapper.getOrganisationCreditBureauId(), wrapper.getJobName());
+                wrapper.getOrganisationCreditBureauId(), wrapper.getJobName(), wrapper.getEntityIdentifier());
 
         return this.processAndLogCommandService.executeCommand(wrapper, command, isApprovedByChecker);
     }
@@ -85,17 +85,19 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
 
         final CommandWrapper wrapper = CommandWrapper.fromExistingCommand(makerCheckerId, commandSourceInput.getActionName(),
                 commandSourceInput.getEntityName(), commandSourceInput.getResourceId(), commandSourceInput.getSubResourceId(),
-                commandSourceInput.getResourceGetUrl(), commandSourceInput.getProductId(), commandSourceInput.getOfficeId(),
-                commandSourceInput.getGroupId(), commandSourceInput.getClientId(), commandSourceInput.getLoanId(),
-                commandSourceInput.getSavingsId(), commandSourceInput.getTransactionId(), commandSourceInput.getCreditBureauId(),
-                commandSourceInput.getOrganisationCreditBureauId(), commandSourceInput.getIdempotencyKey());
+                commandSourceInput.getResourceGetUrl(), commandSourceInput.getCommandJson(), commandSourceInput.getProductId(),
+                commandSourceInput.getOfficeId(), commandSourceInput.getGroupId(), commandSourceInput.getClientId(),
+                commandSourceInput.getLoanId(), commandSourceInput.getSavingsId(), commandSourceInput.getTransactionId(),
+                commandSourceInput.getCreditBureauId(), commandSourceInput.getOrganisationCreditBureauId(), commandSourceInput.getJobName(),
+                commandSourceInput.getIdempotencyKey(), commandSourceInput.getResourceIdentifier());
         final JsonElement parsedCommand = this.fromApiJsonHelper.parse(commandSourceInput.getCommandJson());
         final JsonCommand command = JsonCommand.fromExistingCommand(makerCheckerId, commandSourceInput.getCommandJson(), parsedCommand,
                 this.fromApiJsonHelper, commandSourceInput.getEntityName(), commandSourceInput.getResourceId(),
                 commandSourceInput.getSubResourceId(), commandSourceInput.getGroupId(), commandSourceInput.getClientId(),
                 commandSourceInput.getLoanId(), commandSourceInput.getSavingsId(), commandSourceInput.getTransactionId(),
                 commandSourceInput.getResourceGetUrl(), commandSourceInput.getProductId(), commandSourceInput.getCreditBureauId(),
-                commandSourceInput.getOrganisationCreditBureauId(), commandSourceInput.getJobName());
+                commandSourceInput.getOrganisationCreditBureauId(), commandSourceInput.getJobName(),
+                commandSourceInput.getResourceIdentifier());
 
         return this.processAndLogCommandService.executeCommand(wrapper, command, true);
     }

@@ -19,10 +19,12 @@
 package org.apache.fineract.portfolio.note.domain;
 
 import java.util.List;
+import java.util.Optional;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.group.domain.Group;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
+import org.apache.fineract.portfolio.note.data.NoteData;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -52,4 +54,66 @@ public interface NoteRepository extends JpaRepository<Note, Long>, JpaSpecificat
     @Query("select note from Note note where note.savingsTransaction.id = :savingsTransactionId")
     List<Note> findBySavingsTransactionId(@Param("savingsTransactionId") Long savingsTransactionId);
 
+    Note getByNoteTypeIdAndEntityIdentifierAndId(Integer noteTypeId, String entityIdentifier, Long id);
+
+    List<Note> getByNoteTypeIdAndEntityIdentifier(Integer noteTypeId, String entityIdentifier);
+
+    String NOTE_DATA_SELECT = "select new org.apache.fineract.portfolio.note.data.NoteData(n.id, c.id, g.id, l.id, lt.id, s.id, st.id, sh.id, "
+            + "n.entityIdentifier, n.noteTypeId, n.note, n.createdBy, cb.username, n.createdDate, n.lastModifiedBy, mb.username, n.lastModifiedDate) "
+            + "from Note n left join n.client c left join n.group g left join n.loan l left join n.loanTransaction lt "
+            + "left join n.savingsAccount s left join n.savingsTransaction st left join n.shareAccount sh "
+            + "left join AppUser cb on n.createdBy = cb.id left join AppUser mb on n.lastModifiedBy = mb.id ";
+    String NOTE_DATA_ORDER = " order by n.createdDate DESC";
+    String NOTE_DATA_ID_WHERE = " and n.id = :id ";
+
+    @Query(NOTE_DATA_SELECT + "where n.client.id = :clientId and n.noteTypeId = 100" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByClientId(@Param("clientId") Long clientId);
+
+    @Query(NOTE_DATA_SELECT + "where n.group.id = :groupId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByGroupId(@Param("groupId") Long groupId);
+
+    @Query(NOTE_DATA_SELECT + "where n.loan.id = :loanId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByLoanId(@Param("loanId") Long loanId);
+
+    @Query(NOTE_DATA_SELECT + "where n.loanTransaction.id = :loanTransactionId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByLoanTransactionId(@Param("loanTransactionId") Long loanTransactionId);
+
+    @Query(NOTE_DATA_SELECT + "where n.savingsAccount.id = :savingsAccountId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataBySavingsAccountId(@Param("savingsAccountId") Long savingsAccountId);
+
+    @Query(NOTE_DATA_SELECT + "where n.savingsTransaction.id = :savingsTransactionId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataBySavingsTransactionId(@Param("savingsTransactionId") Long savingsTransactionId);
+
+    @Query(NOTE_DATA_SELECT + "where n.shareAccount.id = :shareAccountId" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByShareAccountId(@Param("shareAccountId") Long shareAccountId);
+
+    @Query(NOTE_DATA_SELECT + "where n.noteTypeId = :noteTypeId and n.entityIdentifier = :entityIdentifier" + NOTE_DATA_ORDER)
+    List<NoteData> getNotesDataByNoteTypeIdAndEntityIdentifier(@Param("noteTypeId") Integer noteTypeId,
+            @Param("entityIdentifier") String entityIdentifier);
+
+    @Query(NOTE_DATA_SELECT + "where n.client.id = :clientId and n.noteTypeId = 100" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataByClientId(@Param("clientId") Long clientId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.group.id = :groupId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataByGroupId(@Param("groupId") Long groupId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.loan.id = :loanId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataByLoanId(@Param("loanId") Long loanId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.loanTransaction.id = :loanTransactionId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataByLoanTransactionId(@Param("loanTransactionId") Long loanTransactionId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.savingsAccount.id = :savingsAccountId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataBySavingsAccountId(@Param("savingsAccountId") Long savingsAccountId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.savingsTransaction.id = :savingsTransactionId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataBySavingsTransactionId(@Param("savingsTransactionId") Long savingsTransactionId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.shareAccount.id = :shareAccountId" + NOTE_DATA_ID_WHERE + NOTE_DATA_ORDER)
+    Optional<NoteData> findNoteDataByShareAccountId(@Param("shareAccountId") Long shareAccountId, @Param("id") Long id);
+
+    @Query(NOTE_DATA_SELECT + "where n.noteTypeId = :noteTypeId and n.entityIdentifier = :entityIdentifier" + NOTE_DATA_ID_WHERE
+            + NOTE_DATA_ORDER)
+    NoteData getNoteDataByNoteTypeIdAndEntityIdentifier(@Param("noteTypeId") Integer noteTypeId,
+            @Param("entityIdentifier") String entityIdentifier, @Param("id") Long id);
 }

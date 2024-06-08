@@ -18,12 +18,13 @@
  */
 package org.apache.fineract.portfolio.note.service;
 
-import java.util.Collection;
+import java.util.List;
 import org.apache.fineract.portfolio.note.data.NoteData;
+import org.apache.fineract.portfolio.note.domain.NoteType;
 
 public interface NoteReadPlatformService {
 
-    NoteData retrieveNote(Long noteId, Long resourceId, Integer noteTypeId);
+    NoteData retrieveNote(Long noteId, String resourceId, NoteType noteType);
 
-    Collection<NoteData> retrieveNotesByResource(Long resourceId, Integer noteTypeId);
+    List<NoteData> retrieveNotesByResource(String resourceId, NoteType noteType);
 }

@@ -24,6 +24,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
@@ -33,6 +36,8 @@ import org.apache.fineract.useradministration.domain.AppUser;
 
 @Entity
 @Table(name = "m_portfolio_command_source")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class CommandSource extends AbstractPersistableCustom<Long> {
 
     @Column(name = "action_name", nullable = true, length = 100)
@@ -123,39 +128,17 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
     @Column(name = "result_status_code")
     private Integer resultStatusCode;
 
-    private CommandSource(final String actionName, final String entityName, final String href, final Long resourceId,
-            final Long subResourceId, final String commandSerializedAsJson, final AppUser maker, final String idempotencyKey,
-            final Integer status) {
-        this.actionName = actionName;
-        this.entityName = entityName;
-        this.resourceGetUrl = href;
-        this.resourceId = resourceId;
-        this.subResourceId = subResourceId;
-        this.commandAsJson = commandSerializedAsJson;
-        this.maker = maker;
-        this.madeOnDate = DateUtils.getAuditOffsetDateTime();
-        this.status = status;
-        this.idempotencyKey = idempotencyKey;
-    }
+    @Column(name = "resource_identifier")
+    private String resourceIdentifier;
 
     public static CommandSource fullEntryFrom(final CommandWrapper wrapper, final JsonCommand command, final AppUser maker,
             String idempotencyKey, Integer status) {
-        CommandSource commandSource = new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getHref(), command.entityId(),
-                command.subentityId(), command.json(), maker, idempotencyKey, status);
-        commandSource.officeId = wrapper.getOfficeId();
-        commandSource.groupId = command.getGroupId();
-        commandSource.clientId = command.getClientId();
-        commandSource.loanId = command.getLoanId();
-        commandSource.savingsId = command.getSavingsId();
-        commandSource.productId = command.getProductId();
-        commandSource.transactionId = command.getTransactionId();
-        commandSource.creditBureauId = command.getCreditBureauId();
-        commandSource.organisationCreditBureauId = command.getOrganisationCreditBureauId();
-        return commandSource;
-    }
-
-    protected CommandSource() {
-        //
+        OffsetDateTime madeOnDate = DateUtils.getAuditOffsetDateTime();
+        return new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getOfficeId(), command.getGroupId(),
+                command.getClientId(), command.getLoanId(), command.getSavingsId(), wrapper.getHref(), command.entityId(),
+                command.subentityId(), command.json(), maker, madeOnDate, null, null, status, command.getProductId(),
+                command.getTransactionId(), command.getCreditBureauId(), command.getOrganisationCreditBureauId(), command.getJobName(),
+                idempotencyKey, null, null, null, null, command.getResourceIdentifier());
     }
 
     public Long getCreditBureauId() {
@@ -312,6 +295,14 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         this.resultStatusCode = resultStatusCode;
     }
 
+    public String getResourceIdentifier() {
+        return resourceIdentifier;
+    }
+
+    public void setResourceIdentifier(String resourceIdentifier) {
+        this.resourceIdentifier = resourceIdentifier;
+    }
+
     public void markAsAwaitingApproval() {
         this.status = CommandProcessingResultType.AWAITING_APPROVAL.getValue();
     }
@@ -344,5 +335,6 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
         this.resourceExternalId = result.getResourceExternalId();
         this.subResourceId = result.getSubResourceId();
         this.subResourceExternalId = result.getSubResourceExternalId();
+        this.resourceIdentifier = result.getResourceIdentifier();
     }
 }

@@ -68,22 +68,22 @@ public class GetDatatableEntryByAppTableIdCommandStrategy implements CommandStra
         // (datatables/dt_123/1?genericResultSet=true)
         // - Add them to the MutableUriInfo query parameters list
         // - Call datatablesApiResource.getDatatable(dataTable, appTableId, null, uriInfo)
-        long appTableId;
+        String appTableId;
         if (relativeUrl.indexOf('?') > 0) {
-            appTableId = Long.parseLong(StringUtils.substringBetween(relativeUrlSubString, "/", "?"));
+            appTableId = StringUtils.substringBetween(relativeUrlSubString, "/", "?");
             Map<String, String> queryParameters = CommandStrategyUtils.getQueryParameters(relativeUrl);
 
             // Add the query parameters sent in the relative URL to MutableUriInfo
             CommandStrategyUtils.addQueryParametersToUriInfo(parameterizedUriInfo, queryParameters);
         } else {
-            appTableId = Long.parseLong(StringUtils.substringAfter(relativeUrlSubString, "/"));
+            appTableId = StringUtils.substringAfter(relativeUrlSubString, "/");
         }
 
-        String dataTableName = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
+        String datatable = relativeUrlSubString.substring(0, relativeUrlSubString.indexOf("/"));
 
         // Calls 'getDatatable' function from 'DatatablesApiResource' to
         // get the datatable details based on the appTableId
-        responseBody = dataTablesApiResource.getDatatable(dataTableName, appTableId, null, parameterizedUriInfo);
+        responseBody = dataTablesApiResource.getDatatableEntries(datatable, appTableId, null, parameterizedUriInfo);
 
         response.setStatusCode(HttpStatus.SC_OK);
 

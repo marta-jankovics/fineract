@@ -61,5 +61,4 @@ public class AmazonS3Config {
             ConfigurationDomainService configurationDomainService, S3Client s3Client, FineractProperties fineractProperties) {
         return new S3DatatableReportExportServiceImpl(reportServiceImpl, configurationDomainService, s3Client, fineractProperties);
     }
-
 }

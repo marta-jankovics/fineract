@@ -211,6 +211,10 @@ public enum JdbcJavaType {
         return getJavaType().isAnyIntegerType();
     }
 
+    public boolean isAnyLongType() {
+        return getJavaType().isAnyLongType();
+    }
+
     public boolean isFloatType() {
         return getJavaType().isFloatType();
     }

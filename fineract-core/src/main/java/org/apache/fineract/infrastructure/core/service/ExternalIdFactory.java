@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.infrastructure.core.service;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
@@ -31,10 +32,12 @@ public class ExternalIdFactory {
 
     private final ConfigurationDomainService configurationDomainService;
 
+    @NotNull
     public static ExternalId produce(String value) {
         return StringUtils.isBlank(value) ? ExternalId.empty() : new ExternalId(value);
     }
 
+    @NotNull
     public ExternalId createFromCommand(JsonCommand command, final String externalIdKey) {
         String externalIdStr = null;
         if (command.parsedJson() != null) {
@@ -43,6 +46,7 @@ public class ExternalIdFactory {
         return create(externalIdStr);
     }
 
+    @NotNull
     public ExternalId create(String externalIdStr) {
         if (StringUtils.isBlank(externalIdStr)) {
             if (configurationDomainService.isExternalIdAutoGenerationEnabled()) {
@@ -54,6 +58,7 @@ public class ExternalIdFactory {
         return new ExternalId(externalIdStr);
     }
 
+    @NotNull
     public ExternalId create() {
         return create(null);
     }

@@ -16,23 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.jobs.service;
+package org.apache.fineract.infrastructure.core.service;
 
-import java.util.List;
-import org.apache.fineract.infrastructure.core.service.Page;
-import org.apache.fineract.infrastructure.core.service.SearchParameters;
-import org.apache.fineract.infrastructure.jobs.data.JobDetailData;
-import org.apache.fineract.infrastructure.jobs.data.JobDetailHistoryData;
+public interface DefaultOption {
 
-public interface SchedulerJobRunnerReadService {
+    boolean isDefault();
 
-    List<JobDetailData> findAllJobDeatils();
-
-    JobDetailData retrieveOne(Long jobId);
-
-    JobDetailData retrieveOneByName(String jobName);
-
-    Page<JobDetailHistoryData> retrieveJobHistory(Long jobId, SearchParameters searchParameters);
-
-    boolean isUpdatesAllowed();
+    static <T extends Enum<T> & DefaultOption> T getDefault(Class<T> clazz) {
+        for (T enumConstant : clazz.getEnumConstants()) {
+            if (enumConstant.isDefault()) {
+                return enumConstant;
+            }
+        }
+        return null;
+    }
 }

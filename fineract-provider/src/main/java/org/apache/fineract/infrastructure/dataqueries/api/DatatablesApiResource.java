@@ -186,7 +186,7 @@ public class DatatablesApiResource {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.PutDataTablesResponse.class))) })
     public String deregisterDatatable(@PathParam("datatable") @Parameter(description = "datatable") final String datatable) {
         this.readWriteNonCoreDataService.deregisterDatatable(datatable);
-        final CommandProcessingResult result = new CommandProcessingResultBuilder().withResourceIdAsString(datatable).build();
+        final CommandProcessingResult result = new CommandProcessingResultBuilder().withResourceIdentifier(datatable).build();
         return this.toApiJsonSerializer.serialize(result);
     }
 
@@ -251,13 +251,13 @@ public class DatatablesApiResource {
             + "datatables/extra_client_details/1?genericResultSet=true")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = HashMap.class))) })
-    public String getDatatable(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId,
+    public String getDatatableEntries(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @QueryParam("order") @Parameter(description = "order") final String order, @Context final UriInfo uriInfo) {
 
         this.context.authenticatedUser().validateHasDatatableReadPermission(datatable);
 
-        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDataTableGenericResultSet(datatable, apptableId,
+        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDatatableGenericResultSet(datatable, apptableId,
                 order, null);
 
         String json = "";
@@ -276,14 +276,14 @@ public class DatatablesApiResource {
     @Path("{datatable}/{apptableId}/{datatableId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
-    public String getDatatableManyEntry(@PathParam("datatable") final String datatable, @PathParam("apptableId") final Long apptableId,
+    public String getDatatableManyEntry(@PathParam("datatable") final String datatable, @PathParam("apptableId") final String apptableId,
             @PathParam("datatableId") final Long datatableId, @QueryParam("order") final String order,
             @DefaultValue("false") @QueryParam("genericResultSet") @Parameter(in = ParameterIn.QUERY, name = "genericResultSet", description = "Optional flag to format the response", required = false) final boolean genericResultSet,
             @Context final UriInfo uriInfo) {
 
         this.context.authenticatedUser().validateHasDatatableReadPermission(datatable);
 
-        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDataTableGenericResultSet(datatable, apptableId,
+        final GenericResultsetData results = this.readWriteNonCoreDataService.retrieveDatatableGenericResultSet(datatable, apptableId,
                 order, datatableId);
 
         String json = "";
@@ -307,7 +307,7 @@ public class DatatablesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.PostDataTablesAppTableIdResponse.class))) })
     public String createDatatableEntry(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId,
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @Parameter(hidden = true) final String apiRequestBodyAsJson) {
 
         final CommandWrapper commandRequest = new CommandWrapperBuilder() //
@@ -329,7 +329,7 @@ public class DatatablesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.PutDataTablesAppTableIdResponse.class))) })
     public String updateDatatableEntryOnetoOne(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId,
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @Parameter(hidden = true) final String apiRequestBodyAsJson) {
 
         final CommandWrapper commandRequest = new CommandWrapperBuilder() //
@@ -351,7 +351,7 @@ public class DatatablesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.PutDataTablesAppTableIdDatatableIdResponse.class))) })
     public String updateDatatableEntryOneToMany(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId,
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @PathParam("datatableId") @Parameter(description = "datatableId") final Long datatableId,
             @Parameter(hidden = true) final String apiRequestBodyAsJson) {
 
@@ -374,7 +374,7 @@ public class DatatablesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.DeleteDataTablesDatatableAppTableIdResponse.class))) })
     public String deleteDatatableEntries(@PathParam("datatable") @Parameter(description = "datatable") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId) {
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId) {
 
         final CommandWrapper commandRequest = new CommandWrapperBuilder() //
                 .deleteDatatableEntry(datatable, apptableId, null) //
@@ -394,7 +394,7 @@ public class DatatablesApiResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DatatablesApiResourceSwagger.DeleteDataTablesDatatableAppTableIdDatatableIdResponse.class))) })
     public String deleteDatatableEntry(@PathParam("datatable") @Parameter(description = "datatable", example = "{}") final String datatable,
-            @PathParam("apptableId") @Parameter(description = "apptableId") final Long apptableId,
+            @PathParam("apptableId") @Parameter(description = "apptableId") final String apptableId,
             @PathParam("datatableId") @Parameter(description = "datatableId") final Long datatableId) {
         final CommandWrapper commandRequest = new CommandWrapperBuilder() //
                 .deleteDatatableEntry(datatable, apptableId, datatableId) //

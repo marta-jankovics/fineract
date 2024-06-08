@@ -53,6 +53,7 @@ import org.apache.fineract.portfolio.group.exception.GroupNotActiveException;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepositoryWrapper;
 import org.apache.fineract.portfolio.loanaccount.service.LoanWritePlatformService;
+import org.apache.fineract.portfolio.note.domain.NoteType;
 import org.apache.fineract.portfolio.note.service.NoteWritePlatformService;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepositoryWrapper;
@@ -366,9 +367,10 @@ public class TransferWritePlatformServiceJpaRepositoryImpl implements TransferWr
         }
 
         /*** Handle Active Loans ***/
-        if (this.loanRepositoryWrapper.doNonClosedLoanAccountsExistForClient(client.getId())) {
+        Long clientId = client.getId();
+        if (this.loanRepositoryWrapper.doNonClosedLoanAccountsExistForClient(clientId)) {
             // get each individual loan for the client
-            for (final Loan loan : this.loanRepositoryWrapper.findLoanByClientId(client.getId())) {
+            for (final Loan loan : this.loanRepositoryWrapper.findLoanByClientId(clientId)) {
                 /**
                  * We need to create transactions etc only for loans which are disbursed and not yet closed
                  **/
@@ -392,9 +394,9 @@ public class TransferWritePlatformServiceJpaRepositoryImpl implements TransferWr
         }
 
         /*** Handle Active Savings (Currently throw and exception) ***/
-        if (this.savingsAccountRepositoryWrapper.doNonClosedSavingAccountsExistForClient(client.getId())) {
+        if (this.savingsAccountRepositoryWrapper.doNonClosedSavingAccountsExistForClient(clientId)) {
             // get each individual saving account for the client
-            for (final SavingsAccount savingsAccount : this.savingsAccountRepositoryWrapper.findSavingAccountByClientId(client.getId())) {
+            for (final SavingsAccount savingsAccount : this.savingsAccountRepositoryWrapper.findSavingAccountByClientId(clientId)) {
                 if (savingsAccount.isActivated() && !savingsAccount.isClosed()) {
                     switch (transferEventType) {
                         case ACCEPTANCE:
@@ -425,7 +427,7 @@ public class TransferWritePlatformServiceJpaRepositoryImpl implements TransferWr
                 if (client.getGroups().size() == 1) {
                     if (destinationGroup == null) {
                         throw new TransferNotSupportedException(TransferNotSupportedReason.CLIENT_DESTINATION_GROUP_NOT_SPECIFIED,
-                                client.getId());
+                                clientId);
                     } else if (!destinationGroup.isActive()) {
                         throw new GroupNotActiveException(destinationGroup.getId());
                     }
@@ -459,9 +461,9 @@ public class TransferWritePlatformServiceJpaRepositoryImpl implements TransferWr
                 client.updateProposedTransferDate(null);
         }
 
-        this.noteWritePlatformService.createAndPersistClientNote(client, jsonCommand);
+        this.noteWritePlatformService.createEntityNote(NoteType.CLIENT, clientId, jsonCommand);
         this.clientTransferDetailsRepositoryWrapper
-                .save(ClientTransferDetails.instance(client.getId(), client.getOffice().getId(), destinationOffice.getId(), transferDate,
+                .save(ClientTransferDetails.instance(clientId, client.getOffice().getId(), destinationOffice.getId(), transferDate,
                         transferEventType.getValue(), DateUtils.getBusinessLocalDate(), this.context.authenticatedUser().getId()));
     }
 
