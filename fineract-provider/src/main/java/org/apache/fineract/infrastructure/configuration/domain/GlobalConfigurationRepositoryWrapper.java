@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.infrastructure.configuration.domain;
 
+import static org.apache.fineract.infrastructure.core.config.cache.CacheConfig.CONFIG_BY_NAME_CACHE_NAME;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.configuration.exception.GlobalConfigurationPropertyNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +43,7 @@ public class GlobalConfigurationRepositoryWrapper {
         this.repository = repository;
     }
 
-    @Cacheable(value = "configByName", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#propertyName)")
+    @Cacheable(value = CONFIG_BY_NAME_CACHE_NAME, key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#propertyName)")
     public GlobalConfigurationProperty findOneByNameWithNotFoundDetection(final String propertyName) {
         final GlobalConfigurationProperty property = this.repository.findOneByName(propertyName);
         if (property == null) {
@@ -66,7 +68,7 @@ public class GlobalConfigurationRepositoryWrapper {
         this.repository.delete(globalConfigurationProperty);
     }
 
-    @CacheEvict(value = "configByName", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#propertyName)")
+    @CacheEvict(value = CONFIG_BY_NAME_CACHE_NAME, key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#propertyName)")
     public void removeFromCache(String propertyName) {
         log.debug("Cache entry evicted {}", propertyName);
     }

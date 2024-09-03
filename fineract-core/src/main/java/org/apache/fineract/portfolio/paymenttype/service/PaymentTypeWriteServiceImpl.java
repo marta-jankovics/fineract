@@ -31,6 +31,7 @@ import org.apache.fineract.portfolio.paymenttype.domain.PaymentType;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepository;
 import org.apache.fineract.portfolio.paymenttype.domain.PaymentTypeRepositoryWrapper;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.jpa.JpaSystemException;
 
@@ -42,7 +43,9 @@ public class PaymentTypeWriteServiceImpl implements PaymentTypeWriteService {
     private final PaymentTypeDataValidator fromApiJsonDeserializer;
 
     @Override
-    @CacheEvict(value = "payment_types", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')")
+    @Caching(evict = {
+            @CacheEvict(value = "payment_types", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')"),
+            @CacheEvict(value = "paymentTypesWithCode", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')") })
     public CommandProcessingResult createPaymentType(JsonCommand command) {
         this.fromApiJsonDeserializer.validateForCreate(command.json());
         String name = command.stringValueOfParameterNamed(PaymentTypeApiResourceConstants.NAME);
@@ -76,7 +79,9 @@ public class PaymentTypeWriteServiceImpl implements PaymentTypeWriteService {
     }
 
     @Override
-    @CacheEvict(value = "payment_types", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')")
+    @Caching(evict = {
+            @CacheEvict(value = "payment_types", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')"),
+            @CacheEvict(value = "paymentTypesWithCode", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat('payment_types')") })
     public CommandProcessingResult deletePaymentType(Long paymentTypeId) {
         final PaymentType paymentType = this.repositoryWrapper.findOneWithNotFoundDetection(paymentTypeId);
         try {

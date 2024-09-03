@@ -49,6 +49,7 @@ import org.apache.fineract.infrastructure.dataqueries.data.ResultsetColumnValueD
 import org.apache.fineract.infrastructure.dataqueries.data.ResultsetRowData;
 import org.apache.fineract.infrastructure.dataqueries.exception.DatatableNotFoundException;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -93,6 +94,7 @@ public class GenericDataServiceImpl implements GenericDataService {
     }
 
     @Override
+    @Cacheable(value = "columnHeaders", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#tableName)")
     public List<ResultsetColumnHeaderData> fillResultsetColumnHeaders(final String tableName) {
         final SqlRowSet columnDefinitions = getTableMetaData(tableName);
         final List<IndexDetail> indexDefinitions = getDatatableIndexData(tableName);

@@ -78,6 +78,8 @@ public class FineractProperties {
 
     private FineractSqlValidationProperties sqlValidation;
 
+    private FineractCacheProperties cache;
+
     @Getter
     @Setter
     public static class FineractTenantProperties {
@@ -568,5 +570,25 @@ public class FineractProperties {
 
         private String name;
         private String pattern;
+    }
+
+    @Getter
+    @Setter
+    public static class FineractCacheProperties {
+
+        private Map<String, FineractCacheInstance> instances;
+
+        public FineractCacheInstance getInstance(String name) {
+            return instances == null ? null : instances.get(name);
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class FineractCacheInstance {
+
+        private Long heap;
+        private String expiryPolicy;
+        private String expiry;
     }
 }
