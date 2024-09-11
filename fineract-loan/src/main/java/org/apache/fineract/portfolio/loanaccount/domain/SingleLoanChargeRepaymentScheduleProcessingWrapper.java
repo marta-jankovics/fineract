@@ -18,14 +18,17 @@
  */
 package org.apache.fineract.portfolio.loanaccount.domain;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
-import org.jetbrains.annotations.NotNull;
+import org.apache.fineract.organisation.monetary.domain.MoneyHelper;
+import org.apache.fineract.portfolio.charge.domain.ChargeCalculationType;
 
 /**
  * A wrapper around loan schedule related data exposing needed behaviour by loan.
@@ -33,124 +36,134 @@ import org.jetbrains.annotations.NotNull;
 public class SingleLoanChargeRepaymentScheduleProcessingWrapper {
 
     public void reprocess(final MonetaryCurrency currency, final LocalDate disbursementDate,
-            final List<LoanRepaymentScheduleInstallment> repaymentPeriods, LoanCharge loanCharge) {
-
-        Money totalInterest = Money.zero(currency);
-        Money totalPrincipal = Money.zero(currency);
-        for (final LoanRepaymentScheduleInstallment installment : repaymentPeriods) {
+            final List<LoanRepaymentScheduleInstallment> installments, LoanCharge loanCharge) {
+        Loan loan = loanCharge.getLoan();
+        Money zero = Money.zero(currency);
+        Money totalInterest = zero;
+        Money totalPrincipal = zero;
+        for (final LoanRepaymentScheduleInstallment installment : installments) {
             totalInterest = totalInterest.plus(installment.getInterestCharged(currency));
             totalPrincipal = totalPrincipal.plus(installment.getPrincipal(currency));
         }
+        LoanChargePaidBy accrualBy = null;
+        if (!loan.isInterestBearing() && loanCharge.isSpecifiedDueDate()) { // TODO: why only if not interest bearing
+            addChargeOnlyRepaymentInstallmentIfRequired(loanCharge, installments);
+            accrualBy = loanCharge.getLoanChargePaidBySet().stream().filter(e -> e.getLoanTransaction().isAccrual()).findFirst()
+                    .orElse(null);
+        }
         LocalDate startDate = disbursementDate;
-        int firstNormalInstallmentNumber = LoanRepaymentScheduleProcessingWrapper.fetchFirstNormalInstallmentNumber(repaymentPeriods);
-        for (final LoanRepaymentScheduleInstallment period : repaymentPeriods) {
-
-            if (!period.isDownPayment()) {
-                boolean isFirstNonDownPaymentPeriod = period.getInstallmentNumber().equals(firstNormalInstallmentNumber);
-
-                final Money feeChargesDueForRepaymentPeriod = feeChargesDueWithin(startDate, period.getDueDate(), loanCharge, currency,
-                        period, totalPrincipal, totalInterest, !period.isRecalculatedInterestComponent(), isFirstNonDownPaymentPeriod);
-                final Money feeChargesWaivedForRepaymentPeriod = chargesWaivedWithin(startDate, period.getDueDate(), loanCharge, currency,
-                        !period.isRecalculatedInterestComponent(), isFirstNonDownPaymentPeriod, feeCharge());
-                final Money feeChargesWrittenOffForRepaymentPeriod = loanChargesWrittenOffWithin(startDate, period.getDueDate(), loanCharge,
-                        currency, !period.isRecalculatedInterestComponent(), isFirstNonDownPaymentPeriod, feeCharge());
-
-                final Money penaltyChargesDueForRepaymentPeriod = penaltyChargesDueWithin(startDate, period.getDueDate(), loanCharge,
-                        currency, period, totalPrincipal, totalInterest, !period.isRecalculatedInterestComponent(),
-                        isFirstNonDownPaymentPeriod);
-                final Money penaltyChargesWaivedForRepaymentPeriod = chargesWaivedWithin(startDate, period.getDueDate(), loanCharge,
-                        currency, !period.isRecalculatedInterestComponent(), isFirstNonDownPaymentPeriod, LoanCharge::isPenaltyCharge);
-                final Money penaltyChargesWrittenOffForRepaymentPeriod = loanChargesWrittenOffWithin(startDate, period.getDueDate(),
-                        loanCharge, currency, !period.isRecalculatedInterestComponent(), isFirstNonDownPaymentPeriod,
-                        LoanCharge::isPenaltyCharge);
-
-                period.addToChargePortion(feeChargesDueForRepaymentPeriod, feeChargesWaivedForRepaymentPeriod,
-                        feeChargesWrittenOffForRepaymentPeriod, penaltyChargesDueForRepaymentPeriod, penaltyChargesWaivedForRepaymentPeriod,
-                        penaltyChargesWrittenOffForRepaymentPeriod);
-
-                startDate = period.getDueDate();
+        int firstNormalInstallmentNumber = LoanRepaymentScheduleProcessingWrapper.fetchFirstNormalInstallmentNumber(installments);
+        for (final LoanRepaymentScheduleInstallment installment : installments) {
+            if (installment.isDownPayment()) {
+                continue;
             }
+            boolean installmentChargeApplicable = !installment.isRecalculatedInterestComponent();
+            boolean isFirstPeriod = installment.getInstallmentNumber().equals(firstNormalInstallmentNumber);
+            Predicate<LoanCharge> feePredicate = e -> e.isFeeCharge() && !e.isDueAtDisbursement();
+            LocalDate dueDate = installment.getDueDate();
+            final Money feeChargesDue = calcChargeDue(startDate, dueDate, loanCharge, currency, installment, totalPrincipal, totalInterest,
+                    installmentChargeApplicable, isFirstPeriod, feePredicate);
+            final Money feeChargesWaived = calcChargeWaived(startDate, dueDate, loanCharge, currency, installmentChargeApplicable,
+                    isFirstPeriod, feePredicate);
+            final Money feeChargesWrittenOff = calcChargeWrittenOff(startDate, dueDate, loanCharge, currency, installmentChargeApplicable,
+                    isFirstPeriod, feePredicate);
+
+            Predicate<LoanCharge> penaltyPredicate = LoanCharge::isPenaltyCharge;
+            final Money penaltyChargesDue = calcChargeDue(startDate, dueDate, loanCharge, currency, installment, totalPrincipal,
+                    totalInterest, installmentChargeApplicable, isFirstPeriod, penaltyPredicate);
+            final Money penaltyChargesWaived = calcChargeWaived(startDate, dueDate, loanCharge, currency, installmentChargeApplicable,
+                    isFirstPeriod, penaltyPredicate);
+            final Money penaltyChargesWrittenOff = calcChargeWrittenOff(startDate, dueDate, loanCharge, currency,
+                    installmentChargeApplicable, isFirstPeriod, penaltyPredicate);
+
+            installment.addToChargePortion(feeChargesDue, feeChargesWaived, feeChargesWrittenOff, penaltyChargesDue, penaltyChargesWaived,
+                    penaltyChargesWrittenOff);
+
+            if (accrualBy != null && installment.isAdditional() && loanChargeIsDue(startDate, dueDate, isFirstPeriod, loanCharge)) {
+                Money amount = Money.of(currency, accrualBy.getAmount());
+                boolean isFee = loanCharge.isFeeCharge();
+                installment.updateAccrualPortion(installment.getInterestAccrued(currency),
+                        MathUtil.plus(installment.getFeeAccrued(currency), (isFee ? amount : null)),
+                        MathUtil.plus(installment.getPenaltyAccrued(currency), (isFee ? null : amount)));
+                accrualBy.setInstallmentNumber(installment.getInstallmentNumber());
+            }
+            startDate = dueDate;
         }
     }
 
-    private Money feeChargesDueWithin(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
-            final MonetaryCurrency monetaryCurrency, LoanRepaymentScheduleInstallment period, final Money totalPrincipal,
-            final Money totalInterest, boolean isInstallmentChargeApplicable, boolean isFirstPeriod) {
-
-        if (loanCharge.isFeeCharge() && !loanCharge.isDueAtDisbursement()) {
-            boolean isDue = loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge);
-            if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
-                return Money.of(monetaryCurrency, getInstallmentFee(monetaryCurrency, period, loanCharge));
-            } else if (loanCharge.isOverdueInstallmentCharge() && isDue && loanCharge.getChargeCalculation().isPercentageBased()) {
-                return Money.of(monetaryCurrency, loanCharge.chargeAmount());
-            } else if (isDue && loanCharge.getChargeCalculation().isPercentageBased()) {
-                BigDecimal amount = BigDecimal.ZERO;
-                if (loanCharge.getChargeCalculation().isPercentageOfAmountAndInterest()) {
-                    amount = amount.add(totalPrincipal.getAmount()).add(totalInterest.getAmount());
-                } else if (loanCharge.getChargeCalculation().isPercentageOfInterest()) {
-                    amount = amount.add(totalInterest.getAmount());
-                } else {
-                    // If charge type is specified due date and loan is
-                    // multi disburment loan.
-                    // Then we need to get as of this loan charge due date
-                    // how much amount disbursed.
-                    if (loanCharge.getLoan() != null && loanCharge.isSpecifiedDueDate() && loanCharge.getLoan().isMultiDisburmentLoan()) {
-                        for (final LoanDisbursementDetails loanDisbursementDetails : loanCharge.getLoan().getDisbursementDetails()) {
-                            if (!DateUtils.isAfter(loanDisbursementDetails.expectedDisbursementDate(), loanCharge.getDueDate())) {
-                                amount = amount.add(loanDisbursementDetails.principal());
-                            }
-                        }
-                    } else {
-                        amount = amount.add(totalPrincipal.getAmount());
-                    }
+    @NotNull
+    private Money calcChargeDue(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
+            final MonetaryCurrency currency, LoanRepaymentScheduleInstallment period, final Money totalPrincipal, final Money totalInterest,
+            boolean isInstallmentChargeApplicable, boolean isFirstPeriod, Predicate<LoanCharge> predicate) {
+        Money zero = Money.zero(currency);
+        if (!predicate.test(loanCharge)) {
+            return zero;
+        }
+        if (loanCharge.isFeeCharge() && loanCharge.isDueAtDisbursement()) {
+            return zero;
+        }
+        if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
+            return Money.of(currency, getInstallmentFee(currency, period, loanCharge));
+        }
+        if (!loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge)) {
+            return zero;
+        }
+        ChargeCalculationType calculationType = loanCharge.getChargeCalculation();
+        if (loanCharge.isOverdueInstallmentCharge() && calculationType.isPercentageBased()) {
+            return Money.of(currency, loanCharge.chargeAmount());
+        }
+        if (calculationType.isFlat()) {
+            return loanCharge.getAmount(currency);
+        }
+        BigDecimal baseAmount = BigDecimal.ZERO;
+        Loan loan = loanCharge.getLoan();
+        if (loan != null && loanCharge.isFeeCharge() && !calculationType.hasInterest() && loanCharge.isSpecifiedDueDate()
+                && loan.isMultiDisburmentLoan()) {
+            // If charge type is specified due date and loan is multi disburment loan.
+            // Then we need to get as of this loan charge due date how much amount disbursed.
+            for (final LoanDisbursementDetails loanDisbursementDetails : loan.getDisbursementDetails()) {
+                if (!DateUtils.isAfter(loanDisbursementDetails.expectedDisbursementDate(), loanCharge.getDueDate())) {
+                    baseAmount = MathUtil.add(baseAmount, loanDisbursementDetails.principal());
                 }
-                BigDecimal loanChargeAmt = amount.multiply(loanCharge.getPercentage()).divide(BigDecimal.valueOf(100));
-                return Money.of(monetaryCurrency, loanChargeAmt);
-            } else if (isDue) {
-                return Money.of(monetaryCurrency, loanCharge.amount());
             }
+        } else {
+            baseAmount = getBaseAmount(loanCharge, totalPrincipal.getAmount(), totalInterest.getAmount());
         }
-        return Money.zero(monetaryCurrency);
+        return Money.of(currency, MathUtil.percentageOf(baseAmount, loanCharge.getPercentage(), MoneyHelper.getMathContext()));
     }
 
-    private Money chargesWaivedWithin(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
+    private Money calcChargeWaived(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
             final MonetaryCurrency currency, boolean isInstallmentChargeApplicable, boolean isFirstPeriod,
             Predicate<LoanCharge> predicate) {
-
-        if (predicate.test(loanCharge)) {
-            boolean isDue = loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge);
-            if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
-                LoanInstallmentCharge loanChargePerInstallment = loanCharge.getInstallmentLoanCharge(periodEnd);
-                if (loanChargePerInstallment != null) {
-                    return loanChargePerInstallment.getAmountWaived(currency);
-                }
-            } else if (isDue) {
-                return loanCharge.getAmountWaived(currency);
-            }
+        Money zero = Money.zero(currency);
+        if (!predicate.test(loanCharge)) {
+            return zero;
         }
-
-        return Money.zero(currency);
+        if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
+            LoanInstallmentCharge installmentCharge = loanCharge.getInstallmentLoanCharge(periodEnd);
+            return installmentCharge == null ? zero : installmentCharge.getAmountWaived(currency);
+        }
+        if (loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge)) {
+            return loanCharge.getAmountWaived(currency);
+        }
+        return zero;
     }
 
-    private Money loanChargesWrittenOffWithin(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
+    private Money calcChargeWrittenOff(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
             final MonetaryCurrency currency, boolean isInstallmentChargeApplicable, boolean isFirstPeriod,
-            Predicate<LoanCharge> chargePredicate) {
-        if (chargePredicate.test(loanCharge)) {
-            boolean isDue = loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge);
-            if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
-                LoanInstallmentCharge loanChargePerInstallment = loanCharge.getInstallmentLoanCharge(periodEnd);
-                if (loanChargePerInstallment != null) {
-                    return loanChargePerInstallment.getAmountWrittenOff(currency);
-                }
-            } else if (isDue) {
-                return loanCharge.getAmountWrittenOff(currency);
-            }
+            Predicate<LoanCharge> predicate) {
+        Money zero = Money.zero(currency);
+        if (!predicate.test(loanCharge)) {
+            return zero;
         }
-        return Money.zero(currency);
-    }
-
-    private Predicate<LoanCharge> feeCharge() {
-        return loanCharge -> loanCharge.isFeeCharge() && !loanCharge.isDueAtDisbursement();
+        if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
+            LoanInstallmentCharge installmentCharge = loanCharge.getInstallmentLoanCharge(periodEnd);
+            return installmentCharge == null ? zero : installmentCharge.getAmountWrittenOff(currency);
+        }
+        if (loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge)) {
+            return loanCharge.getAmountWrittenOff(currency);
+        }
+        return zero;
     }
 
     private boolean loanChargeIsDue(LocalDate periodStart, LocalDate periodEnd, boolean isFirstPeriod, LoanCharge loanCharge) {
@@ -158,57 +171,62 @@ public class SingleLoanChargeRepaymentScheduleProcessingWrapper {
                 : loanCharge.isDueForCollectionFromAndUpToAndIncluding(periodStart, periodEnd);
     }
 
-    private Money penaltyChargesDueWithin(final LocalDate periodStart, final LocalDate periodEnd, final LoanCharge loanCharge,
-            final MonetaryCurrency currency, LoanRepaymentScheduleInstallment period, final Money totalPrincipal, final Money totalInterest,
-            boolean isInstallmentChargeApplicable, boolean isFirstPeriod) {
-
-        if (loanCharge.isPenaltyCharge()) {
-            boolean isDue = loanChargeIsDue(periodStart, periodEnd, isFirstPeriod, loanCharge);
-            if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
-                return Money.of(currency, getInstallmentFee(currency, period, loanCharge));
-            } else if (loanCharge.isOverdueInstallmentCharge() && isDue && loanCharge.getChargeCalculation().isPercentageBased()) {
-                return Money.of(currency, loanCharge.chargeAmount());
-            } else if (isDue && loanCharge.getChargeCalculation().isPercentageBased()) {
-                BigDecimal amount = BigDecimal.ZERO;
-                if (loanCharge.getChargeCalculation().isPercentageOfAmountAndInterest()) {
-                    amount = amount.add(totalPrincipal.getAmount()).add(totalInterest.getAmount());
-                } else if (loanCharge.getChargeCalculation().isPercentageOfInterest()) {
-                    amount = amount.add(totalInterest.getAmount());
-                } else {
-                    amount = amount.add(totalPrincipal.getAmount());
-                }
-                BigDecimal loanChargeAmt = amount.multiply(loanCharge.getPercentage()).divide(BigDecimal.valueOf(100));
-                return Money.of(currency, loanChargeAmt);
-            } else if (isDue) {
-                return Money.of(currency, loanCharge.amount());
-            }
-        }
-
-        return Money.zero(currency);
-    }
-
     private BigDecimal getInstallmentFee(MonetaryCurrency currency, LoanRepaymentScheduleInstallment period, LoanCharge loanCharge) {
-        if (loanCharge.getChargeCalculation().isPercentageBased()) {
-            BigDecimal amount = BigDecimal.ZERO;
-            amount = getBaseAmount(currency, period, loanCharge, amount);
-            return amount.multiply(loanCharge.getPercentage()).divide(BigDecimal.valueOf(100));
-        } else {
+        if (loanCharge.getChargeCalculation().isFlat()) {
             return loanCharge.amountOrPercentage();
         }
+        return MathUtil.percentageOf(getBaseAmount(currency, period, loanCharge, null), loanCharge.getPercentage(),
+                MoneyHelper.getMathContext());
     }
 
     @NotNull
-    private BigDecimal getBaseAmount(MonetaryCurrency monetaryCurrency, LoanRepaymentScheduleInstallment period, LoanCharge loanCharge,
+    private BigDecimal getBaseAmount(MonetaryCurrency currency, LoanRepaymentScheduleInstallment period, LoanCharge loanCharge,
             BigDecimal amount) {
-        if (loanCharge.getChargeCalculation().isPercentageOfAmountAndInterest()) {
-            amount = amount.add(period.getPrincipal(monetaryCurrency).getAmount())
-                    .add(period.getInterestCharged(monetaryCurrency).getAmount());
-        } else if (loanCharge.getChargeCalculation().isPercentageOfInterest()) {
-            amount = amount.add(period.getInterestCharged(monetaryCurrency).getAmount());
-        } else {
-            amount = amount.add(period.getPrincipal(monetaryCurrency).getAmount());
-        }
-        return amount;
+        BigDecimal baseAmount = getBaseAmount(loanCharge, period.getPrincipal(currency).getAmount(),
+                period.getInterestCharged(currency).getAmount());
+        return MathUtil.add(amount, baseAmount);
     }
 
+    @NotNull
+    private BigDecimal getBaseAmount(LoanCharge loanCharge, BigDecimal principal, BigDecimal interest) {
+        ChargeCalculationType calcType = loanCharge.getChargeCalculation();
+        if (calcType.isPercentageOfAmountAndInterest()) {
+            return MathUtil.add(principal, interest);
+        }
+        if (calcType.isPercentageOfInterest()) {
+            return interest;
+        }
+        return principal;
+    }
+
+    /**
+     * @return newly added period if there is any
+     */
+    public LoanRepaymentScheduleInstallment addChargeOnlyRepaymentInstallmentIfRequired(@NotNull LoanCharge loanCharge,
+            List<LoanRepaymentScheduleInstallment> installments) {
+        if (installments == null) {
+            return null;
+        }
+        if (!loanCharge.isSpecifiedDueDate()) {
+            return null;
+        }
+        LocalDate chargeDueDate = loanCharge.getEffectiveDueDate();
+        LoanRepaymentScheduleInstallment latestInstallment = installments.stream().filter(i -> !i.isDownPayment())
+                .reduce((first, second) -> second).orElseThrow();
+        if (!DateUtils.isAfter(chargeDueDate, latestInstallment.getDueDate())) {
+            return null;
+        }
+        if (latestInstallment.isAdditional()) {
+            latestInstallment.updateDueDate(chargeDueDate);
+            return null;
+        } else {
+            Loan loan = loanCharge.getLoan();
+            final LoanRepaymentScheduleInstallment additionalInstallment = new LoanRepaymentScheduleInstallment(loan,
+                    (loan.getLoanRepaymentScheduleInstallmentsSize() + 1), latestInstallment.getDueDate(), chargeDueDate, BigDecimal.ZERO,
+                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, false, null);
+            additionalInstallment.markAsAdditional();
+            loan.addLoanRepaymentScheduleInstallment(additionalInstallment);
+            return additionalInstallment;
+        }
+    }
 }

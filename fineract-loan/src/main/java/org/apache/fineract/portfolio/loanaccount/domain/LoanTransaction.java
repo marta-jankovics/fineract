@@ -41,6 +41,7 @@ import java.util.Set;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
@@ -1053,6 +1054,10 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
 
     public String getChargeRefundChargeType() {
         return chargeRefundChargeType;
+    }
+
+    public boolean isOverPaid() {
+        return MathUtil.isGreaterThanZero(overPaymentPortion);
     }
 
     // TODO missing hashCode(), equals(Object obj), but probably OK as long as
