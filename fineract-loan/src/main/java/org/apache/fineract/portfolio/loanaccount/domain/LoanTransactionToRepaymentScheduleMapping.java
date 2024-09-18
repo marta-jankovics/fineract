@@ -24,9 +24,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
@@ -103,11 +102,13 @@ public class LoanTransactionToRepaymentScheduleMapping extends AbstractPersistab
         return this.installment;
     }
 
-    public void updateComponents(@NotNull Money principal, @NotNull Money interest, @NotNull Money feeCharges, @NotNull Money penaltyCharges) {
+    public void updateComponents(@NotNull Money principal, @NotNull Money interest, @NotNull Money feeCharges,
+            @NotNull Money penaltyCharges) {
         updateComponents(principal.getAmount(), interest.getAmount(), feeCharges.getAmount(), penaltyCharges.getAmount());
     }
 
-    void updateComponents(final BigDecimal principal, final BigDecimal interest, final BigDecimal feeCharges, final BigDecimal penaltyCharges) {
+    void updateComponents(final BigDecimal principal, final BigDecimal interest, final BigDecimal feeCharges,
+            final BigDecimal penaltyCharges) {
         this.principalPortion = MathUtil.zeroToNull(MathUtil.add(getPrincipalPortion(), principal));
         this.interestPortion = MathUtil.zeroToNull(MathUtil.add(getInterestPortion(), interest));
         updateChargesComponents(feeCharges, penaltyCharges);

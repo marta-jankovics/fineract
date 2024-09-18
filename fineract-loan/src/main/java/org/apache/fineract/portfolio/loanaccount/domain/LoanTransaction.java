@@ -963,11 +963,10 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
         for (LoanTransactionToRepaymentScheduleMapping existingMapping : this.loanTransactionToRepaymentScheduleMappings) {
             LoanRepaymentScheduleInstallment existingInstallment = existingMapping.getLoanRepaymentScheduleInstallment();
             LoanRepaymentScheduleInstallment updatedInstallment = updatedMapping.getLoanRepaymentScheduleInstallment();
-            if (existingInstallment.getDueDate().equals(updatedInstallment.getDueDate())
-            && updatedInstallment.getId() != null && updatedInstallment.getId().equals(existingInstallment.getId())) {
-                existingMapping.updateComponents(updatedMapping.getPrincipalPortion(),
-                        updatedMapping.getInterestPortion(), updatedMapping.getFeeChargesPortion(),
-                        updatedMapping.getPenaltyChargesPortion());
+            if (existingInstallment.getDueDate().equals(updatedInstallment.getDueDate()) && updatedInstallment.getId() != null
+                    && updatedInstallment.getId().equals(existingInstallment.getId())) {
+                existingMapping.updateComponents(updatedMapping.getPrincipalPortion(), updatedMapping.getInterestPortion(),
+                        updatedMapping.getFeeChargesPortion(), updatedMapping.getPenaltyChargesPortion());
                 isMappingUpdated = true;
                 break;
             }

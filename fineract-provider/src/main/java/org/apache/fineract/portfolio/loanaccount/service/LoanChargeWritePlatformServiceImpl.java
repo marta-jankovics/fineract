@@ -268,12 +268,14 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
         }
         // overpaid transactions will be reprocessed and pay this charge
         boolean overpaidReprocess = !loanCharge.isDueAtDisbursement() && !loanCharge.isPaid() && loan.getStatus().isOverpaid();
-        if (!overpaidReprocess && AdvancedPaymentScheduleTransactionProcessor.ADVANCED_PAYMENT_ALLOCATION_STRATEGY.equals(loan.transactionProcessingStrategy())) {
+        if (!overpaidReprocess && AdvancedPaymentScheduleTransactionProcessor.ADVANCED_PAYMENT_ALLOCATION_STRATEGY
+                .equals(loan.transactionProcessingStrategy())) {
             // [For Adv payment allocation strategy] check if charge due date is earlier than last transaction
             // date, if yes trigger reprocess else no reprocessing
             LoanTransaction lastPaymentTransaction = loan.getLastTransactionForReprocessing();
-            if (lastPaymentTransaction != null && DateUtils.isAfter(loanCharge.getEffectiveDueDate(), lastPaymentTransaction.getTransactionDate())) {
-                    reprocessRequired = false;
+            if (lastPaymentTransaction != null
+                    && DateUtils.isAfter(loanCharge.getEffectiveDueDate(), lastPaymentTransaction.getTransactionDate())) {
+                reprocessRequired = false;
             }
         }
 

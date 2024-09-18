@@ -732,7 +732,6 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         return changedDetail;
     }
 
-
     /**
      * Creates a loanTransaction for "Apply Charge Event" with transaction date set to "suppliedTransactionDate". The
      * newly created transaction is also added to the Loan on which this method is called.
