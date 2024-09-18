@@ -774,7 +774,7 @@ public class LoanRepaymentScheduleInstallment extends AbstractAuditableWithUTCDa
         return DateUtils.isAfter(transactionDate, getDueDate());
     }
 
-    private void checkIfRepaymentPeriodObligationsAreMet(final LocalDate transactionDate, final MonetaryCurrency currency) {
+    public void checkIfRepaymentPeriodObligationsAreMet(final LocalDate transactionDate, final MonetaryCurrency currency) {
         this.obligationsMet = getTotalOutstanding(currency).isZero();
         if (this.obligationsMet) {
             this.obligationsMetOnDate = transactionDate;
