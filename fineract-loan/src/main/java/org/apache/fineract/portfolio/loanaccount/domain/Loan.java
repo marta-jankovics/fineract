@@ -705,14 +705,9 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.summary = updateSummaryWithTotalFeeChargesDueAtDisbursement(deriveSumTotalOfChargesDueAtDisbursement());
 
         // store Id's of existing loan transactions and existing reversed loan transactions
-        if (!loanCharge.isDueAtDisbursement() && !loanCharge.isPaid() && getStatus().isOverpaid()) {
-            reprocessTransactions(); // overpaid transactions will be reprocessed and pay this charge
-            doPostLoanTransactionChecks(loanCharge.getEffectiveDueDate(), loanLifecycleStateMachine);
-        } else {
-            final SingleLoanChargeRepaymentScheduleProcessingWrapper wrapper = new SingleLoanChargeRepaymentScheduleProcessingWrapper();
-            wrapper.reprocess(getCurrency(), getDisbursementDate(), getRepaymentScheduleInstallments(), loanCharge);
-            updateLoanSummaryDerivedFields();
-        }
+        final SingleLoanChargeRepaymentScheduleProcessingWrapper wrapper = new SingleLoanChargeRepaymentScheduleProcessingWrapper();
+        wrapper.reprocess(getCurrency(), getDisbursementDate(), getRepaymentScheduleInstallments(), loanCharge);
+        updateLoanSummaryDerivedFields();
 
         loanLifecycleStateMachine.transition(LoanEvent.LOAN_CHARGE_ADDED, this);
     }
@@ -730,6 +725,13 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         updateLoanSummaryDerivedFields();
         return changedTransactionDetail;
     }
+
+    public ChangedTransactionDetail reprocessTransactionsWithPostTransactionChecks(LocalDate transactionDate) {
+        ChangedTransactionDetail changedDetail = reprocessTransactions();
+        doPostLoanTransactionChecks(transactionDate, loanLifecycleStateMachine);
+        return changedDetail;
+    }
+
 
     /**
      * Creates a loanTransaction for "Apply Charge Event" with transaction date set to "suppliedTransactionDate". The
@@ -5484,12 +5486,12 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         return getLoanTransactions().stream().filter(predicate).toList();
     }
 
+    public LoanTransaction getLoanTransaction(Predicate<LoanTransaction> predicate) {
+        return getLoanTransactions().stream().filter(predicate).findFirst().orElse(null);
+    }
+
     public LoanTransaction findChargedOffTransaction() {
-        return getLoanTransactions().stream() //
-                .filter(LoanTransaction::isNotReversed) //
-                .filter(LoanTransaction::isChargeOff) //
-                .findFirst() //
-                .orElse(null);
+        return getLoanTransaction(e -> e.isNotReversed() && e.isChargeOff());
     }
 
     public void handleMaturityDateActivate() {

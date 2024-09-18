@@ -189,7 +189,8 @@ public abstract class AbstractLoanRepaymentScheduleTransactionProcessor implemen
                         loanTransaction.updateLoanTransactionToRepaymentScheduleMappings(
                                 newLoanTransaction.getLoanTransactionToRepaymentScheduleMappings());
                     } else {
-                        createNewTransaction(loanTransaction, newLoanTransaction, changedTransactionDetail);
+                        createNewTransaction(loanTransaction, newLoanTransaction);
+                        changedTransactionDetail.getNewTransactionMappings().put(loanTransaction.getId(), newLoanTransaction);
                     }
                 }
 
@@ -248,7 +249,8 @@ public abstract class AbstractLoanRepaymentScheduleTransactionProcessor implemen
         calculateAccrualActivity(newLoanTransaction, currency, installments);
 
         if (!LoanTransaction.transactionAmountsMatch(currency, loanTransaction, newLoanTransaction)) {
-            createNewTransaction(loanTransaction, newLoanTransaction, changedTransactionDetail);
+            createNewTransaction(loanTransaction, newLoanTransaction);
+            changedTransactionDetail.getNewTransactionMappings().put(loanTransaction.getId(), newLoanTransaction);
         }
     }
 
@@ -403,7 +405,8 @@ public abstract class AbstractLoanRepaymentScheduleTransactionProcessor implemen
 
         newLoanTransaction.updateComponentsAndTotal(principalPortion, interestPortion, feeChargesPortion, penaltychargesPortion);
         if (!LoanTransaction.transactionAmountsMatch(currency, loanTransaction, newLoanTransaction)) {
-            createNewTransaction(loanTransaction, newLoanTransaction, changedTransactionDetail);
+            createNewTransaction(loanTransaction, newLoanTransaction);
+            changedTransactionDetail.getNewTransactionMappings().put(loanTransaction.getId(), newLoanTransaction);
         }
     }
 
@@ -493,7 +496,8 @@ public abstract class AbstractLoanRepaymentScheduleTransactionProcessor implemen
 
         processCreditTransaction(newLoanTransaction, overpaymentHolder, currency, installments);
         if (!LoanTransaction.transactionAmountsMatch(currency, loanTransaction, newLoanTransaction)) {
-            createNewTransaction(loanTransaction, newLoanTransaction, changedTransactionDetail);
+            createNewTransaction(loanTransaction, newLoanTransaction);
+            changedTransactionDetail.getNewTransactionMappings().put(loanTransaction.getId(), newLoanTransaction);
         }
     }
 
@@ -504,15 +508,13 @@ public abstract class AbstractLoanRepaymentScheduleTransactionProcessor implemen
         return mergedList;
     }
 
-    protected void createNewTransaction(LoanTransaction loanTransaction, LoanTransaction newLoanTransaction,
-            ChangedTransactionDetail changedTransactionDetail) {
+    protected void createNewTransaction(LoanTransaction loanTransaction, LoanTransaction newLoanTransaction) {
         loanTransaction.reverse();
         loanTransaction.updateExternalId(null);
         newLoanTransaction.copyLoanTransactionRelations(loanTransaction.getLoanTransactionRelations());
         // Adding Replayed relation from newly created transaction to reversed transaction
         newLoanTransaction.getLoanTransactionRelations().add(
                 LoanTransactionRelation.linkToTransaction(newLoanTransaction, loanTransaction, LoanTransactionRelationTypeEnum.REPLAYED));
-        changedTransactionDetail.getNewTransactionMappings().put(loanTransaction.getId(), newLoanTransaction);
     }
 
     protected void processCreditTransaction(LoanTransaction loanTransaction, MoneyHolder overpaymentHolder, MonetaryCurrency currency,

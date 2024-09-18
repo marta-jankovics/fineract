@@ -922,12 +922,12 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
     public void updateLoanTransactionToRepaymentScheduleMappings(final Collection<LoanTransactionToRepaymentScheduleMapping> mappings) {
         Collection<LoanTransactionToRepaymentScheduleMapping> retainMappings = new ArrayList<>();
         for (LoanTransactionToRepaymentScheduleMapping updatedrepaymentScheduleMapping : mappings) {
-            updateMapingDetail(retainMappings, updatedrepaymentScheduleMapping);
+            updateMappingDetail(retainMappings, updatedrepaymentScheduleMapping);
         }
         this.loanTransactionToRepaymentScheduleMappings.retainAll(retainMappings);
     }
 
-    private boolean updateMapingDetail(final Collection<LoanTransactionToRepaymentScheduleMapping> retainMappings,
+    private boolean updateMappingDetail(final Collection<LoanTransactionToRepaymentScheduleMapping> retainMappings,
             final LoanTransactionToRepaymentScheduleMapping updatedrepaymentScheduleMapping) {
         boolean isMappingUpdated = false;
         for (LoanTransactionToRepaymentScheduleMapping repaymentScheduleMapping : this.loanTransactionToRepaymentScheduleMappings) {
@@ -948,6 +948,33 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
             updatedrepaymentScheduleMapping.setLoanTransaction(this);
             this.loanTransactionToRepaymentScheduleMappings.add(updatedrepaymentScheduleMapping);
             retainMappings.add(updatedrepaymentScheduleMapping);
+        }
+        return isMappingUpdated;
+    }
+
+    public void addLoanTransactionToRepaymentScheduleMappings(final Collection<LoanTransactionToRepaymentScheduleMapping> updatedMappings) {
+        for (LoanTransactionToRepaymentScheduleMapping updatedMapping : updatedMappings) {
+            addMappingDetail(updatedMapping);
+        }
+    }
+
+    private boolean addMappingDetail(final LoanTransactionToRepaymentScheduleMapping updatedMapping) {
+        boolean isMappingUpdated = false;
+        for (LoanTransactionToRepaymentScheduleMapping existingMapping : this.loanTransactionToRepaymentScheduleMappings) {
+            LoanRepaymentScheduleInstallment existingInstallment = existingMapping.getLoanRepaymentScheduleInstallment();
+            LoanRepaymentScheduleInstallment updatedInstallment = updatedMapping.getLoanRepaymentScheduleInstallment();
+            if (existingInstallment.getDueDate().equals(updatedInstallment.getDueDate())
+            && updatedInstallment.getId() != null && updatedInstallment.getId().equals(existingInstallment.getId())) {
+                existingMapping.updateComponents(updatedMapping.getPrincipalPortion(),
+                        updatedMapping.getInterestPortion(), updatedMapping.getFeeChargesPortion(),
+                        updatedMapping.getPenaltyChargesPortion());
+                isMappingUpdated = true;
+                break;
+            }
+        }
+        if (!isMappingUpdated) {
+            updatedMapping.setLoanTransaction(this);
+            this.loanTransactionToRepaymentScheduleMappings.add(updatedMapping);
         }
         return isMappingUpdated;
     }
