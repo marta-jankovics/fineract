@@ -1112,9 +1112,8 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         int firstNormalInstallmentNumber = LoanRepaymentScheduleProcessingWrapper
                 .fetchFirstNormalInstallmentNumber(transactionCtx.getInstallments());
         for (final LoanRepaymentScheduleInstallment installment : transactionCtx.getInstallments()) {
-            boolean isDue = installment.getInstallmentNumber().equals(firstNormalInstallmentNumber)
-                    ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(startDate, installment.getDueDate())
-                    : loanCharge.isDueForCollectionFromAndUpToAndIncluding(startDate, installment.getDueDate());
+            boolean isDue = loanCharge.isDueInPeriod(startDate, installment.getDueDate(),
+                    installment.getInstallmentNumber().equals(firstNormalInstallmentNumber));
             if (isDue) {
                 Integer installmentNumber = installment.getInstallmentNumber();
                 Money paidAmount = loanCharge.updatePaidAmountBy(amountToBePaid, installmentNumber, zero);
@@ -1574,12 +1573,11 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
     }
 
     @NotNull
-    private Set<LoanCharge> getLoanChargesOfInstallment(Set<LoanCharge> charges, LoanRepaymentScheduleInstallment currentInstallment,
-            int firstNormalInstallmentNumber) {
-        return charges.stream().filter(loanCharge -> currentInstallment.getInstallmentNumber().equals(firstNormalInstallmentNumber)
-                ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(currentInstallment.getFromDate(),
-                        currentInstallment.getDueDate())
-                : loanCharge.isDueForCollectionFromAndUpToAndIncluding(currentInstallment.getFromDate(), currentInstallment.getDueDate()))
+    private Set<LoanCharge> getLoanChargesOfInstallment(Set<LoanCharge> charges, LoanRepaymentScheduleInstallment installment,
+            int firstInstallmentNumber) {
+        boolean isFirstInstallment = installment.getInstallmentNumber().equals(firstInstallmentNumber);
+        return charges.stream()
+                .filter(loanCharge -> loanCharge.isDueInPeriod(installment.getFromDate(), installment.getDueDate(), isFirstInstallment))
                 .collect(Collectors.toSet());
     }
 

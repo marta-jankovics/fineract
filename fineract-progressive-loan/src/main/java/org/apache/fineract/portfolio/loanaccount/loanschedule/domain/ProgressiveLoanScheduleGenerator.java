@@ -40,6 +40,7 @@ import org.apache.fineract.portfolio.loanaccount.data.OutstandingAmountsDTO;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanCharge;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleInstallment;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.LoanRepaymentScheduleTransactionProcessor;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.impl.AdvancedPaymentScheduleTransactionProcessor;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleDTO;
@@ -254,25 +255,22 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
     public OutstandingAmountsDTO calculatePrepaymentAmount(MonetaryCurrency currency, LocalDate onDate,
             LoanApplicationTerms loanApplicationTerms, MathContext mc, Loan loan, HolidayDetailDTO holidayDetailDTO,
             LoanRepaymentScheduleTransactionProcessor loanRepaymentScheduleTransactionProcessor) {
-        List<LoanRepaymentScheduleInstallment> installments = loan.getRepaymentScheduleInstallments();
-
-        LocalDate transactionDate = switch (loanApplicationTerms.getPreClosureInterestCalculationStrategy()) {
-            case TILL_PRE_CLOSURE_DATE -> onDate;
-            case TILL_REST_FREQUENCY_DATE -> // find due date of current installment
-                installments.stream().filter(it -> it.getFromDate().isBefore(onDate) && it.getDueDate().isAfter(onDate)).findFirst()
-                        .orElse(installments.get(0)).getDueDate();
-            case NONE -> throw new IllegalStateException("Unexpected PreClosureInterestCalculationStrategy: NONE");
-        };
-
         if (!(loanRepaymentScheduleTransactionProcessor instanceof AdvancedPaymentScheduleTransactionProcessor processor)) {
             throw new IllegalStateException("Expected an AdvancedPaymentScheduleTransactionProcessor");
         }
+
+        List<LoanRepaymentScheduleInstallment> installments = loan.getRepaymentScheduleInstallments();
+        LoanRepaymentScheduleInstallment actualInstallment = LoanRepaymentScheduleProcessingWrapper.findInPeriod(onDate, installments)
+                .orElseThrow(() -> new IllegalStateException("No installment found for transaction date: " + onDate));
+
+        LocalDate transactionDate = switch (loanApplicationTerms.getPreClosureInterestCalculationStrategy()) {
+            case TILL_PRE_CLOSURE_DATE -> onDate;
+            case TILL_REST_FREQUENCY_DATE -> actualInstallment.getDueDate(); // due date of current installment
+            case NONE -> throw new IllegalStateException("Unexpected PreClosureInterestCalculationStrategy: NONE");
+        };
+
         ProgressiveLoanInterestScheduleModel model = processor.reprocessProgressiveLoanTransactions(loan.getDisbursementDate(),
                 loan.retrieveListOfTransactionsForReprocessing(), currency, installments, loan.getActiveCharges()).getRight();
-
-        LoanRepaymentScheduleInstallment actualInstallment = installments.stream()
-                .filter(it -> transactionDate.isAfter(it.getFromDate()) && !transactionDate.isAfter(it.getDueDate())).findFirst()
-                .orElse(installments.get(0));
 
         PayableDetails result = emiCalculator.getPayableDetails(model, actualInstallment.getDueDate(), transactionDate);
         // TODO: We should add all the past due outstanding amounts as well
@@ -336,8 +334,7 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
     private Money getCumulativeAmountOfCharge(LocalDate periodStart, LocalDate periodEnd, PrincipalInterest principalInterestForThisPeriod,
             Money principalDisbursed, Money totalInterestChargedForFullLoanTerm, boolean isInstallmentChargeApplicable,
             boolean isFirstPeriod, LoanCharge loanCharge, Money cumulative, MathContext mc) {
-        boolean isDue = isFirstPeriod ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(periodStart, periodEnd)
-                : loanCharge.isDueForCollectionFromAndUpToAndIncluding(periodStart, periodEnd);
+        boolean isDue = loanCharge.isDueInPeriod(periodStart, periodEnd, isFirstPeriod);
         if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
             cumulative = calculateInstallmentCharge(principalInterestForThisPeriod, cumulative, loanCharge, mc);
         } else if (loanCharge.isOverdueInstallmentCharge() && isDue && loanCharge.getChargeCalculation().isPercentageBased()) {

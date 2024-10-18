@@ -2076,8 +2076,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
 
         for (final LoanCharge loanCharge : loanCharges) {
             if (!loanCharge.isDueAtDisbursement() && loanCharge.isFeeCharge()) {
-                boolean isDue = isFirstPeriod ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(periodStart, periodEnd)
-                        : loanCharge.isDueForCollectionFromAndUpToAndIncluding(periodStart, periodEnd);
+                boolean isDue = loanCharge.isDueInPeriod(periodStart, periodEnd, isFirstPeriod);
                 if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
                     cumulative = calculateInstallmentCharge(principalInterestForThisPeriod, cumulative, loanCharge, mc);
                 } else if (loanCharge.isOverdueInstallmentCharge() && isDue && loanCharge.getChargeCalculation().isPercentageBased()) {
@@ -2139,8 +2138,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
 
         for (final LoanCharge loanCharge : loanCharges) {
             if (loanCharge.isPenaltyCharge()) {
-                boolean isDue = isFirstPeriod ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(periodStart, periodEnd)
-                        : loanCharge.isDueForCollectionFromAndUpToAndIncluding(periodStart, periodEnd);
+                boolean isDue = loanCharge.isDueInPeriod(periodStart, periodEnd, isFirstPeriod);
                 if (loanCharge.isInstalmentFee() && isInstallmentChargeApplicable) {
                     cumulative = calculateInstallmentCharge(principalInterestForThisPeriod, cumulative, loanCharge, mc);
                 } else if (loanCharge.isOverdueInstallmentCharge() && isDue && loanCharge.getChargeCalculation().isPercentageBased()) {

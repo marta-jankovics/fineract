@@ -1109,7 +1109,7 @@ public class LoanWritePlatformServiceJpaRepositoryImpl implements LoanWritePlatf
                 .determineProcessor(loan.getTransactionProcessingStrategyCode());
 
         final LoanRepaymentScheduleInstallment currentInstallment = loan
-                .fetchLoanRepaymentScheduleInstallment(newInterestPaymentWaiverTransaction.getTransactionDate());
+                .getRepaymentScheduleInstallment(newInterestPaymentWaiverTransaction.getTransactionDate());
 
         boolean reprocess = true;
 
