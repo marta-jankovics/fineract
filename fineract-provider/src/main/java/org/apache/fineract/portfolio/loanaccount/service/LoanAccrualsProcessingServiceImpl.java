@@ -22,7 +22,6 @@ import static org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction.a
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -414,7 +413,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
             }
         }
 
-        int totalNumberOfDays = Math.toIntExact(ChronoUnit.DAYS.between(interestStartDate, accrualData.getDueDateAsLocaldate()));
+        int totalNumberOfDays = DateUtils.getExactDifferenceInDays(interestStartDate, accrualData.getDueDateAsLocaldate());
         LocalDate startDate = accrualData.getFromDateAsLocaldate();
         if (DateUtils.isBefore(startDate, accrualData.getInterestCalculatedFrom())) {
             if (DateUtils.isBefore(accrualData.getInterestCalculatedFrom(), tillDate)) {
@@ -423,7 +422,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
                 startDate = tillDate;
             }
         }
-        int daysToBeAccrued = Math.toIntExact(ChronoUnit.DAYS.between(startDate, tillDate));
+        int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, tillDate);
         double interestPerDay = accrualData.getAccruableIncome().doubleValue() / totalNumberOfDays;
 
         if (daysToBeAccrued >= totalNumberOfDays) {
@@ -972,9 +971,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
             }
 
             for (final LoanCharge loanCharge : loanCharges) {
-                boolean isDue = isFirstNormalInstallment
-                        ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(installment.getFromDate(), chargesTillDate)
-                        : loanCharge.isDueForCollectionFromAndUpToAndIncluding(installment.getFromDate(), chargesTillDate);
+                boolean isDue = loanCharge.isDueInPeriod(installment.getFromDate(), chargesTillDate, isFirstNormalInstallment);
                 if (isDue) {
                     if (loanCharge.isFeeCharge()) {
                         dueDateFeeIncome = dueDateFeeIncome.add(loanCharge.amount());
@@ -1010,9 +1007,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
         loan.addLoanTransaction(accrualTransaction);
         Set<LoanChargePaidBy> accrualCharges = accrualTransaction.getLoanChargesPaid();
         for (LoanCharge loanCharge : loan.getActiveCharges()) {
-            boolean isDue = DateUtils.isEqual(fromDate, loan.getDisbursementDate())
-                    ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(fromDate, foreClosureDate)
-                    : loanCharge.isDueForCollectionFromAndUpToAndIncluding(fromDate, foreClosureDate);
+            boolean isDue = loanCharge.isDueInPeriod(fromDate, foreClosureDate, DateUtils.isEqual(fromDate, loan.getDisbursementDate()));
             if (loanCharge.isActive() && !loanCharge.isPaid() && (isDue || loanCharge.isInstalmentFee())) {
                 final LoanChargePaidBy loanChargePaidBy = new LoanChargePaidBy(accrualTransaction, loanCharge,
                         loanCharge.getAmountOutstanding(currency).getAmount(), null);
@@ -1177,9 +1172,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
         List<LoanCharge> loanCharges = new ArrayList<>();
         List<LoanInstallmentCharge> loanInstallmentCharges = new ArrayList<>();
         for (LoanCharge loanCharge : loan.getActiveCharges()) {
-            boolean isDue = DateUtils.isEqual(fromDate, loan.getDisbursementDate())
-                    ? loanCharge.isDueForCollectionFromIncludingAndUpToAndIncluding(fromDate, toDate)
-                    : loanCharge.isDueForCollectionFromAndUpToAndIncluding(fromDate, toDate);
+            boolean isDue = loanCharge.isDueInPeriod(fromDate, toDate, DateUtils.isEqual(fromDate, loan.getDisbursementDate()));
             if (isDue) {
                 if (loanCharge.isPenaltyCharge() && !loanCharge.isInstalmentFee()) {
                     penalties = penalties.add(loanCharge.amount());
