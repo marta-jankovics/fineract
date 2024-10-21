@@ -261,7 +261,7 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
 
         List<LoanRepaymentScheduleInstallment> installments = loan.getRepaymentScheduleInstallments();
         LoanRepaymentScheduleInstallment actualInstallment = LoanRepaymentScheduleProcessingWrapper.findInPeriod(onDate, installments)
-                .orElseThrow(() -> new IllegalStateException("No installment found for transaction date: " + onDate));
+                .orElse(installments.get(0));
 
         LocalDate transactionDate = switch (loanApplicationTerms.getPreClosureInterestCalculationStrategy()) {
             case TILL_PRE_CLOSURE_DATE -> onDate;

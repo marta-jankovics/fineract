@@ -21,7 +21,6 @@ package org.apache.fineract.portfolio.loanaccount.loanschedule.domain;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -222,8 +221,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
             }
 
             // Updates total days in term
-            scheduleParams
-                    .addLoanTermInDays(Math.toIntExact(ChronoUnit.DAYS.between(scheduleParams.getPeriodStartDate(), scheduledDueDate)));
+            scheduleParams.addLoanTermInDays(DateUtils.getExactDifferenceInDays(scheduleParams.getPeriodStartDate(), scheduledDueDate));
             if (termVariationParams.skipPeriod()) {
                 continue;
             }
@@ -737,7 +735,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                         currentTransactions.addAll(createCurrentTransactionList(detail));
 
                         if (!DateUtils.isEqual(transactionDate, scheduleParams.getPeriodStartDate()) || scheduleParams.isFirstPeriod()) {
-                            int periodDays = Math.toIntExact(ChronoUnit.DAYS.between(scheduleParams.getPeriodStartDate(), transactionDate));
+                            int periodDays = DateUtils.getExactDifferenceInDays(scheduleParams.getPeriodStartDate(), transactionDate);
                             // calculates period start date for interest
                             // calculation as per the configuration
                             periodStartDateApplicableForInterest = calculateInterestStartDateForPeriod(loanApplicationTerms,
@@ -745,8 +743,8 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                                     loanApplicationTerms.isInterestChargedFromDateSameAsDisbursalDateEnabled(),
                                     loanApplicationTerms.getExpectedDisbursementDate());
 
-                            int daysInPeriodApplicable = Math
-                                    .toIntExact(ChronoUnit.DAYS.between(periodStartDateApplicableForInterest, transactionDate));
+                            int daysInPeriodApplicable = DateUtils.getExactDifferenceInDays(periodStartDateApplicableForInterest,
+                                    transactionDate);
                             Money interestForCurrentInstallment = Money.zero(currency);
                             if (daysInPeriodApplicable > 0) {
                                 // 5 determine interest till the transaction
@@ -2407,7 +2405,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                 totalFeeChargesCharged = totalFeeChargesCharged.plus(installment.getFeeChargesCharged(currency));
                 totalPenaltyChargesCharged = totalPenaltyChargesCharged.plus(installment.getPenaltyChargesCharged(currency));
                 instalmentNumber++;
-                loanTermInDays = Math.toIntExact(ChronoUnit.DAYS.between(installment.getFromDate(), installment.getDueDate()));
+                loanTermInDays = DateUtils.getExactDifferenceInDays(installment.getFromDate(), installment.getDueDate());
 
                 if (loanApplicationTerms.isInterestRecalculationEnabled()) {
 

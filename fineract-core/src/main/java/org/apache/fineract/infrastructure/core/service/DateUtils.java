@@ -300,8 +300,20 @@ public final class DateUtils {
         return first != null && (second == null || first.isAfter(second));
     }
 
-    public static long getDifferenceInDays(final LocalDate localDateBefore, final LocalDate localDateAfter) {
-        return DAYS.between(localDateBefore, localDateAfter);
+    public static long getDifference(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter, @NotNull ChronoUnit unit) {
+        return unit.between(localDateBefore, localDateAfter);
+    }
+
+    public static int getExactDifference(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter, @NotNull ChronoUnit unit) {
+        return Math.toIntExact(getDifference(localDateBefore, localDateAfter, unit));
+    }
+
+    public static long getDifferenceInDays(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter) {
+        return getDifference(localDateBefore, localDateAfter, DAYS);
+    }
+
+    public static int getExactDifferenceInDays(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter) {
+        return getExactDifference(localDateBefore, localDateAfter, DAYS);
     }
 
     // Parse, format

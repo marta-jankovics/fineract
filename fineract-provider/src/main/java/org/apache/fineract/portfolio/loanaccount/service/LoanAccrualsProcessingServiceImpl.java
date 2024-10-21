@@ -22,7 +22,6 @@ import static org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction.a
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -414,7 +413,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
             }
         }
 
-        int totalNumberOfDays = Math.toIntExact(ChronoUnit.DAYS.between(interestStartDate, accrualData.getDueDateAsLocaldate()));
+        int totalNumberOfDays = DateUtils.getExactDifferenceInDays(interestStartDate, accrualData.getDueDateAsLocaldate());
         LocalDate startDate = accrualData.getFromDateAsLocaldate();
         if (DateUtils.isBefore(startDate, accrualData.getInterestCalculatedFrom())) {
             if (DateUtils.isBefore(accrualData.getInterestCalculatedFrom(), tillDate)) {
@@ -423,7 +422,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
                 startDate = tillDate;
             }
         }
-        int daysToBeAccrued = Math.toIntExact(ChronoUnit.DAYS.between(startDate, tillDate));
+        int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, tillDate);
         double interestPerDay = accrualData.getAccruableIncome().doubleValue() / totalNumberOfDays;
 
         if (daysToBeAccrued >= totalNumberOfDays) {

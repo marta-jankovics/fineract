@@ -47,7 +47,10 @@ public class SingleLoanChargeRepaymentScheduleProcessingWrapper {
         }
         LoanChargePaidBy accrualBy = null;
         if (!loan.isInterestBearing() && loanCharge.isSpecifiedDueDate()) { // TODO: why only if not interest bearing
-            addChargeOnlyRepaymentInstallmentIfRequired(loanCharge, installments);
+            LoanRepaymentScheduleInstallment addedPeriod = addChargeOnlyRepaymentInstallmentIfRequired(loanCharge, installments);
+            if (addedPeriod != null) {
+                addedPeriod.updateObligationsMet(currency, disbursementDate);
+            }
             accrualBy = loanCharge.getLoanChargePaidBySet().stream().filter(e -> e.getLoanTransaction().isAccrual()).findFirst()
                     .orElse(null);
         }
