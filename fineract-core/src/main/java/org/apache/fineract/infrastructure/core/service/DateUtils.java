@@ -300,20 +300,23 @@ public final class DateUtils {
         return first != null && (second == null || first.isAfter(second));
     }
 
-    public static long getDifference(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter, @NotNull ChronoUnit unit) {
-        return unit.between(localDateBefore, localDateAfter);
+    public static long getDifference(LocalDate first, LocalDate second, @NotNull ChronoUnit unit) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Dates must not be null to get difference");
+        }
+        return unit.between(first, second);
     }
 
-    public static int getExactDifference(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter, @NotNull ChronoUnit unit) {
-        return Math.toIntExact(getDifference(localDateBefore, localDateAfter, unit));
+    public static int getExactDifference(LocalDate first, LocalDate second, @NotNull ChronoUnit unit) {
+        return Math.toIntExact(getDifference(first, second, unit));
     }
 
-    public static long getDifferenceInDays(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter) {
-        return getDifference(localDateBefore, localDateAfter, DAYS);
+    public static long getDifferenceInDays(LocalDate first, LocalDate second) {
+        return getDifference(first, second, DAYS);
     }
 
-    public static int getExactDifferenceInDays(@NotNull LocalDate localDateBefore, @NotNull LocalDate localDateAfter) {
-        return getExactDifference(localDateBefore, localDateAfter, DAYS);
+    public static int getExactDifferenceInDays(LocalDate first, LocalDate second) {
+        return getExactDifference(first, second, DAYS);
     }
 
     // Parse, format
