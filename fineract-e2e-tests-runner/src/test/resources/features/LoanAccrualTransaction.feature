@@ -171,8 +171,8 @@ Feature: LoanAccrualTransaction
     Then Loan Transactions tab has the following data:
       | Transaction date | Transaction Type | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
       | 01 July 2023     | Disbursement     | 5000.0 | 0.0       | 0.0      | 0.0  | 0.0       | 5000.0       |
-      | 06 July 2023     | Accrual          | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
       | 06 July 2023     | Repayment        | 5011.0 | 5000.0    | 0.0      | 10.0 | 0.0       | 0.0          |
+      | 06 July 2023     | Accrual          | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
 
 
   Scenario: Verify that the accrual transaction correctly created in case a CBR is applied on the loan
@@ -195,8 +195,8 @@ Feature: LoanAccrualTransaction
     Then Loan Transactions tab has the following data:
       | Transaction date | Transaction Type | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
       | 01 July 2023     | Disbursement     | 5000.0 | 0.0       | 0.0      | 0.0  | 0.0       | 5000.0       |
-      | 06 July 2023     | Accrual          | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
       | 06 July 2023     | Repayment        | 5011.0 | 5000.0    | 0.0      | 10.0 | 0.0       | 0.0          |
+      | 06 July 2023     | Accrual          | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
     When Admin makes Credit Balance Refund transaction on "06 July 2023" with 1 EUR transaction amount
     Then Loan status will be "CLOSED_OBLIGATIONS_MET"
     Then Loan Repayment schedule has 1 periods, with the following data for periods:
@@ -209,8 +209,8 @@ Feature: LoanAccrualTransaction
     Then Loan Transactions tab has the following data:
       | Transaction date | Transaction Type      | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
       | 01 July 2023     | Disbursement          | 5000.0 | 0.0       | 0.0      | 0.0  | 0.0       | 5000.0       |
-      | 06 July 2023     | Accrual               | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
       | 06 July 2023     | Repayment             | 5011.0 | 5000.0    | 0.0      | 10.0 | 0.0       | 0.0          |
+      | 06 July 2023     | Accrual               | 10.0   | 0.0       | 0.0      | 10.0 | 0.0       | 0.0          |
       | 06 July 2023     | Credit Balance Refund | 1.0    | 0.0       | 0.0      | 0.0  | 0.0       | 0.0          |
 
 

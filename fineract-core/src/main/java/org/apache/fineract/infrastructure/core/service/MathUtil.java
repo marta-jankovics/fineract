@@ -359,12 +359,21 @@ public final class MathUtil {
         return value == null || isGreaterThanZero(value) ? value : Money.zero(value.getCurrency());
     }
 
+    /** @return parameter value or ZERO if it is negative */
+    public static Money negativeToZero(Money value, MathContext mc) {
+        return value == null || isGreaterThanZero(value, mc) ? value : Money.zero(value.getCurrency(), mc);
+    }
+
     public static boolean isEmpty(Money value) {
         return value == null || value.isZero();
     }
 
     public static boolean isGreaterThanZero(Money value) {
         return value != null && value.isGreaterThanZero();
+    }
+
+    public static boolean isGreaterThanZero(Money value, MathContext mc) {
+        return value != null && value.isGreaterThanZero(mc);
     }
 
     public static boolean isLessThanZero(Money value) {
@@ -387,8 +396,16 @@ public final class MathUtil {
         return first == null ? second : second == null ? first : first.plus(second);
     }
 
+    public static Money plus(Money first, Money second, MathContext mc) {
+        return first == null ? second : second == null ? first : first.plus(second, mc);
+    }
+
     public static Money plus(Money first, Money second, Money third) {
         return plus(plus(first, second), third);
+    }
+
+    public static Money plus(Money first, Money second, Money third, MathContext mc) {
+        return plus(plus(first, second), third, mc);
     }
 
     public static Money plus(Money first, Money second, Money third, Money fourth) {
@@ -446,13 +463,7 @@ public final class MathUtil {
      * @return
      */
     public static BigDecimal percentageOf(final BigDecimal value, final BigDecimal percentage, final int precision) {
-        BigDecimal percentageOf = BigDecimal.ZERO;
-        if (isGreaterThanZero(value)) {
-            final MathContext mc = new MathContext(precision, MoneyHelper.getRoundingMode());
-            final BigDecimal multiplicand = percentage.divide(BigDecimal.valueOf(100L), mc);
-            percentageOf = value.multiply(multiplicand, mc);
-        }
-        return percentageOf;
+        return percentageOf(value, percentage, new MathContext(precision, MoneyHelper.getRoundingMode()));
     }
 
     /**

@@ -2904,8 +2904,8 @@ Feature: LoanChargeback
       | Transaction date | Transaction Type         | Amount | Principal | Interest | Fees | Penalties | Loan Balance | Overpayment |
       | 01 January 2024  | Disbursement             | 100.0  | 0.0       | 0.0      | 0.0  | 0.0       | 100.0        | 0.0         |
       | 19 January 2024  | Merchant Issued Refund   | 10.0   | 10.0      | 0.0      | 0.0  |  0.0      | 90.0         | 0.0         |
-      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
       | 01 February 2024 | Accrual                  |  5.0   | 0.0       | 0.0      | 0.0  | 5.0       | 0.0          | 0.0         |
+      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
     Then Loan has 0 outstanding amount
     Then Loan has 10 overpaid amount
     Then Loan status will be "OVERPAID"
@@ -2937,8 +2937,8 @@ Feature: LoanChargeback
       | Transaction date | Transaction Type         | Amount | Principal | Interest | Fees | Penalties | Loan Balance | Overpayment |
       | 01 January 2024  | Disbursement             | 100.0  | 0.0       | 0.0      | 0.0  | 0.0       | 100.0        | 0.0         |
       | 19 January 2024  | Merchant Issued Refund   | 10.0   | 10.0      | 0.0      | 0.0  | 0.0       | 90.0         | 0.0         |
-      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
       | 01 February 2024 | Accrual                  |  5.0   | 0.0       | 0.0      | 0.0  | 5.0       | 0.0          | 0.0         |
+      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
       | 15 April 2024    | Chargeback               | 7.0    | 2.0       | 0.0      | 0.0  | 5.0       | 0.0          | 7.0         |
     Then Loan Transactions tab has a "CHARGEBACK" transaction with date "15 April 2024" which has the following Journal entries:
       | Type      | Account code | Account name              | Debit | Credit |
@@ -2961,8 +2961,8 @@ Feature: LoanChargeback
       | Transaction date | Transaction Type         | Amount | Principal | Interest | Fees | Penalties | Loan Balance | Overpayment |
       | 01 January 2024  | Disbursement             | 100.0  | 0.0       | 0.0      | 0.0  | 0.0       | 100.0        | 0.0         |
       | 19 January 2024  | Merchant Issued Refund   | 10.0   | 10.0      | 0.0      | 0.0  | 0.0       | 90.0         | 0.0         |
-      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
       | 01 February 2024 | Accrual                  |  5.0   | 0.0       | 0.0      | 0.0  | 5.0       | 0.0          | 0.0         |
+      | 01 February 2024 | Repayment                | 105.0  | 90.0      | 0.0      | 0.0  | 5.0       | 0.0          | 10.0        |
       | 15 April 2024    | Chargeback               | 7.0    | 2.0       | 0.0      | 0.0  | 5.0       | 0.0          | 7.0         |
       | 16 April 2024    | Chargeback               | 7.0    | 7.0       | 0.0      | 0.0  | 0.0       | 4.0          | 3.0         |
     Then Loan Transactions tab has a "CHARGEBACK" transaction with date "16 April 2024" which has the following Journal entries:

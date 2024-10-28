@@ -2342,7 +2342,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
         loanTransaction.updateLoan(this);
 
-        final boolean isTransactionChronologicallyLatest = isChronologicallyLatestRepaymentOrWaiver(loanTransaction, getLoanTransactions());
+        final boolean isTransactionChronologicallyLatest = isChronologicallyLatestRepaymentOrWaiver(loanTransaction);
 
         if (loanTransaction.isNotZero(loanCurrency())) {
             addLoanTransaction(loanTransaction);
@@ -2486,8 +2486,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
                 .sorted(LoanTransactionComparator.INSTANCE).collect(Collectors.toList());
     }
 
-    private boolean doPostLoanTransactionChecks(final LocalDate transactionDate,
-            final LoanLifecycleStateMachine loanLifecycleStateMachine) {
+    public boolean doPostLoanTransactionChecks(final LocalDate transactionDate, final LoanLifecycleStateMachine loanLifecycleStateMachine) {
         boolean statusChanged = false;
         boolean isOverpaid = MathUtil.isGreaterThanZero(totalOverpaid);
         if (isOverpaid) {
@@ -2531,8 +2530,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.actualMaturityDate = null;
     }
 
-    private boolean isChronologicallyLatestRepaymentOrWaiver(final LoanTransaction loanTransaction,
-            final List<LoanTransaction> loanTransactions) {
+    public boolean isChronologicallyLatestRepaymentOrWaiver(final LoanTransaction loanTransaction) {
         boolean isChronologicallyLatestRepaymentOrWaiver = true;
 
         final LocalDate currentTransactionDate = loanTransaction.getTransactionDate();

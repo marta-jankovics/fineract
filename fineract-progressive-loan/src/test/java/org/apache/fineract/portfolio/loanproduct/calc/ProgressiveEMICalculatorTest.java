@@ -59,6 +59,7 @@ class ProgressiveEMICalculatorTest {
 
     private static MockedStatic<ThreadLocalContextUtil> threadLocalContextUtil = Mockito.mockStatic(ThreadLocalContextUtil.class);
     private static MockedStatic<MoneyHelper> moneyHelper = Mockito.mockStatic(MoneyHelper.class);
+    private static MathContext mc = new MathContext(12, RoundingMode.HALF_EVEN);
     private static LoanProductRelatedDetail loanProductRelatedDetail = Mockito.mock(LoanProductRelatedDetail.class);
 
     private static final MonetaryCurrency monetaryCurrency = MonetaryCurrency
@@ -95,7 +96,7 @@ class ProgressiveEMICalculatorTest {
         final BigDecimal daysInYear = BigDecimal.valueOf(daysInYearType.getNumberOfDays(period.getFromDate()));
         final BigDecimal daysInMonth = BigDecimal.valueOf(daysInMonthType.getNumberOfDays(period.getFromDate()));
         final BigDecimal rateFactor = emiCalculator.rateFactorByRepaymentEveryMonth(interestRate, BigDecimal.ONE, daysInMonth, daysInYear,
-                daysInPeriod, daysInPeriod);
+                daysInPeriod, daysInPeriod, mc);
         return rateFactor.setScale(12, MoneyHelper.getRoundingMode());
     }
 
@@ -145,7 +146,7 @@ class ProgressiveEMICalculatorTest {
             BigDecimal rateFactorPlus1 = getRateFactorsByMonth(daysInYearType, daysInMonthType, interestRate, period).add(BigDecimal.ONE,
                     MoneyHelper.getMathContext());
 
-            final BigDecimal currentFnValue = emiCalculator.fnValue(previousFnValue, rateFactorPlus1);
+            final BigDecimal currentFnValue = emiCalculator.fnValue(previousFnValue, rateFactorPlus1, mc);
             fnValuesCalculated.add(currentFnValue);
 
             previousFnValue = currentFnValue;
@@ -171,7 +172,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestScheduleModel = emiCalculator
-                .generateInterestScheduleModel(expectedRepaymentPeriods, loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                .generateInterestScheduleModel(expectedRepaymentPeriods, loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         Assertions.assertTrue(interestScheduleModel != null);
         Assertions.assertTrue(interestScheduleModel.loanProductRelatedDetail() != null);
@@ -211,7 +212,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = toMoney(100.0);
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -256,7 +257,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = toMoney(100.0);
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -293,7 +294,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -305,6 +306,53 @@ class ProgressiveEMICalculatorTest {
         checkPeriod(interestSchedule, 3, 0, 17.13, 0.007901833333, 0.40, 16.73, 33.86);
         checkPeriod(interestSchedule, 4, 0, 17.13, 0.007901833333, 0.27, 16.86, 17.0);
         checkPeriod(interestSchedule, 5, 0, 17.13, 0.007901833333, 0.13, 17.00, 0.0);
+    }
+
+    @Test
+    public void testEMICalculation_multi_disbursedAmt200_2ndOnDueDate_dayInYears360_daysInMonth30_repayEvery1Month() {
+
+        final List<LoanScheduleModelRepaymentPeriod> expectedRepaymentPeriods = new ArrayList<>();
+
+        expectedRepaymentPeriods.add(repayment(1, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 1)));
+        expectedRepaymentPeriods.add(repayment(2, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1)));
+        expectedRepaymentPeriods.add(repayment(3, LocalDate.of(2024, 3, 1), LocalDate.of(2024, 4, 1)));
+        expectedRepaymentPeriods.add(repayment(4, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 5, 1)));
+        expectedRepaymentPeriods.add(repayment(5, LocalDate.of(2024, 5, 1), LocalDate.of(2024, 6, 1)));
+        expectedRepaymentPeriods.add(repayment(6, LocalDate.of(2024, 6, 1), LocalDate.of(2024, 7, 1)));
+
+        final BigDecimal interestRate = BigDecimal.valueOf(9.4822);
+        final Integer installmentAmountInMultiplesOf = null;
+
+        Mockito.when(loanProductRelatedDetail.getAnnualNominalInterestRate()).thenReturn(interestRate);
+        Mockito.when(loanProductRelatedDetail.getDaysInYearType()).thenReturn(DaysInYearType.DAYS_360.getValue());
+        Mockito.when(loanProductRelatedDetail.getDaysInMonthType()).thenReturn(DaysInMonthType.DAYS_30.getValue());
+        Mockito.when(loanProductRelatedDetail.getRepaymentPeriodFrequencyType()).thenReturn(PeriodFrequencyType.MONTHS);
+        Mockito.when(loanProductRelatedDetail.getRepayEvery()).thenReturn(1);
+        Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
+
+        final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
+
+        final Money disbursedAmount = toMoney(100.0);
+        emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
+
+        checkPeriod(interestSchedule, 0, 0, 17.13, 0.0, 0.0, 0.79, 16.34, 83.66);
+        checkPeriod(interestSchedule, 0, 1, 17.13, 0.007901833333, 0.79, 16.34, 83.66);
+        checkPeriod(interestSchedule, 1, 0, 17.13, 0.007901833333, 0.66, 16.47, 67.19);
+        checkPeriod(interestSchedule, 2, 0, 17.13, 0.007901833333, 0.53, 16.60, 50.59);
+        checkPeriod(interestSchedule, 3, 0, 17.13, 0.007901833333, 0.40, 16.73, 33.86);
+        checkPeriod(interestSchedule, 4, 0, 17.13, 0.007901833333, 0.27, 16.86, 17.0);
+        checkPeriod(interestSchedule, 5, 0, 17.13, 0.007901833333, 0.13, 17.00, 0.0);
+
+        emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 3, 1), disbursedAmount);
+
+        checkPeriod(interestSchedule, 0, 0, 17.13, 0.0, 0.0, 0.79, 16.34, 83.66);
+        checkPeriod(interestSchedule, 0, 1, 17.13, 0.007901833333, 0.79, 16.34, 83.66);
+        checkPeriod(interestSchedule, 1, 0, 17.13, 0.007901833333, 0.66, 16.47, 167.19);
+        checkPeriod(interestSchedule, 2, 0, 42.63, 0.007901833333, 1.32, 1.32, 41.31, 125.88);
+        checkPeriod(interestSchedule, 3, 0, 42.63, 0.007901833333, 0.99, 41.64, 84.24);
+        checkPeriod(interestSchedule, 4, 0, 42.63, 0.007901833333, 0.67, 41.96, 42.28);
+        checkPeriod(interestSchedule, 5, 0, 42.61, 0.007901833333, 0.33, 42.28, 0.0);
     }
 
     @Test
@@ -330,7 +378,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -370,7 +418,7 @@ class ProgressiveEMICalculatorTest {
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 14));
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -414,7 +462,7 @@ class ProgressiveEMICalculatorTest {
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 14));
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -460,7 +508,7 @@ class ProgressiveEMICalculatorTest {
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 15));
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -577,7 +625,7 @@ class ProgressiveEMICalculatorTest {
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 15));
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -661,7 +709,7 @@ class ProgressiveEMICalculatorTest {
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 15));
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = toMoney(100.0);
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -739,7 +787,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -788,7 +836,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -837,7 +885,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 5), disbursedAmount);
@@ -881,7 +929,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2023, 12, 12), disbursedAmount);
@@ -915,7 +963,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(1000));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -948,7 +996,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -981,7 +1029,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -1014,7 +1062,7 @@ class ProgressiveEMICalculatorTest {
         Mockito.when(loanProductRelatedDetail.getCurrency()).thenReturn(monetaryCurrency);
 
         final ProgressiveLoanInterestScheduleModel interestSchedule = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf);
+                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = Money.of(monetaryCurrency, BigDecimal.valueOf(100));
         emiCalculator.addDisbursement(interestSchedule, LocalDate.of(2024, 1, 1), disbursedAmount);
@@ -1031,7 +1079,7 @@ class ProgressiveEMICalculatorTest {
     private static LoanScheduleModelRepaymentPeriod repayment(int periodNumber, LocalDate fromDate, LocalDate dueDate) {
         final Money zeroAmount = Money.zero(monetaryCurrency);
         return LoanScheduleModelRepaymentPeriod.repayment(periodNumber, fromDate, dueDate, zeroAmount, zeroAmount, zeroAmount, zeroAmount,
-                zeroAmount, zeroAmount, false);
+                zeroAmount, zeroAmount, false, mc);
     }
 
     @NotNull

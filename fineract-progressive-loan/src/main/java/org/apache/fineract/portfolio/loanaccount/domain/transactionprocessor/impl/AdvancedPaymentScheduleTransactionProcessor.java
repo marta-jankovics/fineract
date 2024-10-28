@@ -176,7 +176,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         final Integer installmentAmountInMultiplesOf = loan.getLoanProduct().getInstallmentAmountInMultiplesOf();
         final LoanProductRelatedDetail loanProductRelatedDetail = loan.getLoanRepaymentScheduleDetail();
         ProgressiveLoanInterestScheduleModel scheduleModel = emiCalculator.generateModel(loanProductRelatedDetail,
-                installmentAmountInMultiplesOf, installments);
+                installmentAmountInMultiplesOf, installments, overpaymentHolder.getMoneyObject().getMc());
         ProgressiveTransactionCtx ctx = new ProgressiveTransactionCtx(currency, installments, charges, overpaymentHolder,
                 changedTransactionDetail, scheduleModel);
 
@@ -828,7 +828,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         Money amortizableAmount = disbursementTransaction.getAmount(transactionCtx.getCurrency()).minus(downPaymentAmount);
 
         if (amortizableAmount.isGreaterThanZero()) {
-            Money increasePrincipalBy = amortizableAmount.dividedBy(noCandidateRepaymentInstallments, mc.getRoundingMode());
+            Money increasePrincipalBy = amortizableAmount.dividedBy(noCandidateRepaymentInstallments, MoneyHelper.getMathContext());
             MoneyHolder moneyHolder = new MoneyHolder(amortizableAmount);
 
             candidateRepaymentInstallments.forEach(i -> {
@@ -1193,7 +1193,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                     case IN_ADVANCE -> {
                         int numberOfInstallments = inAdvanceInstallments.size();
                         if (numberOfInstallments > 0) {
-                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getRoundingMode());
+                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getMathContext());
                             Money balanceAdjustment = transactionAmountUnprocessed.minus(evenPortion.multipliedBy(numberOfInstallments));
                             for (LoanRepaymentScheduleInstallment inAdvanceInstallment : inAdvanceInstallments) {
                                 Set<LoanCharge> inAdvanceInstallmentCharges = getLoanChargesOfInstallment(charges, inAdvanceInstallment,
@@ -1261,7 +1261,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                     int numberOfInstallments = currentInstallments.size();
                     refundedPortion = zero;
                     if (numberOfInstallments > 0) {
-                        Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getRoundingMode());
+                        Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getMathContext());
                         Money balanceAdjustment = transactionAmountUnprocessed.minus(evenPortion.multipliedBy(numberOfInstallments));
                         for (LoanRepaymentScheduleInstallment internalCurrentInstallment : currentInstallments) {
                             currentInstallment = internalCurrentInstallment;
@@ -1466,7 +1466,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                         if (numberOfInstallments > 0) {
                             // This will be the same amount as transactionAmountUnprocessed in case of the future
                             // installment allocation is NEXT_INSTALLMENT or LAST_INSTALLMENT
-                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getRoundingMode());
+                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getMathContext());
                             // Adjustment might be needed due to the divide operation and the rounding mode
                             Money balanceAdjustment = transactionAmountUnprocessed.minus(evenPortion.multipliedBy(numberOfInstallments));
                             for (LoanRepaymentScheduleInstallment inAdvanceInstallment : inAdvanceInstallments) {
@@ -1643,7 +1643,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                         if (numberOfInstallments > 0) {
                             // This will be the same amount as transactionAmountUnprocessed in case of the future
                             // installment allocation is NEXT_INSTALLMENT or LAST_INSTALLMENT
-                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getRoundingMode());
+                            Money evenPortion = transactionAmountUnprocessed.dividedBy(numberOfInstallments, MoneyHelper.getMathContext());
                             // Adjustment might be needed due to the divide operation and the rounding mode
                             Money balanceAdjustment = transactionAmountUnprocessed.minus(evenPortion.multipliedBy(numberOfInstallments));
                             for (LoanRepaymentScheduleInstallment internalCurrentInstallment : currentInstallments) {
@@ -1721,7 +1721,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         Money adjustCalculatedPrincipal = Money.zero(currency);
         if (outstandingPrincipalBalance.get().isGreaterThanZero()) {
             calculatedPrincipal = outstandingPrincipalBalance.get()
-                    .dividedBy(loanTransaction.getLoanReAgeParameter().getNumberOfInstallments(), MoneyHelper.getRoundingMode());
+                    .dividedBy(loanTransaction.getLoanReAgeParameter().getNumberOfInstallments(), MoneyHelper.getMathContext());
             Integer installmentAmountInMultiplesOf = loanTransaction.getLoan().getLoanProduct().getInstallmentAmountInMultiplesOf();
             if (installmentAmountInMultiplesOf != null) {
                 calculatedPrincipal = Money.roundToMultiplesOf(calculatedPrincipal, installmentAmountInMultiplesOf);
