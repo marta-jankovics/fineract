@@ -1795,12 +1795,12 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
     }
 
     @Override
-    public Collection<LoanScheduleAccrualData> retrievePeriodicAccrualData(final LocalDate tillDate) {
+    public List<LoanScheduleAccrualData> retrievePeriodicAccrualData(final LocalDate tillDate) {
         return retrievePeriodicAccrualData(tillDate, null);
     }
 
     @Override
-    public Collection<LoanScheduleAccrualData> retrievePeriodicAccrualData(final LocalDate tillDate, final Loan loan) {
+    public List<LoanScheduleAccrualData> retrievePeriodicAccrualData(final LocalDate tillDate, final Loan loan) {
         final String chargeAccrualDateCriteria = configurationDomainService.getAccrualDateConfigForCharge();
         if (chargeAccrualDateCriteria.equalsIgnoreCase(ACCRUAL_ON_CHARGE_SUBMITTED_ON_DATE)) {
             return retrievePeriodicAccrualDataForChargeSubmittedDateProcessing(tillDate, loan);
@@ -1808,7 +1808,7 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
         return retrievePeriodicAccrualDataForDefaultProcessing(tillDate, loan);
     }
 
-    private Collection<LoanScheduleAccrualData> retrievePeriodicAccrualDataForDefaultProcessing(final LocalDate tillDate, final Loan loan) {
+    private List<LoanScheduleAccrualData> retrievePeriodicAccrualDataForDefaultProcessing(final LocalDate tillDate, final Loan loan) {
         LoanSchedulePeriodicAccrualMapper mapper = new LoanSchedulePeriodicAccrualMapper();
         LocalDate organisationStartDate = this.configurationDomainService.retrieveOrganisationStartDate();
         final StringBuilder sqlBuilder = new StringBuilder(400);
@@ -1836,7 +1836,7 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
         return this.namedParameterJdbcTemplate.query(sqlBuilder.toString(), paramMap, mapper);
     }
 
-    private Collection<LoanScheduleAccrualData> retrievePeriodicAccrualDataForChargeSubmittedDateProcessing(final LocalDate tillDate,
+    private List<LoanScheduleAccrualData> retrievePeriodicAccrualDataForChargeSubmittedDateProcessing(final LocalDate tillDate,
             final Loan loan) {
         LoanSchedulePeriodicAccrualMapper mapper = new LoanSchedulePeriodicAccrualMapper();
         LocalDate organisationStartDate = this.configurationDomainService.retrieveOrganisationStartDate();
@@ -2130,7 +2130,7 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
     }
 
     @Override
-    public Collection<LoanTransactionData> retrieveWaiverLoanTransactions(final Long loanId) {
+    public List<LoanTransactionData> retrieveWaiverLoanTransactions(final Long loanId) {
         try {
 
             final LoanTransactionDerivedComponentMapper rm = new LoanTransactionDerivedComponentMapper(sqlGenerator);
@@ -2196,7 +2196,7 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
     }
 
     @Override
-    public Collection<LoanSchedulePeriodData> fetchWaiverInterestRepaymentData(final Long loanId) {
+    public List<LoanSchedulePeriodData> fetchWaiverInterestRepaymentData(final Long loanId) {
         try {
 
             final LoanRepaymentWaiverMapper rm = new LoanRepaymentWaiverMapper();

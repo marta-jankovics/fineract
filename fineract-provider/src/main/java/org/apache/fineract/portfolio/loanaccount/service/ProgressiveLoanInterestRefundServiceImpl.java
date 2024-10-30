@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.domain.Money;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleInstallment;
@@ -65,7 +66,7 @@ public class ProgressiveLoanInterestRefundServiceImpl implements InterestRefundS
     }
 
     private static LoanTransaction calculateReducedAmountDisbursements(LoanTransaction lt, final AtomicReference<BigDecimal> refundFinal) {
-        if (lt.getTypeOf().isDisbursement() && refundFinal.get().compareTo(BigDecimal.ZERO) > 0) {
+        if (lt.getTypeOf().isDisbursement() && MathUtil.isGreaterThanZero(refundFinal.get())) {
             LoanTransaction result = new LoanTransaction(lt.getLoan(), lt.getLoan().getOffice(), lt.getTypeOf().getValue(), lt.getDateOf(),
                     lt.getAmount().subtract(refundFinal.get()), lt.getPrincipalPortion(), lt.getInterestPortion(),
                     lt.getFeeChargesPortion(), lt.getPenaltyChargesPortion(),
@@ -87,8 +88,8 @@ public class ProgressiveLoanInterestRefundServiceImpl implements InterestRefundS
         List<LoanRepaymentScheduleInstallment> installmentsToReprocess = new ArrayList<>(
                 loan.getRepaymentScheduleInstallments().stream().filter(i -> !i.isReAged() && !i.isAdditional()).toList());
 
-        ProgressiveLoanInterestScheduleModel modelAfter = processor.reprocessProgressiveLoanTransactions(loan.getDisbursementDate(),
-                transactionsToReprocess, loan.getCurrency(), installmentsToReprocess, loan.getActiveCharges()).getRight();
+        ProgressiveLoanInterestScheduleModel modelAfter = processor.calculateInterestScheduleModel(loan.getDisbursementDate(),
+                transactionsToReprocess, loan.getCurrency(), installmentsToReprocess, loan.getActiveCharges());
         BigDecimal payableInterest = BigDecimal.ZERO;
         if (modelAfter != null && loan.getStatus().isActive()) {
             LoanRepaymentScheduleInstallment actualInstallment = loan.getRelatedRepaymentScheduleInstallment(relatedRefundTransactionDate);

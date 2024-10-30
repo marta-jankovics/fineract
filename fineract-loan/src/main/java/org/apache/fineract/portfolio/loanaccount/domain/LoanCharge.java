@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
@@ -1020,8 +1019,8 @@ public class LoanCharge extends AbstractAuditableWithUTCDateTimeCustom<Long> {
                 getChargeCalculation().getCode(), String.valueOf(getChargeCalculation().getValue()));
         EnumOptionData chargePaymentModeData = new EnumOptionData((long) getChargePaymentMode().ordinal(), getChargePaymentMode().getCode(),
                 String.valueOf(getChargePaymentMode().getValue()));
-        Set<LoanInstallmentChargeData> loanInstallmentChargeDataSet = installmentCharges().stream().map(LoanInstallmentCharge::toData)
-                .collect(Collectors.toSet());
+        List<LoanInstallmentChargeData> loanInstallmentChargeDataList = installmentCharges().stream().map(LoanInstallmentCharge::toData)
+                .toList();
 
         return LoanChargeData.builder().id(getId()).chargeId(getCharge().getId()).name(getCharge().getName())
                 .currency(getCharge().toData().getCurrency()).amount(amount).amountPaid(amountPaid).amountWaived(amountWaived)
@@ -1029,6 +1028,6 @@ public class LoanCharge extends AbstractAuditableWithUTCDateTimeCustom<Long> {
                 .submittedOnDate(submittedOnDate).dueDate(dueDate).chargeCalculationType(chargeCalculationTypeData).percentage(percentage)
                 .amountPercentageAppliedTo(amountPercentageAppliedTo).amountOrPercentage(amountOrPercentage).penalty(penaltyCharge)
                 .chargePaymentMode(chargePaymentModeData).paid(paid).waived(waived).loanId(loan.getId()).minCap(minCap).maxCap(maxCap)
-                .installmentChargeData(loanInstallmentChargeDataSet).externalId(externalId).build();
+                .installmentChargeData(loanInstallmentChargeDataList).externalId(externalId).build();
     }
 }

@@ -104,9 +104,9 @@ public interface LoanReadPlatformService {
 
     LoanTransactionData retrieveLoanWriteoffTemplate(Long loanId);
 
-    Collection<LoanScheduleAccrualData> retrievePeriodicAccrualData(LocalDate tillDate);
+    List<LoanScheduleAccrualData> retrievePeriodicAccrualData(LocalDate tillDate);
 
-    Collection<LoanScheduleAccrualData> retrievePeriodicAccrualData(LocalDate tillDate, Loan loan);
+    List<LoanScheduleAccrualData> retrievePeriodicAccrualData(LocalDate tillDate, Loan loan);
 
     LoanTransactionData retrieveLoanChargeOffTemplate(Long loanId);
 
@@ -116,9 +116,9 @@ public interface LoanReadPlatformService {
 
     LoanTransactionData retrieveLoanPrePaymentTemplate(LoanTransactionType repaymentTransactionType, Long loanId, LocalDate onDate);
 
-    Collection<LoanTransactionData> retrieveWaiverLoanTransactions(Long loanId);
+    List<LoanTransactionData> retrieveWaiverLoanTransactions(Long loanId);
 
-    Collection<LoanSchedulePeriodData> fetchWaiverInterestRepaymentData(Long loanId);
+    List<LoanSchedulePeriodData> fetchWaiverInterestRepaymentData(Long loanId);
 
     boolean isGuaranteeRequired(Long loanId);
 

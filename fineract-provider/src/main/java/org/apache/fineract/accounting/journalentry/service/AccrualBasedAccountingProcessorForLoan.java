@@ -51,20 +51,23 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
             final LocalDate transactionDate = loanTransactionDTO.getTransactionDate();
             this.helper.checkForBranchClosures(latestGLClosure, transactionDate);
 
-            /** Handle Disbursements **/
+            // Handle Disbursements
             if (loanTransactionDTO.getTransactionType().isDisbursement()) {
                 createJournalEntriesForDisbursements(loanDTO, loanTransactionDTO, office);
             }
 
-            /*** Handle Accruals ***/
+            // Handle Accruals
             if (loanTransactionDTO.getTransactionType().isAccrual()) {
-                createJournalEntriesForAccruals(loanDTO, loanTransactionDTO, office);
+                createJournalEntriesForAccruals(loanDTO, loanTransactionDTO, office, false);
+            }
+            if (loanTransactionDTO.getTransactionType().isAccrualAdjustment()) {
+                createJournalEntriesForAccruals(loanDTO, loanTransactionDTO, office, true);
             }
 
-            /***
+            /*
              * Handle repayments, loan refunds, repayments at disbursement and reversal of Repayments and Repayments at
              * disbursement (except charge adjustment)
-             ***/
+             */
             else if ((loanTransactionDTO.getTransactionType().isRepaymentType()
                     && !loanTransactionDTO.getTransactionType().isChargeAdjustment())
                     || loanTransactionDTO.getTransactionType().isRepaymentAtDisbursement()
@@ -73,28 +76,28 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
                         loanTransactionDTO.getTransactionType().isRepaymentAtDisbursement());
             }
 
-            /** Logic for handling recovery payments **/
+            // Logic for handling recovery payments
             else if (loanTransactionDTO.getTransactionType().isRecoveryRepayment()) {
                 createJournalEntriesForRecoveryRepayments(loanDTO, loanTransactionDTO, office);
             }
 
-            /** Logic for Refunds of Overpayments **/
+            // Logic for Refunds of Overpayments
             else if (loanTransactionDTO.getTransactionType().isRefund()) {
                 createJournalEntriesForRefund(loanDTO, loanTransactionDTO, office);
             }
 
-            /** Logic for Credit Balance Refunds **/
+            // Logic for Credit Balance Refunds
             else if (loanTransactionDTO.getTransactionType().isCreditBalanceRefund()) {
                 createJournalEntriesForCreditBalanceRefund(loanDTO, loanTransactionDTO, office);
             }
 
-            /** Handle Write Offs, waivers and their reversals **/
+            // Handle Write Offs, waivers and their reversals
             else if ((loanTransactionDTO.getTransactionType().isWriteOff() || loanTransactionDTO.getTransactionType().isWaiveInterest()
                     || loanTransactionDTO.getTransactionType().isWaiveCharges())) {
                 createJournalEntriesForRepaymentsAndWriteOffs(loanDTO, loanTransactionDTO, office, true, false);
             }
 
-            /** Logic for Refunds of Active Loans **/
+            // Logic for Refunds of Active Loans
             else if (loanTransactionDTO.getTransactionType().isRefundForActiveLoans()) {
                 createJournalEntriesForRefundForActiveLoan(loanDTO, loanTransactionDTO, office);
             }
@@ -1169,8 +1172,8 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
      * @param loanTransactionDTO
      * @param office
      */
-    private void createJournalEntriesForAccruals(final LoanDTO loanDTO, final LoanTransactionDTO loanTransactionDTO, final Office office) {
-
+    private void createJournalEntriesForAccruals(final LoanDTO loanDTO, final LoanTransactionDTO loanTransactionDTO, final Office office,
+            boolean adjustment) {
         // loan properties
         final Long loanProductId = loanDTO.getLoanProductId();
         final Long loanId = loanDTO.getLoanId();
@@ -1182,7 +1185,7 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
         final BigDecimal interestAmount = loanTransactionDTO.getInterest();
         final BigDecimal feesAmount = loanTransactionDTO.getFees();
         final BigDecimal penaltiesAmount = loanTransactionDTO.getPenalties();
-        final boolean isReversed = loanTransactionDTO.isReversed();
+        final boolean isReversed = adjustment != loanTransactionDTO.isReversed();
         final Long paymentTypeId = loanTransactionDTO.getPaymentTypeId();
 
         // create journal entries for recognizing interest (or reversal)

@@ -30,6 +30,7 @@ import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
+import org.apache.fineract.portfolio.loanproduct.domain.AllocationType;
 
 @Entity
 @Table(name = "m_loan_transaction_repayment_schedule_mapping")
@@ -144,6 +145,15 @@ public class LoanTransactionToRepaymentScheduleMapping extends AbstractPersistab
 
     public Money getPenaltyChargesPortion(final MonetaryCurrency currency) {
         return Money.of(currency, this.penaltyChargesPortion);
+    }
+
+    public BigDecimal getPortion(AllocationType allocationType) {
+        return switch (allocationType) {
+            case PRINCIPAL -> getPrincipalPortion();
+            case INTEREST -> getInterestPortion();
+            case FEE -> getFeeChargesPortion();
+            case PENALTY -> getPenaltyChargesPortion();
+        };
     }
 
     public LoanTransaction getLoanTransaction() {

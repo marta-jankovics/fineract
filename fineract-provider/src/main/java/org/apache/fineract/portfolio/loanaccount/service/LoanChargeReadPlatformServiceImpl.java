@@ -214,7 +214,7 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
     }
 
     @Override
-    public Collection<LoanInstallmentChargeData> retrieveInstallmentLoanCharges(Long loanChargeId, boolean onlyPaymentPendingCharges) {
+    public List<LoanInstallmentChargeData> retrieveInstallmentLoanCharges(Long loanChargeId, boolean onlyPaymentPendingCharges) {
         final LoanInstallmentChargeMapper rm = new LoanInstallmentChargeMapper();
         String sql = "select " + rm.schema() + "where lic.loan_charge_id= ? ";
         if (onlyPaymentPendingCharges) {
@@ -264,14 +264,14 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
     }
 
     @Override
-    public Collection<LoanChargeData> retrieveLoanChargesForAccrual(final Long loanId) {
+    public List<LoanChargeData> retrieveLoanChargesForAccrual(final Long loanId) {
 
         final LoanChargeAccrualMapper rm = new LoanChargeAccrualMapper();
 
         final String sql = "select " + rm.schema() + " where lc.loan_id=? AND lc.is_active = true group by  lc.id "
                 + " order by lc.charge_time_enum ASC, lc.due_for_collection_as_of_date ASC, lc.is_penalty ASC";
 
-        Collection<LoanChargeData> charges = this.jdbcTemplate.query(sql, rm, // NOSONAR
+        List<LoanChargeData> charges = this.jdbcTemplate.query(sql, rm, // NOSONAR
                 LoanTransactionType.ACCRUAL.getValue(), loanId, loanId);
         charges = updateLoanChargesWithUnrecognizedIncome(loanId, charges);
 
@@ -284,8 +284,7 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
         charges.removeAll(removeCharges);
         for (LoanChargeData loanChargeData : removeCharges) {
             if (loanChargeData.isInstallmentFee()) {
-                Collection<LoanInstallmentChargeData> installmentChargeDatas = retrieveInstallmentLoanChargesForAccrual(
-                        loanChargeData.getId());
+                List<LoanInstallmentChargeData> installmentChargeDatas = retrieveInstallmentLoanChargesForAccrual(loanChargeData.getId());
                 LoanChargeData modifiedChargeData = new LoanChargeData(loanChargeData, installmentChargeDatas);
                 charges.add(modifiedChargeData);
             }
@@ -347,8 +346,7 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
         }
     }
 
-    private Collection<LoanChargeData> updateLoanChargesWithUnrecognizedIncome(final Long loanId,
-            Collection<LoanChargeData> loanChargeDatas) {
+    private List<LoanChargeData> updateLoanChargesWithUnrecognizedIncome(final Long loanId, List<LoanChargeData> loanChargeDatas) {
 
         final LoanChargeUnRecognizedIncomeMapper rm = new LoanChargeUnRecognizedIncomeMapper(loanChargeDatas);
 
@@ -398,22 +396,17 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
         }
     }
 
-    private Collection<LoanInstallmentChargeData> retrieveInstallmentLoanChargesForAccrual(Long loanChargeId) {
+    private List<LoanInstallmentChargeData> retrieveInstallmentLoanChargesForAccrual(Long loanChargeId) {
         final LoanInstallmentChargeAccrualMapper rm = new LoanInstallmentChargeAccrualMapper();
         String sql = "select " + rm.schema()
                 + " where lic.loan_charge_id= ?  group by lsi.installment, lsi.duedate, lic.amount_outstanding_derived, lic.amount, lic.is_paid_derived, lic.amount_waived_derived, lic.waived";
-        Collection<LoanInstallmentChargeData> chargeDatas = this.jdbcTemplate.query(sql, rm, // NOSONAR
+        List<LoanInstallmentChargeData> chargeDatas = this.jdbcTemplate.query(sql, rm, // NOSONAR
                 LoanTransactionType.ACCRUAL.getValue(), loanChargeId);
         final Map<Integer, LoanInstallmentChargeData> installmentChargeDatas = new HashMap<>();
         for (LoanInstallmentChargeData installmentChargeData : chargeDatas) {
             installmentChargeDatas.put(installmentChargeData.getInstallmentNumber(), installmentChargeData);
         }
-        chargeDatas = updateInstallmentLoanChargesWithUnrecognizedIncome(loanChargeId, installmentChargeDatas);
-        for (LoanInstallmentChargeData installmentChargeData : chargeDatas) {
-            installmentChargeDatas.put(installmentChargeData.getInstallmentNumber(), installmentChargeData);
-        }
-        return installmentChargeDatas.values();
-
+        return updateInstallmentLoanChargesWithUnrecognizedIncome(loanChargeId, installmentChargeDatas);
     }
 
     private static final class LoanInstallmentChargeAccrualMapper implements RowMapper<LoanInstallmentChargeData> {
@@ -461,7 +454,7 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
         }
     }
 
-    private Collection<LoanInstallmentChargeData> updateInstallmentLoanChargesWithUnrecognizedIncome(final Long loanChargeId,
+    private List<LoanInstallmentChargeData> updateInstallmentLoanChargesWithUnrecognizedIncome(final Long loanChargeId,
             final Map<Integer, LoanInstallmentChargeData> installmentChargeDatas) {
         final LoanInstallmentChargeUnRecognizedIncomeMapper rm = new LoanInstallmentChargeUnRecognizedIncomeMapper(installmentChargeDatas);
         String sql = "select " + rm.schema() + " where cpb.loan_charge_id = ? group by cpb.installment_number  ";

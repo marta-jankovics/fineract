@@ -118,19 +118,6 @@ public class RepaymentPeriod {
         return calculatedDueInterest;
     }
 
-    private Money getZero(MathContext mc) {
-        // EMI is always initiated
-        return this.emi.zero(mc);
-    }
-
-    public Money getCalculatedDuePrincipal() {
-        return getEmi().minus(getCalculatedDueInterest(), mc);
-    }
-
-    public boolean isFullyPaid() {
-        return getEmi().isEqualTo(getPaidPrincipal().plus(getPaidInterest()));
-    }
-
     public Money getDueInterest() {
         if (dueInterestCalculation == null) {
             // Due interest might be the maximum paid if there is pay-off or early repayment
@@ -141,13 +128,25 @@ public class RepaymentPeriod {
         return dueInterestCalculation.get();
     }
 
+    public Money getCalculatedDuePrincipal() {
+        return getEmi().minus(getCalculatedDueInterest(), mc);
+    }
+
     public Money getDuePrincipal() {
         // Due principal might be the maximum paid if there is pay-off or early repayment
         return MathUtil.max(getEmi().minus(getDueInterest(), mc), getPaidPrincipal(), false);
     }
 
+    public boolean isFullyPaid() {
+        return getEmi().isEqualTo(getPaidPrincipal().plus(getPaidInterest()));
+    }
+
     public Money getUnrecognizedInterest() {
         return getCalculatedDueInterest().minus(getDueInterest(), mc);
+    }
+
+    public Money getOutstandingPrincipal() {
+        return MathUtil.minus(getDuePrincipal(), getPaidPrincipal());
     }
 
     public Money getOutstandingLoanBalance() {
@@ -183,5 +182,19 @@ public class RepaymentPeriod {
         Money totalDisbursedAmount = getInterestPeriods().stream().map(InterestPeriod::getDisbursementAmount).reduce(getZero(mc),
                 (m1, m2) -> m1.plus(m2, mc));
         return initialBalance.add(totalDisbursedAmount, mc);
+    }
+
+    private Money getZero(MathContext mc) {
+        // EMI is always initiated
+        return this.emi.zero(mc);
+    }
+
+    InterestPeriod getFirstInterestPeriod() {
+        return getInterestPeriods().get(0);
+    }
+
+    InterestPeriod getLastInterestPeriod() {
+        List<InterestPeriod> interestPeriods = getInterestPeriods();
+        return interestPeriods.get(interestPeriods.size() - 1);
     }
 }

@@ -291,6 +291,11 @@ public final class MathUtil {
         return subtract(first, second, MoneyHelper.getMathContext());
     }
 
+    /** @return first minus the others considering null values, maybe negative */
+    public static BigDecimal subtract(BigDecimal first, BigDecimal second, BigDecimal third) {
+        return subtract(subtract(first, second), third);
+    }
+
     /** @return first minus second considering null values, maybe negative */
     public static BigDecimal subtract(BigDecimal first, BigDecimal second, MathContext mc) {
         return first == null ? null : second == null ? first : first.subtract(second, mc);

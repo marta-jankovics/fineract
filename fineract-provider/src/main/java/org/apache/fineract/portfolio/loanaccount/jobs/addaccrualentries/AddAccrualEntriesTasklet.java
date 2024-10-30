@@ -46,19 +46,19 @@ public class AddAccrualEntriesTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         Collection<LoanScheduleAccrualData> loanScheduleAccrualDataList = loanReadPlatformService.retriveScheduleAccrualData();
-        Map<Long, Collection<LoanScheduleAccrualData>> loanDataMap = new HashMap<>();
+        Map<Long, List<LoanScheduleAccrualData>> loanDataMap = new HashMap<>();
         for (final LoanScheduleAccrualData accrualData : loanScheduleAccrualDataList) {
             if (loanDataMap.containsKey(accrualData.getLoanId())) {
                 loanDataMap.get(accrualData.getLoanId()).add(accrualData);
             } else {
-                Collection<LoanScheduleAccrualData> accrualDataList = new ArrayList<>();
+                List<LoanScheduleAccrualData> accrualDataList = new ArrayList<>();
                 accrualDataList.add(accrualData);
                 loanDataMap.put(accrualData.getLoanId(), accrualDataList);
             }
         }
 
         List<Throwable> errors = new ArrayList<>();
-        for (Map.Entry<Long, Collection<LoanScheduleAccrualData>> mapEntry : loanDataMap.entrySet()) {
+        for (Map.Entry<Long, List<LoanScheduleAccrualData>> mapEntry : loanDataMap.entrySet()) {
             try {
                 loanAccrualsProcessingService.addAccrualAccounting(mapEntry.getKey(), mapEntry.getValue());
             } catch (Exception e) {

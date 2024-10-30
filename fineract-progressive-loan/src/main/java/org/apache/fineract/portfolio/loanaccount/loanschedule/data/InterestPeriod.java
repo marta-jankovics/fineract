@@ -86,8 +86,7 @@ public class InterestPeriod implements Comparable<InterestPeriod> {
         if (isFirstInterestPeriod()) {
             Optional<RepaymentPeriod> previousRepaymentPeriod = getRepaymentPeriod().getPrevious();
             if (previousRepaymentPeriod.isPresent()) {
-                InterestPeriod previousInterestPeriod = previousRepaymentPeriod.get().getInterestPeriods()
-                        .get(previousRepaymentPeriod.get().getInterestPeriods().size() - 1);
+                InterestPeriod previousInterestPeriod = previousRepaymentPeriod.get().getLastInterestPeriod();
                 this.outstandingLoanBalance = previousInterestPeriod.getOutstandingLoanBalance()//
                         .plus(previousInterestPeriod.getDisbursementAmount(), mc)//
                         .plus(previousInterestPeriod.getBalanceCorrectionAmount(), mc)//
@@ -104,6 +103,6 @@ public class InterestPeriod implements Comparable<InterestPeriod> {
     }
 
     private boolean isFirstInterestPeriod() {
-        return getRepaymentPeriod().getInterestPeriods().get(0).equals(this);
+        return this.equals(getRepaymentPeriod().getFirstInterestPeriod());
     }
 }
