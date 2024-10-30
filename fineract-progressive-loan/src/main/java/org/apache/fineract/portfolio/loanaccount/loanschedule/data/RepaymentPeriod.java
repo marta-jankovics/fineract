@@ -137,16 +137,16 @@ public class RepaymentPeriod {
         return MathUtil.max(getEmi().minus(getDueInterest(), mc), getPaidPrincipal(), false);
     }
 
+    public Money getTotalPaidAmount() {
+        return getPaidPrincipal().plus(getPaidInterest());
+    }
+
     public boolean isFullyPaid() {
-        return getEmi().isEqualTo(getPaidPrincipal().plus(getPaidInterest()));
+        return getEmi().isEqualTo(getTotalPaidAmount());
     }
 
     public Money getUnrecognizedInterest() {
         return getCalculatedDueInterest().minus(getDueInterest(), mc);
-    }
-
-    public Money getOutstandingPrincipal() {
-        return MathUtil.minus(getDuePrincipal(), getPaidPrincipal());
     }
 
     public Money getOutstandingLoanBalance() {
