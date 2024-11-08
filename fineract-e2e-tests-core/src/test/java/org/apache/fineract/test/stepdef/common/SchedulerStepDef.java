@@ -56,4 +56,9 @@ public class SchedulerStepDef extends AbstractStepDef {
     public void runCOB() {
         jobService.executeAndWait(DefaultJob.LOAN_COB);
     }
+
+    @When("Admin runs the Accrual Activity Posting job")
+    public void runAccrualActivityPosting() {
+        jobService.executeAndWait(DefaultJob.ACCRUAL_ACTIVITY_POSTING);
+    }
 }

@@ -27,7 +27,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -75,6 +74,7 @@ import org.apache.fineract.test.factory.LoanRequestFactory;
 import org.apache.fineract.test.helper.ErrorHelper;
 import org.apache.fineract.test.helper.ErrorMessageHelper;
 import org.apache.fineract.test.helper.ErrorResponse;
+import org.apache.fineract.test.helper.Utils;
 import org.apache.fineract.test.messaging.EventAssertion;
 import org.apache.fineract.test.messaging.event.loan.LoanRescheduledDueAdjustScheduleEvent;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
@@ -175,7 +175,7 @@ public class BatchApiStepDef extends AbstractStepDef {
 
         // request 3 - charge Loan
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-        String dateOfCharge = formatter.format(LocalDate.now(Clock.systemUTC()).minusMonths(1L).plusDays(1L));
+        String dateOfCharge = formatter.format(Utils.now().minusMonths(1L).plusDays(1L));
 
         PostLoansLoanIdChargesRequest loanIdChargesRequest = new PostLoansLoanIdChargesRequest();
         loanIdChargesRequest.chargeId(CHARGE_ID_NFS_FEE);
@@ -448,11 +448,11 @@ public class BatchApiStepDef extends AbstractStepDef {
         testContext().set(TestContextKey.BATCH_API_CALL_RESPONSE, batchResponseList);
         testContext().set(TestContextKey.BATCH_API_CALL_IDEMPOTENCY_KEY, idempotencyKey);
         eventAssertion.assertEvent(LoanRescheduledDueAdjustScheduleEvent.class, loanId).extractingData(loanAccountDataV1 -> {
-            Optional<LoanSchedulePeriodDataV1> period = loanAccountDataV1.getRepaymentSchedule().getPeriods().stream()
-                    .filter(p -> formatter.format(LocalDate.parse(p.getDueDate())).equals(toDateStr)).findFirst();
+            LoanSchedulePeriodDataV1 period = loanAccountDataV1.getRepaymentSchedule().getPeriods().stream()
+                    .filter(p -> formatter.format(LocalDate.parse(p.getDueDate())).equals(toDateStr)).findFirst().orElse(null);
             String dueDate = "";
-            if (period.isPresent()) {
-                dueDate = formatter.format(LocalDate.parse(period.get().getDueDate()));
+            if (period != null) {
+                dueDate = formatter.format(LocalDate.parse(period.getDueDate()));
             }
             assertThat(dueDate).as(ErrorMessageHelper.wrongDataInLastPaymentAmount(dueDate, toDateStr)).isEqualTo(toDateStr);
             return null;

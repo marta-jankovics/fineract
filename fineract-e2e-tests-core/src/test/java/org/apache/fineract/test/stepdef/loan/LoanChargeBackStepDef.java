@@ -40,8 +40,9 @@ import org.apache.fineract.test.data.paymenttype.PaymentTypeResolver;
 import org.apache.fineract.test.factory.LoanRequestFactory;
 import org.apache.fineract.test.helper.ErrorHelper;
 import org.apache.fineract.test.messaging.EventAssertion;
-import org.apache.fineract.test.messaging.event.loan.LoanBalanceChangedEvent;
+import org.apache.fineract.test.messaging.event.EventCheckHelper;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanChargebackTransactionEvent;
+import org.apache.fineract.test.messaging.store.EventStore;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
 import org.apache.fineract.test.support.TestContextKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,12 @@ public class LoanChargeBackStepDef extends AbstractStepDef {
 
     @Autowired
     private PaymentTypeResolver paymentTypeResolver;
+
+    @Autowired
+    private EventCheckHelper eventCheckHelper;
+
+    @Autowired
+    EventStore eventStore;
 
     @When("Admin makes {string} chargeback with {double} EUR transaction amount")
     public void makeLoanChargeback(String repaymentType, double transactionAmount) throws IOException {
@@ -116,6 +123,7 @@ public class LoanChargeBackStepDef extends AbstractStepDef {
     }
 
     private void makeChargebackCall(Long loanId, Long transactionId, String repaymentType, double transactionAmount) throws IOException {
+        eventStore.reset();
         DefaultPaymentType paymentType = DefaultPaymentType.valueOf(repaymentType);
         Long paymentTypeValue = paymentTypeResolver.resolve(paymentType);
 
@@ -134,8 +142,7 @@ public class LoanChargeBackStepDef extends AbstractStepDef {
         PostLoansLoanIdTransactionsResponse responseBody = chargebackResponse.body();
         Long loanId = responseBody.getLoanId();
 
-        eventAssertion.assertEvent(LoanBalanceChangedEvent.class, loanId).extractingData(data -> data.getId()).isEqualTo(loanId);
-
+        eventCheckHelper.loanBalanceChangedEventCheck(loanId);
         checkLoanChargebackTransactionEvent(responseBody);
     }
 

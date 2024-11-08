@@ -57,8 +57,12 @@ public class LoanReAgingStepDef extends AbstractStepDef {
         String startDate = data.get(2);
         int numberOfInstallments = Integer.parseInt(data.get(3));
 
-        PostLoansLoanIdTransactionsRequest reAgingRequest = LoanRequestFactory.defaultReAgingRequest().frequencyNumber(frequencyNumber)
-                .frequencyType(frequencyType).startDate(startDate).numberOfInstallments(numberOfInstallments);
+        PostLoansLoanIdTransactionsRequest reAgingRequest = LoanRequestFactory//
+                .defaultReAgingRequest()//
+                .frequencyNumber(frequencyNumber)//
+                .frequencyType(frequencyType)//
+                .startDate(startDate)//
+                .numberOfInstallments(numberOfInstallments);//
 
         Response<PostLoansLoanIdTransactionsResponse> response = loanTransactionsApi.executeLoanTransaction(loanId, reAgingRequest, "reAge")
                 .execute();
@@ -77,8 +81,12 @@ public class LoanReAgingStepDef extends AbstractStepDef {
         String startDate = data.get(2);
         int numberOfInstallments = Integer.parseInt(data.get(3));
 
-        PostLoansLoanIdTransactionsRequest reAgingRequest = LoanRequestFactory.defaultReAgingRequest().frequencyNumber(frequencyNumber)
-                .frequencyType(frequencyType).startDate(startDate).numberOfInstallments(numberOfInstallments);
+        PostLoansLoanIdTransactionsRequest reAgingRequest = LoanRequestFactory//
+                .defaultReAgingRequest()//
+                .frequencyNumber(frequencyNumber)//
+                .frequencyType(frequencyType)//
+                .startDate(startDate)//
+                .numberOfInstallments(numberOfInstallments);//
 
         Response<PostLoansLoanIdTransactionsResponse> response = loanTransactionsApi
                 .executeLoanTransaction1(loanExternalId, reAgingRequest, "reAge").execute();

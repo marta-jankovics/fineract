@@ -25,15 +25,17 @@ public class LoggedEvent {
 
     private final String type;
     private final String businessDate;
+    private final String idempotencyKey;
 
     public LoggedEvent(EventMessage<?> message) {
         this.type = message.getType();
         this.businessDate = DateTimeFormatter.ISO_LOCAL_DATE.format(message.getBusinessDate());
+        this.idempotencyKey = message.getIdempotencyKey();
     }
 
     // Don't use Lombok @ToString since the class name isn't included in the msg
     @Override
     public String toString() {
-        return "{" + "type='" + type + '\'' + ", businessDate='" + businessDate + '\'' + '}';
+        return "{" + "idempotencyKey='" + idempotencyKey + '\'' + ", type='" + type + "', businessDate='" + businessDate + '\'' + '}';
     }
 }

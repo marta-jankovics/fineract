@@ -21,6 +21,7 @@ package org.apache.fineract.test.stepdef.common;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import java.io.IOException;
+import org.apache.fineract.client.services.DefaultApi;
 import org.apache.fineract.test.helper.GlobalConfigurationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,6 +29,8 @@ public class GlobalConfigurationStepDef {
 
     @Autowired
     private GlobalConfigurationHelper globalConfigurationHelper;
+    @Autowired
+    private DefaultApi defaultApi;
 
     @Given("Global configuration {string} is disabled")
     public void disableGlobalConfiguration(String configKey) throws IOException {
@@ -42,6 +45,12 @@ public class GlobalConfigurationStepDef {
     @When("Global config {string} value set to {string}")
     public void setGlobalConfigValueString(String configKey, String configValue) throws IOException {
         globalConfigurationHelper.setGlobalConfigValueString(configKey, configValue);
+    }
+
+    @When("Global config {string} value set to {string} through DefaultApi")
+    public void setGlobalConfigValueStringDefaultApi(String configKey, String configValue) throws IOException {
+        Long configValueLong = Long.valueOf(configValue);
+        defaultApi.updateGlobalConfiguration(configKey, configValueLong);
 
     }
 }

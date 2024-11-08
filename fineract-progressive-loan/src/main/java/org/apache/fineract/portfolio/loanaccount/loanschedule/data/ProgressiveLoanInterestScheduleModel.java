@@ -186,7 +186,7 @@ public class ProgressiveLoanInterestScheduleModel {
         previousInterestPeriod.addDisbursementAmount(disbursedAmount);
         previousInterestPeriod.addBalanceCorrectionAmount(correctionAmount);
         final InterestPeriod interestPeriod = new InterestPeriod(repaymentPeriod, previousInterestPeriod.getDueDate(), originalDueDate,
-                BigDecimal.ZERO, getZero(), getZero(), getZero(), mc);
+                BigDecimal.ZERO, BigDecimal.ZERO, getZero(), getZero(), getZero(), mc);
         repaymentPeriod.getInterestPeriods().add(interestPeriod);
     }
 
@@ -194,4 +194,21 @@ public class ProgressiveLoanInterestScheduleModel {
         return Money.zero(loanProductRelatedDetail.getCurrency(), mc);
     }
 
+    public Money getTotalDueInterest() {
+        return repaymentPeriods().stream().flatMap(rp -> rp.getInterestPeriods().stream().map(InterestPeriod::getCalculatedDueInterest))
+                .reduce(getZero(), Money::plus);
+    }
+
+    public Money getTotalDuePrincipal() {
+        return repaymentPeriods.stream().flatMap(rp -> rp.getInterestPeriods().stream().map(InterestPeriod::getDisbursementAmount))
+                .reduce(getZero(), Money::plus);
+    }
+
+    public Money getTotalPaidInterest() {
+        return repaymentPeriods().stream().map(RepaymentPeriod::getPaidInterest).reduce(getZero(), Money::plus);
+    }
+
+    public Money getTotalPaidPrincipal() {
+        return repaymentPeriods().stream().map(RepaymentPeriod::getPaidPrincipal).reduce(getZero(), Money::plus);
+    }
 }

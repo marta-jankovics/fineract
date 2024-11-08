@@ -20,9 +20,19 @@ package org.apache.fineract.test.data;
 
 public enum TransactionType {
 
-    DISBURSEMENT("disbursement"), REPAYMENT("repayment"), DOWN_PAYMENT("downPayment"), GOODWILL_CREDIT("goodwillCredit"), PAYOUT_REFUND(
-            "payoutRefund"), REFUND_BY_CASH("refundByCash"), MERCHANT_ISSUED_REFUND("merchantIssuedRefund"), CREDIT_BALANCE_REFUND(
-                    "creditBalanceRefund"), CHARGEBACK("chargeback"), ACCRUAL("accrual"), CHARGE_OFF("chargeOff");
+    DISBURSEMENT("disbursement"), //
+    REPAYMENT("repayment"), //
+    DOWN_PAYMENT("downPayment"), //
+    GOODWILL_CREDIT("goodwillCredit"), //
+    PAYOUT_REFUND("payoutRefund"), //
+    REFUND_BY_CASH("refundByCash"), //
+    MERCHANT_ISSUED_REFUND("merchantIssuedRefund"), //
+    CREDIT_BALANCE_REFUND("creditBalanceRefund"), //
+    CHARGEBACK("chargeback"), //
+    ACCRUAL("accrual"), //
+    CHARGE_OFF("chargeOff"), //
+    CHARGE_ADJUSTMENT("chargeAdjustment"), //
+    INTEREST_PAYMENT_WAIVER("interestPaymentWaiver");//
 
     public final String value;
 

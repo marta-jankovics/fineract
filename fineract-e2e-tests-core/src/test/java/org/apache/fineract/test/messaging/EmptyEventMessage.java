@@ -21,6 +21,6 @@ package org.apache.fineract.test.messaging;
 public class EmptyEventMessage extends EventMessage<Object> {
 
     public EmptyEventMessage() {
-        super(null, null, null);
+        super(null, null, null, null);
     }
 }

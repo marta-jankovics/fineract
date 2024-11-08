@@ -23,8 +23,15 @@ import java.util.Map;
 
 public enum LoanStatus {
 
-    NONE(0), SUBMITTED_AND_PENDING_APPROVAL(100), APPROVED(200), ACTIVE(300), CLOSED_OBLIGATIONS_MET(600), OVERPAID(
-            700), CLOSED_WRITTEN_OFF(601);
+    NONE(0), //
+    SUBMITTED_AND_PENDING_APPROVAL(100), //
+    APPROVED(200), //
+    ACTIVE(300), //
+    WITHDRAWN(400), //
+    REJECTED(500), //
+    CLOSED_OBLIGATIONS_MET(600), //
+    OVERPAID(700), //
+    CLOSED_WRITTEN_OFF(601);//
 
     public final Integer value;
 

@@ -19,8 +19,6 @@
 package org.apache.fineract.test.helper;
 
 import java.io.IOException;
-import java.time.Clock;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.client.models.BusinessDateRequest;
@@ -53,7 +51,7 @@ public class BusinessDateHelper {
 
     public void setBusinessDateToday() throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-        String today = formatter.format(LocalDate.now(Clock.systemUTC()));
+        String today = formatter.format(Utils.now());
         setBusinessDate(today);
     }
 

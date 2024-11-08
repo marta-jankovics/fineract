@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.test.helper.BusinessDateHelper;
+import org.apache.fineract.test.helper.WorkFlowJobHelper;
 import org.apache.fineract.test.initializer.global.FineractGlobalInitializerStep;
 import org.apache.fineract.test.initializer.scenario.FineractScenarioInitializerStep;
 import org.apache.fineract.test.initializer.suite.FineractSuiteInitializerStep;
@@ -38,6 +39,7 @@ public class FineractInitializer implements InitializingBean {
     private final List<FineractSuiteInitializerStep> suiteInitializerSteps;
     private final List<FineractScenarioInitializerStep> scenarioInitializerSteps;
     private final BusinessDateHelper businessDateHelper;
+    private final WorkFlowJobHelper workFlowJobHelper;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -71,6 +73,7 @@ public class FineractInitializer implements InitializingBean {
         }
 
         businessDateHelper.setBusinessDateToday();
+        workFlowJobHelper.saveOriginalCOBWorkflowJobBusinessStepList();
     }
 
     public void setupDefaultsForScenario() throws Exception {

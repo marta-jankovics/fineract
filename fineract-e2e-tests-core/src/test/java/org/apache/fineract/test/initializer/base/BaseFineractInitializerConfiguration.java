@@ -21,6 +21,7 @@ package org.apache.fineract.test.initializer.base;
 import java.util.List;
 import org.apache.fineract.test.config.CacheConfiguration;
 import org.apache.fineract.test.helper.BusinessDateHelper;
+import org.apache.fineract.test.helper.WorkFlowJobHelper;
 import org.apache.fineract.test.initializer.global.FineractGlobalInitializerStep;
 import org.apache.fineract.test.initializer.scenario.FineractScenarioInitializerStep;
 import org.apache.fineract.test.initializer.suite.FineractSuiteInitializerStep;
@@ -39,7 +40,8 @@ public class BaseFineractInitializerConfiguration {
     @Bean
     public FineractInitializer fineractInitializer(List<FineractGlobalInitializerStep> globalInitializerSteps,
             List<FineractSuiteInitializerStep> suiteInitializerSteps, List<FineractScenarioInitializerStep> scenarioInitializerSteps,
-            BusinessDateHelper businessDateHelper) {
-        return new FineractInitializer(globalInitializerSteps, suiteInitializerSteps, scenarioInitializerSteps, businessDateHelper);
+            BusinessDateHelper businessDateHelper, WorkFlowJobHelper workFlowJobHelper) {
+        return new FineractInitializer(globalInitializerSteps, suiteInitializerSteps, scenarioInitializerSteps, businessDateHelper,
+                workFlowJobHelper);
     }
 }

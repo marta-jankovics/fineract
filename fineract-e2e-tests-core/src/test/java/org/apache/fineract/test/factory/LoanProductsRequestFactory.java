@@ -62,29 +62,30 @@ public class LoanProductsRequestFactory {
 
     public static final String NAME_PREFIX = "LP1-";
     public static final String NAME_PREFIX_LP2 = "LP2-";
+    public static final String NAME_PREFIX_LP2_EMI = "LP2Emi-";
     public static final String NAME_PREFIX_INTEREST_FLAT = "LP1InterestFlat-";
     public static final String NAME_PREFIX_INTEREST_FLAT_LP2 = "LP2InterestFlat-";
     public static final String NAME_PREFIX_INTEREST_DECLINING = "LP1InterestDeclining-";
     public static final String NAME_PREFIX_INTEREST_DECLINING_RECALCULATION = "LP1InterestDecliningRecalculation-";
-    public static final String NAME_PREFIX_INTEREST_RECALCULATION_WITH_DOWN_PAYMENT_LP3 = "LP3InterestRecalculationWithDownPayment-";
-    public static final String NAME_PREFIX_LP2_EMI = "LP2Emi-";
+    public static final String NAME_PREFIX_INTEREST_RECALCULATION = "LP2InterestRecalculation-";
     public static final String SHORT_NAME_PREFIX = "p";
     public static final String SHORT_NAME_PREFIX_INTEREST = "i";
     public static final String SHORT_NAME_PREFIX_EMI = "e";
     public static final String DATE_FORMAT = "dd MMMM yyyy";
     public static final String LOCALE_EN = "en";
-    public static final String DESCRIPTION = "LP1 product";
-    public static final String DESCRIPTION_LP2 = "LP2 product";
-    public static final String DESCRIPTION_INTEREST_FLAT = "LP1 product with 12% interest - FLAT";
-    public static final String DESCRIPTION_INTEREST_FLAT_LP2 = "LP2 product with 12% interest - FLAT";
-    public static final String DESCRIPTION_INTEREST_DECLINING = "LP1 product with 12% interest - DECLINING BALANCE";
+    public static final String DESCRIPTION = "30 days repayment";
+    public static final String DESCRIPTION_LP2 = "4 installments repayment";
+    public static final String DESCRIPTION_LP2_EMI = "4 installments repayment with EMI";
+    public static final String DESCRIPTION_INTEREST_FLAT = "30 days repayment with 12% interest - FLAT";
+    public static final String DESCRIPTION_INTEREST_FLAT_LP2 = "4 installments repayment with 12% interest - FLAT";
+    public static final String DESCRIPTION_INTEREST_DECLINING = "30 days repayment with 12% interest - DECLINING BALANCE";
     public static final String DESCRIPTION_INTEREST_DECLINING_BALANCE_DAILY_RECALCULATION_COMPOUNDING_MONTHLY = "LP1-1MONTH with 12% DECLINING BALANCE interest, interest period: Daily, Interest recalculation-Monthly, Compounding:Interest";
     public static final String DESCRIPTION_INTEREST_DECLINING_BALANCE_DAILY_RECALCULATION_COMPOUNDING_NONE = "LP1 with 12% DECLINING BALANCE interest, interest period: Daily, Interest recalculation-Daily, Compounding:none";
-    public static final String DESCRIPTION_LP2_EMI = "LP2 product with EMI";
     public static final Long FUND_ID = FundId.LENDER_A.value;
     public static final String CURRENCY_CODE = "EUR";
     public static final Integer INTEREST_RATE_FREQUENCY_TYPE_MONTH = InterestRateFrequencyType.MONTH.value;
     public static final Integer INTEREST_RATE_FREQUENCY_TYPE_YEAR = InterestRateFrequencyType.YEAR.value;
+    public static final Integer INTEREST_RATE_FREQUENCY_TYPE_WHOLE_TERM = InterestRateFrequencyType.WHOLE_TERM.value;
     public static final Long REPAYMENT_FREQUENCY_TYPE_DAYS = RepaymentFrequencyType.DAYS.value.longValue();
     public static final Long REPAYMENT_FREQUENCY_TYPE_MONTHS = RepaymentFrequencyType.MONTHS.value.longValue();
     public static final Integer AMORTIZATION_TYPE = AmortizationType.EQUAL_INSTALLMENTS.value;
@@ -94,10 +95,10 @@ public class LoanProductsRequestFactory {
     public static final Integer INTEREST_CALCULATION_PERIOD_TYPE_DAILY = InterestCalculationPeriodTime.DAILY.value;
     public static final String TRANSACTION_PROCESSING_STRATEGY_CODE = TransactionProcessingStrategyCode.PENALTIES_FEES_INTEREST_PRINCIPAL_ORDER.value;
     public static final String TRANSACTION_PROCESSING_STRATEGY_CODE_ADVANCED = TransactionProcessingStrategyCode.ADVANCED_PAYMENT_ALLOCATION.value;
-    public static final Integer DAYS_IN_YEAR_TYPE = DaysInYearType.ACTUAL.value;
     public static final Integer DAYS_IN_YEAR_TYPE_360 = DaysInYearType.DAYS360.value;
-    public static final Integer DAYS_IN_MONTH_TYPE = DaysInMonthType.ACTUAL.value;
+    public static final Integer DAYS_IN_YEAR_TYPE = DaysInYearType.ACTUAL.value;
     public static final Integer DAYS_IN_MONTH_TYPE_30 = DaysInMonthType.DAYS30.value;
+    public static final Integer DAYS_IN_MONTH_TYPE = DaysInMonthType.ACTUAL.value;
     public static final Integer LOAN_ACCOUNTING_RULE = AccountingRule.ACCRUAL_PERIODIC.value;
     public static final Integer LOAN_ACCOUNTING_RULE_NONE = AccountingRule.NONE.value;
     public static final String OVER_APPLIED_CALCULATION_TYPE = "percentage";
@@ -661,36 +662,119 @@ public class LoanProductsRequestFactory {
                 .recalculationRestFrequencyInterval(1);//
     }
 
-    public PostLoanProductsRequest defaultLoanProductsRequestLP2InterestDailyRecalculationWithDownPayment() {
-        final String name = Utils.randomNameGenerator(NAME_PREFIX_INTEREST_RECALCULATION_WITH_DOWN_PAYMENT_LP3, 4);
+    public PostLoanProductsRequest defaultLoanProductsRequestLP2InterestDailyRecalculation() {
+        final String name = Utils.randomNameGenerator(NAME_PREFIX_INTEREST_RECALCULATION, 4);
         final String shortName = Utils.randomNameGenerator(SHORT_NAME_PREFIX_INTEREST, 3);
 
-        return new PostLoanProductsRequest().name(name).shortName(shortName)
-                .description(DESCRIPTION_INTEREST_DECLINING_BALANCE_DAILY_RECALCULATION_COMPOUNDING_NONE).startDate(null).closeDate(null)
-                .accountMovesOutOfNPAOnlyOnArrearsCompletion(false).accountingRule(LOAN_ACCOUNTING_RULE_NONE)
-                .allowApprovedDisbursedAmountsOverApplied(true)
-                .allowAttributeOverrides(new AllowAttributeOverrides().amortizationType(true).interestType(true)
-                        .transactionProcessingStrategyCode(true).interestCalculationPeriodType(true).inArrearsTolerance(true)
-                        .repaymentEvery(true).graceOnPrincipalAndInterestPayment(true).graceOnArrearsAgeing(true))
-                .allowPartialPeriodInterestCalcualtion(false).allowVariableInstallments(false).amortizationType(AMORTIZATION_TYPE)
-                .canDefineInstallmentAmount(true).canUseForTopup(false).charges(new ArrayList<>()).creditAllocation(new ArrayList<>())
-                .currencyCode(CURRENCY_CODE).dateFormat(DATE_FORMAT).daysInMonthType(DAYS_IN_MONTH_TYPE_30)
-                .daysInYearType(DAYS_IN_YEAR_TYPE_360).delinquencyBucketId(DELINQUENCY_BUCKET_ID.longValue()).digitsAfterDecimal(2)
-                .disallowExpectedDisbursements(true).dueDaysForRepaymentEvent(1).enableDownPayment(false)
-                .enableInstallmentLevelDelinquency(true).fixedLength(null).holdGuaranteeFunds(false).inMultiplesOf(0)
-                .includeInBorrowerCycle(false).interestCalculationPeriodType(0).interestRateFrequencyType(3).interestRatePerPeriod(9.99)
-                .interestRateVariationsForBorrowerCycle(new ArrayList<>()).interestRecalculationCompoundingMethod(0).interestType(0)
-                .isArrearsBasedOnOriginalSchedule(false).isEqualAmortization(false).isInterestRecalculationEnabled(true)
-                .isLinkedToFloatingInterestRates(false).loanScheduleProcessingType("HORIZONTAL").loanScheduleType("PROGRESSIVE")
-                .locale(LOCALE_EN).maxInterestRatePerPeriod((double) 50).maxNumberOfRepayments(48).maxPrincipal((double) 10000)
-                .maxTrancheCount(10).minInterestRatePerPeriod((double) 0).minNumberOfRepayments(1).minPrincipal((double) 1)
-                .multiDisburseLoan(true).numberOfRepaymentVariationsForBorrowerCycle(new ArrayList<>()).numberOfRepayments(3)
-                .outstandingLoanBalance((double) 10000).overAppliedCalculationType("flat").overAppliedNumber(10000)
-                .overDueDaysForRepaymentEvent(2).preClosureInterestCalculationStrategy(1).principal((double) 40)
-                .principalThresholdForLastInstallment(50).principalVariationsForBorrowerCycle(new ArrayList<>())
-                .recalculationRestFrequencyInterval(1).recalculationRestFrequencyType(2).repaymentEvery(1).repaymentFrequencyType(2L)
-                .repaymentStartDateType(2).rescheduleStrategyMethod(4).supportedInterestRefundTypes(new ArrayList<>())
-                .transactionProcessingStrategyCode(TRANSACTION_PROCESSING_STRATEGY_CODE_ADVANCED).useBorrowerCycle(false);
+        List<ChargeToGLAccountMapper> penaltyToIncomeAccountMappings = new ArrayList<>();
+        List<GetLoanFeeToIncomeAccountMappings> feeToIncomeAccountMappings = new ArrayList<>();
+
+        List<GetLoanPaymentChannelToFundSourceMappings> paymentChannelToFundSourceMappings = new ArrayList<>();
+        GetLoanPaymentChannelToFundSourceMappings loanPaymentChannelToFundSourceMappings = new GetLoanPaymentChannelToFundSourceMappings();
+        loanPaymentChannelToFundSourceMappings.fundSourceAccountId(accountTypeResolver.resolve(DefaultAccountType.FUND_RECEIVABLES));
+        loanPaymentChannelToFundSourceMappings.paymentTypeId(paymentTypeResolver.resolve(DefaultPaymentType.MONEY_TRANSFER));
+        paymentChannelToFundSourceMappings.add(loanPaymentChannelToFundSourceMappings);
+
+        return new PostLoanProductsRequest().name(name)//
+                .shortName(shortName)//
+                .description(DESCRIPTION_INTEREST_DECLINING_BALANCE_DAILY_RECALCULATION_COMPOUNDING_NONE)//
+                .startDate(null)//
+                .closeDate(null)//
+                .accountMovesOutOfNPAOnlyOnArrearsCompletion(false)//
+                .allowApprovedDisbursedAmountsOverApplied(true)//
+                .allowAttributeOverrides(new AllowAttributeOverrides()//
+                        .amortizationType(true)//
+                        .interestType(true)//
+                        .transactionProcessingStrategyCode(true)//
+                        .interestCalculationPeriodType(true)//
+                        .inArrearsTolerance(true)//
+                        .repaymentEvery(true)//
+                        .graceOnPrincipalAndInterestPayment(true)//
+                        .graceOnArrearsAgeing(true))//
+                .allowPartialPeriodInterestCalcualtion(false)//
+                .allowVariableInstallments(false)//
+                .amortizationType(AMORTIZATION_TYPE)//
+                .canDefineInstallmentAmount(true)//
+                .canUseForTopup(false)//
+                .charges(new ArrayList<>()).creditAllocation(new ArrayList<>())//
+                .currencyCode(CURRENCY_CODE)//
+                .dateFormat(DATE_FORMAT)//
+                .daysInMonthType(DAYS_IN_MONTH_TYPE_30)//
+                .daysInYearType(DAYS_IN_YEAR_TYPE_360)//
+                .delinquencyBucketId(DELINQUENCY_BUCKET_ID.longValue())//
+                .digitsAfterDecimal(2)//
+                .disallowExpectedDisbursements(true)//
+                .dueDaysForRepaymentEvent(1)//
+                .enableDownPayment(false)//
+                .enableInstallmentLevelDelinquency(true)//
+                .fixedLength(null).holdGuaranteeFunds(false)//
+                .inMultiplesOf(0)//
+                .includeInBorrowerCycle(false)//
+                .interestCalculationPeriodType(0)//
+                .interestRateFrequencyType(3)//
+                .interestRatePerPeriod(9.99)//
+                .interestRateVariationsForBorrowerCycle(new ArrayList<>())//
+                .interestRecalculationCompoundingMethod(0)//
+                .interestType(0)//
+                .isArrearsBasedOnOriginalSchedule(false)//
+                .isEqualAmortization(false)//
+                .isInterestRecalculationEnabled(true)//
+                .isLinkedToFloatingInterestRates(false)//
+                .loanScheduleProcessingType("HORIZONTAL")//
+                .loanScheduleType("PROGRESSIVE")//
+                .locale(LOCALE_EN)//
+                .maxInterestRatePerPeriod((double) 50)//
+                .maxNumberOfRepayments(48)//
+                .maxPrincipal((double) 10000)//
+                .maxTrancheCount(10)//
+                .minInterestRatePerPeriod((double) 0)//
+                .minNumberOfRepayments(1)//
+                .minPrincipal((double) 1)//
+                .multiDisburseLoan(true)//
+                .numberOfRepaymentVariationsForBorrowerCycle(new ArrayList<>())//
+                .numberOfRepayments(3)//
+                .outstandingLoanBalance((double) 10000)//
+                .overAppliedCalculationType("flat")//
+                .overAppliedNumber(10000)//
+                .overDueDaysForRepaymentEvent(2)//
+                .preClosureInterestCalculationStrategy(1)//
+                .principal((double) 40)//
+                .principalThresholdForLastInstallment(50)//
+                .principalVariationsForBorrowerCycle(new ArrayList<>())//
+                .recalculationRestFrequencyInterval(1)//
+                .recalculationRestFrequencyType(2)//
+                .repaymentEvery(1)//
+                .repaymentFrequencyType(2L)//
+                .repaymentStartDateType(2)//
+                .rescheduleStrategyMethod(4)//
+                .supportedInterestRefundTypes(new ArrayList<>())//
+                .transactionProcessingStrategyCode(TRANSACTION_PROCESSING_STRATEGY_CODE_ADVANCED)//
+                .useBorrowerCycle(false)//
+                .accountingRule(LOAN_ACCOUNTING_RULE)//
+                .fundSourceAccountId(accountTypeResolver.resolve(DefaultAccountType.SUSPENSE_CLEARING_ACCOUNT))//
+                .loanPortfolioAccountId(accountTypeResolver.resolve(DefaultAccountType.LOANS_RECEIVABLE))//
+                .transfersInSuspenseAccountId(accountTypeResolver.resolve(DefaultAccountType.TRANSFER_IN_SUSPENSE_ACCOUNT))//
+                .interestOnLoanAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME))//
+                .incomeFromFeeAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_INCOME))//
+                .incomeFromPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_INCOME))//
+                .incomeFromRecoveryAccountId(accountTypeResolver.resolve(DefaultAccountType.RECOVERIES))//
+                .writeOffAccountId(accountTypeResolver.resolve(DefaultAccountType.WRITTEN_OFF))//
+                .overpaymentLiabilityAccountId(accountTypeResolver.resolve(DefaultAccountType.OVERPAYMENT_ACCOUNT))//
+                .receivableInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
+                .receivableFeeAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
+                .receivablePenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
+                .goodwillCreditAccountId(accountTypeResolver.resolve(DefaultAccountType.GOODWILL_EXPENSE_ACCOUNT))//
+                .incomeFromGoodwillCreditInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME_CHARGE_OFF))//
+                .incomeFromGoodwillCreditFeesAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
+                .incomeFromGoodwillCreditPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
+                .paymentChannelToFundSourceMappings(paymentChannelToFundSourceMappings)//
+                .penaltyToIncomeAccountMappings(penaltyToIncomeAccountMappings)//
+                .feeToIncomeAccountMappings(feeToIncomeAccountMappings)//
+                .incomeFromChargeOffInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME_CHARGE_OFF))//
+                .incomeFromChargeOffFeesAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
+                .chargeOffExpenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT))//
+                .chargeOffFraudExpenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT_FRAUD))//
+                .incomeFromChargeOffPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF));//
     }
 
     public PostLoanProductsRequest defaultLoanProductsRequestLP2() {
@@ -738,116 +822,6 @@ public class LoanProductsRequestFactory {
                 .maxInterestRatePerPeriod((double) 0)//
                 .interestRateFrequencyType(INTEREST_RATE_FREQUENCY_TYPE_MONTH)//
                 .repaymentEvery(15)//
-                .repaymentFrequencyType(REPAYMENT_FREQUENCY_TYPE_DAYS)//
-                .principalVariationsForBorrowerCycle(principalVariationsForBorrowerCycle)//
-                .numberOfRepaymentVariationsForBorrowerCycle(numberOfRepaymentVariationsForBorrowerCycle)//
-                .interestRateVariationsForBorrowerCycle(interestRateVariationsForBorrowerCycle)//
-                .amortizationType(AMORTIZATION_TYPE)//
-                .interestType(INTEREST_TYPE_DECLINING_BALANCE)//
-                .isEqualAmortization(false)//
-                .interestCalculationPeriodType(INTEREST_CALCULATION_PERIOD_TYPE_SAME_AS_REPAYMENT)//
-                .transactionProcessingStrategyCode(TRANSACTION_PROCESSING_STRATEGY_CODE)//
-                .daysInYearType(DAYS_IN_YEAR_TYPE)//
-                .daysInMonthType(DAYS_IN_MONTH_TYPE)//
-                .canDefineInstallmentAmount(true)//
-                .graceOnArrearsAgeing(3)//
-                .overdueDaysForNPA(179)//
-                .accountMovesOutOfNPAOnlyOnArrearsCompletion(false)//
-                .principalThresholdForLastInstallment(50)//
-                .allowVariableInstallments(false)//
-                .canUseForTopup(false)//
-                .isInterestRecalculationEnabled(false)//
-                .holdGuaranteeFunds(false)//
-                .multiDisburseLoan(true)//
-                .allowAttributeOverrides(new AllowAttributeOverrides()//
-                        .amortizationType(true)//
-                        .interestType(true)//
-                        .transactionProcessingStrategyCode(true)//
-                        .interestCalculationPeriodType(true)//
-                        .inArrearsTolerance(true)//
-                        .repaymentEvery(true)//
-                        .graceOnPrincipalAndInterestPayment(true)//
-                        .graceOnArrearsAgeing(true))//
-                .allowPartialPeriodInterestCalcualtion(true)//
-                .maxTrancheCount(10)//
-                .outstandingLoanBalance(10000.0)//
-                .charges(charges)//
-                .accountingRule(LOAN_ACCOUNTING_RULE)//
-                .fundSourceAccountId(accountTypeResolver.resolve(DefaultAccountType.SUSPENSE_CLEARING_ACCOUNT))//
-                .loanPortfolioAccountId(accountTypeResolver.resolve(DefaultAccountType.LOANS_RECEIVABLE))//
-                .transfersInSuspenseAccountId(accountTypeResolver.resolve(DefaultAccountType.TRANSFER_IN_SUSPENSE_ACCOUNT))//
-                .interestOnLoanAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME))//
-                .incomeFromFeeAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_INCOME))//
-                .incomeFromPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_INCOME))//
-                .incomeFromRecoveryAccountId(accountTypeResolver.resolve(DefaultAccountType.RECOVERIES))//
-                .writeOffAccountId(accountTypeResolver.resolve(DefaultAccountType.WRITTEN_OFF))//
-                .overpaymentLiabilityAccountId(accountTypeResolver.resolve(DefaultAccountType.OVERPAYMENT_ACCOUNT))//
-                .receivableInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
-                .receivableFeeAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
-                .receivablePenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))//
-                .dateFormat(DATE_FORMAT)//
-                .locale(LOCALE_EN)//
-                .disallowExpectedDisbursements(true)//
-                .allowApprovedDisbursedAmountsOverApplied(true)//
-                .overAppliedCalculationType(OVER_APPLIED_CALCULATION_TYPE)//
-                .overAppliedNumber(OVER_APPLIED_NUMBER)//
-                .delinquencyBucketId(DELINQUENCY_BUCKET_ID.longValue())//
-                .goodwillCreditAccountId(accountTypeResolver.resolve(DefaultAccountType.GOODWILL_EXPENSE_ACCOUNT))//
-                .incomeFromGoodwillCreditInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME_CHARGE_OFF))//
-                .incomeFromGoodwillCreditFeesAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
-                .incomeFromGoodwillCreditPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
-                .paymentChannelToFundSourceMappings(paymentChannelToFundSourceMappings)//
-                .penaltyToIncomeAccountMappings(penaltyToIncomeAccountMappings)//
-                .feeToIncomeAccountMappings(feeToIncomeAccountMappings)//
-                .incomeFromChargeOffInterestAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_INCOME_CHARGE_OFF))//
-                .incomeFromChargeOffFeesAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF))//
-                .chargeOffExpenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT))//
-                .chargeOffFraudExpenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT_FRAUD))//
-                .incomeFromChargeOffPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF));//
-    }
-
-    public PostLoanProductsRequest defaultLoanProductsRequestLP2NoDown() {
-        String name = Utils.randomNameGenerator(NAME_PREFIX, 4);
-        String shortName = Utils.randomNameGenerator(SHORT_NAME_PREFIX, 3);
-
-        List<Integer> principalVariationsForBorrowerCycle = new ArrayList<>();
-        List<Integer> numberOfRepaymentVariationsForBorrowerCycle = new ArrayList<>();
-        List<Integer> interestRateVariationsForBorrowerCycle = new ArrayList<>();
-        List<ChargeData> charges = new ArrayList<>();
-        List<ChargeToGLAccountMapper> penaltyToIncomeAccountMappings = new ArrayList<>();
-        List<GetLoanFeeToIncomeAccountMappings> feeToIncomeAccountMappings = new ArrayList<>();
-
-        List<GetLoanPaymentChannelToFundSourceMappings> paymentChannelToFundSourceMappings = new ArrayList<>();
-        GetLoanPaymentChannelToFundSourceMappings loanPaymentChannelToFundSourceMappings = new GetLoanPaymentChannelToFundSourceMappings();
-        loanPaymentChannelToFundSourceMappings.fundSourceAccountId(accountTypeResolver.resolve(DefaultAccountType.FUND_RECEIVABLES));
-        loanPaymentChannelToFundSourceMappings.paymentTypeId(paymentTypeResolver.resolve(DefaultPaymentType.MONEY_TRANSFER));
-        paymentChannelToFundSourceMappings.add(loanPaymentChannelToFundSourceMappings);
-
-        return new PostLoanProductsRequest()//
-                .name(name)//
-                .shortName(shortName)//
-                .description(DESCRIPTION_LP2)//
-                .fundId(FUND_ID)//
-                .startDate(null)//
-                .closeDate(null)//
-                .includeInBorrowerCycle(false)//
-                .currencyCode(CURRENCY_CODE)//
-                .digitsAfterDecimal(2)//
-                .inMultiplesOf(0)//
-                .installmentAmountInMultiplesOf(1)//
-                .useBorrowerCycle(false)//
-                .minPrincipal(100.0)//
-                .principal(1000.0)//
-                .maxPrincipal(10000.0)//
-                .minNumberOfRepayments(1)//
-                .numberOfRepayments(1)//
-                .maxNumberOfRepayments(30)//
-                .isLinkedToFloatingInterestRates(false)//
-                .minInterestRatePerPeriod((double) 0)//
-                .interestRatePerPeriod((double) 0)//
-                .maxInterestRatePerPeriod((double) 0)//
-                .interestRateFrequencyType(INTEREST_RATE_FREQUENCY_TYPE_MONTH)//
-                .repaymentEvery(30)//
                 .repaymentFrequencyType(REPAYMENT_FREQUENCY_TYPE_DAYS)//
                 .principalVariationsForBorrowerCycle(principalVariationsForBorrowerCycle)//
                 .numberOfRepaymentVariationsForBorrowerCycle(numberOfRepaymentVariationsForBorrowerCycle)//
@@ -1136,5 +1110,4 @@ public class LoanProductsRequestFactory {
                 .chargeOffFraudExpenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT_FRAUD))//
                 .incomeFromChargeOffPenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.FEE_CHARGE_OFF));//
     }
-
 }

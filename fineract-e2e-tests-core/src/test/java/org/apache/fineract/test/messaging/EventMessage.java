@@ -29,4 +29,5 @@ public class EventMessage<T> {
     private final String type;
     private final LocalDate businessDate;
     private final T data;
+    private final String idempotencyKey;
 }

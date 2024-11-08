@@ -25,7 +25,8 @@ import java.util.Map;
 
 public enum TestContext {
 
-    INSTANCE;
+    INSTANCE, //
+    GLOBAL;//
 
     @SuppressWarnings("ImmutableEnumChecker")
     private final ThreadLocal<Map<String, Object>> testContexts = withInitial(HashMap::new);

@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -55,15 +56,21 @@ import org.apache.fineract.test.messaging.event.assetexternalization.LoanAccount
 import org.apache.fineract.test.messaging.event.assetexternalization.LoanOwnershipTransferEvent;
 import org.apache.fineract.test.messaging.event.client.ClientActivatedEvent;
 import org.apache.fineract.test.messaging.event.client.ClientCreatedEvent;
+import org.apache.fineract.test.messaging.event.loan.AbstractLoanEvent;
 import org.apache.fineract.test.messaging.event.loan.LoanApprovedEvent;
+import org.apache.fineract.test.messaging.event.loan.LoanBalanceChangedEvent;
 import org.apache.fineract.test.messaging.event.loan.LoanCreatedEvent;
 import org.apache.fineract.test.messaging.event.loan.LoanDisbursalEvent;
+import org.apache.fineract.test.messaging.event.loan.LoanRejectedEvent;
+import org.apache.fineract.test.messaging.event.loan.LoanStatusChangedEvent;
+import org.apache.fineract.test.messaging.event.loan.LoanUndoApprovalEvent;
 import org.apache.fineract.test.messaging.event.loan.delinquency.LoanDelinquencyPauseChangedEvent;
 import org.apache.fineract.test.messaging.event.loan.delinquency.LoanDelinquencyRangeChangeEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.AbstractLoanTransactionEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanDisbursalTransactionEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanRefundPostBusinessEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionGoodwillCreditPostEvent;
+import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionInterestPaymentWaiverPostEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionMakeRepaymentPostEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionMerchantIssuedRefundPostEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionPayoutRefundPostEvent;
@@ -111,22 +118,21 @@ public class EventCheckHelper {
         eventAssertion.assertEvent(ClientActivatedEvent.class, clientCreationResponse.body().getClientId())//
                 .extractingData(ClientDataV1::getActive).isEqualTo(true)//
                 .extractingData(clientDataV1 -> clientDataV1.getStatus().getId()).isEqualTo(status);//
-
     }
 
     public void createLoanEventCheck(Response<PostLoansResponse> createLoanResponse) throws IOException {
-        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(createLoanResponse.body().getLoanId(), false, "", "", "")
+        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(createLoanResponse.body().getLoanId(), false, "all", "", "")
                 .execute();
         GetLoansLoanIdResponse body = loanDetails.body();
 
-        eventAssertion.assertEvent(LoanCreatedEvent.class, createLoanResponse.body().getLoanId()).extractingData(LoanAccountDataV1::getId)
-                .isEqualTo(body.getId()).extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getId())
-                .isEqualTo(body.getStatus().getId()).extractingData(LoanAccountDataV1::getClientId)
-                .isEqualTo(Long.valueOf(body.getClientId()))
-                .extractingData(loanAccountDataV11 -> loanAccountDataV11.getPrincipal().longValue())
-                .isEqualTo(body.getPrincipal().longValue())
+        eventAssertion.assertEvent(LoanCreatedEvent.class, createLoanResponse.body().getLoanId())//
+                .extractingData(LoanAccountDataV1::getId).isEqualTo(body.getId())//
+                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getId()).isEqualTo(body.getStatus().getId())//
+                .extractingData(LoanAccountDataV1::getClientId).isEqualTo(Long.valueOf(body.getClientId()))//
+                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getPrincipal().longValue())
+                .isEqualTo(body.getPrincipal().longValue())//
                 .extractingData(loanAccountDataV1 -> loanAccountDataV1.getSummary().getCurrency().getCode())
-                .isEqualTo(body.getCurrency().getCode());
+                .isEqualTo(body.getCurrency().getCode());//
     }
 
     public void approveLoanEventCheck(Response<PostLoansLoanIdResponse> loanApproveResponse) throws IOException {
@@ -134,35 +140,109 @@ public class EventCheckHelper {
                 .execute();
         GetLoansLoanIdResponse body = loanDetails.body();
 
-        eventAssertion.assertEvent(LoanApprovedEvent.class, loanApproveResponse.body().getLoanId()).extractingData(LoanAccountDataV1::getId)
-                .isEqualTo(body.getId()).extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getId())
-                .isEqualTo(body.getStatus().getId()).extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getCode())
-                .isEqualTo(body.getStatus().getCode()).extractingData(LoanAccountDataV1::getClientId)
-                .isEqualTo(Long.valueOf(body.getClientId()))
-                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getApprovedPrincipal().longValue())
-                .isEqualTo(body.getApprovedPrincipal().longValue())
-                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getTimeline().getApprovedOnDate())
-                .isEqualTo(FORMATTER_EVENTS.format(body.getTimeline().getApprovedOnDate()))
-                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getSummary().getCurrency().getCode())
-                .isEqualTo(body.getCurrency().getCode());
-    }
-
-    public void disburseLoanEventCheck(Response<PostLoansLoanIdResponse> loanDisburseResponse) throws IOException {
-        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(loanDisburseResponse.body().getLoanId(), false, "", "", "")
-                .execute();
-        GetLoansLoanIdResponse body = loanDetails.body();
-
-        eventAssertion.assertEvent(LoanDisbursalEvent.class, loanDisburseResponse.body().getLoanId())//
+        eventAssertion.assertEvent(LoanApprovedEvent.class, loanApproveResponse.body().getLoanId())//
                 .extractingData(LoanAccountDataV1::getId).isEqualTo(body.getId())//
                 .extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getId()).isEqualTo(body.getStatus().getId())//
                 .extractingData(loanAccountDataV1 -> loanAccountDataV1.getStatus().getCode()).isEqualTo(body.getStatus().getCode())//
                 .extractingData(LoanAccountDataV1::getClientId).isEqualTo(Long.valueOf(body.getClientId()))//
-                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getSummary().getPrincipalDisbursed().longValue())
-                .isEqualTo(body.getSummary().getPrincipalDisbursed().longValue())//
-                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getTimeline().getActualDisbursementDate())
-                .isEqualTo(FORMATTER_EVENTS.format(body.getTimeline().getActualDisbursementDate()))
+                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getApprovedPrincipal().longValue())
+                .isEqualTo(body.getApprovedPrincipal().longValue())//
+                .extractingData(loanAccountDataV1 -> loanAccountDataV1.getTimeline().getApprovedOnDate())//
+                .isEqualTo(FORMATTER_EVENTS.format(body.getTimeline().getApprovedOnDate()))//
                 .extractingData(loanAccountDataV1 -> loanAccountDataV1.getSummary().getCurrency().getCode())
                 .isEqualTo(body.getCurrency().getCode());//
+    }
+
+    public void undoApproveLoanEventCheck(Response<PostLoansLoanIdResponse> loanUndoApproveResponse) throws IOException {
+        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(loanUndoApproveResponse.body().getLoanId(), false, "", "", "")
+                .execute();
+        GetLoansLoanIdResponse body = loanDetails.body();
+
+        eventAssertion.assertEventRaised(LoanUndoApprovalEvent.class, body.getId());
+    }
+
+    public void loanRejectedEventCheck(Response<PostLoansLoanIdResponse> loanRejectedResponse) throws IOException {
+        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(loanRejectedResponse.body().getLoanId(), false, "", "", "")
+                .execute();
+        GetLoansLoanIdResponse body = loanDetails.body();
+
+        eventAssertion.assertEventRaised(LoanRejectedEvent.class, body.getId());
+    }
+
+    public void disburseLoanEventCheck(Long loanId) throws IOException {
+        loanAccountDataV1Check(LoanDisbursalEvent.class, loanId);
+    }
+
+    public void loanBalanceChangedEventCheck(Long loanId) throws IOException {
+        loanAccountDataV1Check(LoanBalanceChangedEvent.class, loanId);
+    }
+
+    public void loanStatusChangedEventCheck(Long loanId) throws IOException {
+        loanAccountDataV1Check(LoanStatusChangedEvent.class, loanId);
+    }
+
+    private void loanAccountDataV1Check(Class<? extends AbstractLoanEvent> eventClazz, Long loanId) throws IOException {
+        Response<GetLoansLoanIdResponse> loanDetails = loansApi.retrieveLoan(loanId, false, "all", "", "").execute();
+        GetLoansLoanIdResponse body = loanDetails.body();
+
+        eventAssertion.assertEvent(eventClazz, loanId)//
+                .extractingData(loanAccountDataV1 -> {
+                    Long idActual = loanAccountDataV1.getId();
+                    Long idExpected = body.getId();
+                    Integer statusIdActual = loanAccountDataV1.getStatus().getId();
+                    Integer statusIdExpected = body.getStatus().getId();
+                    String statusCodeActual = loanAccountDataV1.getStatus().getCode();
+                    String statusCodeExpected = body.getStatus().getCode();
+                    Long clientIdActual = loanAccountDataV1.getClientId();
+                    Long clientIdExpected = body.getClientId();
+                    BigDecimal principalDisbursedActual = loanAccountDataV1.getSummary().getPrincipalDisbursed();
+                    Double principalDisbursedExpectedDouble = body.getSummary().getPrincipalDisbursed();
+                    BigDecimal principalDisbursedExpected = new BigDecimal(principalDisbursedExpectedDouble, MathContext.DECIMAL64);
+                    String actualDisbursementDateActual = loanAccountDataV1.getTimeline().getActualDisbursementDate();
+                    String actualDisbursementDateExpected = FORMATTER_EVENTS.format(body.getTimeline().getActualDisbursementDate());
+                    String currencyCodeActual = loanAccountDataV1.getSummary().getCurrency().getCode();
+                    String currencyCodeExpected = body.getSummary().getCurrency().getCode();
+                    BigDecimal totalUnpaidPayableDueInterestActual = loanAccountDataV1.getSummary().getTotalUnpaidPayableDueInterest();
+                    BigDecimal totalUnpaidPayableDueInterestExpected = body.getSummary().getTotalUnpaidPayableDueInterest();
+                    BigDecimal totalUnpaidPayableNotDueInterestActual = loanAccountDataV1.getSummary()
+                            .getTotalUnpaidPayableNotDueInterest();
+                    BigDecimal totalUnpaidPayableNotDueInterestExpected = body.getSummary().getTotalUnpaidPayableNotDueInterest();
+                    BigDecimal totalInterestPaymentWaiverActual = loanAccountDataV1.getSummary().getTotalInterestPaymentWaiver();
+                    Double totalInterestPaymentWaiverExpectedDouble = body.getSummary().getTotalInterestPaymentWaiver();
+                    BigDecimal totalInterestPaymentWaiverExpected = new BigDecimal(totalInterestPaymentWaiverExpectedDouble,
+                            MathContext.DECIMAL64);
+                    BigDecimal delinquentInterestActual = loanAccountDataV1.getDelinquent().getDelinquentInterest();
+                    BigDecimal delinquentInterestExpected = body.getDelinquent().getDelinquentInterest();
+                    BigDecimal delinquentFeeActual = loanAccountDataV1.getDelinquent().getDelinquentFee();
+                    BigDecimal delinquentFeeExpected = body.getDelinquent().getDelinquentFee();
+                    BigDecimal delinquentPenaltyActual = loanAccountDataV1.getDelinquent().getDelinquentPenalty();
+                    BigDecimal delinquentPenaltyExpected = body.getDelinquent().getDelinquentPenalty();
+
+                    assertThat(idActual).isEqualTo(idExpected);
+                    assertThat(statusIdActual).isEqualTo(statusIdExpected);
+                    assertThat(statusCodeActual).isEqualTo(statusCodeExpected);
+                    assertThat(clientIdActual).isEqualTo(clientIdExpected);
+                    assertThat(areBigDecimalValuesEqual(principalDisbursedActual, principalDisbursedExpected)).isTrue();
+                    assertThat(actualDisbursementDateActual).isEqualTo(actualDisbursementDateExpected);
+                    assertThat(currencyCodeActual).isEqualTo(currencyCodeExpected);
+                    assertThat(areBigDecimalValuesEqual(totalUnpaidPayableDueInterestActual, totalUnpaidPayableDueInterestExpected))
+                            .isTrue();
+                    assertThat(areBigDecimalValuesEqual(totalUnpaidPayableNotDueInterestActual, totalUnpaidPayableNotDueInterestExpected))
+                            .isTrue();
+                    assertThat(areBigDecimalValuesEqual(totalInterestPaymentWaiverActual, totalInterestPaymentWaiverExpected)).isTrue();
+                    assertThat(areBigDecimalValuesEqual(delinquentInterestActual, delinquentInterestExpected)).isTrue();
+                    assertThat(areBigDecimalValuesEqual(delinquentFeeActual, delinquentFeeExpected)).isTrue();
+                    assertThat(areBigDecimalValuesEqual(delinquentPenaltyActual, delinquentPenaltyExpected)).isTrue();
+
+                    return null;
+                });
+    }
+
+    private boolean areBigDecimalValuesEqual(BigDecimal actual, BigDecimal expected) {
+        log.info("--- Checking BigDecimal values.... ---");
+        log.info("Actual:   {}", actual);
+        log.info("Expected: {}", expected);
+        return actual.compareTo(expected) == 0;
     }
 
     public void loanDisbursalTransactionEventCheck(Response<PostLoansLoanIdResponse> loanDisburseResponse) throws IOException {
@@ -204,6 +284,7 @@ public class EventCheckHelper {
             case PAYOUT_REFUND -> LoanTransactionPayoutRefundPostEvent.class;
             case MERCHANT_ISSUED_REFUND -> LoanTransactionMerchantIssuedRefundPostEvent.class;
             case REFUND_BY_CASH -> LoanRefundPostBusinessEvent.class;
+            case INTEREST_PAYMENT_WAIVER -> LoanTransactionInterestPaymentWaiverPostEvent.class;
             default -> throw new IllegalStateException(String.format("transaction type %s cannot be found", transactionType.getValue()));
         };
 
@@ -404,6 +485,6 @@ public class EventCheckHelper {
     }
 
     private BigDecimal zeroConversion(BigDecimal input) {
-        return input.compareTo(BigDecimal.ZERO) == 0 ? new BigDecimal(input.toEngineeringString()) : input.setScale(8);
+        return input.compareTo(new BigDecimal("0.000000")) == 0 ? new BigDecimal(input.toEngineeringString()) : input.setScale(8);
     }
 }

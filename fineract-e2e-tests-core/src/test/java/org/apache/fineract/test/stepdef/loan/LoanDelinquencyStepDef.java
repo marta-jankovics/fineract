@@ -21,7 +21,6 @@ package org.apache.fineract.test.stepdef.loan;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.Gson;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -629,7 +628,7 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
         String expectedDelinquencyRangeValue = expectedDelinquencyRange.getValue();
 
         eventAssertion.assertEvent(LoanDelinquencyRangeChangeEvent.class, loanId)//
-                .extractingData(loanAccountDelinquencyRangeDataV1 -> { //
+                .extractingData(loanAccountDelinquencyRangeDataV1 -> {
                     String actualDelinquencyRangeValue = loanAccountDelinquencyRangeDataV1.getDelinquencyRange().getClassification();//
                     assertThat(actualDelinquencyRangeValue)//
                             .as(ErrorMessageHelper.delinquencyRangeError(actualDelinquencyRangeValue, expectedDelinquencyRangeValue))//
@@ -648,7 +647,8 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
         GetLoansLoanIdDelinquencySummary delinquent = loanDetails.body().getDelinquent();
 
         eventAssertion.assertEvent(LoanDelinquencyRangeChangeEvent.class, loanId)//
-                .extractingData(loanAccountDelinquencyRangeDataV1 -> { //
+                .extractingData(loanAccountDelinquencyRangeDataV1 -> {
+
                     Long loanLevelDelinquencyRangeId = loanAccountDelinquencyRangeDataV1.getDelinquencyRange().getId();
                     String loanLevelDelinquencyRange = loanAccountDelinquencyRangeDataV1.getDelinquencyRange().getClassification();
                     String loanLevelDelinquentDate = loanAccountDelinquencyRangeDataV1.getDelinquentDate();
@@ -732,7 +732,6 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
         log.info("loanDetails.delinquent.lastRepaymentDate: {}", actualLastRepaymentDate);
     }
 
-    @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
     private List<String> fetchValuesOfDelinquencyPausePeriods(List<String> header, GetLoansLoanIdDelinquencyPausePeriod t) {
         List<String> actualValues = new ArrayList<>();
         for (String headerName : header) {
@@ -741,6 +740,7 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
                 case "pausePeriodStart" ->
                     actualValues.add(t.getPausePeriodStart() == null ? null : FORMATTER.format(t.getPausePeriodStart()));
                 case "pausePeriodEnd" -> actualValues.add(t.getPausePeriodEnd() == null ? null : FORMATTER.format(t.getPausePeriodEnd()));
+                default -> throw new IllegalStateException(String.format("Header name %s cannot be found", headerName));
             }
         }
         return actualValues;

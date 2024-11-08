@@ -16,16 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.loanaccount.loanschedule.data;
+package org.apache.fineract.test.testrail;
 
-import lombok.Data;
-import org.apache.fineract.organisation.monetary.domain.Money;
+import org.apache.fineract.test.support.PropertiesCondition;
 
-@Data
-public class PayableDetails {
+public class TestRailEnabledCondition extends PropertiesCondition<TestRailProperties> {
 
-    private final Money emi;
-    private final Money payablePrincipal;
-    private final Money payableInterest;
-    private final Money outstandingBalance;
+    @Override
+    protected Class<TestRailProperties> getPropertiesClass() {
+        return TestRailProperties.class;
+    }
+
+    @Override
+    protected boolean matches(TestRailProperties properties) {
+        return properties.isEnabled();
+    }
 }

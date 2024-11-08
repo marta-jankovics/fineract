@@ -49,7 +49,7 @@ import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleD
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleModelDownPaymentPeriod;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleParams;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanSchedulePlan;
-import org.apache.fineract.portfolio.loanaccount.loanschedule.data.PayableDetails;
+import org.apache.fineract.portfolio.loanaccount.loanschedule.data.OutstandingDetails;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.ProgressiveLoanInterestScheduleModel;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.exception.MultiDisbursementOutstandingAmoutException;
 import org.apache.fineract.portfolio.loanproduct.calc.EMICalculator;
@@ -198,7 +198,8 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
                 continue;
             }
 
-            Money outstandingBalance = emiCalculator.getOutstandingLoanBalance(interestScheduleModel, periodDueDate, disbursementDate);
+            Money outstandingBalance = emiCalculator.getOutstandingLoanBalanceOfPeriod(interestScheduleModel, periodDueDate,
+                    disbursementDate);
 
             final Money disbursedAmount = Money.of(loanApplicationTerms.getCurrency(), disbursementData.getPrincipal(), mc);
             final LoanScheduleModelDisbursementPeriod disbursementPeriod = LoanScheduleModelDisbursementPeriod
@@ -268,14 +269,11 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
 
         ProgressiveLoanInterestScheduleModel model = processor.calculateInterestScheduleModel(loan.getId());
 
-        PayableDetails result = emiCalculator.getPayableDetails(model, actualInstallment.getDueDate(), transactionDate);
+        OutstandingDetails result = emiCalculator.getOutstandingAmountsTillDate(model, transactionDate);
         // TODO: We should add all the past due outstanding amounts as well
         OutstandingAmountsDTO amounts = new OutstandingAmountsDTO(currency) //
-                .principal(result.getOutstandingBalance()) //
-                .interest(result.getPayableInterest());
-
-        installments.stream().filter(installment -> installment.getDueDate().isBefore(onDate))
-                .forEach(installment -> amounts.plusInterest(installment.getInterestOutstanding(currency)));
+                .principal(result.getOutstandingPrincipal()) //
+                .interest(result.getOutstandingInterest());//
 
         installments.forEach(installment -> amounts //
                 .plusFeeCharges(installment.getFeeChargesOutstanding(currency))

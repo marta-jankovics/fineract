@@ -26,6 +26,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.client.models.PostCreateRescheduleLoansRequest;
@@ -48,6 +50,10 @@ import retrofit2.Response;
 public class LoanRescheduleStepDef extends AbstractStepDef {
 
     private static final Gson GSON = new JSON().getGson();
+    public static final String DATE_FORMAT_HU = "yyyy-MM-dd";
+    public static final String DATE_FORMAT_EN = "dd MMMM yyyy";
+    public static final DateTimeFormatter FORMATTER_HU = DateTimeFormatter.ofPattern(DATE_FORMAT_HU);
+    public static final DateTimeFormatter FORMATTER_EN = DateTimeFormatter.ofPattern(DATE_FORMAT_EN);
 
     @Autowired
     private RescheduleLoansApi rescheduleLoansApi;
@@ -59,13 +65,18 @@ public class LoanRescheduleStepDef extends AbstractStepDef {
 
         List<List<String>> data = table.asLists();
         List<String> rescheduleData = data.get(1);
+
         String rescheduleFromDate = rescheduleData.get(0);
         String submittedOnDate = rescheduleData.get(1);
         String adjustedDueDate = rescheduleData.get(2);
-        Integer graceOfPrincipal = rescheduleData.get(3) != null ? Integer.parseInt(rescheduleData.get(3)) : null;
-        Integer graceOnInterest = rescheduleData.get(4) != null ? Integer.parseInt(rescheduleData.get(4)) : null;
-        Integer extraTerms = rescheduleData.get(5) != null ? Integer.parseInt(rescheduleData.get(5)) : null;
-        BigDecimal newInterestRate = rescheduleData.get(6) != null ? new BigDecimal(rescheduleData.get(6)) : null;
+        Integer graceOfPrincipal = (rescheduleData.get(3) == null || "0".equals(rescheduleData.get(3))) ? null
+                : Integer.valueOf(rescheduleData.get(3));
+        Integer graceOnInterest = (rescheduleData.get(4) == null || "0".equals(rescheduleData.get(4))) ? null
+                : Integer.valueOf(rescheduleData.get(4));
+        Integer extraTerms = (rescheduleData.get(5) == null || "0".equals(rescheduleData.get(5))) ? null
+                : Integer.valueOf(rescheduleData.get(5));
+        BigDecimal newInterestRate = (rescheduleData.get(6) == null || "0".equals(rescheduleData.get(6))) ? null
+                : new BigDecimal(rescheduleData.get(6));
 
         PostCreateRescheduleLoansRequest request = new PostCreateRescheduleLoansRequest()//
                 .loanId(loanId)//
@@ -105,10 +116,13 @@ public class LoanRescheduleStepDef extends AbstractStepDef {
         String rescheduleFromDate = rescheduleData.get(0);
         String submittedOnDate = rescheduleData.get(1);
         String adjustedDueDate = rescheduleData.get(2);
-        Integer graceOfPrincipal = rescheduleData.get(3) != null ? Integer.parseInt(rescheduleData.get(3)) : null;
-        Integer graceOnInterest = rescheduleData.get(4) != null ? Integer.parseInt(rescheduleData.get(4)) : null;
-        Integer extraTerms = rescheduleData.get(5) != null ? Integer.parseInt(rescheduleData.get(5)) : null;
-        BigDecimal newInterestRate = rescheduleData.get(6) != null ? new BigDecimal(rescheduleData.get(6)) : null;
+        Integer graceOfPrincipal = (rescheduleData.get(3) == null || "0".equals(rescheduleData.get(3))) ? null
+                : Integer.valueOf(rescheduleData.get(3));
+        Integer graceOnInterest = (rescheduleData.get(4) == null || "0".equals(rescheduleData.get(4))) ? null
+                : Integer.valueOf(rescheduleData.get(4));
+        Integer extraTerms = (rescheduleData.get(5) == null || "0".equals(rescheduleData.get(5))) ? null
+                : Integer.valueOf(rescheduleData.get(5));
+        BigDecimal newInterestRate = rescheduleData.get(6) == null ? null : new BigDecimal(rescheduleData.get(6));
 
         PostCreateRescheduleLoansRequest request = new PostCreateRescheduleLoansRequest()//
                 .loanId(loanId)//
@@ -127,7 +141,18 @@ public class LoanRescheduleStepDef extends AbstractStepDef {
         Response<PostCreateRescheduleLoansResponse> createResponse = rescheduleLoansApi.createLoanRescheduleRequest(request).execute();
 
         LoanRescheduleErrorMessage loanRescheduleErrorMessage = LoanRescheduleErrorMessage.valueOf(errorMessageType);
-        String errorMessageExpected = loanRescheduleErrorMessage.getValue(loanId);
+
+        LocalDate localDate = LocalDate.parse(rescheduleFromDate, FORMATTER_EN);
+        String rescheduleFromDateFormatted = localDate.format(FORMATTER_HU);
+        String errorMessageExpected = "";
+        int expectedParameterCount = loanRescheduleErrorMessage.getExpectedParameterCount();
+        if (expectedParameterCount == 1) {
+            errorMessageExpected = loanRescheduleErrorMessage.getValue(loanId);
+        } else if (expectedParameterCount == 2) {
+            errorMessageExpected = loanRescheduleErrorMessage.getValue(rescheduleFromDateFormatted, loanId);
+        } else {
+            throw new IllegalStateException("Parameter count in Error message does not met the criteria");
+        }
 
         String errorToString = createResponse.errorBody().string();
         ErrorResponse errorResponse = GSON.fromJson(errorToString, ErrorResponse.class);

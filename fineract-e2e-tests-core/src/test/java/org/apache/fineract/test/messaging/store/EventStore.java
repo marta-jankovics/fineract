@@ -71,20 +71,21 @@ public class EventStore {
     void receive(byte[] message) throws Exception {
         MessageV1 msgObject = MessageV1.fromByteBuffer(ByteBuffer.wrap(message));
         String type = msgObject.getType();
+        String idempotencyKey = msgObject.getIdempotencyKey();
         LocalDate businessDate = LocalDate.parse(msgObject.getBusinessDate(), DateTimeFormatter.ISO_LOCAL_DATE);
         Object dataObject = getDataObject(msgObject);
         if (BULK_BUSINESS_EVENT_TYPE.equals(type)) {
             BulkMessagePayloadV1 bulkPayload = (BulkMessagePayloadV1) dataObject;
             List<EventMessage<Object>> bulkEvents = bulkPayload.getDatas().stream()
-                    .map((BulkMessageItemV1 item) -> getEventMessageFromBulkItem(item, businessDate)).toList();
+                    .map((BulkMessageItemV1 item) -> getEventMessageFromBulkItem(item, businessDate, idempotencyKey)).toList();
             if (log.isDebugEnabled()) {
                 bulkEvents.forEach(msg -> {
-                    log.debug("Received event {}", new LoggedEvent(msg));
+                    log.debug("Received Bulk event {}", new LoggedEvent(msg));
                 });
             }
             receivedEvents.addAll(bulkEvents);
         } else {
-            EventMessage<Object> msg = new EventMessage<>(type, businessDate, dataObject);
+            EventMessage<Object> msg = new EventMessage<>(type, businessDate, dataObject, idempotencyKey);
             if (log.isDebugEnabled()) {
                 log.debug("Received event {}", new LoggedEvent(msg));
             }
@@ -93,12 +94,12 @@ public class EventStore {
         log.trace("Data object within event {}", dataObject);
     }
 
-    private EventMessage<Object> getEventMessageFromBulkItem(BulkMessageItemV1 item, LocalDate businessDate) {
+    private EventMessage<Object> getEventMessageFromBulkItem(BulkMessageItemV1 item, LocalDate businessDate, String idempotencyKey) {
         try {
             String dataschema = item.getDataschema();
             ByteBuffer data = item.getData();
             Object deserialized = deserialize(dataschema, data);
-            return new EventMessage<>(item.getType(), businessDate, deserialized);
+            return new EventMessage<>(item.getType(), businessDate, deserialized, idempotencyKey);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -67,7 +67,6 @@ public class JournalEntriesStepDef extends AbstractStepDef {
         String transactionTypeExpected = transactionType1.getValue();
 
         List<GetLoansLoanIdTransactions> transactions = loanDetailsResponse.body().getTransactions();
-
         List<GetLoansLoanIdTransactions> transactionsMatch = transactions.stream()
                 .filter(t -> transactionDate.equals(formatter.format(t.getDate()))
                         && transactionTypeExpected.equals(t.getType().getCode().substring(20)))

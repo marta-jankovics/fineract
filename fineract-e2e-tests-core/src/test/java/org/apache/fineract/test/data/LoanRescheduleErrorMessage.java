@@ -20,16 +20,29 @@ package org.apache.fineract.test.data;
 
 public enum LoanRescheduleErrorMessage {
 
-    LOAN_CHARGED_OFF("Loan: %s reschedule installment is not allowed. Loan Account is Charged-off"), LOAN_LOCKED_BY_COB(
-            "Loan is locked by the COB job. Loan ID: %s");
+    LOAN_CHARGED_OFF("Loan: %s reschedule installment is not allowed. Loan Account is Charged-off"), //
+    LOAN_RESCHEDULE_DATE_NOT_IN_FUTURE("Loan Reschedule From date (%s) for Loan: %s should be in the future."), //
+    LOAN_LOCKED_BY_COB("Loan is locked by the COB job. Loan ID: %s");//
 
-    public final String value;
+    private final String messageTemplate;
 
-    LoanRescheduleErrorMessage(String value) {
-        this.value = value;
+    LoanRescheduleErrorMessage(String messageTemplate) {
+        this.messageTemplate = messageTemplate;
     }
 
     public String getValue(Object... params) {
-        return String.format(this.value, params);
+        if (params.length != getExpectedParameterCount()) {
+            throw new IllegalArgumentException("Expected " + getExpectedParameterCount() + " parameters, but got " + params.length);
+        }
+        return String.format(this.messageTemplate, params);
+    }
+
+    public int getExpectedParameterCount() {
+        // Count the number of placeholders (%s) in the message template
+        return (int) messageTemplate.chars().filter(ch -> ch == '%').count();
+    }
+
+    public String getMessageTemplate() {
+        return messageTemplate;
     }
 }

@@ -21,13 +21,13 @@ package org.apache.fineract.test.messaging;
 import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.test.messaging.config.EventProperties;
 import org.apache.fineract.test.messaging.event.Event;
 import org.apache.fineract.test.messaging.event.EventFactory;
@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-@SuppressFBWarnings({ "VA_FORMAT_STRING_USES_NEWLINE" })
+@Slf4j
 public class EventAssertion {
 
     private final EventStore eventStore;
@@ -85,11 +85,8 @@ public class EventAssertion {
 
             String receivedEventsLogParam = eventStore.getReceivedEvents().stream().map(LoggedEvent::new).map(LoggedEvent::toString)
                     .reduce("", (s, e) -> format("%s%s%n", s, e));
-            Assertions.fail("""
-                    %s has been received, but it was unexpected.
-                    Events received but not verified:
-                    %s
-                    """.formatted(event.getEventName(), receivedEventsLogParam));
+            Assertions.fail("%s has been received, but it was unexpected. Events received but not verified: %s", event.getEventName(),
+                    receivedEventsLogParam);
         } catch (ConditionTimeoutException e) {
             // This is the expected outcome here!
         }
@@ -104,6 +101,7 @@ public class EventAssertion {
         } else {
             eventMessage = (EventMessage<R>) new EmptyEventMessage();
         }
+        log.info("Assert event: {}", eventMessage.getIdempotencyKey());
         return new EventAssertionBuilder<>(eventMessage);
     }
 

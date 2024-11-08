@@ -173,8 +173,7 @@ Feature: LoanCharge
       | NSF fee | true      | Specified due date | 23 October 2022 | Flat             | 10.0 | 10.0 | 0.0    | 0.0         |
 #
 ##  charge adjustment with 8 will fail
-    When Admin makes a charge adjustment for the last "LOAN_NSF_FEE" type charge which is due on "23 October 2022" with transaction amount higher than the available charge amount
-
+    When Charge adjustment for the last "LOAN_NSF_FEE" type charge which is due on "23 October 2022" with transaction amount 8 which is higher than the available charge amount results an ERROR
 ##  revert last charge adjustment (was amount 3)
     When Admin reverts the charge adjustment which was raised on "04 November 2022" with 3 EUR transaction amount
     Then Loan has 1002 outstanding amount
@@ -1678,7 +1677,7 @@ Feature: LoanCharge
     When Admin creates a client with random data
     When Admin creates a fully customized loan with the following data:
       | LoanProduct                                                 | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
-      | LP2_ADV_CUST_PMT_ALLOC_PROGRESSIVE_LOAN_SCHEDULE_HORIZONTAL | 27 Sep 2024       | 100            | 9.99                   | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 1                 | MONTHS                | 1              | MONTHS                 | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+      | LP2_ADV_CUSTOM_PMT_ALLOC_PROGRESSIVE_LOAN_SCHEDULE_HORIZONTAL | 27 Sep 2024       | 100            | 9.99                   | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 1                 | MONTHS                | 1              | MONTHS                 | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
     And Admin successfully approves the loan on "27 September 2024" with "40" amount and expected disbursement date on "27 September 2024"
     When Admin successfully disburse the loan on "27 September 2024" with "40" EUR transaction amount
     Then Loan Repayment schedule has 1 periods, with the following data for periods:
@@ -1691,7 +1690,6 @@ Feature: LoanCharge
     Then Loan Transactions tab has the following data:
       | Transaction date  | Transaction Type | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
       | 27 September 2024 | Disbursement     | 40.0   | 0.0       | 0.0      | 0.0  | 0.0       | 40.0         |
-      | 27 September 2024 | Accrual          | 0.33   | 0.0       | 0.33     | 0.0  | 0.0       | 0.0          |
     When Admin adds "LOAN_NSF_FEE" due date charge with "27 September 2024" due date and 1 EUR transaction amount
     When Admin makes a charge adjustment for the last "LOAN_NSF_FEE" type charge which is due on "27 September 2024" with 1 EUR transaction amount and externalId ""
     Then Loan has 40.32 outstanding amount
@@ -1705,6 +1703,4 @@ Feature: LoanCharge
     Then Loan Transactions tab has the following data:
       | Transaction date  | Transaction Type  | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
       | 27 September 2024 | Disbursement      | 40.0   | 0.0       | 0.0      | 0.0  | 0.0       | 40.0         |
-      | 27 September 2024 | Accrual           | 0.33   | 0.0       | 0.33     | 0.0  | 0.0       | 0.0          |
-      | 27 September 2024 | Accrual           | 1.0    | 0.0       | 0.0      | 0.0  | 1.0       | 0.0          |
       | 27 September 2024 | Charge Adjustment | 1.0    | 1.0       | 0.0      | 0.0  | 0.0       | 39.0         |

@@ -30,8 +30,11 @@ import org.apache.fineract.client.models.BusinessStep;
 import org.apache.fineract.client.models.GetBusinessStepConfigResponse;
 import org.apache.fineract.client.models.UpdateBusinessStepConfigRequest;
 import org.apache.fineract.client.services.BusinessStepConfigurationApi;
+import org.apache.fineract.test.data.CobBusinessStep;
 import org.apache.fineract.test.helper.ErrorHelper;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
+import org.apache.fineract.test.support.TestContext;
+import org.apache.fineract.test.support.TestContextKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import retrofit2.Response;
 
@@ -47,28 +50,20 @@ public class BusinessStepStepDef extends AbstractStepDef {
     private static final String BUSINESS_STEP_NAME_ADD_PERIODIC_ACCRUAL_ENTRIES = "ADD_PERIODIC_ACCRUAL_ENTRIES";
     private static final String BUSINESS_STEP_NAME_EXTERNAL_ASSET_OWNER_TRANSFER = "EXTERNAL_ASSET_OWNER_TRANSFER";
     private static final String BUSINESS_STEP_NAME_CHECK_DUE_INSTALLMENTS = "CHECK_DUE_INSTALLMENTS";
+    private static final String BUSINESS_STEP_NAME_ACCRUAL_ACTIVITY_POSTING = "ACCRUAL_ACTIVITY_POSTING";
+    private static final List<BusinessStep> ORIGINAL_COB_BUSINESS_STEPS = TestContext.GLOBAL
+            .get(TestContextKey.ORIGINAL_COB_WORKFLOW_JOB_BUSINESS_STEP_LIST);
 
     @Autowired
     private BusinessStepConfigurationApi businessStepConfigurationApi;
 
     @Given("Admin puts EXTERNAL_ASSET_OWNER_TRANSFER job into LOAN_CLOSE_OF_BUSINESS workflow")
     public void putExternalAssetOwnerTransferJobInCOB() throws IOException {
-        BusinessStep applyChargeToOverdueLoans = new BusinessStep().stepName(BUSINESS_STEP_NAME_APPLY_CHARGE_TO_OVERDUE_LOANS).order(1L);
-        BusinessStep loanDelinquencyClassification = new BusinessStep().stepName(BUSINESS_STEP_NAME_LOAN_DELINQUENCY_CLASSIFICATION)
-                .order(2L);
-        BusinessStep checkLoanRepaymentDue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_DUE).order(3L);
-        BusinessStep checkLoanRepaymentOverdue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_OVERDUE).order(4L);
-        BusinessStep updateLoanArrearsAging = new BusinessStep().stepName(BUSINESS_STEP_NAME_UPDATE_LOAN_ARREARS_AGING).order(5L);
-        BusinessStep addPeriodicAccrualEntries = new BusinessStep().stepName(BUSINESS_STEP_NAME_ADD_PERIODIC_ACCRUAL_ENTRIES).order(6L);
-        BusinessStep externalAssetOwnerTransfer = new BusinessStep().stepName(BUSINESS_STEP_NAME_EXTERNAL_ASSET_OWNER_TRANSFER).order(7L);
+        List<BusinessStep> businessSteps = new ArrayList<>(ORIGINAL_COB_BUSINESS_STEPS);
+        Long lastOrder = businessSteps.get(businessSteps.size() - 1).getOrder();
 
-        List<BusinessStep> businessSteps = new ArrayList<>();
-        businessSteps.add(applyChargeToOverdueLoans);
-        businessSteps.add(loanDelinquencyClassification);
-        businessSteps.add(checkLoanRepaymentDue);
-        businessSteps.add(checkLoanRepaymentOverdue);
-        businessSteps.add(updateLoanArrearsAging);
-        businessSteps.add(addPeriodicAccrualEntries);
+        BusinessStep externalAssetOwnerTransfer = new BusinessStep().stepName(BUSINESS_STEP_NAME_EXTERNAL_ASSET_OWNER_TRANSFER)
+                .order(lastOrder + 1);
         businessSteps.add(externalAssetOwnerTransfer);
 
         UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
@@ -76,51 +71,22 @@ public class BusinessStepStepDef extends AbstractStepDef {
         Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
                 .execute();
         ErrorHelper.checkSuccessfulApiCall(response);
+
+        // --- log changes ---
+        logChanges();
     }
 
     @Then("Admin removes EXTERNAL_ASSET_OWNER_TRANSFER job from LOAN_CLOSE_OF_BUSINESS workflow")
     public void removeExternalAssetOwnerTransferJobInCOB() throws IOException {
-        BusinessStep applyChargeToOverdueLoans = new BusinessStep().stepName(BUSINESS_STEP_NAME_APPLY_CHARGE_TO_OVERDUE_LOANS).order(1L);
-        BusinessStep loanDelinquencyClassification = new BusinessStep().stepName(BUSINESS_STEP_NAME_LOAN_DELINQUENCY_CLASSIFICATION)
-                .order(2L);
-        BusinessStep checkLoanRepaymentDue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_DUE).order(3L);
-        BusinessStep checkLoanRepaymentOverdue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_OVERDUE).order(4L);
-        BusinessStep updateLoanArrearsAging = new BusinessStep().stepName(BUSINESS_STEP_NAME_UPDATE_LOAN_ARREARS_AGING).order(5L);
-        BusinessStep addPeriodicAccrualEntries = new BusinessStep().stepName(BUSINESS_STEP_NAME_ADD_PERIODIC_ACCRUAL_ENTRIES).order(6L);
-
-        List<BusinessStep> businessSteps = new ArrayList<>();
-        businessSteps.add(applyChargeToOverdueLoans);
-        businessSteps.add(loanDelinquencyClassification);
-        businessSteps.add(checkLoanRepaymentDue);
-        businessSteps.add(checkLoanRepaymentOverdue);
-        businessSteps.add(updateLoanArrearsAging);
-        businessSteps.add(addPeriodicAccrualEntries);
-
-        UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
-
-        Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
-                .execute();
-        ErrorHelper.checkSuccessfulApiCall(response);
+        setBackBusinessStepsToOriginal();
     }
 
     @Given("Admin puts CHECK_DUE_INSTALLMENTS job into LOAN_CLOSE_OF_BUSINESS workflow")
     public void putCheckDueInstallmentsJobInCOB() throws IOException {
-        BusinessStep applyChargeToOverdueLoans = new BusinessStep().stepName(BUSINESS_STEP_NAME_APPLY_CHARGE_TO_OVERDUE_LOANS).order(1L);
-        BusinessStep loanDelinquencyClassification = new BusinessStep().stepName(BUSINESS_STEP_NAME_LOAN_DELINQUENCY_CLASSIFICATION)
-                .order(2L);
-        BusinessStep checkLoanRepaymentDue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_DUE).order(3L);
-        BusinessStep checkLoanRepaymentOverdue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_OVERDUE).order(4L);
-        BusinessStep updateLoanArrearsAging = new BusinessStep().stepName(BUSINESS_STEP_NAME_UPDATE_LOAN_ARREARS_AGING).order(5L);
-        BusinessStep addPeriodicAccrualEntries = new BusinessStep().stepName(BUSINESS_STEP_NAME_ADD_PERIODIC_ACCRUAL_ENTRIES).order(6L);
-        BusinessStep checkDueInstallments = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_DUE_INSTALLMENTS).order(7L);
+        List<BusinessStep> businessSteps = new ArrayList<>(ORIGINAL_COB_BUSINESS_STEPS);
+        Long lastOrder = businessSteps.get(businessSteps.size() - 1).getOrder();
 
-        List<BusinessStep> businessSteps = new ArrayList<>();
-        businessSteps.add(applyChargeToOverdueLoans);
-        businessSteps.add(loanDelinquencyClassification);
-        businessSteps.add(checkLoanRepaymentDue);
-        businessSteps.add(checkLoanRepaymentOverdue);
-        businessSteps.add(updateLoanArrearsAging);
-        businessSteps.add(addPeriodicAccrualEntries);
+        BusinessStep checkDueInstallments = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_DUE_INSTALLMENTS).order(lastOrder + 1);
         businessSteps.add(checkDueInstallments);
 
         UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
@@ -128,68 +94,71 @@ public class BusinessStepStepDef extends AbstractStepDef {
         Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
                 .execute();
         ErrorHelper.checkSuccessfulApiCall(response);
+
+        // --- log changes ---
+        logChanges();
     }
 
     @Then("Admin removes CHECK_DUE_INSTALLMENTS job from LOAN_CLOSE_OF_BUSINESS workflow")
     public void removeCheckDueInstallmentsJobInCOB() throws IOException {
-        BusinessStep applyChargeToOverdueLoans = new BusinessStep().stepName(BUSINESS_STEP_NAME_APPLY_CHARGE_TO_OVERDUE_LOANS).order(1L);
-        BusinessStep loanDelinquencyClassification = new BusinessStep().stepName(BUSINESS_STEP_NAME_LOAN_DELINQUENCY_CLASSIFICATION)
-                .order(2L);
-        BusinessStep checkLoanRepaymentDue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_DUE).order(3L);
-        BusinessStep checkLoanRepaymentOverdue = new BusinessStep().stepName(BUSINESS_STEP_NAME_CHECK_LOAN_REPAYMENT_OVERDUE).order(4L);
-        BusinessStep updateLoanArrearsAging = new BusinessStep().stepName(BUSINESS_STEP_NAME_UPDATE_LOAN_ARREARS_AGING).order(5L);
-        BusinessStep addPeriodicAccrualEntries = new BusinessStep().stepName(BUSINESS_STEP_NAME_ADD_PERIODIC_ACCRUAL_ENTRIES).order(6L);
-
-        List<BusinessStep> businessSteps = new ArrayList<>();
-        businessSteps.add(applyChargeToOverdueLoans);
-        businessSteps.add(loanDelinquencyClassification);
-        businessSteps.add(checkLoanRepaymentDue);
-        businessSteps.add(checkLoanRepaymentOverdue);
-        businessSteps.add(updateLoanArrearsAging);
-        businessSteps.add(addPeriodicAccrualEntries);
-
-        UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
-
-        Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
-                .execute();
-        ErrorHelper.checkSuccessfulApiCall(response);
+        setBackBusinessStepsToOriginal();
     }
 
     @Given("Admin puts {string} business step into LOAN_CLOSE_OF_BUSINESS workflow")
     public void putGivenJobInCOB(String businessStepName) throws IOException {
-        List<BusinessStep> businessSteps = retrieveLoanCOBJobSteps();
-        if (businessSteps.stream().anyMatch(businessStep -> businessStep.getStepName().equals(businessStepName))) {
-            return;
-        }
+        List<BusinessStep> businessSteps = new ArrayList<>(ORIGINAL_COB_BUSINESS_STEPS);
+        Long lastOrder = businessSteps.get(businessSteps.size() - 1).getOrder();
 
-        businessSteps.add(new BusinessStep().stepName(businessStepName).order((long) (1 + businessSteps.size())));
+        CobBusinessStep cobBusinessStep = CobBusinessStep.valueOf(businessStepName);
+        String stepName = cobBusinessStep.getValue();
+
+        BusinessStep businessStepToAdd = new BusinessStep().stepName(stepName).order(lastOrder + 1);
+        businessSteps.add(businessStepToAdd);
 
         UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
+
         Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
                 .execute();
         ErrorHelper.checkSuccessfulApiCall(response);
 
+        // --- log changes ---
         logChanges();
+    }
+
+    @Then("Admin sets back LOAN_CLOSE_OF_BUSINESS workflow to its initial state")
+    public void setBackCOBToInitialState() throws IOException {
+        setBackBusinessStepsToOriginal();
     }
 
     @Then("Admin removes {string} business step into LOAN_CLOSE_OF_BUSINESS workflow")
     public void removeGivenJobInCOB(String businessStepName) throws IOException {
-        List<BusinessStep> businessSteps = retrieveLoanCOBJobSteps();
-        businessSteps.removeIf(businessStep -> businessStep.getStepName().equals(businessStepName));
+        List<BusinessStep> businessSteps = new ArrayList<>(ORIGINAL_COB_BUSINESS_STEPS);
+
+        CobBusinessStep cobBusinessStep = CobBusinessStep.valueOf(businessStepName);
+        String stepName = cobBusinessStep.getValue();
+
+        businessSteps.removeIf(businessStep -> businessStep.getStepName().equals(stepName));
 
         UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(businessSteps);
+
         Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
                 .execute();
         ErrorHelper.checkSuccessfulApiCall(response);
 
+        // --- log changes ---
         logChanges();
     }
 
-    private List<BusinessStep> retrieveLoanCOBJobSteps() throws IOException {
-        Response<GetBusinessStepConfigResponse> businessStepConfigResponse = businessStepConfigurationApi
-                .retrieveAllConfiguredBusinessStep(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS).execute();
-        ErrorHelper.checkSuccessfulApiCall(businessStepConfigResponse);
-        return businessStepConfigResponse.body().getBusinessSteps();
+    private void setBackBusinessStepsToOriginal() throws IOException {
+        log.info("Setting back Business steps to original...");
+        UpdateBusinessStepConfigRequest request = new UpdateBusinessStepConfigRequest().businessSteps(ORIGINAL_COB_BUSINESS_STEPS);
+
+        Response<Void> response = businessStepConfigurationApi.updateJobBusinessStepConfig(WORKFLOW_NAME_LOAN_CLOSE_OF_BUSINESS, request)
+                .execute();
+        ErrorHelper.checkSuccessfulApiCall(response);
+
+        // --- log changes ---
+        logChanges();
     }
 
     private void logChanges() throws IOException {

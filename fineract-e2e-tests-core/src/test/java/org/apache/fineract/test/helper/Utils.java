@@ -19,6 +19,8 @@
 package org.apache.fineract.test.helper;
 
 import java.security.SecureRandom;
+import java.time.Clock;
+import java.time.LocalDate;
 
 public final class Utils {
 
@@ -41,5 +43,9 @@ public final class Utils {
 
     public static String randomNameGenerator(final String prefix, final int lenOfRandomSuffix) {
         return randomStringGenerator(prefix, lenOfRandomSuffix);
+    }
+
+    public static LocalDate now() {
+        return LocalDate.now(Clock.systemUTC());
     }
 }
