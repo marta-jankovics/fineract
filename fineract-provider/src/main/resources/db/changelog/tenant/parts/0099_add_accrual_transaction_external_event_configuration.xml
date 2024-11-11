@@ -28,4 +28,10 @@
             <column name="enabled" valueBoolean="false"/>
         </insert>
     </changeSet>
+    <changeSet author="fineract" id="2">
+        <insert tableName="m_external_event_configuration">
+            <column name="type" value="LoanAccrualAdjustmentTransactionBusinessEvent"/>
+            <column name="enabled" valueBoolean="false"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

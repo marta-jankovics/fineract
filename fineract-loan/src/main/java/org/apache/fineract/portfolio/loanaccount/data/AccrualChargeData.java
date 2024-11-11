@@ -16,26 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.test.api;
+package org.apache.fineract.portfolio.loanaccount.data;
 
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
+import org.apache.fineract.organisation.monetary.domain.Money;
 
-@Component
-@Getter
-public class ApiProperties {
+@Data
+@Accessors(chain = true)
+@RequiredArgsConstructor
+public class AccrualChargeData {
 
-    @Value("${fineract-test.api.base-url}")
-    private String baseUrl;
-    @Value("${fineract-test.api.username}")
-    private String username;
-    @Value("${fineract-test.api.password}")
-    private String password;
-    @Value("${fineract-test.api.strong-password}")
-    private String strongPassword;
-    @Value("${fineract-test.api.tenant-id}")
-    private String tenantId;
-    @Value("${fineract-test.client-read-timeout}")
-    private long readTimeout;
+    private final Long loanChargeId;
+    private final Long loanInstallmentChargeId;
+    private final boolean isPenalty;
+    private Money chargeAmount;
+    private Money chargeAccruable;
+    private Money chargeAccrued;
 }

@@ -16,26 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.test.api;
+package org.apache.fineract.infrastructure.event.business.domain.loan.transaction;
 
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 
-@Component
-@Getter
-public class ApiProperties {
+public class LoanAccrualAdjustmentTransactionBusinessEvent extends LoanTransactionBusinessEvent {
 
-    @Value("${fineract-test.api.base-url}")
-    private String baseUrl;
-    @Value("${fineract-test.api.username}")
-    private String username;
-    @Value("${fineract-test.api.password}")
-    private String password;
-    @Value("${fineract-test.api.strong-password}")
-    private String strongPassword;
-    @Value("${fineract-test.api.tenant-id}")
-    private String tenantId;
-    @Value("${fineract-test.client-read-timeout}")
-    private long readTimeout;
+    private static final String TYPE = "LoanAccrualAdjustmentTransactionBusinessEvent";
+
+    public LoanAccrualAdjustmentTransactionBusinessEvent(LoanTransaction value) {
+        super(value);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
+    }
 }
