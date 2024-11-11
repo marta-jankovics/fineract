@@ -161,7 +161,7 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getPassword();
+        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -222,7 +222,7 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getPassword();
+        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -544,7 +544,7 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
                 .retrieveTransactionTemplate(loanId1, "prepayLoan", DATE_FORMAT, transactionDate, DEFAULT_LOCALE).execute();
         Double transactionAmount = response.body().getAmount();
 
-        log.info("%n--- Loan Pay-off with amount: {} ---", transactionAmount);
+        log.debug("%n--- Loan Pay-off with amount: {} ---", transactionAmount);
         makeRepayment(DEFAULT_REPAYMENT_TYPE, transactionDate, transactionAmount, null);
     }
 
@@ -572,9 +572,10 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
         eventAssertionBuilder
                 .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getId())
                 .isEqualTo(targetTransaction.getId());
-        eventAssertionBuilder.extractingData(
-                loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getAmount().doubleValue())
-                .isEqualTo(targetTransaction.getAmount());
+        eventAssertionBuilder
+                .extractingBigDecimal(
+                        loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getAmount())
+                .isEqualTo(BigDecimal.valueOf(targetTransaction.getAmount()));
         eventAssertionBuilder
                 .extractingData(
                         loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getManuallyReversed())
@@ -587,9 +588,10 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
             eventAssertionBuilder
                     .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getNewTransactionDetail().getId())
                     .isEqualTo(repaymentAdjustmentResponse.body().getResourceId());
-            eventAssertionBuilder.extractingData(
-                    loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getNewTransactionDetail().getAmount().doubleValue())
-                    .isEqualTo(amountValue);
+            eventAssertionBuilder
+                    .extractingBigDecimal(
+                            loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getNewTransactionDetail().getAmount())
+                    .isEqualTo(BigDecimal.valueOf(amountValue));
             eventAssertionBuilder.extractingData(
                     loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getNewTransactionDetail().getExternalOwnerId())
                     .isEqualTo(externalOwnerId);

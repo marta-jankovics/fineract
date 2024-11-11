@@ -763,9 +763,22 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         return null;
     }
 
-    protected void createNewTransaction(LoanTransaction oldTransaction, LoanTransaction newTransaction, TransactionCtx ctx) {
+    protected void createNewTransaction(final LoanTransaction oldTransaction, final LoanTransaction newTransaction,
+            final TransactionCtx ctx) {
         oldTransaction.updateExternalId(null);
         oldTransaction.getLoanChargesPaid().clear();
+
+        if (newTransaction.getTypeOf().isInterestRefund()) {
+            newTransaction.getLoanTransactionRelations().stream().filter(
+                    r -> r.getToTransaction().getTypeOf().isMerchantIssuedRefund() || r.getToTransaction().getTypeOf().isPayoutRefund())
+                    .filter(r -> r.getToTransaction().isReversed())
+                    .forEach(newRelation -> oldTransaction.getLoanTransactionRelations().stream()
+                            .filter(oldRelation -> LoanTransactionRelationTypeEnum.RELATED.equals(oldRelation.getRelationType()))
+                            .findFirst().map(oldRelation -> oldRelation.getToTransaction().getId())
+                            .ifPresent(oldToTransactionId -> newRelation.setToTransaction(
+                                    ctx.getChangedTransactionDetail().getNewTransactionMappings().get(oldToTransactionId))));
+        }
+
         // Adding Replayed relation from newly created transaction to reversed transaction
         newTransaction.getLoanTransactionRelations()
                 .add(LoanTransactionRelation.linkToTransaction(newTransaction, oldTransaction, LoanTransactionRelationTypeEnum.REPLAYED));

@@ -1,7 +1,7 @@
 @LoanRescheduleFeature
 Feature: LoanReschedule
 
-
+  @TestRailId:C2680
   Scenario: As a user I would like to see a loan changed event was triggered when the loan got rescheduled
     When Admin sets the business date to "1 July 2022"
     When Admin creates a client with random data
@@ -14,7 +14,7 @@ Feature: LoanReschedule
       |    |      | 01 July 2022   |           | 5000.0          |               |          | 0.0  |           | 0.0    | 0.0  |            |      |             |
       | 1  | 61   | 31 August 2022 |           | 0.0             | 5000.0        | 0.0      | 0.0  | 0.0       | 5000.0 | 0.0  | 0.0        | 0.0  | 5000.0      |
 
-
+  @TestRailId:C2801
   Scenario: Verify that loan is rescheduled properly in case of: undo disbursement
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -38,7 +38,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 1000          | 0        | 0    | 0         | 1000 | 0    | 0          | 0    | 1000        |
 
-
+  @TestRailId:C2802
   Scenario: Verify that loan is rescheduled properly in case of: multiple disbursement, second disbursement placed within payment period
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -63,7 +63,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 1000          | 0        | 0    | 0         | 1000 | 0    | 0          | 0    | 1000        |
 
-
+  @TestRailId:C2803
   Scenario: Verify that loan is rescheduled properly in case of: multiple disbursement, second disbursement placed after payment period
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -97,7 +97,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due | Paid | In advance | Late | Outstanding |
       | 500           | 0        | 0    | 0         | 500 | 0    | 0          | 0    | 500         |
 
-
+  @TestRailId:C2804
   Scenario: Verify that loan is rescheduled properly in case of: single installment, changing installment date
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -123,7 +123,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 1000          | 0        | 0    | 0         | 1000 | 0    | 0          | 0    | 1000        |
 
-
+  @TestRailId:C2805
   Scenario: Verify that loan is rescheduled properly in case of: multiple installments, changing installment date
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -155,7 +155,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 3000          | 0        | 0    | 0         | 3000 | 0    | 0          | 0    | 3000        |
 
-
+  @TestRailId:C2806
   Scenario: Verify that loan is rescheduled properly in case of: multiple installments, extending repayment schedule
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -189,7 +189,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 3000          | 0        | 0    | 0         | 3000 | 0    | 0          | 0    | 3000        |
 
-
+  @TestRailId:C2807
   Scenario: Verify that loan is rescheduled properly in case of: multiple installments, mid-term grace period on principal
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -222,8 +222,8 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 3000          | 0        | 0    | 0         | 3000 | 0    | 0          | 0    | 3000        |
 
-#  TODO check and fix after Loan reschedule with graceOnInterest deletes all future interest portions when called from API was fixed (periods back to 3 or 5)
-  @Skip
+#  TODO unskip and check when PS-1543 is done (periods back to 3 or 5)
+  @Skip @TestRailId:C2808
   Scenario: Verify that loan is rescheduled properly in case of: multiple installments, mid-term grace period on interest
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -255,7 +255,7 @@ Feature: LoanReschedule
 #      | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
 #      | 3000          | 30       | 0    | 0         | 3030 | 0    | 0          | 0    | 3030        |
 
-
+  @TestRailId:C2809
   Scenario: Verify that loan is rescheduled properly in case of: multiple installments, new interest rate
     When Admin sets the business date to "01 July 2023"
     When Admin creates a client with random data
@@ -286,8 +286,9 @@ Feature: LoanReschedule
     Then Loan Repayment schedule has the following data in Total row:
       | Principal due | Interest | Fees | Penalties | Due  | Paid | In advance | Late | Outstanding |
       | 3000          | 60       | 0    | 0         | 3060 | 0    | 0          | 0    | 3060        |
+    Then LoanRescheduledDueAdjustScheduleBusinessEvent is raised on "05 July 2023"
 
-
+  @TestRailId:C2996
   Scenario: Verify that reschedule: add extra terms working properly with auto downpayment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -312,7 +313,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C2997
   Scenario: Verify that reschedule: add extra terms working properly with auto downpayment and 2nd disbursement before reschedule
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -342,9 +343,9 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1400.0        | 0.0      | 0.0  | 0.0       | 1400.0 | 350.0 | 0.0        | 0.0  | 1050.0      |
 
-#    TODO remove Skip when Reschedule does not work properly in case of LP2_DOWNPAYMENT_AUTO and with 2nd disbursement after reschedule and first installment is fixed
+#    TODO unskip and check when PS-1729 is done
   @Skip
-
+  @TestRailId:C2998
   Scenario: Verify that reschedule: add extra terms working properly with auto downpayment and 2nd disbursement after reschedule and first installment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -374,7 +375,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
       | 1400.0        | 0.0      | 0.0  | 0.0       | 1400.0 | 350.0 | 0.0        | 100.0 | 1050.0      |
 
-
+  @TestRailId:C3022
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 1 installment period after successful downpayment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -398,7 +399,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C3023
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 2 installment period after successful downpayment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -422,7 +423,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C3024
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 2 installment period while downpayment is still due
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -446,7 +447,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 0.0  | 0.0        | 0.0  | 1000.0      |
 
-
+  @TestRailId:C3025
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 1 installment period after downpayment was reverted, fee added and downpayment paid by autopayment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -481,7 +482,7 @@ Feature: LoanReschedule
       | 01 October 2023  | Repayment        | 250.0  | 250.0     | 0.0      | 0.0  | 0.0       | 750.0        | true     |
       | 03 October 2023  | Repayment        | 250.0  | 250.0     | 0.0      | 0.0  | 0.0       | 750.0        | false    |
 
-
+  @TestRailId:C3026
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of auto downpayment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -504,7 +505,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C3027
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of auto downpayment and 2nd disbursement before reschedule
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -532,7 +533,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1400.0        | 0.0      | 0.0  | 0.0       | 1400.0 | 350.0 | 0.0        | 0.0  | 1050.0      |
 
-
+  @TestRailId:C3028
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 1 installment period and 2 extra terms
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -558,7 +559,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C3029
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) works properly in case of loan schedule adjusted by 1 installment period and 1 grace on principal
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -583,7 +584,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 0.0       | 1000.0 | 250.0 | 0.0        | 0.0  | 750.0       |
 
-
+  @TestRailId:C3030
   Scenario: Verify that Payment Holiday (Reschedule with adjustedDueDate) gives error in case of charged-off loan
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -597,9 +598,9 @@ Feature: LoanReschedule
     When Admin sets the business date to "05 October 2023"
     Then Loan reschedule with the following data results a 403 error and "LOAN_CHARGED_OFF" error message
       | rescheduleFromDate | submittedOnDate | adjustedDueDate | graceOnPrincipal | graceOnInterest | extraTerms | newInterestRate |
-      | 16 October 2023    | 05 October 2023 | 31 October 2023 |                  |                 |            |                 |
+      | 16 October 2023    | 05 October 2023 | 31 October 2023 | 0                | 0               | 0          | 0               |
 
-
+  @TestRailId:C3033
   Scenario: Verify that reschedule keeps the N+1 installment
     When Admin sets the business date to "01 October 2023"
     When Admin creates a client with random data
@@ -636,7 +637,7 @@ Feature: LoanReschedule
       | Principal due | Interest | Fees | Penalties | Due    | Paid | In advance | Late | Outstanding |
       | 1000.0        | 0.0      | 0.0  | 20.0      | 1020.0 | 0.0  | 0.0        | 0.0  | 1020.0      |
 
-   @AdvancedPaymentAllocation
+  @TestRailId:C3045 @AdvancedPaymentAllocation
   Scenario: Verify that inline COB execution is taking place in case of a BatchAPI request of Loan reschedule creation and approval
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
@@ -657,7 +658,7 @@ Feature: LoanReschedule
     When Batch API call with created user and with steps: rescheduleLoan from "16 January 2024" to "31 January 2024" submitted on date: "10 January 2024", approveReschedule on date: "10 January 2024" runs with enclosingTransaction: "true"
     Then Admin checks that last closed business date of loan is "09 January 2024"
 
-   @AdvancedPaymentAllocation
+  @TestRailId:C3048 @AdvancedPaymentAllocation
   Scenario: Verify that in case of Loan is hard locked for COB execution, BatchAPI request of Loan reschedule creation and approval will result a 409 error and a LOAN_LOCKED_BY_COB error message
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data

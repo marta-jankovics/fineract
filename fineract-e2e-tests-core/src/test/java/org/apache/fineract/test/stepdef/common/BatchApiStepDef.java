@@ -473,7 +473,7 @@ public class BatchApiStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getPassword();
+        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -488,11 +488,11 @@ public class BatchApiStepDef extends AbstractStepDef {
                 .execute();
 
         if (batchResponseList.errorBody() != null) {
-            log.info("ERROR: {}", batchResponseList.errorBody().string());
+            log.debug("ERROR: {}", batchResponseList.errorBody().string());
 
         }
         if (batchResponseList.body() != null) {
-            log.info("Body: {}", batchResponseList.body());
+            log.debug("Body: {}", batchResponseList.body());
         }
 
         testContext().set(TestContextKey.BATCH_API_CALL_RESPONSE, batchResponseList);
@@ -533,7 +533,7 @@ public class BatchApiStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getPassword();
+        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -554,8 +554,8 @@ public class BatchApiStepDef extends AbstractStepDef {
         assertThat(errorMessageActual).as(ErrorMessageHelper.wrongErrorMessage(errorMessageActual, errorMessageExpected))
                 .isEqualTo(errorMessageExpected);
 
-        log.info("ERROR CODE: {}", errorCodeActual);
-        log.info("ERROR MESSAGE: {}", errorMessageActual);
+        log.debug("ERROR CODE: {}", errorCodeActual);
+        log.debug("ERROR MESSAGE: {}", errorMessageActual);
     }
 
     @When("Batch API call with steps: queryDatatable, updateDatatable runs, with empty queryDatatable response")
