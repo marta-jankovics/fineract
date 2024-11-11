@@ -31,6 +31,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.domain.Money;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 
 @Data
@@ -83,7 +84,7 @@ public class ProgressiveLoanInterestScheduleModel {
 
     private BigDecimal findInterestRate(final LocalDate effectiveDate) {
         return interestRates.stream() //
-                .filter(ir -> !ir.effectiveFrom().isAfter(effectiveDate)) //
+                .filter(ir -> !DateUtils.isAfter(ir.effectiveFrom(), effectiveDate)) //
                 .map(InterestRate::interestRate) //
                 .findFirst() //
                 .orElse(loanProductRelatedDetail.getAnnualNominalInterestRate()); //
@@ -93,12 +94,12 @@ public class ProgressiveLoanInterestScheduleModel {
         interestRates.add(new InterestRate(newInterestEffectiveDate, newInterestRate));
     }
 
-    public Optional<RepaymentPeriod> findRepaymentPeriod(final LocalDate repaymentPeriodDueDate) {
+    public Optional<RepaymentPeriod> findRepaymentPeriodByDueDate(final LocalDate repaymentPeriodDueDate) {
         if (repaymentPeriodDueDate == null) {
             return Optional.empty();
         }
         return repaymentPeriods.stream()//
-                .filter(repaymentPeriodItem -> repaymentPeriodItem.getDueDate().isEqual(repaymentPeriodDueDate))//
+                .filter(repaymentPeriodItem -> DateUtils.isEqual(repaymentPeriodItem.getDueDate(), repaymentPeriodDueDate))//
                 .findFirst();
     }
 
@@ -107,7 +108,7 @@ public class ProgressiveLoanInterestScheduleModel {
             return repaymentPeriods;
         }
         return repaymentPeriods.stream()//
-                .filter(period -> !period.getDueDate().isBefore(calculateFromRepaymentPeriodDueDate))//
+                .filter(period -> !DateUtils.isBefore(period.getDueDate(), calculateFromRepaymentPeriodDueDate))//
                 .toList();//
     }
 
@@ -118,6 +119,10 @@ public class ProgressiveLoanInterestScheduleModel {
         final RepaymentPeriod firstPeriod = repaymentPeriods.get(0);
         final RepaymentPeriod lastPeriod = repaymentPeriods.size() > 1 ? repaymentPeriods.get(repaymentPeriods.size() - 1) : firstPeriod;
         return DateUtils.getExactDifferenceInDays(firstPeriod.getFromDate(), lastPeriod.getDueDate());
+    }
+
+    public LocalDate getStartDate() {
+        return !repaymentPeriods.isEmpty() ? repaymentPeriods.get(0).getFromDate() : null;
     }
 
     public LocalDate getMaturityDate() {
@@ -136,16 +141,8 @@ public class ProgressiveLoanInterestScheduleModel {
             return Optional.empty();
         }
         return repaymentPeriods.stream()//
-                .filter(repaymentPeriod -> {
-                    final boolean isFirstPeriod = repaymentPeriod.getPrevious().isEmpty();
-                    if (isFirstPeriod) {
-                        return !balanceChangeDate.isBefore(repaymentPeriod.getFromDate())
-                                && !balanceChangeDate.isAfter(repaymentPeriod.getDueDate());
-                    } else {
-                        return balanceChangeDate.isAfter(repaymentPeriod.getFromDate())
-                                && !balanceChangeDate.isAfter(repaymentPeriod.getDueDate());
-                    }
-                })//
+                .filter(repaymentPeriod -> LoanRepaymentScheduleProcessingWrapper.isInPeriod(balanceChangeDate,
+                        repaymentPeriod.getFromDate(), repaymentPeriod.getDueDate(), repaymentPeriod.getPrevious().isEmpty()))
                 .findFirst();
     }
 
