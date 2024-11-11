@@ -76,6 +76,7 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentSchedulePro
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepositoryWrapper;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTermVariations;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionComparator;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRelation;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRelationTypeEnum;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionToRepaymentScheduleMapping;
@@ -493,7 +494,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         List<LoanTransaction> chargebacks = allTransactions.stream().filter(LoanTransaction::isChargeback).toList();
 
         // let's figure out the original transaction for these chargebacks, and order them by ascending order
-        Comparator<LoanTransaction> comparator = loanTransactionDateComparator();
+        Comparator<LoanTransaction> comparator = LoanTransactionComparator.INSTANCE;
         List<LoanTransaction> chargebacksForTheSameOriginal = chargebacks.stream()
                 .filter(tr -> findChargebackOriginalTransaction(tr, ctx) == originalTransaction
                         && comparator.compare(tr, chargeBackTransaction) < 0)
@@ -506,19 +507,6 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             allocation.keySet().forEach(k -> allocation.put(k, allocation.get(k).minus(temp.get(k))));
         }
         return allocation;
-    }
-
-    @NotNull
-    private Comparator<LoanTransaction> loanTransactionDateComparator() {
-        return (tr1, tr2) -> {
-            if (tr1.getTransactionDate().compareTo(tr2.getTransactionDate()) != 0) {
-                return tr1.getTransactionDate().compareTo(tr2.getTransactionDate());
-            } else if (tr1.getSubmittedOnDate().compareTo(tr2.getSubmittedOnDate()) != 0) {
-                return tr1.getSubmittedOnDate().compareTo(tr2.getSubmittedOnDate());
-            } else {
-                return tr1.getCreatedDateTime().compareTo(tr2.getCreatedDateTime());
-            }
-        };
     }
 
     private void recognizeAmountsAfterChargeback(TransactionCtx ctx, LocalDate transactionDate,
