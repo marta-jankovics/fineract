@@ -459,6 +459,16 @@ public final class MathUtil {
         return min(min(first, second, notNull), third, notNull);
     }
 
+    /** @return Money null safe negate */
+    public static Money negate(Money amount) {
+        return negate(amount, MoneyHelper.getMathContext());
+    }
+
+    /** @return Money null safe negate */
+    public static Money negate(Money amount, MathContext mc) {
+        return isEmpty(amount) ? amount : amount.negated(mc);
+    }
+
     /**
      * Calculate percentage of a value
      *

@@ -263,4 +263,8 @@ public class LoanRepositoryWrapper {
         return repository.findLoanIdByStatusId(statusId);
     }
 
+    public List<Loan> findLoansForAccrual(Integer accountingType, LocalDate tillDate) {
+        return repository.findLoansForAccrual(accountingType, tillDate);
+    }
+
 }

@@ -101,6 +101,16 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
 
     String FIND_ALL_LOAN_IDS_BY_STATUS_ID = "SELECT loan.id FROM Loan loan WHERE loan.loanStatus = :statusId";
 
+    String FIND_LOANS_FOR_ACCRUAL = "select l from Loan l " + "left join l.loanInterestRecalculationDetails recalcDetails "
+            + "where l.loanStatus = 300 and l.isNpa = false and l.chargedOff = false "
+            + "and l.loanProduct.accountingRule = :accountingType "
+            + "and (recalcDetails.isCompoundingToBePostedAsTransaction is null or recalcDetails.isCompoundingToBePostedAsTransaction = false) "
+            + "and exists (select ls.id from LoanRepaymentScheduleInstallment ls where ls.loan.id = l.id and ls.isDownPayment = false and "
+            + "and ls.fromDate < :tillDate or (ls.installmentNumber = 1 and ls.fromDate = :tillDate) "
+            + "and ((ls.interestCharged is not null and ls.interestCharged <> ls.interestAccrued) "
+            + "or (ls.feeChargesCharged is not null and ls.feeChargesCharged <> ls.feeAccrued) "
+            + "or (ls.penaltyCharges is not null and ls.penaltyCharges <> ls.penaltyAccrued)))";
+
     @Query(FIND_GROUP_LOANS_DISBURSED_AFTER)
     List<Loan> getGroupLoansDisbursedAfter(@Param("disbursementDate") LocalDate disbursementDate, @Param("groupId") Long groupId,
             @Param("loanType") Integer loanType);
@@ -227,4 +237,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
 
     @Query(FIND_ALL_LOAN_IDS_BY_STATUS_ID)
     List<Long> findLoanIdByStatusId(@Param("statusId") Integer statusId);
+
+    @Query(FIND_LOANS_FOR_ACCRUAL)
+    List<Loan> findLoansForAccrual(@Param("accountingType") Integer accountingType, @Param("tillDate") LocalDate tillDate);
 }

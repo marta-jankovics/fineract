@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.portfolio.loanaccount.loanschedule.data;
 
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isInPeriod;
+
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
@@ -194,12 +197,18 @@ public class RepaymentPeriod {
         return this.emi.zero(mc);
     }
 
-    InterestPeriod getFirstInterestPeriod() {
+    public InterestPeriod getFirstInterestPeriod() {
         return getInterestPeriods().get(0);
     }
 
-    InterestPeriod getLastInterestPeriod() {
+    public InterestPeriod getLastInterestPeriod() {
         List<InterestPeriod> interestPeriods = getInterestPeriods();
         return interestPeriods.get(interestPeriods.size() - 1);
+    }
+
+    public Optional<InterestPeriod> findInterestPeriod(@NotNull LocalDate transactionDate) {
+        return interestPeriods.stream()//
+                .filter(interestPeriod -> isInPeriod(transactionDate, fromDate, dueDate, false))//
+                .findFirst();
     }
 }

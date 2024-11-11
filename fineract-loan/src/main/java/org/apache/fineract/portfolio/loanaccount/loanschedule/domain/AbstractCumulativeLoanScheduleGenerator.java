@@ -18,6 +18,11 @@
  */
 package org.apache.fineract.portfolio.loanaccount.loanschedule.domain;
 
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.fetchFirstNormalInstallmentNumber;
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isAfterPeriod;
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isBeforePeriod;
+
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
@@ -2804,5 +2809,27 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                 .interest(totalInterest) //
                 .feeCharges(feeCharges) //
                 .penaltyCharges(penaltyCharges);
+    }
+
+    @Override
+    public Money getDueInterest(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate) {
+        if (isBeforePeriod(targetDate, installment, false)) {
+            return null;
+        }
+        MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
+        if (isAfterPeriod(targetDate, installment) || DateUtils.isEqual(targetDate, installment.getDueDate())) {
+            return installment.getInterestCharged(currency);
+        }
+
+        BigDecimal interestPortion;
+        LocalDate fromDate = installment.getFromDate();
+        boolean isFirst = installment.getInstallmentNumber()
+                .equals(fetchFirstNormalInstallmentNumber(loan.getRepaymentScheduleInstallments()));
+        LocalDate startDate = isFirst ? fromDate.plusDays(1) : fromDate;
+        int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, installment.getDueDate());
+        int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
+        double interestPerDay = installment.getInterestCharged().doubleValue() / totalNumberOfDays;
+        interestPortion = BigDecimal.valueOf(interestPerDay * daysToBeAccrued);
+        return Money.of(currency, interestPortion);
     }
 }

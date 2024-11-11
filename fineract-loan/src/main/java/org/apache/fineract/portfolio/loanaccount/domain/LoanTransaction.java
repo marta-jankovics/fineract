@@ -715,10 +715,6 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
         return getTypeOf().isReAmortize() && isNotReversed();
     }
 
-    public boolean isAccrualActivity() {
-        return getTypeOf().isAccrualActivity();
-    }
-
     public boolean isIdentifiedBy(final Long identifier) {
         return getId().equals(identifier);
     }
@@ -866,7 +862,27 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
     }
 
     public boolean isAccrual() {
-        return getTypeOf().isAccrual() && isNotReversed();
+        return getTypeOf().isAccrual();
+    }
+
+    public boolean isAccrualAdjustment() {
+        return getTypeOf().isAccrualAdjustment();
+    }
+
+    public boolean isAccrualActivity() {
+        return getTypeOf().isAccrualActivity();
+    }
+
+    public boolean isAccrualRelated() {
+        return isAccrual() || isAccrualAdjustment() || isAccrualActivity();
+    }
+
+    public boolean isWaiveCharge() {
+        return getTypeOf().isWaiveCharges();
+    }
+
+    public boolean isWaiveInterest() {
+        return getTypeOf().isWaiveInterest();
     }
 
     public boolean isNonMonetaryTransaction() {
@@ -981,11 +997,7 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
     }
 
     public Boolean isAllowTypeTransactionAtTheTimeOfLastUndo() {
-        return isDisbursement() || isAccrual() || isRepaymentAtDisbursement() || isRepayment() || isAccrualActivity();
-    }
-
-    public boolean isAccrualTransaction() {
-        return isAccrual();
+        return isNotReversed() && (isDisbursement() || isAccrualRelated() || isRepaymentAtDisbursement() || isRepayment());
     }
 
     public Money getOutstandingLoanBalanceMoney(final MonetaryCurrency currency) {

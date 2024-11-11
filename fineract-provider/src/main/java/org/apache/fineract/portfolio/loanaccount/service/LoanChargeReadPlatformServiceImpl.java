@@ -406,7 +406,11 @@ public class LoanChargeReadPlatformServiceImpl implements LoanChargeReadPlatform
         for (LoanInstallmentChargeData installmentChargeData : chargeDatas) {
             installmentChargeDatas.put(installmentChargeData.getInstallmentNumber(), installmentChargeData);
         }
-        return updateInstallmentLoanChargesWithUnrecognizedIncome(loanChargeId, installmentChargeDatas);
+        chargeDatas = updateInstallmentLoanChargesWithUnrecognizedIncome(loanChargeId, installmentChargeDatas);
+        for (LoanInstallmentChargeData installmentChargeData : chargeDatas) {
+            installmentChargeDatas.put(installmentChargeData.getInstallmentNumber(), installmentChargeData);
+        }
+        return new ArrayList<>(installmentChargeDatas.values());
     }
 
     private static final class LoanInstallmentChargeAccrualMapper implements RowMapper<LoanInstallmentChargeData> {

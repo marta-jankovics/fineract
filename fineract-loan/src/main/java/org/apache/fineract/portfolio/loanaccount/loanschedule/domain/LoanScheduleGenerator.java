@@ -21,14 +21,14 @@ package org.apache.fineract.portfolio.loanaccount.loanschedule.domain;
 import jakarta.validation.constraints.NotNull;
 import java.math.MathContext;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
+import org.apache.fineract.organisation.monetary.domain.Money;
 import org.apache.fineract.portfolio.loanaccount.data.HolidayDetailDTO;
-import org.apache.fineract.portfolio.loanaccount.data.LoanScheduleAccrualData;
 import org.apache.fineract.portfolio.loanaccount.data.OutstandingAmountsDTO;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanCharge;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleInstallment;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.LoanRepaymentScheduleTransactionProcessor;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleDTO;
 
@@ -45,8 +45,5 @@ public interface LoanScheduleGenerator {
             MathContext mc, Loan loan, HolidayDetailDTO holidayDetailDTO,
             LoanRepaymentScheduleTransactionProcessor loanRepaymentScheduleTransactionProcessor);
 
-    default void adjustAccruableAmount(@NotNull Loan loan, @NotNull LocalDate tillDate,
-            @NotNull List<LoanScheduleAccrualData> accrualDataList) {
-        return; // nothing to do
-    }
+    Money getDueInterest(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate);
 }

@@ -3567,7 +3567,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
                     && !DateUtils.isAfter(transaction.getTransactionDate(), tillDate)) {
                 if (transaction.isAccrual()) {
                     receivableInterest = receivableInterest.plus(transaction.getInterestPortion(getCurrency()));
-                } else if (transaction.isRepaymentLikeType() || transaction.isInterestWaiver()) {
+                } else if (transaction.isRepaymentLikeType() || transaction.isInterestWaiver() || transaction.isAccrualAdjustment()) {
                     receivableInterest = receivableInterest.minus(transaction.getInterestPortion(getCurrency()));
                 }
             }
@@ -3765,10 +3765,6 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.loanRepaymentScheduleDetail.setInterestPeriodFrequencyType(this.loanProduct.getInterestPeriodFrequencyType());
     }
 
-    public void updateInterestRateFrequencyType(PeriodFrequencyType periodFrequencyType) {
-        this.loanRepaymentScheduleDetail.setInterestPeriodFrequencyType(periodFrequencyType);
-    }
-
     public void addLoanTransaction(final LoanTransaction loanTransaction) {
         this.loanTransactions.add(loanTransaction);
     }
@@ -3893,8 +3889,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     public LocalDate getLastUserTransactionDate() {
         LocalDate currentTransactionDate = getDisbursementDate();
         for (final LoanTransaction previousTransaction : this.loanTransactions) {
-            if (!(previousTransaction.isReversed() || previousTransaction.isAccrual() || previousTransaction.isIncomePosting()
-                    || previousTransaction.isAccrualActivity())
+            if (!(previousTransaction.isReversed() || previousTransaction.isAccrualRelated() || previousTransaction.isIncomePosting())
                     && DateUtils.isBefore(currentTransactionDate, previousTransaction.getTransactionDate())) {
                 currentTransactionDate = previousTransaction.getTransactionDate();
             }
@@ -4586,6 +4581,16 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     }
 
     /**
+     * @param predicate
+     *            filter of the installments
+     * @return the installments matching the filter
+     **/
+    public List<LoanRepaymentScheduleInstallment> getRepaymentScheduleInstallments(
+            @NotNull Predicate<LoanRepaymentScheduleInstallment> predicate) {
+        return getRepaymentScheduleInstallments().stream().filter(predicate).toList();
+    }
+
+    /**
      * @return loan disbursement data
      **/
     public List<DisbursementData> getDisbursementData() {
@@ -4743,17 +4748,18 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         return this.createStandingInstructionAtDisbursement != null && this.createStandingInstructionAtDisbursement;
     }
 
-    public Collection<LoanCharge> getLoanCharges(LocalDate dueDate) {
-        Collection<LoanCharge> loanCharges = new ArrayList<>();
+    public List<LoanCharge> getLoanChargesByDueDate(LocalDate dueDate) {
+        return getLoanCharges(
+                loanCharge -> loanCharge.getDueLocalDate() != null && DateUtils.isEqual(loanCharge.getDueLocalDate(), dueDate));
+    }
 
-        for (LoanCharge loanCharge : charges) {
-
-            if (loanCharge.getDueLocalDate() != null && loanCharge.getDueLocalDate().equals(dueDate)) {
-                loanCharges.add(loanCharge);
-            }
-        }
-
-        return loanCharges;
+    /**
+     * @param predicate
+     *            filter of the charges
+     * @return the loan charges matching the filter
+     **/
+    public List<LoanCharge> getLoanCharges(@NotNull Predicate<LoanCharge> predicate) {
+        return getLoanCharges().stream().filter(predicate).toList();
     }
 
     public void setGuaranteeAmount(BigDecimal guaranteeAmountDerived) {
@@ -5508,8 +5514,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     public LoanTransaction getLastUserTransaction() {
         return getLoanTransactions().stream() //
-                .filter(LoanTransaction::isNotReversed) //
-                .filter(t -> !(t.isAccrualTransaction() || t.isIncomePosting())) //
+                .filter(t -> t.isNotReversed() && !(t.isAccrual() || t.isAccrualAdjustment() || t.isIncomePosting())) //
                 .reduce((first, second) -> second) //
                 .orElse(null);
     }
