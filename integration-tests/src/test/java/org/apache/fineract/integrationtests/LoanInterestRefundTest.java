@@ -310,7 +310,7 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
             logLoanTransactions(loanId);
             verifyTransactions(loanId, transaction(1000.0, "Disbursement", "01 January 2021"),
                     transaction(87.89, "Repayment", "01 February 2021"), transaction(1000.0, "Payout Refund", "09 February 2021"),
-                    transaction(10.49, "Interest Refund", "09 February 2021"));
+                    transaction(10.49, "Interest Refund", "09 February 2021"), transaction(10.49, "Accrual", "09 February 2021"));
         });
     }
 
@@ -430,7 +430,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
             logLoanTransactions(loanId);
             verifyTransactions(loanId, transaction(500.0, "Disbursement", "01 January 2021"),
                     transaction(500.0, "Disbursement", "07 January 2021"), transaction(1000.0, "Payout Refund", "09 February 2021"),
-                    transaction(87.82, "Repayment", "01 February 2021"), transaction(9.67, "Interest Refund", "09 February 2021"));
+                    transaction(87.82, "Repayment", "01 February 2021"), transaction(9.67, "Interest Refund", "09 February 2021"),
+                    transaction(9.67, "Accrual", "09 February 2021"));
         });
     }
 
@@ -627,7 +628,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     transaction(171.29, "Repayment", "01 April 2021"), //
                     transaction(171.29, "Repayment", "01 May 2021"), //
                     transaction(171.29, "Repayment", "01 June 2021"), //
-                    transaction(171.32, "Repayment", "01 July 2021") //
+                    transaction(171.32, "Repayment", "01 July 2021"), //
+                    transaction(27.77, "Accrual", "01 July 2021") //
             ); //
         });
         runAt("11 July 2021", () -> {
@@ -647,7 +649,9 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     transaction(171.29, "Repayment", "01 June 2021"), //
                     transaction(171.32, "Repayment", "01 July 2021"), //
                     transaction(500.0, "Payout Refund", "11 July 2021"), //
-                    transaction(20.41, "Interest Refund", "11 July 2021")); //
+                    transaction(20.41, "Interest Refund", "11 July 2021"), //
+                    transaction(27.77, "Accrual", "01 July 2021") //
+            ); //
         });
     }
 
@@ -685,7 +689,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     transaction(500.0, "Merchant Issued Refund", "14 January 2021"), //
                     transaction(1.78, "Interest Refund", "14 January 2021"), //
                     transaction(500.0, "Payout Refund", "22 January 2021"), //
-                    transaction(2.88, "Interest Refund", "22 January 2021") //
+                    transaction(2.88, "Interest Refund", "22 January 2021"), //
+                    transaction(4.66, "Accrual", "22 January 2021") //
             );
         });
     }
@@ -985,7 +990,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     transaction(250.0, "Payout Refund", "13 February 2021"), //
                     transaction(2.96, "Interest Refund", "13 February 2021"), //
                     transaction(400.0, "Merchant Issued Refund", "06 April 2021"), //
-                    transaction(10.11, "Interest Refund", "06 April 2021") //
+                    transaction(10.11, "Interest Refund", "06 April 2021"), //
+                    transaction(17.14, "Accrual", "06 April 2021") //
             );
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
 
@@ -1102,8 +1108,11 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
 
             verifyTransactions(loanId, transaction(1000.0, "Disbursement", "01 January 2021"), //
                     transaction(85.63, "Repayment", "10 January 2021"), //
+                    transaction(5.48, "Accrual Adjustment", "10 January 2021"), //
+                    transaction(5.2, "Accrual", "10 January 2021"), //
                     transaction(1000.0, "Merchant Issued Refund", "22 January 2021"), //
-                    transaction(5.42, "Interest Refund", "22 January 2021") //
+                    transaction(5.42, "Interest Refund", "22 January 2021"), //
+                    transaction(5.7, "Accrual", "22 January 2021") //
             );
         });
     }
@@ -1147,7 +1156,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
             verifyTransactions(loanId, transaction(1000.0, "Disbursement", "01 January 2021"), //
                     transaction(85.63, "Repayment", "10 January 2021"), //
                     transaction(1000.0, "Merchant Issued Refund", "22 January 2021"), //
-                    transaction(5.42, "Interest Refund", "22 January 2021") //
+                    transaction(5.42, "Interest Refund", "22 January 2021"), //
+                    transaction(5.42, "Accrual", "22 January 2021") //
             );
 
             Long repaymentId = repaymentIdRef.get();
@@ -1156,9 +1166,11 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
 
             verifyTransactions(loanId, transaction(1000.0, "Disbursement", "01 January 2021"), //
                     reversedTransaction(85.63, "Repayment", "10 January 2021"), //
+                    transaction(5.48, "Accrual", "10 January 2021"), //
+                    transaction(5.2, "Accrual Adjustment", "10 January 2021"), //
                     transaction(1000.0, "Merchant Issued Refund", "22 January 2021"), //
                     transaction(5.70, "Interest Refund", "22 January 2021"), //
-                    transaction(5.70, "Accrual", "10 January 2021") //
+                    transaction(5.42, "Accrual", "22 January 2021") //
             );
 
         });

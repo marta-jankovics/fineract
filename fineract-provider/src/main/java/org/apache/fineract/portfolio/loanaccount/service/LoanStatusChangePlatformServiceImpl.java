@@ -49,6 +49,7 @@ public class LoanStatusChangePlatformServiceImpl implements LoanStatusChangePlat
             log.debug("Loan Status change for loan {}", loan.getId());
             if (loan.getStatus().isClosedObligationsMet() || loan.getStatus().isOverpaid()) {
                 log.debug("Loan Status {} for loan {}", loan.getStatus().getCode(), loan.getId());
+                loan.updateLoanSummaryDerivedFields();
                 loanAccrualsProcessingService.processAccrualsForLoanClosure(loan);
             }
             if (loan.isOpen()) {
