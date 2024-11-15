@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.client.models.BatchResponse;
 import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
@@ -707,7 +708,7 @@ public final class ErrorMessageHelper {
         String actualStr = actual.toString();
 
         return String.format(
-                "%nWrong value in Delinquency actions response line %s. %nActual values in line are: %s %nExpected values in line: \s\s%s",
+                "%nWrong value in Delinquency actions response line %s. %nActual values in line are: %s %nExpected values in line: %s",
                 lineStr, actualStr, expectedStr);
     }
 
@@ -743,7 +744,7 @@ public final class ErrorMessageHelper {
         String expectedStr = expected.toString();
 
         return String.format(
-                "%nWrong value in Installment level delinquency data, line %s. %nActual values in line: \s\s%s %nExpected values in line: %s",
+                "%nWrong value in Installment level delinquency data, line %s. %nActual values in line: %s %nExpected values in line: %s",
                 lineStr, actualStr, expectedStr);
     }
 
@@ -751,8 +752,8 @@ public final class ErrorMessageHelper {
         String actualStr = actual.toString();
         String expectedStr = expected.toString();
 
-        return String.format("%nWrong value in LOAN level delinquency data. %nActual values are:\s\s %s %nExpected values are: %s",
-                actualStr, expectedStr);
+        return String.format("%nWrong value in LOAN level delinquency data. %nActual values are: %s %nExpected values are: %s", actualStr,
+                expectedStr);
     }
 
     public static String nrOfLinesWrongInInstallmentLevelDelinquencyData(int actual, int expected) {
@@ -887,5 +888,20 @@ public final class ErrorMessageHelper {
 
     public static String downpaymentDisabledOnProductErrorCodeMsg() {
         return "The Loan can not override the downpayment properties because in the Loan Product the downpayment is disabled";
+    }
+
+    public static String wrongValueInLineInChargeOffReasonOptions(final int line, final List<List<String>> actual,
+            final List<String> expected) {
+        final String actualValues = actual.stream().map(List::toString).collect(Collectors.joining(System.lineSeparator()));
+
+        return String.format(
+                "%nWrong value in Loan Charge-Off Reason Options line %s. %nActual values in line: %s %nExpected values in line: %s", line,
+                actualValues, expected);
+    }
+
+    public static String wrongNumberOfLinesInChargeOffReasonOptions(final int actual, final int expected) {
+        return String.format(
+                "Number of lines in loan charge-off reason options is not correct. Actual value is: %d - Expected value is: %d", actual,
+                expected);
     }
 }

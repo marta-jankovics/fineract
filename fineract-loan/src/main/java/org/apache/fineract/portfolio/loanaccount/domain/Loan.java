@@ -141,6 +141,7 @@ import org.apache.fineract.portfolio.loanproduct.domain.InterestRecalculationCom
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProduct;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanRescheduleStrategyMethod;
+import org.apache.fineract.portfolio.loanproduct.domain.LoanSupportedInterestRefundTypes;
 import org.apache.fineract.portfolio.loanproduct.domain.RecalculationFrequencyType;
 import org.apache.fineract.portfolio.loanproduct.domain.RepaymentStartDateType;
 import org.apache.fineract.portfolio.loanproduct.service.LoanEnumerations;
@@ -2360,7 +2361,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         doPostLoanTransactionChecks(loanTransaction.getTransactionDate(), loanLifecycleStateMachine);
     }
 
-    private ChangedTransactionDetail handleRepaymentOrRecoveryOrWaiverTransaction(final LoanTransaction loanTransaction,
+    public ChangedTransactionDetail handleRepaymentOrRecoveryOrWaiverTransaction(final LoanTransaction loanTransaction,
             final LoanLifecycleStateMachine loanLifecycleStateMachine, final LoanTransaction adjustedTransaction,
             final ScheduleGeneratorDTO scheduleGeneratorDTO) {
         ChangedTransactionDetail changedTransactionDetail = null;
@@ -2679,60 +2680,6 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
         return LoanTransaction.waiver(getOffice(), this, possibleInterestToWaive, transactionDate, possibleInterestToWaive,
                 possibleInterestToWaive.zero(), ExternalId.empty());
-    }
-
-    public ChangedTransactionDetail adjustExistingTransaction(final LoanTransaction newTransactionDetail,
-            final LoanLifecycleStateMachine loanLifecycleStateMachine, final LoanTransaction transactionForAdjustment,
-            final List<Long> existingTransactionIds, final List<Long> existingReversedTransactionIds,
-            final ScheduleGeneratorDTO scheduleGeneratorDTO, final ExternalId reversalExternalId) {
-
-        ChangedTransactionDetail changedTransactionDetail = null;
-
-        existingTransactionIds.addAll(findExistingTransactionIds());
-        existingReversedTransactionIds.addAll(findExistingReversedTransactionIds());
-
-        validateActivityNotBeforeClientOrGroupTransferDate(LoanEvent.LOAN_REPAYMENT_OR_WAIVER,
-                transactionForAdjustment.getTransactionDate());
-
-        if (transactionForAdjustment.isNotRepaymentLikeType() && transactionForAdjustment.isNotWaiver()
-                && transactionForAdjustment.isNotCreditBalanceRefund()) {
-            final String errorMessage = "Only (non-reversed) transactions of type repayment, waiver or credit balance refund can be adjusted.";
-            throw new InvalidLoanTransactionTypeException("transaction",
-                    "adjustment.is.only.allowed.to.repayment.or.waiver.or.creditbalancerefund.transactions", errorMessage);
-        }
-
-        transactionForAdjustment.reverse(reversalExternalId);
-        transactionForAdjustment.manuallyAdjustedOrReversed();
-
-        if (transactionForAdjustment.getTypeOf().equals(LoanTransactionType.MERCHANT_ISSUED_REFUND)
-                || transactionForAdjustment.getTypeOf().equals(LoanTransactionType.PAYOUT_REFUND)) {
-            getLoanTransactions().stream() //
-                    .filter(LoanTransaction::isNotReversed)
-                    .filter(loanTransaction -> loanTransaction.getLoanTransactionRelations().stream()
-                            .anyMatch(relation -> relation.getRelationType().equals(LoanTransactionRelationTypeEnum.RELATED)
-                                    && relation.getToTransaction().getId().equals(transactionForAdjustment.getId())))
-                    .forEach(loanTransaction -> {
-                        loanTransaction.reverse();
-                        loanTransaction.manuallyAdjustedOrReversed();
-                    });
-        }
-
-        if (isClosedWrittenOff()) {
-            // find write off transaction and reverse it
-            final LoanTransaction writeOffTransaction = findWriteOffTransaction();
-            writeOffTransaction.reverse();
-        }
-
-        if (isClosedObligationsMet() || isClosedWrittenOff() || isClosedWithOutstandingAmountMarkedForReschedule()) {
-            loanLifecycleStateMachine.transition(LoanEvent.LOAN_ADJUST_TRANSACTION, this);
-        }
-
-        if (newTransactionDetail.isRepaymentLikeType() || newTransactionDetail.isInterestWaiver()) {
-            changedTransactionDetail = handleRepaymentOrRecoveryOrWaiverTransaction(newTransactionDetail, loanLifecycleStateMachine,
-                    transactionForAdjustment, scheduleGeneratorDTO);
-        }
-
-        return changedTransactionDetail;
     }
 
     public ChangedTransactionDetail undoWrittenOff(LoanLifecycleStateMachine loanLifecycleStateMachine,
@@ -3087,7 +3034,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         return getStatus().isClosedWrittenOff();
     }
 
-    private boolean isClosedWithOutstandingAmountMarkedForReschedule() {
+    public boolean isClosedWithOutstandingAmountMarkedForReschedule() {
         return getStatus().isClosedWithOutsandingAmountMarkedForReschedule();
     }
 
@@ -3773,7 +3720,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.loanTransactions.remove(loanTransaction);
     }
 
-    private void validateActivityNotBeforeClientOrGroupTransferDate(final LoanEvent event, final LocalDate activityDate) {
+    public void validateActivityNotBeforeClientOrGroupTransferDate(final LoanEvent event, final LocalDate activityDate) {
         if (this.client != null && this.client.getOfficeJoiningDate() != null) {
             final LocalDate clientOfficeJoiningDate = this.client.getOfficeJoiningDate();
             if (DateUtils.isBefore(activityDate, clientOfficeJoiningDate)) {
@@ -5510,6 +5457,11 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         if (this.expectedMaturityDate != null && !this.expectedMaturityDate.equals(this.actualMaturityDate)) {
             this.actualMaturityDate = this.expectedMaturityDate;
         }
+    }
+
+    public List<LoanTransactionType> getSupportedInterestRefundTransactionTypes() {
+        return getLoanProductRelatedDetail().getSupportedInterestRefundTypes().stream()
+                .map(LoanSupportedInterestRefundTypes::getTransactionType).toList();
     }
 
     public LoanTransaction getLastUserTransaction() {

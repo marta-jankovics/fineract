@@ -32,6 +32,7 @@ import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.accounting.glaccount.data.GLAccountData;
 import org.apache.fineract.accounting.producttoaccountmapping.data.ChargeToGLAccountMapper;
 import org.apache.fineract.accounting.producttoaccountmapping.data.PaymentTypeToGLAccountMapper;
+import org.apache.fineract.infrastructure.codes.data.CodeValueData;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.core.data.StringEnumOptionData;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -211,6 +212,8 @@ public class LoanProductData implements Serializable {
     private final boolean syncExpectedWithDisbursementDate;
     private final boolean isEqualAmortization;
     private final BigDecimal fixedPrincipalPercentagePerInstallment;
+
+    private final List<CodeValueData> chargeOffReasonOptions;
 
     // Delinquency Buckets
     private final Collection<DelinquencyBucketData> delinquencyBucketOptions;
@@ -913,6 +916,7 @@ public class LoanProductData implements Serializable {
         this.enableAccrualActivityPosting = enableAccrualActivityPosting;
         this.supportedInterestRefundTypes = supportedInterestRefundTypes;
         this.supportedInterestRefundTypesOptions = null;
+        this.chargeOffReasonOptions = null;
     }
 
     public LoanProductData(final LoanProductData productData, final Collection<ChargeData> chargeOptions,
@@ -935,7 +939,7 @@ public class LoanProductData implements Serializable {
             final List<EnumOptionData> advancedPaymentAllocationTypes, final List<EnumOptionData> loanScheduleTypeOptions,
             final List<EnumOptionData> loanScheduleProcessingTypeOptions, final List<EnumOptionData> creditAllocationTransactionTypes,
             final List<EnumOptionData> creditAllocationAllocationTypes,
-            final List<StringEnumOptionData> supportedInterestRefundTypesOptions) {
+            final List<StringEnumOptionData> supportedInterestRefundTypesOptions, final List<CodeValueData> chargeOffReasonOptions) {
 
         this.id = productData.id;
         this.name = productData.name;
@@ -1092,6 +1096,7 @@ public class LoanProductData implements Serializable {
         this.enableAccrualActivityPosting = productData.enableAccrualActivityPosting;
         this.supportedInterestRefundTypesOptions = supportedInterestRefundTypesOptions;
         this.supportedInterestRefundTypes = productData.supportedInterestRefundTypes;
+        this.chargeOffReasonOptions = chargeOffReasonOptions;
     }
 
     private Collection<ChargeData> nullIfEmpty(final Collection<ChargeData> charges) {

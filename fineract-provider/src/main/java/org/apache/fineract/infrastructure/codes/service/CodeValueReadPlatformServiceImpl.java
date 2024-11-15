@@ -21,6 +21,7 @@ package org.apache.fineract.infrastructure.codes.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import org.apache.fineract.infrastructure.codes.data.CodeValueData;
 import org.apache.fineract.infrastructure.codes.exception.CodeValueNotFoundException;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
@@ -66,7 +67,7 @@ public class CodeValueReadPlatformServiceImpl implements CodeValueReadPlatformSe
 
     @Override
     @Cacheable(value = "code_values", key = "T(org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil).getTenant().getTenantIdentifier().concat(#code+'cv')")
-    public Collection<CodeValueData> retrieveCodeValuesByCode(final String code) {
+    public List<CodeValueData> retrieveCodeValuesByCode(final String code) {
 
         this.context.authenticatedUser();
 

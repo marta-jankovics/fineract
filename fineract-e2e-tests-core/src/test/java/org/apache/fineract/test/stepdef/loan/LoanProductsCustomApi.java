@@ -16,20 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.loanaccount.service;
+package org.apache.fineract.test.stepdef.loan;
 
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.apache.fineract.portfolio.loanaccount.domain.Loan;
-import org.springframework.stereotype.Service;
+import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
+import retrofit2.Call;
+import retrofit2.http.GET;
 
-@Service
-@RequiredArgsConstructor
-public class InterestRefundServiceDelegate {
+public interface LoanProductsCustomApi {
 
-    private final List<InterestRefundService> interestRefundService;
-
-    public InterestRefundService lookupInterestRefundService(final Loan loan) {
-        return interestRefundService.stream().filter(iRS -> iRS.canHandle(loan)).findFirst().orElse(null);
-    }
+    @GET("v1/loanproducts/{productId}")
+    Call<GetLoanProductsProductIdResponse> retrieveLoanProductDetails(@retrofit2.http.Path("productId") Long productId,
+            @retrofit2.http.Query("template") String isTemplate);
 }

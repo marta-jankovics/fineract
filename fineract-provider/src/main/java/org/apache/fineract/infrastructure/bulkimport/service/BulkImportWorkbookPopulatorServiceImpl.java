@@ -300,7 +300,7 @@ public class BulkImportWorkbookPopulatorServiceImpl implements BulkImportWorkboo
     private List<CodeValueData> fetchCodeValuesByCodeName(String codeName) {
         List<CodeValueData> codeValues = null;
         if (codeName != null) {
-            codeValues = (List<CodeValueData>) codeValueReadPlatformService.retrieveCodeValuesByCode(codeName);
+            codeValues = codeValueReadPlatformService.retrieveCodeValuesByCode(codeName);
         } else {
             throw new NullPointerException();
         }

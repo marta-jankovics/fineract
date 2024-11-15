@@ -54,7 +54,6 @@ import org.apache.fineract.client.models.PostUsersResponse;
 import org.apache.fineract.client.services.LoansApi;
 import org.apache.fineract.client.services.UsersApi;
 import org.apache.fineract.client.util.JSON;
-import org.apache.fineract.test.api.ApiProperties;
 import org.apache.fineract.test.data.DelinquencyRange;
 import org.apache.fineract.test.data.LoanStatus;
 import org.apache.fineract.test.helper.ErrorHelper;
@@ -75,6 +74,7 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
     public static final String DEFAULT_LOCALE = "en";
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final Gson GSON = new JSON().getGson();
+    private static final String PWD_USER_WITH_ROLE = "1234567890Aa!";
 
     @Autowired
     private LoansApi loansApi;
@@ -84,9 +84,6 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
 
     @Autowired
     private EventCheckHelper eventCheckHelper;
-
-    @Autowired
-    private ApiProperties apiProperties;
 
     @Autowired
     private UsersApi usersApi;
@@ -225,7 +222,7 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
+        String authorizationString = user.body().getUsername() + ":" + PWD_USER_WITH_ROLE;
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -257,7 +254,7 @@ public class LoanDelinquencyStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
+        String authorizationString = user.body().getUsername() + ":" + PWD_USER_WITH_ROLE;
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));

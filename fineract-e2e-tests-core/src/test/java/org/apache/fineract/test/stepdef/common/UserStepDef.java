@@ -32,7 +32,6 @@ import org.apache.fineract.client.models.PutRolesRoleIdPermissionsRequest;
 import org.apache.fineract.client.models.PutRolesRoleIdPermissionsResponse;
 import org.apache.fineract.client.services.RolesApi;
 import org.apache.fineract.client.services.UsersApi;
-import org.apache.fineract.test.api.ApiProperties;
 import org.apache.fineract.test.helper.ErrorHelper;
 import org.apache.fineract.test.helper.Utils;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
@@ -50,8 +49,7 @@ public class UserStepDef extends AbstractStepDef {
     @Autowired
     private UsersApi usersApi;
 
-    @Autowired
-    private ApiProperties apiProperties;
+    private static final String PWD_USER_WITH_ROLE = "1234567890Aa!";
 
     @When("Admin creates new user with {string} username, {string} role name and given permissions:")
     public void createUserWithUsernameAndRoles(String username, String roleName, List<String> permissions) throws IOException {
@@ -76,8 +74,8 @@ public class UserStepDef extends AbstractStepDef {
                 .lastname(username) //
                 .sendPasswordToEmail(Boolean.FALSE) //
                 .officeId(1L) //
-                .password(apiProperties.getStrongPassword()) //
-                .repeatPassword(apiProperties.getStrongPassword()) //
+                .password(PWD_USER_WITH_ROLE) //
+                .repeatPassword(PWD_USER_WITH_ROLE) //
                 .roles(List.of(roleId));
 
         Response<PostUsersResponse> createUserResponse = usersApi.create15(postUsersRequest).execute();

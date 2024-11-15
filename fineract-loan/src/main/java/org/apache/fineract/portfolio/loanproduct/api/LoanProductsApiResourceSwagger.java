@@ -1016,6 +1016,24 @@ final class LoanProductsApiResourceSwagger {
             public String description;
         }
 
+        static final class GetLoanProductsChargeOffReasonOptions {
+
+            private GetLoanProductsChargeOffReasonOptions() {}
+
+            @Schema(example = "2")
+            public Long id;
+            @Schema(example = "debit_card")
+            public String name;
+            @Schema(example = "2")
+            public Integer position;
+            @Schema(example = "Charge-Off reason description")
+            public String description;
+            @Schema(example = "true")
+            public Boolean active;
+            @Schema(example = "false")
+            public Boolean mandatory;
+        }
+
         @Schema(example = "false")
         public Boolean includeInBorrowerCycle;
         @Schema(example = "false")
@@ -1068,6 +1086,7 @@ final class LoanProductsApiResourceSwagger {
 
         public List<StringEnumOptionData> supportedInterestRefundTypes;
         public List<StringEnumOptionData> supportedInterestRefundTypesOptions;
+        public List<GetLoanProductsChargeOffReasonOptions> chargeOffReasonOptions;
     }
 
     @Schema(description = "GetLoanProductsProductIdResponse")
@@ -1342,6 +1361,7 @@ final class LoanProductsApiResourceSwagger {
         @Schema(example = "false")
         public Boolean enableAccrualActivityPosting;
         public List<StringEnumOptionData> supportedInterestRefundTypes;
+        public List<GetLoanProductsTemplateResponse.GetLoanProductsChargeOffReasonOptions> chargeOffReasonOptions;
     }
 
     @Schema(description = "PutLoanProductsProductIdRequest")

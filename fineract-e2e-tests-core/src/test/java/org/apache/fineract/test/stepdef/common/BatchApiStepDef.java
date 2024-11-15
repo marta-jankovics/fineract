@@ -64,7 +64,6 @@ import org.apache.fineract.client.services.ClientApi;
 import org.apache.fineract.client.services.LoansApi;
 import org.apache.fineract.client.services.UsersApi;
 import org.apache.fineract.client.util.JSON;
-import org.apache.fineract.test.api.ApiProperties;
 import org.apache.fineract.test.data.ChargeProductType;
 import org.apache.fineract.test.data.LoanRescheduleErrorMessage;
 import org.apache.fineract.test.data.LoanStatus;
@@ -118,6 +117,7 @@ public class BatchApiStepDef extends AbstractStepDef {
     private static final Integer ERROR_HTTP_404 = 404;
     private static final String ERROR_DEVELOPER_MESSAGE_CLIENT = "Client with identifier null does not exist";
     private static final String ERROR_DEVELOPER_MESSAGE_LOAN_EXTERNAL = "Loan with external identifier {externalId} does not exist";
+    private static final String PWD_USER_WITH_ROLE = "1234567890Aa!";
 
     @Autowired
     private BatchApiApi batchApiApi;
@@ -139,9 +139,6 @@ public class BatchApiStepDef extends AbstractStepDef {
 
     @Autowired
     private UsersApi usersApi;
-
-    @Autowired
-    private ApiProperties apiProperties;
 
     @When("Batch API sample call ran")
     public void runSampleBatchApiCall() throws IOException {
@@ -473,7 +470,7 @@ public class BatchApiStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
+        String authorizationString = user.body().getUsername() + ":" + PWD_USER_WITH_ROLE;
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
@@ -533,7 +530,7 @@ public class BatchApiStepDef extends AbstractStepDef {
         Long createdUserId = createUserResponse.body().getResourceId();
         Response<GetUsersUserIdResponse> user = usersApi.retrieveOne31(createdUserId).execute();
         ErrorHelper.checkSuccessfulApiCall(user);
-        String authorizationString = user.body().getUsername() + ":" + apiProperties.getStrongPassword();
+        String authorizationString = user.body().getUsername() + ":" + PWD_USER_WITH_ROLE;
         Base64 base64 = new Base64();
         headerMap.put("Authorization",
                 "Basic " + new String(base64.encode(authorizationString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
