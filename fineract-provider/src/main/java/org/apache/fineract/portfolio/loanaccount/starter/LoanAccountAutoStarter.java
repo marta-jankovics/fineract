@@ -108,7 +108,8 @@ public class LoanAccountAutoStarter {
     @Bean
     @Conditional(AdvancedPaymentScheduleTransactionProcessorCondition.class)
     public AdvancedPaymentScheduleTransactionProcessor advancedPaymentScheduleTransactionProcessor(EMICalculator emiCalculator,
-            LoanRepositoryWrapper loanRepositoryWrapper, @Lazy ProgressiveLoanInterestRefundServiceImpl progressiveLoanInterestRefundService) {
+            LoanRepositoryWrapper loanRepositoryWrapper,
+            @Lazy ProgressiveLoanInterestRefundServiceImpl progressiveLoanInterestRefundService) {
         return new AdvancedPaymentScheduleTransactionProcessor(emiCalculator, loanRepositoryWrapper, progressiveLoanInterestRefundService);
     }
 }
