@@ -34,13 +34,13 @@ public interface LoanAccrualsProcessingService {
 
     void addAccrualAccounting(@NotNull Long loanId, @NotNull List<LoanScheduleAccrualData> loanScheduleAccrualDatas) throws Exception;
 
-    void addIncomeAndAccrualTransactions(Long loanId) throws Exception;
-
     void reprocessExistingAccruals(@NotNull Loan loan);
 
     void processAccrualsForInterestRecalculation(@NotNull Loan loan, boolean isInterestRecalculationEnabled);
 
     void processIncomePostingAndAccruals(@NotNull Loan loan);
+
+    void addIncomeAndAccrualTransactions(Long loanId) throws Exception;
 
     void processAccrualsForLoanClosure(@NotNull Loan loan);
 

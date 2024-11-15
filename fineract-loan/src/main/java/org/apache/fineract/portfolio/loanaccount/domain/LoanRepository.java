@@ -105,11 +105,11 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
             + "where l.loanStatus = 300 and l.isNpa = false and l.chargedOff = false "
             + "and l.loanProduct.accountingRule = :accountingType "
             + "and (recalcDetails.isCompoundingToBePostedAsTransaction is null or recalcDetails.isCompoundingToBePostedAsTransaction = false) "
-            + "and exists (select ls.id from LoanRepaymentScheduleInstallment ls where ls.loan.id = l.id and ls.isDownPayment = false "
-            + "and ls.fromDate < :tillDate or (ls.installmentNumber = 1 and ls.fromDate = :tillDate) "
-            + "and ((ls.interestCharged is not null and ls.interestCharged <> ls.interestAccrued) "
-            + "or (ls.feeChargesCharged is not null and ls.feeChargesCharged <> ls.feeAccrued) "
-            + "or (ls.penaltyCharges is not null and ls.penaltyCharges <> ls.penaltyAccrued)))";
+            + "and (exists (select ls.id from LoanRepaymentScheduleInstallment ls where ls.loan.id = l.id and ls.isDownPayment = false "
+            + "and (:futureCharges = true or ls.fromDate < :tillDate or (ls.installmentNumber = (select min(lsi.installmentNumber) from LoanRepaymentScheduleInstallment lsi where lsi.loan.id = l.id and lsi.isDownPayment = false) and ls.fromDate = :tillDate)) "
+            + "and ((coalesce(ls.interestCharged, 0) - coalesce(ls.interestWaived, 0)) <> coalesce(ls.interestAccrued, 0) "
+            + "or (coalesce(ls.feeChargesCharged, 0) - coalesce(ls.feeChargesWaived, 0)) <> coalesce(ls.feeAccrued, 0) "
+            + "or (coalesce(ls.penaltyCharges, 0) - coalesce(ls.penaltyChargesWaived, 0)) <> coalesce(ls.penaltyAccrued, 0))))";
 
     @Query(FIND_GROUP_LOANS_DISBURSED_AFTER)
     List<Loan> getGroupLoansDisbursedAfter(@Param("disbursementDate") LocalDate disbursementDate, @Param("groupId") Long groupId,
@@ -239,5 +239,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
     List<Long> findLoanIdByStatusId(@Param("statusId") Integer statusId);
 
     @Query(FIND_LOANS_FOR_ACCRUAL)
-    List<Loan> findLoansForAccrual(@Param("accountingType") Integer accountingType, @Param("tillDate") LocalDate tillDate);
+    List<Loan> findLoansForAccrual(@Param("accountingType") Integer accountingType, @Param("tillDate") LocalDate tillDate,
+            @Param("futureCharges") boolean futureCharges);
 }

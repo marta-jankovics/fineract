@@ -208,7 +208,11 @@ public class RepaymentPeriod {
 
     public Optional<InterestPeriod> findInterestPeriod(@NotNull LocalDate transactionDate) {
         return interestPeriods.stream()//
-                .filter(interestPeriod -> isInPeriod(transactionDate, fromDate, dueDate, false))//
+                .filter(interestPeriod -> isInPeriod(transactionDate, interestPeriod.getFromDate(), interestPeriod.getDueDate(), false))//
                 .findFirst();
+    }
+
+    public boolean isFirstRepaymentPeriod() {
+        return previous == null;
     }
 }

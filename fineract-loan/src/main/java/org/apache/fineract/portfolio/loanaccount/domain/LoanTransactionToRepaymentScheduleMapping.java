@@ -24,7 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -87,21 +86,13 @@ public class LoanTransactionToRepaymentScheduleMapping extends AbstractPersistab
         return (value == null || value.isZero()) ? null : value.getAmount();
     }
 
-    private BigDecimal defaultToZeroIfNull(final BigDecimal value) {
-        BigDecimal result = value;
-        if (value == null) {
-            result = BigDecimal.ZERO;
-        }
-        return result;
-    }
-
     public LoanRepaymentScheduleInstallment getLoanRepaymentScheduleInstallment() {
         return this.installment;
     }
 
-    public void updateComponents(@NotNull Money principal, @NotNull Money interest, @NotNull Money feeCharges,
-            @NotNull Money penaltyCharges) {
-        updateComponents(principal.getAmount(), interest.getAmount(), feeCharges.getAmount(), penaltyCharges.getAmount());
+    public void updateComponents(Money principal, Money interest, Money feeCharges, Money penaltyCharges) {
+        updateComponents(MathUtil.toBigDecimal(principal), MathUtil.toBigDecimal(interest), MathUtil.toBigDecimal(feeCharges),
+                MathUtil.toBigDecimal(penaltyCharges));
     }
 
     void updateComponents(final BigDecimal principal, final BigDecimal interest, final BigDecimal feeCharges,
@@ -113,8 +104,7 @@ public class LoanTransactionToRepaymentScheduleMapping extends AbstractPersistab
     }
 
     private void updateAmount() {
-        this.amount = defaultToZeroIfNull(getPrincipalPortion()).add(defaultToZeroIfNull(getInterestPortion()))
-                .add(defaultToZeroIfNull(getFeeChargesPortion())).add(defaultToZeroIfNull(getPenaltyChargesPortion()));
+        this.amount = MathUtil.add(getPrincipalPortion(), getInterestPortion(), getFeeChargesPortion(), getPenaltyChargesPortion());
     }
 
     public void setComponents(final BigDecimal principal, final BigDecimal interest, final BigDecimal feeCharges,

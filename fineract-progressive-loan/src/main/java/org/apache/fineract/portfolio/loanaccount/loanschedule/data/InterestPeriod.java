@@ -119,7 +119,7 @@ public class InterestPeriod implements Comparable<InterestPeriod> {
         }
     }
 
-    private boolean isFirstInterestPeriod() {
+    public boolean isFirstInterestPeriod() {
         return this.equals(getRepaymentPeriod().getFirstInterestPeriod());
     }
 }

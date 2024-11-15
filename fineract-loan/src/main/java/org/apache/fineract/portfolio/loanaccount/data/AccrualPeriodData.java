@@ -24,25 +24,21 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
-import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
 
 @Data
 @Accessors(chain = true)
 @RequiredArgsConstructor
-public class AccrualAmountsData {
+public class AccrualPeriodData {
 
     private final Integer installmentNumber;
-    private final MonetaryCurrency currency;
+    private final boolean isFirstPeriod;
     private Money interestAmount;
     private Money interestAccruable;
     private Money interestAccrued;
-    private List<AccrualChargeData> charges;
+    private final List<AccrualChargeData> charges = new ArrayList<>();
 
-    public AccrualAmountsData addCharge(AccrualChargeData charge) {
-        if (charges == null) {
-            charges = new ArrayList<>();
-        }
+    public AccrualPeriodData addCharge(AccrualChargeData charge) {
         charges.add(charge);
         return this;
     }

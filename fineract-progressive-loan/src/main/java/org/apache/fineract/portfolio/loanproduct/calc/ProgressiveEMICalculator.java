@@ -76,7 +76,7 @@ public final class ProgressiveEMICalculator implements EMICalculator {
     private <T> ProgressiveLoanInterestScheduleModel generateInterestScheduleModel(@NotNull List<T> periods, Function<T, LocalDate> from,
             Function<T, LocalDate> to, @NotNull LoanProductRelatedDetail loanProductRelatedDetail,
             final Integer installmentAmountInMultiplesOf, final MathContext mc) {
-        final Money zero = Money.zero(loanProductRelatedDetail.getCurrency());
+        final Money zero = Money.zero(loanProductRelatedDetail.getCurrency(), mc);
         final AtomicReference<RepaymentPeriod> prev = new AtomicReference<>();
         List<RepaymentPeriod> repaymentPeriods = periods.stream().map(e -> {
             RepaymentPeriod rp = new RepaymentPeriod(prev.get(), from.apply(e), to.apply(e), zero, mc);

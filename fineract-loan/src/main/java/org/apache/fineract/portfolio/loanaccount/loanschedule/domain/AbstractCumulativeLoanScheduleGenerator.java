@@ -2817,6 +2817,10 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
             return null;
         }
         MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
+        BigDecimal interest = installment.getInterestCharged();
+        if (MathUtil.isEmpty(interest)) {
+            return Money.zero(currency);
+        }
         if (isAfterPeriod(targetDate, installment) || DateUtils.isEqual(targetDate, installment.getDueDate())) {
             return installment.getInterestCharged(currency);
         }
@@ -2825,10 +2829,10 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         LocalDate fromDate = installment.getFromDate();
         boolean isFirst = installment.getInstallmentNumber()
                 .equals(fetchFirstNormalInstallmentNumber(loan.getRepaymentScheduleInstallments()));
-        LocalDate startDate = isFirst ? fromDate.plusDays(1) : fromDate;
+        LocalDate startDate = isFirst ? fromDate : fromDate.plusDays(1);
         int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, installment.getDueDate());
         int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
-        double interestPerDay = installment.getInterestCharged().doubleValue() / totalNumberOfDays;
+        double interestPerDay = interest.doubleValue() / totalNumberOfDays;
         interestPortion = BigDecimal.valueOf(interestPerDay * daysToBeAccrued);
         return Money.of(currency, interestPortion);
     }
