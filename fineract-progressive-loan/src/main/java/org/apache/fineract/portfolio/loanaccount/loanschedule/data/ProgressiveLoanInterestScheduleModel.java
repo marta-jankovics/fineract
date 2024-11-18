@@ -27,12 +27,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.domain.Money;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
+
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isInPeriod;
 
 @Data
 @Accessors(fluent = true)
@@ -210,5 +214,11 @@ public class ProgressiveLoanInterestScheduleModel {
 
     public Money getTotalPaidPrincipal() {
         return repaymentPeriods().stream().map(RepaymentPeriod::getPaidPrincipal).reduce(getZero(), Money::plus);
+    }
+
+    public Optional<RepaymentPeriod> findRepaymentPeriod(@NotNull LocalDate transactionDate) {
+        return repaymentPeriods.stream() //
+                .filter(period -> isInPeriod(transactionDate, period.getFromDate(), period.getDueDate(), period.isFirstRepaymentPeriod()))//
+                .findFirst();
     }
 }

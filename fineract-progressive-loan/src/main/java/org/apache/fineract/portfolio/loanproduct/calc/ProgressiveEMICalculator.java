@@ -262,11 +262,7 @@ public final class ProgressiveEMICalculator implements EMICalculator {
 
     @NotNull
     private static Optional<InterestPeriod> findInterestPeriod(ProgressiveLoanInterestScheduleModel scheduleModel, LocalDate targetDate) {
-        return scheduleModel.repaymentPeriods().stream()//
-                .filter(rp -> isInPeriod(targetDate, rp.getFromDate(), rp.getDueDate(), false)).findFirst()//
-                .flatMap(rp -> rp.getInterestPeriods().stream()//
-                        .filter(ip -> isInPeriod(targetDate, ip.getFromDate(), ip.getDueDate(), false)) //
-                        .reduce((one, two) -> two));
+        return scheduleModel.findRepaymentPeriod(targetDate).flatMap(rp -> rp.findInterestPeriod(targetDate));
     }
 
     /**
