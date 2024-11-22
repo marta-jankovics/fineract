@@ -34,7 +34,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.monetary.domain.Money;
-import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 
 @Data
@@ -145,8 +144,16 @@ public class ProgressiveLoanInterestScheduleModel {
         }
         // TODO use isInPeriod
         return repaymentPeriods.stream()//
-                .filter(repaymentPeriod -> LoanRepaymentScheduleProcessingWrapper.isInPeriod(balanceChangeDate,
-                        repaymentPeriod.getFromDate(), repaymentPeriod.getDueDate(), repaymentPeriod.getPrevious().isEmpty()))
+                .filter(repaymentPeriod -> {
+                    final boolean isFirstPeriod = repaymentPeriod.getPrevious().isEmpty();
+                    if (isFirstPeriod) {
+                        return !balanceChangeDate.isBefore(repaymentPeriod.getFromDate())
+                                && !balanceChangeDate.isAfter(repaymentPeriod.getDueDate());
+                    } else {
+                        return balanceChangeDate.isAfter(repaymentPeriod.getFromDate())
+                                && !balanceChangeDate.isAfter(repaymentPeriod.getDueDate());
+                    }
+                })//
                 .findFirst();
     }
 
