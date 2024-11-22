@@ -18,7 +18,6 @@
  */
 package org.apache.fineract.portfolio.loanaccount.loanschedule.domain;
 
-import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.fetchFirstNormalInstallmentNumber;
 import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isAfterPeriod;
 import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isBeforePeriod;
 
@@ -2818,19 +2817,24 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         }
         MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
         BigDecimal interest = installment.getInterestCharged();
+        Money zero = Money.zero(currency);
         if (MathUtil.isEmpty(interest)) {
-            return Money.zero(currency);
+            return zero;
         }
         if (isAfterPeriod(targetDate, installment) || DateUtils.isEqual(targetDate, installment.getDueDate())) {
             return installment.getInterestCharged(currency);
         }
 
         BigDecimal interestPortion;
-        LocalDate fromDate = installment.getFromDate();
-        boolean isFirst = installment.getInstallmentNumber()
-                .equals(fetchFirstNormalInstallmentNumber(loan.getRepaymentScheduleInstallments()));
-        LocalDate startDate = isFirst ? fromDate : fromDate.plusDays(1);
-        int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, installment.getDueDate());
+        LocalDate startDate = installment.getFromDate();
+        LocalDate dueDate = installment.getDueDate();
+        if (DateUtils.isBefore(startDate, loan.getInterestChargedFromDate())) {
+            startDate = loan.getInterestChargedFromDate();
+        }
+        if (!DateUtils.isBefore(startDate, dueDate) || !DateUtils.isBefore(startDate, targetDate)) {
+            return zero;
+        }
+        int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, dueDate);
         int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
         double interestPerDay = interest.doubleValue() / totalNumberOfDays;
         interestPortion = BigDecimal.valueOf(interestPerDay * daysToBeAccrued);

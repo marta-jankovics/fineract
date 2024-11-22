@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.portfolio.loanaccount.loanschedule.data;
 
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isInPeriod;
+
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
@@ -140,6 +143,7 @@ public class ProgressiveLoanInterestScheduleModel {
         if (balanceChangeDate == null) {
             return Optional.empty();
         }
+        // TODO use isInPeriod
         return repaymentPeriods.stream()//
                 .filter(repaymentPeriod -> LoanRepaymentScheduleProcessingWrapper.isInPeriod(balanceChangeDate,
                         repaymentPeriod.getFromDate(), repaymentPeriod.getDueDate(), repaymentPeriod.getPrevious().isEmpty()))
@@ -210,5 +214,11 @@ public class ProgressiveLoanInterestScheduleModel {
 
     public Money getTotalPaidPrincipal() {
         return repaymentPeriods().stream().map(RepaymentPeriod::getPaidPrincipal).reduce(getZero(), Money::plus);
+    }
+
+    public Optional<RepaymentPeriod> findRepaymentPeriod(@NotNull LocalDate transactionDate) {
+        return repaymentPeriods.stream() //
+                .filter(period -> isInPeriod(transactionDate, period.getFromDate(), period.getDueDate(), period.isFirstRepaymentPeriod()))//
+                .findFirst();
     }
 }

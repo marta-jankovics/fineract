@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.loanaccount.data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -33,6 +34,8 @@ public class AccrualPeriodData {
 
     private final Integer installmentNumber;
     private final boolean isFirstPeriod;
+    private final LocalDate startDate;
+    private final LocalDate dueDate;
     private Money interestAmount;
     private Money interestAccruable;
     private Money interestAccrued;

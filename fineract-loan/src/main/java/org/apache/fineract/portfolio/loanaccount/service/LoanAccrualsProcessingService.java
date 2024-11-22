@@ -22,7 +22,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import org.apache.fineract.infrastructure.core.exception.MultiException;
-import org.apache.fineract.portfolio.loanaccount.data.LoanScheduleAccrualData;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 
@@ -32,7 +31,7 @@ public interface LoanAccrualsProcessingService {
 
     void addPeriodicAccruals(@NotNull LocalDate tilldate, @NotNull Loan loan) throws MultiException;
 
-    void addAccrualAccounting(@NotNull Long loanId, @NotNull List<LoanScheduleAccrualData> loanScheduleAccrualDatas) throws Exception;
+    void addAccruals(@NotNull LocalDate tilldate) throws MultiException;
 
     void reprocessExistingAccruals(@NotNull Loan loan);
 

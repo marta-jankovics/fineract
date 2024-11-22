@@ -341,6 +341,10 @@ public final class MathUtil {
         return amount == null ? null : amount.toPlainString();
     }
 
+    public static Money toMoney(BigDecimal amount, @NotNull MonetaryCurrency currency) {
+        return amount == null ? null : Money.of(currency, amount);
+    }
+
     // ----------------- Money -----------------
 
     public static BigDecimal toBigDecimal(Money value) {

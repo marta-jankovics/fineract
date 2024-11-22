@@ -416,6 +416,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         if (hasNoCustomCreditAllocationRule(loanTransaction)) {
             super.processCreditTransaction(loanTransaction, ctx.getOverpaymentHolder(), ctx.getCurrency(), ctx.getInstallments());
         } else {
+            loanTransaction.resetDerivedComponents();
             MonetaryCurrency currency = ctx.getCurrency();
             final Comparator<LoanRepaymentScheduleInstallment> byDate = Comparator.comparing(LoanRepaymentScheduleInstallment::getDueDate);
             ctx.getInstallments().sort(byDate);
@@ -424,8 +425,6 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             Money totalOverpaid = ctx.getOverpaymentHolder().getMoneyObject();
             Money amountToDistribute = MathUtil.negativeToZero(transactionAmount).minus(totalOverpaid);
             Money overpaymentAmount = MathUtil.negativeToZero(transactionAmount.minus(amountToDistribute));
-
-            loanTransaction.resetDerivedComponents();
             loanTransaction.setOverPayments(overpaymentAmount);
             if (!transactionAmount.isGreaterThanZero()) {
                 return;
@@ -487,8 +486,8 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                     loan.addLoanRepaymentScheduleInstallment(installment);
                 }
             }
+            allocateOverpayment(loanTransaction, ctx);
         }
-        allocateOverpayment(loanTransaction, ctx);
     }
 
     private Map<AllocationType, Money> adjustOriginalAllocationWithFormerChargebacks(LoanTransaction originalTransaction,
@@ -658,7 +657,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         // Reset derived component of new loan transaction and re-process transaction
         processLatestTransaction(processTransaction, ctx);
         if (loanTransaction.isInterestWaiver()) {
-            processTransaction.adjustInterestComponent(ctx.getCurrency());
+            processTransaction.adjustInterestComponent();
         }
         if (isNew) {
             checkRegisteredNewTransaction(loanTransaction, ctx);
@@ -703,7 +702,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             processTransaction.addLoanTransactionToRepaymentScheduleMappings(transactionMappings);
 
             if (processTransaction.isInterestWaiver()) {
-                processTransaction.adjustInterestComponent(currency);
+                processTransaction.adjustInterestComponent();
             }
             if (isNew) {
                 processTransaction = checkRegisteredNewTransaction(transaction, ctx);
@@ -994,14 +993,13 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                 .filter(installment -> !installment.isAdditional() && !installment.isDownPayment()).toList();
         LoanRepaymentScheduleInstallment lastInstallment = normalInstallments.stream()
                 .max(Comparator.comparing(LoanRepaymentScheduleInstallment::getInstallmentNumber)).get();
-        if (!lastInstallment.isOverdueOn(targetDate)) {
-            // get DUE installment or last installment
-            LoanRepaymentScheduleInstallment currentInstallment = LoanRepaymentScheduleProcessingWrapper
-                    .findInPeriod(targetDate, normalInstallments).orElse(lastInstallment);
-            boolean adjustNeeded = !currentInstallment.equals(lastInstallment);
-            if (adjustNeeded) {
-                adjustOverduePrincipalForInstallment(targetDate, currentInstallment, overDuePrincipal, aggregatedOverDuePrincipal, ctx);
-            }
+        // TODO use isInPeriod
+        LoanRepaymentScheduleInstallment currentInstallment = normalInstallments.stream()
+                .filter(installment -> installment.getFromDate().isBefore(targetDate) && !installment.getDueDate().isBefore(targetDate))
+                .findAny().orElse(lastInstallment);
+        boolean adjustNeeded = !currentInstallment.equals(lastInstallment) || !lastInstallment.isOverdueOn(targetDate);
+        if (adjustNeeded) {
+            adjustOverduePrincipalForInstallment(targetDate, currentInstallment, overDuePrincipal, aggregatedOverDuePrincipal, ctx);
         }
     }
 
@@ -1102,7 +1100,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             LoanTransactionToRepaymentScheduleMapping loanTransactionToRepaymentScheduleMapping, Set<LoanCharge> chargesOfInstallment,
             Balances balances, LoanRepaymentScheduleInstallment.PaymentAction action) {
         AllocationType allocationType = paymentAllocationType.getAllocationType();
-        MonetaryCurrency currency = loanTransaction.getLoan().loanCurrency();
+        MonetaryCurrency currency = loanTransaction.getLoan().getCurrency();
         Money zero = Money.zero(currency);
         LocalDate transactionDate = loanTransaction.getTransactionDate();
         LoanRepaymentScheduleInstallment.PaymentFunction paymentFunction = currentInstallment.getPaymentFunction(allocationType, action);
@@ -1664,8 +1662,10 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
 
         LocalDate payDate = switch (strategy) {
             case TILL_PRE_CLOSURE_DATE -> loanTransaction.getTransactionDate();
-            case TILL_REST_FREQUENCY_DATE -> LoanRepaymentScheduleProcessingWrapper.isInPeriod(loanTransaction.getTransactionDate(),
-                    inAdvanceInstallment.getFromDate(), inAdvanceInstallment.getDueDate(), false) ? inAdvanceInstallment.getDueDate() //
+            // TODO use isInPeriod
+            case TILL_REST_FREQUENCY_DATE -> loanTransaction.getTransactionDate().isAfter(inAdvanceInstallment.getFromDate()) //
+                    && !loanTransaction.getTransactionDate().isAfter(inAdvanceInstallment.getDueDate()) //
+                            ? inAdvanceInstallment.getDueDate() //
                             : loanTransaction.getTransactionDate(); //
             case NONE -> throw new IllegalStateException("Unexpected PreClosureInterestCalculationStrategy: NONE");
         };

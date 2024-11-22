@@ -84,10 +84,13 @@ public class InterestPeriod implements Comparable<InterestPeriod> {
     }
 
     public Money getCalculatedDueInterest() {
-        final BigDecimal interestDueTillRepaymentDueDate = getOutstandingLoanBalance()//
-                .multipliedBy(getRateFactorTillPeriodDueDate(), mc).getAmount() //
-                .divide(BigDecimal.valueOf(getLengthTillPeriodDueDate()), mc) //
-                .multiply(BigDecimal.valueOf(getLength()), mc); //
+        long lengthTillPeriodDueDate = getLengthTillPeriodDueDate();
+        final BigDecimal interestDueTillRepaymentDueDate = lengthTillPeriodDueDate == 0 //
+                ? BigDecimal.ZERO //
+                : getOutstandingLoanBalance() //
+                        .multipliedBy(getRateFactorTillPeriodDueDate(), mc).getAmount() //
+                        .divide(BigDecimal.valueOf(lengthTillPeriodDueDate), mc) //
+                        .multiply(BigDecimal.valueOf(getLength()), mc); //
         return Money.of(outstandingLoanBalance.getCurrency(), interestDueTillRepaymentDueDate, mc);
     }
 

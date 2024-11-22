@@ -487,47 +487,41 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
      *            penaltyCharges
      */
     public void updateComponents(final Money principal, final Money interest, final Money feeCharges, final Money penaltyCharges) {
-        final MonetaryCurrency currency = principal.getCurrency();
-        this.principalPortion = defaultToNullIfZero(getPrincipalPortion(currency).plus(principal).getAmount());
-        this.interestPortion = defaultToNullIfZero(getInterestPortion(currency).plus(interest).getAmount());
+        this.principalPortion = MathUtil.zeroToNull(MathUtil.add(getPrincipalPortion(), MathUtil.toBigDecimal(principal)));
+        this.interestPortion = MathUtil.zeroToNull(MathUtil.add(getInterestPortion(), MathUtil.toBigDecimal(interest)));
         updateChargesComponents(feeCharges, penaltyCharges);
     }
 
     public void updateChargesComponents(final Money feeCharges, final Money penaltyCharges) {
-        final MonetaryCurrency currency = feeCharges.getCurrency();
-        this.feeChargesPortion = defaultToNullIfZero(getFeeChargesPortion(currency).plus(feeCharges).getAmount());
-        this.penaltyChargesPortion = defaultToNullIfZero(getPenaltyChargesPortion(currency).plus(penaltyCharges).getAmount());
+        this.feeChargesPortion = MathUtil.zeroToNull(MathUtil.add(getFeeChargesPortion(), MathUtil.toBigDecimal(feeCharges)));
+        this.penaltyChargesPortion = MathUtil.zeroToNull(MathUtil.add(getPenaltyChargesPortion(), MathUtil.toBigDecimal(penaltyCharges)));
     }
 
     private void updateChargesComponents(final Money feeCharges, final Money penaltyCharges, final Money unrecognizedCharges) {
-        final MonetaryCurrency currency = feeCharges.getCurrency();
-        this.feeChargesPortion = defaultToNullIfZero(getFeeChargesPortion(currency).plus(feeCharges).getAmount());
-        this.penaltyChargesPortion = defaultToNullIfZero(getPenaltyChargesPortion(currency).plus(penaltyCharges).getAmount());
-        this.unrecognizedIncomePortion = defaultToNullIfZero(getUnrecognizedIncomePortion(currency).plus(unrecognizedCharges).getAmount());
+        this.feeChargesPortion = MathUtil.zeroToNull(MathUtil.add(getFeeChargesPortion(), MathUtil.toBigDecimal(feeCharges)));
+        this.penaltyChargesPortion = MathUtil.zeroToNull(MathUtil.add(getPenaltyChargesPortion(), MathUtil.toBigDecimal(penaltyCharges)));
+        this.unrecognizedIncomePortion = MathUtil
+                .zeroToNull(MathUtil.add(getUnrecognizedIncomePortion(), MathUtil.toBigDecimal(unrecognizedCharges)));
     }
 
     private void updateInterestComponent(final Money interest, final Money unrecognizedInterest) {
-        final MonetaryCurrency currency = interest.getCurrency();
-        this.interestPortion = defaultToNullIfZero(getInterestPortion(currency).plus(interest).getAmount());
-        this.unrecognizedIncomePortion = defaultToNullIfZero(getUnrecognizedIncomePortion(currency).plus(unrecognizedInterest).getAmount());
+        this.interestPortion = MathUtil.zeroToNull(MathUtil.add(getInterestPortion(), MathUtil.toBigDecimal(interest)));
+        this.unrecognizedIncomePortion = MathUtil
+                .zeroToNull(MathUtil.add(getUnrecognizedIncomePortion(), MathUtil.toBigDecimal(unrecognizedInterest)));
     }
 
-    public void adjustInterestComponent(final MonetaryCurrency currency) {
-        this.interestPortion = defaultToNullIfZero(getInterestPortion(currency).minus(getUnrecognizedIncomePortion(currency)).getAmount());
+    public void adjustInterestComponent() {
+        this.interestPortion = MathUtil.zeroToNull(MathUtil.subtract(getInterestPortion(), getUnrecognizedIncomePortion()));
     }
 
     public void updateComponentsAndTotal(final Money principal, final Money interest, final Money feeCharges, final Money penaltyCharges) {
         updateComponents(principal, interest, feeCharges, penaltyCharges);
-
-        final MonetaryCurrency currency = principal.getCurrency();
-        this.amount = getPrincipalPortion(currency).plus(getInterestPortion(currency)).plus(getFeeChargesPortion(currency))
-                .plus(getPenaltyChargesPortion(currency)).getAmount();
+        this.amount = MathUtil
+                .nullToZero(MathUtil.add(getPrincipalPortion(), getInterestPortion(), getFeeChargesPortion(), getPenaltyChargesPortion()));
     }
 
     public void setOverPayments(final Money overPayment) {
-        if (overPayment != null) {
-            this.overPaymentPortion = defaultToNullIfZero(overPayment.getAmount());
-        }
+        this.overPaymentPortion = MathUtil.zeroToNull(MathUtil.toBigDecimal(overPayment));
     }
 
     public Money getPrincipalPortion(final MonetaryCurrency currency) {
@@ -715,44 +709,20 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
         return getTypeOf().isReAmortize() && isNotReversed();
     }
 
-    public boolean isIdentifiedBy(final Long identifier) {
-        return getId().equals(identifier);
-    }
-
-    public boolean isBelongingToLoanOf(final Loan check) {
-        return this.loan.getId().equals(check.getId());
-    }
-
-    public boolean isNotBelongingToLoanOf(final Loan check) {
-        return !isBelongingToLoanOf(check);
-    }
-
-    public boolean isNonZero() {
-        return this.amount.subtract(BigDecimal.ZERO).doubleValue() > 0;
-    }
-
     public boolean isGreaterThan(final Money monetaryAmount) {
-        return getAmount(monetaryAmount.getCurrency()).isGreaterThan(monetaryAmount);
+        return MathUtil.isGreaterThan(amount, MathUtil.toBigDecimal(monetaryAmount));
     }
 
-    public boolean isGreaterThanZero(final MonetaryCurrency currency) {
-        return getAmount(currency).isGreaterThanZero();
+    public boolean isGreaterThanZero() {
+        return MathUtil.isGreaterThanZero(amount);
     }
 
     public boolean isGreaterThanZeroAndLessThanOrEqualTo(BigDecimal totalOverpaid) {
-        return isNonZero() && this.amount.compareTo(totalOverpaid) <= 0;
+        return isGreaterThanZero() && !MathUtil.isGreaterThan(amount, totalOverpaid);
     }
 
-    public boolean isNotZero(final MonetaryCurrency currency) {
-        return !getAmount(currency).isZero();
-    }
-
-    private BigDecimal defaultToNullIfZero(final BigDecimal value) {
-        BigDecimal result = value;
-        if (BigDecimal.ZERO.compareTo(value) == 0) {
-            result = null;
-        }
-        return result;
+    public boolean isNotZero() {
+        return !MathUtil.isEmpty(amount);
     }
 
     public LoanTransactionData toData(final CurrencyData currencyData, final AccountTransferData transfer) {
@@ -776,7 +746,7 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
         thisTransactionData.put("id", getId());
         thisTransactionData.put("officeId", this.office.getId());
         thisTransactionData.put("type", transactionType);
-        thisTransactionData.put("reversed", Boolean.valueOf(isReversed()));
+        thisTransactionData.put("reversed", isReversed());
         thisTransactionData.put("date", getTransactionDate());
         thisTransactionData.put("currencyCode", currencyCode);
         thisTransactionData.put("amount", this.amount);
@@ -888,8 +858,8 @@ public class LoanTransaction extends AbstractAuditableWithUTCDateTimeCustom<Long
     public boolean isNonMonetaryTransaction() {
         LoanTransactionType type = getTypeOf();
         return isNotReversed() && (type == LoanTransactionType.CONTRA || type == LoanTransactionType.MARKED_FOR_RESCHEDULING
-                || type == LoanTransactionType.ACCRUAL || type == LoanTransactionType.ACCRUAL_ACTIVITY
-                || type == LoanTransactionType.ACCRUAL_ADJUSTMENT || type == LoanTransactionType.APPROVE_TRANSFER
+                || type == LoanTransactionType.ACCRUAL || type == LoanTransactionType.ACCRUAL_ADJUSTMENT
+                || type == LoanTransactionType.ACCRUAL_ACTIVITY || type == LoanTransactionType.APPROVE_TRANSFER
                 || type == LoanTransactionType.INITIATE_TRANSFER || type == LoanTransactionType.REJECT_TRANSFER
                 || type == LoanTransactionType.WITHDRAW_TRANSFER || type == LoanTransactionType.CHARGE_OFF
                 || type == LoanTransactionType.REAMORTIZE || type == LoanTransactionType.REAGE);
