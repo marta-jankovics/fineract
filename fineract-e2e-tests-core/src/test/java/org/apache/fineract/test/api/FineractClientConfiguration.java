@@ -37,9 +37,8 @@ public class FineractClientConfiguration {
         String username = apiProperties.getUsername();
         String password = apiProperties.getPassword();
         String tenantId = apiProperties.getTenantId();
-
+        long readTimeout = apiProperties.getReadTimeout();
         String apiBaseUrl = baseUrl + "/fineract-provider/api/";
-
         log.info("Using base URL '{}'", apiBaseUrl);
 
         return FineractClient.builder().basicAuth(username, password).tenant(tenantId).baseURL(apiBaseUrl).insecure(true).build();

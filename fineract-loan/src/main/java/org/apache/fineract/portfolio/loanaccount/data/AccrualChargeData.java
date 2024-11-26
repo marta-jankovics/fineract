@@ -34,5 +34,4 @@ public class AccrualChargeData {
     private Money chargeAmount;
     private Money chargeAccruable;
     private Money chargeAccrued;
-
 }

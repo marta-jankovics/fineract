@@ -36,7 +36,7 @@ public class LoanInterestRecalculationCOBBusinessStep implements LoanCOBBusiness
     @Override
     public Loan execute(Loan loan) {
         if (!loan.isInterestBearing() || !loan.getStatus().isActive() || loan.isNpa() || loan.isChargedOff()
-                || !loan.isInterestRecalculationEnabledForProduct()) {
+                || !loan.getLoanProductRelatedDetail().isInterestRecalculationEnabled()) {
             log.debug("Skip processing loan interest recalculation [{}] - reason: not interest bearing loan or not active.", loan.getId());
             return loan;
         }

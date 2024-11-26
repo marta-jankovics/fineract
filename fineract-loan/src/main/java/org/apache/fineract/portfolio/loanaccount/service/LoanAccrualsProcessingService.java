@@ -41,8 +41,10 @@ public interface LoanAccrualsProcessingService {
 
     void addIncomeAndAccrualTransactions(Long loanId) throws Exception;
 
-    void processAccrualsForLoanClosure(@NotNull Loan loan);
+    void processAccrualsOnLoanClosure(@NotNull Loan loan);
 
-    void processAccrualsForLoanForeClosure(@NotNull Loan loan, @NotNull LocalDate foreClosureDate,
+    void processAccrualsOnLoanReopen(@NotNull Loan loan);
+
+    void processAccrualsOnLoanForeClosure(@NotNull Loan loan, @NotNull LocalDate foreClosureDate,
             @NotNull List<LoanTransaction> newAccrualTransactions);
 }

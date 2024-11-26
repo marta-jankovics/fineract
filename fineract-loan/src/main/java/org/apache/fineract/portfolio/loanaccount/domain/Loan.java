@@ -1282,7 +1282,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
                 addLoanRepaymentScheduleInstallment(installment);
             }
         }
-
+        recalculateTransactionInstallmentMappings();
         updateLoanScheduleDependentDerivedFields();
         updateLoanSummaryDerivedFields();
     }
@@ -1301,9 +1301,9 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
             }
             addLoanRepaymentScheduleInstallment(installment);
         }
+        recalculateTransactionInstallmentMappings();
         updateLoanScheduleDependentDerivedFields();
         updateLoanSummaryDerivedFields();
-
     }
 
     private LoanRepaymentScheduleInstallment findByInstallmentNumber(Collection<LoanRepaymentScheduleInstallment> installments,
@@ -5152,7 +5152,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
     }
 
     public void validateForForeclosure(final LocalDate transactionDate) {
-        if (isInterestRecalculationEnabledForProduct()) {
+        if (getLoanProductRelatedDetail().isInterestRecalculationEnabled()) {
             final String defaultUserMessage = "The loan with interest recalculation enabled cannot be foreclosed.";
             throw new LoanForeclosureException("loan.with.interest.recalculation.enabled.cannot.be.foreclosured", defaultUserMessage,
                     getId());
@@ -5245,6 +5245,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         for (final LoanRepaymentScheduleInstallment installment : installments) {
             addLoanRepaymentScheduleInstallment(installment);
         }
+        recalculateTransactionInstallmentMappings();
     }
 
     public boolean isForeclosure() {
@@ -5421,5 +5422,35 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
 
     public LoanRepaymentScheduleTransactionProcessor getTransactionProcessor() {
         return transactionProcessorFactory.determineProcessor(transactionProcessingStrategyCode);
+    }
+
+    private void recalculateTransactionInstallmentMappings() {
+        List<LoanTransaction> transactions = getLoanTransactions(t -> t.isAccrual() || t.isAccrualAdjustment());
+        getRepaymentScheduleInstallments().forEach(i -> i.getLoanTransactionToRepaymentScheduleMappings().clear());
+        for (LoanTransaction transaction : transactions) {
+            Set<LoanTransactionToRepaymentScheduleMapping> transactionMappings = transaction
+                    .getLoanTransactionToRepaymentScheduleMappings();
+            ArrayList<LoanTransactionToRepaymentScheduleMapping> newMappings = new ArrayList<>();
+            if (!transaction.isReversed()) {
+                for (LoanTransactionToRepaymentScheduleMapping transactionMapping : transactionMappings) {
+                    LoanRepaymentScheduleInstallment mappedInstallment = transactionMapping.getLoanRepaymentScheduleInstallment();
+                    LoanRepaymentScheduleInstallment loanInstallment = transaction.getLoan()
+                            .fetchRepaymentScheduleInstallment(mappedInstallment.getInstallmentNumber());
+                    Set<LoanTransactionToRepaymentScheduleMapping> installmentMappings = loanInstallment
+                            .getLoanTransactionToRepaymentScheduleMappings();
+                    LoanTransactionToRepaymentScheduleMapping newMapping = transactionMapping;
+                    if (mappedInstallment != loanInstallment) {
+                        newMapping = LoanTransactionToRepaymentScheduleMapping.createFrom(transaction, loanInstallment, null, null, null,
+                                null);
+                        newMapping.setComponents(transactionMapping.getPrincipalPortion(), transactionMapping.getInterestPortion(),
+                                transactionMapping.getFeeChargesPortion(), transactionMapping.getPenaltyChargesPortion());
+                    }
+                    installmentMappings.add(newMapping);
+                    newMappings.add(newMapping);
+                }
+            }
+            transactionMappings.clear();
+            transactionMappings.addAll(newMappings);
+        }
     }
 }

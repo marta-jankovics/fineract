@@ -496,8 +496,8 @@ class ProgressiveEMICalculatorTest {
 
         threadLocalContextUtil.when(ThreadLocalContextUtil::getBusinessDate).thenReturn(LocalDate.of(2024, 2, 14));
 
-        final ProgressiveLoanInterestScheduleModel interestModel = emiCalculator.generateInterestScheduleModel(expectedRepaymentPeriods,
-                loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
+        final ProgressiveLoanInterestScheduleModel interestModel = emiCalculator.generatePeriodInterestScheduleModel(
+                expectedRepaymentPeriods, loanProductRelatedDetail, installmentAmountInMultiplesOf, mc);
 
         final Money disbursedAmount = toMoney(100.0);
         emiCalculator.addDisbursement(interestModel, LocalDate.of(2024, 1, 1), disbursedAmount);

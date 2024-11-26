@@ -109,6 +109,7 @@ public class RepaymentPeriod {
         return interestPeriods.stream().map(InterestPeriod::getRateFactor).reduce(BigDecimal.ONE, BigDecimal::add);
     }
 
+    @NotNull
     public Money getCalculatedDueInterest() {
         if (calculatedDueInterestCalculation == null) {
             calculatedDueInterestCalculation = Memo.of(this::calculateCalculatedDueInterest,

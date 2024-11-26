@@ -2811,10 +2811,14 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
     }
 
     @Override
-    public Money getDueInterest(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate) {
+    public Money getPeriodInterestTillDate(@NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate) {
+        if (installment.isAdditional() || installment.isDownPayment() || installment.isReAged()) {
+            return null;
+        }
         if (isBeforePeriod(targetDate, installment, false)) {
             return null;
         }
+        Loan loan = installment.getLoan();
         MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
         BigDecimal interest = installment.getInterestCharged();
         Money zero = Money.zero(currency);

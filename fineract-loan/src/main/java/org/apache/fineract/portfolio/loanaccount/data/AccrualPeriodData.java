@@ -39,6 +39,7 @@ public class AccrualPeriodData {
     private Money interestAmount;
     private Money interestAccruable;
     private Money interestAccrued;
+    private Money unrecognizedWaive;
     private final List<AccrualChargeData> charges = new ArrayList<>();
 
     public AccrualPeriodData addCharge(AccrualChargeData charge) {

@@ -45,5 +45,5 @@ public interface LoanScheduleGenerator {
             MathContext mc, Loan loan, HolidayDetailDTO holidayDetailDTO,
             LoanRepaymentScheduleTransactionProcessor loanRepaymentScheduleTransactionProcessor);
 
-    Money getDueInterest(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate);
+    Money getPeriodInterestTillDate(@NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate);
 }

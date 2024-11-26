@@ -49,7 +49,6 @@ import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleM
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanScheduleParams;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanSchedulePlan;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.OutstandingDetails;
-import org.apache.fineract.portfolio.loanaccount.loanschedule.data.PeriodDueDetails;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.ProgressiveLoanInterestScheduleModel;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.exception.MultiDisbursementOutstandingAmoutException;
 import org.apache.fineract.portfolio.loanproduct.calc.EMICalculator;
@@ -190,19 +189,17 @@ public class ProgressiveLoanScheduleGenerator implements LoanScheduleGenerator {
     }
 
     @Override
-    public Money getDueInterest(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate) {
-        return getDueAmounts(loan, installment, targetDate).getDueInterest();
-    }
-
-    @NotNull
-    PeriodDueDetails getDueAmounts(@NotNull Loan loan, @NotNull LoanRepaymentScheduleInstallment installment,
-            @NotNull LocalDate targetDate) {
+    public Money getPeriodInterestTillDate(@NotNull LoanRepaymentScheduleInstallment installment, @NotNull LocalDate targetDate) {
+        Loan loan = installment.getLoan();
         LoanRepaymentScheduleTransactionProcessor transactionProcessor = loan.getTransactionProcessor();
         if (!(transactionProcessor instanceof AdvancedPaymentScheduleTransactionProcessor processor)) {
             throw new IllegalStateException("Expected an AdvancedPaymentScheduleTransactionProcessor");
         }
+        if (installment.isAdditional() || installment.isDownPayment() || installment.isReAged()) {
+            return Money.zero(loan.getCurrency());
+        }
         ProgressiveLoanInterestScheduleModel model = processor.calculateInterestScheduleModel(loan.getId(), targetDate);
-        return emiCalculator.getDueAmounts(model, installment.getDueDate(), targetDate);
+        return emiCalculator.getPeriodInterestTillDate(model, installment.getDueDate(), targetDate);
     }
 
     // Private, internal methods

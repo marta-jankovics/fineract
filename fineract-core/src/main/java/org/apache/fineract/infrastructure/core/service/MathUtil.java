@@ -232,7 +232,7 @@ public final class MathUtil {
      *            if true then null parameter is omitted, otherwise returns null
      */
     public static BigDecimal min(BigDecimal first, BigDecimal second, boolean notNull) {
-        return notNull ? first == null ? second : second == null ? first : min(first, second, false)
+        return notNull ? (first == null ? second : (second == null ? first : min(first, second, false)))
                 : isLessThan(first, second) ? first : second;
     }
 

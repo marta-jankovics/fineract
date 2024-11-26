@@ -96,7 +96,6 @@ import org.apache.fineract.portfolio.loanproduct.domain.FutureInstallmentAllocat
 import org.apache.fineract.portfolio.loanproduct.domain.LoanPreClosureInterestCalculationStrategy;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 import org.apache.fineract.portfolio.loanproduct.domain.PaymentAllocationType;
-import org.apache.fineract.portfolio.loanproduct.domain.RecalculationFrequencyType;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -963,43 +962,42 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
     }
 
     private void recalculateInterestForDate(LocalDate targetDate, ProgressiveTransactionCtx ctx) {
-        List<LoanRepaymentScheduleInstallment> installments = ctx.getInstallments();
-        if (installments == null || installments.isEmpty()) {
-            return;
-        }
-        Loan loan = installments.get(0).getLoan();
-        if (!loan.isInterestRecalculationEnabledForProduct() || loan.isNpa() || loan.isChargedOff()) {
-            return;
-        }
-        List<LoanRepaymentScheduleInstallment> overdueInstallmentsSortedByInstallmentNumber = findOverdueInstallmentsBeforeDateSortedByInstallmentNumber(
-                targetDate, ctx);
-        if (overdueInstallmentsSortedByInstallmentNumber.isEmpty()) {
-            return;
-        }
-        MonetaryCurrency currency = ctx.getCurrency();
-        Money overDuePrincipal = Money.zero(currency);
-        Money aggregatedOverDuePrincipal = Money.zero(currency);
-        for (LoanRepaymentScheduleInstallment processingInstallment : overdueInstallmentsSortedByInstallmentNumber) {
-            // add and subtract outstanding principal
-            if (!overDuePrincipal.isZero()) {
-                adjustOverduePrincipalForInstallment(targetDate, processingInstallment, overDuePrincipal, aggregatedOverDuePrincipal, ctx);
+        if (ctx.getInstallments() != null && !ctx.getInstallments().isEmpty()
+                && ctx.getInstallments().get(0).getLoan().getLoanProductRelatedDetail().isInterestRecalculationEnabled()
+                && !ctx.getInstallments().get(0).getLoan().isNpa() && !ctx.getInstallments().get(0).getLoan().isChargedOff()) {
+            List<LoanRepaymentScheduleInstallment> overdueInstallmentsSortedByInstallmentNumber = findOverdueInstallmentsBeforeDateSortedByInstallmentNumber(
+                    targetDate, ctx);
+            if (!overdueInstallmentsSortedByInstallmentNumber.isEmpty()) {
+                List<LoanRepaymentScheduleInstallment> normalInstallments = ctx.getInstallments().stream() //
+                        .filter(installment -> !installment.isAdditional() && !installment.isDownPayment()).toList();
+
+                Optional<LoanRepaymentScheduleInstallment> currentInstallmentOptional = normalInstallments.stream().filter(
+                        installment -> installment.getFromDate().isBefore(targetDate) && !installment.getDueDate().isBefore(targetDate))
+                        .findAny();
+
+                // get DUE installment or last installment
+                LoanRepaymentScheduleInstallment lastInstallment = normalInstallments.stream()
+                        .max(Comparator.comparing(LoanRepaymentScheduleInstallment::getInstallmentNumber)).get();
+                LoanRepaymentScheduleInstallment currentInstallment = currentInstallmentOptional.orElse(lastInstallment);
+
+                Money overDuePrincipal = Money.zero(ctx.getCurrency());
+                Money aggregatedOverDuePrincipal = Money.zero(ctx.getCurrency());
+                for (LoanRepaymentScheduleInstallment processingInstallment : overdueInstallmentsSortedByInstallmentNumber) {
+                    // add and subtract outstanding principal
+                    if (!overDuePrincipal.isZero()) {
+                        adjustOverduePrincipalForInstallment(targetDate, processingInstallment, overDuePrincipal,
+                                aggregatedOverDuePrincipal, ctx);
+                    }
+
+                    overDuePrincipal = processingInstallment.getPrincipalOutstanding(ctx.getCurrency());
+                    aggregatedOverDuePrincipal = aggregatedOverDuePrincipal.add(overDuePrincipal);
+                }
+
+                boolean adjustNeeded = !currentInstallment.equals(lastInstallment) || !lastInstallment.isOverdueOn(targetDate);
+                if (adjustNeeded) {
+                    adjustOverduePrincipalForInstallment(targetDate, currentInstallment, overDuePrincipal, aggregatedOverDuePrincipal, ctx);
+                }
             }
-
-            overDuePrincipal = processingInstallment.getPrincipalOutstanding(currency);
-            aggregatedOverDuePrincipal = aggregatedOverDuePrincipal.add(overDuePrincipal);
-        }
-
-        List<LoanRepaymentScheduleInstallment> normalInstallments = installments.stream() //
-                .filter(installment -> !installment.isAdditional() && !installment.isDownPayment()).toList();
-        LoanRepaymentScheduleInstallment lastInstallment = normalInstallments.stream()
-                .max(Comparator.comparing(LoanRepaymentScheduleInstallment::getInstallmentNumber)).get();
-        // TODO use isInPeriod
-        LoanRepaymentScheduleInstallment currentInstallment = normalInstallments.stream()
-                .filter(installment -> installment.getFromDate().isBefore(targetDate) && !installment.getDueDate().isBefore(targetDate))
-                .findAny().orElse(lastInstallment);
-        boolean adjustNeeded = !currentInstallment.equals(lastInstallment) || !lastInstallment.isOverdueOn(targetDate);
-        if (adjustNeeded) {
-            adjustOverduePrincipalForInstallment(targetDate, currentInstallment, overDuePrincipal, aggregatedOverDuePrincipal, ctx);
         }
     }
 
@@ -1009,9 +1007,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         LocalDate toDate = currentInstallment.getDueDate();
         boolean hasUpdate = false;
 
-        RecalculationFrequencyType restFrequencyType = currentInstallment.getLoan().getLoanInterestRecalculationDetails()
-                .getRestFrequencyType();
-        if (restFrequencyType.isSameAsRepayment()) {
+        if (currentInstallment.getLoan().getLoanInterestRecalculationDetails().getRestFrequencyType().isSameAsRepayment()) {
             // if we have same date for fromDate & last overdue balance change then it means we have the up-to-date
             // model.
             if (ctx.getLastOverdueBalanceChange() == null || fromDate.isAfter(ctx.getLastOverdueBalanceChange())) {
@@ -1027,7 +1023,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             }
         }
 
-        if (restFrequencyType.isDaily()
+        if (currentInstallment.getLoan().getLoanInterestRecalculationDetails().getRestFrequencyType().isDaily()
                 // if we have same date for currentDate & last overdue balance change then it meas we have the
                 // up-to-date model.
                 && !currentDate.equals(ctx.getLastOverdueBalanceChange())) {

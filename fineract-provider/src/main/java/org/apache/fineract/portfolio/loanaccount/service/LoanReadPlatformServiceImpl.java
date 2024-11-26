@@ -1878,52 +1878,6 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
         return TRUE.equals(this.jdbcTemplate.queryForObject(sql, Boolean.class, loanId));
     }
 
-    private static final class LoanTransactionDerivedComponentMapper implements RowMapper<LoanTransactionData> {
-
-        private final DatabaseSpecificSQLGenerator sqlGenerator;
-
-        LoanTransactionDerivedComponentMapper(DatabaseSpecificSQLGenerator sqlGenerator) {
-            this.sqlGenerator = sqlGenerator;
-        }
-
-        public String schema() {
-
-            return " tr.id as id, tr.transaction_type_enum as transactionType, tr.transaction_date as " + sqlGenerator.escape("date")
-                    + ", tr.amount as total, tr.principal_portion_derived as principal, tr.interest_portion_derived as interest, "
-                    + " tr.fee_charges_portion_derived as fees, tr.penalty_charges_portion_derived as penalties, "
-                    + " tr.overpayment_portion_derived as overpayment, tr.outstanding_loan_balance_derived as outstandingLoanBalance, "
-                    + " tr.unrecognized_income_portion as unrecognizedIncome, tr.loan_id as loanId, l.external_id as externalLoanId, "
-                    + " tr.external_id as externalId from m_loan_transaction tr " + " left join m_loan l on tr.loan_id = l.id";
-        }
-
-        @Override
-        public LoanTransactionData mapRow(final ResultSet rs, @SuppressWarnings("unused") final int rowNum) throws SQLException {
-
-            final Long id = rs.getLong("id");
-            final Long loanId = rs.getLong("loanId");
-            final String externalLoanIdStr = rs.getString("externalLoanId");
-            final ExternalId externalLoanId = ExternalIdFactory.produce(externalLoanIdStr);
-            final int transactionTypeInt = JdbcSupport.getInteger(rs, "transactionType");
-            final LoanTransactionEnumData transactionType = LoanEnumerations.transactionType(transactionTypeInt);
-
-            final LocalDate date = JdbcSupport.getLocalDate(rs, "date");
-            final BigDecimal totalAmount = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "total");
-            final BigDecimal principalPortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "principal");
-            final BigDecimal interestPortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "interest");
-            final BigDecimal feeChargesPortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "fees");
-            final BigDecimal penaltyChargesPortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "penalties");
-            final BigDecimal overPaymentPortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "overpayment");
-            final BigDecimal unrecognizedIncomePortion = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "unrecognizedIncome");
-            final BigDecimal outstandingLoanBalance = JdbcSupport.getBigDecimalDefaultToZeroIfNull(rs, "outstandingLoanBalance");
-            final String externalIdStr = rs.getString("externalId");
-            final ExternalId externalId = ExternalIdFactory.produce(externalIdStr);
-
-            return new LoanTransactionData(id, transactionType, date, totalAmount, null, principalPortion, interestPortion,
-                    feeChargesPortion, penaltyChargesPortion, overPaymentPortion, unrecognizedIncomePortion, outstandingLoanBalance, false,
-                    externalId, loanId, externalLoanId);
-        }
-    }
-
     @Override
     public LocalDate retrieveMinimumDateOfRepaymentTransaction(Long loanId) {
         return this.jdbcTemplate.queryForObject(
