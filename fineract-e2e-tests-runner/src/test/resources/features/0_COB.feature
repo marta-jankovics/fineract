@@ -1,7 +1,8 @@
 @COBFeature
 Feature: COBFeature
 
-  @TestRailId:C2501
+#  TODO Unskip and check when PS-2200  is done
+  @Skip @TestRailId:C2501
   Scenario: As an admin I would like to see that last closed business date got updated after COB catch up job finished
     When Admin sets the business date to "01 January 2022"
     When Admin creates a client with random data

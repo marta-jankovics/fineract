@@ -3531,8 +3531,8 @@ Feature: LoanRepayment
     When Admin sets the business date to "23 July 2024"
     When Admin creates a client with random data
     When Admin creates a fully customized loan with the following data:
-      | LoanProduct                                             | submitted on date | with Principal | ANNUAL interest rate % | interest type | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
-      | LP1_ADV_PMT_ALLOC_PROGRESSIVE_LOAN_SCHEDULE_HORIZONTAL  | 23 July 2024      | 150            | 0                      | FLAT          | SAME_AS_REPAYMENT_PERIOD    | EQUAL_INSTALLMENTS | 1                 | MONTHS                | 1              | MONTHS                 | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+      | LoanProduct                                            | submitted on date | with Principal | ANNUAL interest rate % | interest type | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
+      | LP1_ADV_PMT_ALLOC_PROGRESSIVE_LOAN_SCHEDULE_HORIZONTAL | 23 July 2024      | 150            | 0                      | FLAT          | SAME_AS_REPAYMENT_PERIOD    | EQUAL_INSTALLMENTS | 1                 | MONTHS                | 1              | MONTHS                 | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
 #   --- 7/23 - Disbursement for 111.92 EUR ---
     And Admin successfully approves the loan on "23 July 2024" with "111.92" amount and expected disbursement date on "23 July 2024"
     When Admin successfully disburse the loan on "23 July 2024" with "111.92" EUR transaction amount
@@ -3915,6 +3915,7 @@ Feature: LoanRepayment
       | 24 June 2024      | Disbursement           | 100.0  | 0.0       | 0.0      | 0.0  | 0.0       | 500.0        |
       | 10 September 2024 | Merchant Issued Refund | 200.0  | 200.0     | 0.0      | 0.0  | 0.0       | 300.0        |
 
+  @TestRailId:C3296
   Scenario: Verify the relationship for Interest Refund transaction after repayment by reverting related transaction
     When Admin sets the business date to "30 January 2024"
     When Admin creates a client with random data
@@ -3942,7 +3943,7 @@ Feature: LoanRepayment
       | 15 January 2024  | Merchant Issued Refund | 50.0   | 48.9      | 1.1      | 0.0  | 0.0       | 126.1        | false    |
       | 15 January 2024  | Interest Refund        | 0.29   | 0.29      | 0.0      | 0.0  | 0.0       | 125.81       | false    |
       | 16 January 2024  | Payout Refund          | 50.0   | 49.95     | 0.05     | 0.0  | 0.0       | 75.86        | false    |
-      | 16 January 2024  | Interest Refund        | 0.3   | 0.3      | 0.0      | 0.0  | 0.0       | 75.56        | false    |
+      | 16 January 2024  | Interest Refund        | 0.3    | 0.3       | 0.0      | 0.0  | 0.0       | 75.56        | false    |
     Then In Loan Transactions the "4"th Transaction has relationship type=RELATED with the "3"th Transaction
     Then In Loan Transactions the "6"th Transaction has relationship type=RELATED with the "5"th Transaction
     When Customer undo "1"th "Merchant Issued Refund" transaction made on "15 January 2024"
@@ -3955,3 +3956,79 @@ Feature: LoanRepayment
       | 15 January 2024  | Interest Refund        | 0.29   | 0.29      | 0.0      | 0.0  | 0.0       | 125.81       | true     |
       | 16 January 2024  | Payout Refund          | 50.0   | 48.83     | 1.17     | 0.0  | 0.0       | 126.17       | true     |
       | 16 January 2024  | Interest Refund        | 0.31   | 0.31      | 0.0      | 0.0  | 0.0       | 125.86       | true     |
+
+  @TestRailId:C3293
+  Scenario: Verify that repayment made during downpayment period should not call payInterest or payPrincipal methods on the EmiCalculator for interest bearing progressive product with interest recalculation
+    When Admin sets the business date to "23 June 2024"
+    When Admin creates a client with random data
+    When Admin creates a fully customized loan with the following data:
+      | LoanProduct                                                                     | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
+      | LP2_ADV_PYMNT_INTEREST_RECALCULATION_DAILY_EMI_360_30_MULTIDISBURSE_DOWNPAYMENT | 23 Jun 2024       | 1000           | 25                     | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 30                | DAYS                  | 30             | DAYS                   | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+    And Admin successfully approves the loan on "23 June 2024" with "400" amount and expected disbursement date on "23 June 2024"
+    And Admin successfully disburse the loan on "23 June 2024" with "400" EUR transaction amount
+    When Customer makes "AUTOPAY" repayment on "23 June 2024" with 100 EUR transaction amount
+    Then Loan Repayment schedule has 2 periods, with the following data for periods:
+      | Nr | Days | Date         | Paid date    | Balance of loan | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      |    |      | 23 June 2024 |              | 400.0           |               |          | 0.0  |           | 0.0    | 0.0   |            |       |             |
+      | 1  | 0    | 23 June 2024 | 23 June 2024 | 300.0           | 100.0         | 0.0      | 0.0  | 0.0       | 100.0  | 100.0 | 0.0        | 0.0   | 0.0         |
+      | 2  | 30   | 23 July 2024 |              | 0.0             | 300.0         | 6.25     | 0.0  | 0.0       | 306.25 | 0.0   | 0.0        | 0.0   | 306.25      |
+    Then Loan Repayment schedule has the following data in Total row:
+      | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      | 400.0         | 6.25     | 0.0  | 0.0       | 406.25 | 100.0 | 0.0        | 0.0   | 306.25      |
+    Then Loan Transactions tab has the following data:
+      | Transaction date  | Transaction Type       | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
+      | 23 June 2024      | Disbursement           | 400.0  | 0.0       | 0.0      | 0.0  | 0.0       | 400.0        |
+      | 23 June 2024      | Repayment              | 100.0  | 100.0     | 0.0      | 0.0  | 0.0       | 300.0        |
+
+  @TestRailId:C3294
+  Scenario: Verify that payment transactions made during downpayment period should not call payInterest or payPrincipal methods on the EmiCalculator for interest bearing progressive product with interest recalculation
+    When Admin sets the business date to "23 June 2024"
+    When Admin creates a client with random data
+    When Admin creates a fully customized loan with the following data:
+      | LoanProduct                                                                     | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
+      | LP2_ADV_PYMNT_INTEREST_RECALCULATION_DAILY_EMI_360_30_MULTIDISBURSE_DOWNPAYMENT | 23 Jun 2024       | 1000           | 25                     | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 30                | DAYS                  | 30             | DAYS                   | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+    And Admin successfully approves the loan on "23 June 2024" with "400" amount and expected disbursement date on "23 June 2024"
+    And Admin successfully disburse the loan on "23 June 2024" with "400" EUR transaction amount
+    And Customer makes "MERCHANT_ISSUED_REFUND" transaction with "AUTOPAY" payment type on "23 June 2024" with 25 EUR transaction amount and self-generated Idempotency key
+    And Customer makes "GOODWILL_CREDIT" transaction with "AUTOPAY" payment type on "23 June 2024" with 25 EUR transaction amount and self-generated Idempotency key
+    And Customer makes "INTEREST_PAYMENT_WAIVER" transaction with "AUTOPAY" payment type on "23 June 2024" with 25 EUR transaction amount and self-generated Idempotency key
+    And Customer makes "PAYOUT_REFUND" transaction with "AUTOPAY" payment type on "23 June 2024" with 25 EUR transaction amount and self-generated Idempotency key
+    Then Loan Repayment schedule has 2 periods, with the following data for periods:
+      | Nr | Days | Date         | Paid date    | Balance of loan | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      |    |      | 23 June 2024 |              | 400.0           |               |          | 0.0  |           | 0.0    | 0.0   |            |       |             |
+      | 1  | 0    | 23 June 2024 | 23 June 2024 | 300.0           | 100.0         | 0.0      | 0.0  | 0.0       | 100.0  | 100.0 | 0.0        | 0.0   | 0.0         |
+      | 2  | 30   | 23 July 2024 |              | 0.0             | 300.0         | 6.25     | 0.0  | 0.0       | 306.25 | 0.0   | 0.0        | 0.0   | 306.25      |
+    Then Loan Repayment schedule has the following data in Total row:
+      | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      | 400.0         | 6.25     | 0.0  | 0.0       | 406.25 | 100.0 | 0.0        | 0.0   | 306.25      |
+    Then Loan Transactions tab has the following data:
+      | Transaction date  | Transaction Type        | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
+      | 23 June 2024      | Disbursement            | 400.0  | 0.0       | 0.0      | 0.0  | 0.0       | 400.0        |
+      | 23 June 2024      | Merchant Issued Refund  | 25.0   | 25.0      | 0.0      | 0.0  | 0.0       | 375.0        |
+      | 23 June 2024      | Goodwill Credit         | 25.0   | 25.0      | 0.0      | 0.0  | 0.0       | 350.0        |
+      | 23 June 2024      | Interest Payment Waiver | 25.0   | 25.0      | 0.0      | 0.0  | 0.0       | 325.0        |
+      | 23 June 2024      | Payout Refund           | 25.0   | 25.0      | 0.0      | 0.0  | 0.0       | 300.0        |
+
+  @TestRailId:C3295
+  Scenario: Verify that backdated repayment made after loan maturity date should not call payInterest or payPrincipal methods on the EmiCalculator for interest bearing progressive product with interest recalculation
+    When Admin sets the business date to "23 June 2024"
+    When Admin creates a client with random data
+    When Admin creates a fully customized loan with the following data:
+      | LoanProduct                                                                     | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
+      | LP2_ADV_PYMNT_INTEREST_RECALCULATION_DAILY_EMI_360_30_MULTIDISBURSE_DOWNPAYMENT | 23 Jun 2024       | 1000           | 25                     | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 30                | DAYS                  | 30             | DAYS                   | 1                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+    And Admin successfully approves the loan on "23 June 2024" with "400" amount and expected disbursement date on "23 June 2024"
+    And Admin successfully disburse the loan on "23 June 2024" with "400" EUR transaction amount
+    When Admin sets the business date to "24 July 2024"
+    When Customer makes "AUTOPAY" repayment on "23 June 2024" with 100 EUR transaction amount
+    Then Loan Repayment schedule has 2 periods, with the following data for periods:
+      | Nr | Days | Date         | Paid date    | Balance of loan | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      |    |      | 23 June 2024 |              | 400.0           |               |          | 0.0  |           | 0.0    | 0.0   |            |       |             |
+      | 1  | 0    | 23 June 2024 | 23 June 2024 | 300.0           | 100.0         | 0.0      | 0.0  | 0.0       | 100.0  | 100.0 | 0.0        | 0.0   | 0.0         |
+      | 2  | 30   | 23 July 2024 |              | 0.0             | 300.0         | 6.25     | 0.0  | 0.0       | 306.25 | 0.0   | 0.0        | 0.0   | 306.25      |
+    Then Loan Repayment schedule has the following data in Total row:
+      | Principal due | Interest | Fees | Penalties | Due    | Paid  | In advance | Late  | Outstanding |
+      | 400.0         | 6.25     | 0.0  | 0.0       | 406.25 | 100.0 | 0.0        | 0.0   | 306.25      |
+    Then Loan Transactions tab has the following data:
+      | Transaction date  | Transaction Type       | Amount | Principal | Interest | Fees | Penalties | Loan Balance |
+      | 23 June 2024      | Disbursement           | 400.0  | 0.0       | 0.0      | 0.0  | 0.0       | 400.0        |
+      | 23 June 2024      | Repayment              | 100.0  | 100.0     | 0.0      | 0.0  | 0.0       | 300.0        |

@@ -390,16 +390,7 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
                 .adjustLoanTransaction(loanId, targetTransaction.getId(), repaymentUndoRequest, "").execute();
         ErrorHelper.checkSuccessfulApiCall(repaymentUndoResponse);
         testContext().set(TestContextKey.LOAN_REPAYMENT_UNDO_RESPONSE, repaymentUndoResponse);
-        EventAssertion.EventAssertionBuilder<LoanTransactionAdjustmentDataV1> eventAssertionBuilder = eventAssertion
-                .assertEvent(LoanAdjustTransactionBusinessEvent.class, targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getId())
-                .isEqualTo(targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(
-                        loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getManuallyReversed())
-                .isEqualTo(Boolean.TRUE);
-        eventAssertionBuilder.extractingData(LoanTransactionAdjustmentDataV1::getNewTransactionDetail).isEqualTo(null);
+        eventCheckHelper.checkTransactionWithLoanTransactionAdjustmentBizEvent(targetTransaction);
         eventCheckHelper.loanBalanceChangedEventCheck(loanId);
     }
 
@@ -423,16 +414,8 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
                 .adjustLoanTransaction(loanId, targetTransaction.getId(), transactionUndoRequest, "").execute();
         ErrorHelper.checkSuccessfulApiCall(transactionUndoResponse);
         testContext().set(TestContextKey.LOAN_TRANSACTION_UNDO_RESPONSE, transactionUndoResponse);
-        EventAssertion.EventAssertionBuilder<LoanTransactionAdjustmentDataV1> eventAssertionBuilder = eventAssertion
-                .assertEvent(LoanAdjustTransactionBusinessEvent.class, targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getId())
-                .isEqualTo(targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(
-                        loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getManuallyReversed())
-                .isEqualTo(Boolean.TRUE);
-        eventAssertionBuilder.extractingData(LoanTransactionAdjustmentDataV1::getNewTransactionDetail).isEqualTo(null);
+
+        eventCheckHelper.checkTransactionWithLoanTransactionAdjustmentBizEvent(targetTransaction);
         eventCheckHelper.loanBalanceChangedEventCheck(loanId);
     }
 
@@ -459,16 +442,36 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
                 .adjustLoanTransaction(loanId, targetTransaction.getId(), transactionUndoRequest, "").execute();
         ErrorHelper.checkSuccessfulApiCall(transactionUndoResponse);
         testContext().set(TestContextKey.LOAN_TRANSACTION_UNDO_RESPONSE, transactionUndoResponse);
-        EventAssertion.EventAssertionBuilder<LoanTransactionAdjustmentDataV1> eventAssertionBuilder = eventAssertion
-                .assertEvent(LoanAdjustTransactionBusinessEvent.class, targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getId())
-                .isEqualTo(targetTransaction.getId());
-        eventAssertionBuilder
-                .extractingData(
-                        loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getManuallyReversed())
-                .isEqualTo(Boolean.TRUE);
-        eventAssertionBuilder.extractingData(LoanTransactionAdjustmentDataV1::getNewTransactionDetail).isEqualTo(null);
+        eventCheckHelper.checkTransactionWithLoanTransactionAdjustmentBizEvent(targetTransaction);
+        eventCheckHelper.loanBalanceChangedEventCheck(loanId);
+    }
+
+    @When("Customer undo {string}th {string} transaction made on {string} with linked {string} transaction")
+    public void checkNthTransactionType(String nthItemStr, String transactionType, String transactionDate, String linkedTransactionType)
+            throws IOException {
+        eventStore.reset();
+        Response<PostLoansResponse> loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanResponse.body().getLoanId();
+        List<GetLoansLoanIdTransactions> transactions = loansApi.retrieveLoan(loanId, false, "transactions", "", "").execute().body()
+                .getTransactions();
+
+        // check that here are 2 transactions - target and linked
+        assertThat(transactions.size()).isGreaterThanOrEqualTo(2);
+
+        GetLoansLoanIdTransactions targetTransaction = eventCheckHelper.getNthTransactionType(nthItemStr, transactionType, transactionDate,
+                transactions);
+        PostLoansLoanIdTransactionsTransactionIdRequest transactionUndoRequest = LoanRequestFactory.defaultTransactionUndoRequest()
+                .transactionDate(transactionDate);
+        Response<PostLoansLoanIdTransactionsResponse> transactionUndoResponse = loanTransactionsApi
+                .adjustLoanTransaction(loanId, targetTransaction.getId(), transactionUndoRequest, "").execute();
+        ErrorHelper.checkSuccessfulApiCall(transactionUndoResponse);
+        testContext().set(TestContextKey.LOAN_TRANSACTION_UNDO_RESPONSE, transactionUndoResponse);
+        eventCheckHelper.checkTransactionWithLoanTransactionAdjustmentBizEvent(targetTransaction);
+
+        // linked transaction
+        GetLoansLoanIdTransactions linkedTargetTransaction = eventCheckHelper.getNthTransactionType(nthItemStr, linkedTransactionType,
+                transactionDate, transactions);
+        eventCheckHelper.checkTransactionWithLoanTransactionAdjustmentBizEvent(linkedTargetTransaction);
         eventCheckHelper.loanBalanceChangedEventCheck(loanId);
     }
 
@@ -482,7 +485,6 @@ public class LoanRepaymentStepDef extends AbstractStepDef {
         ErrorHelper.checkSuccessfulApiCall(transactionResponse);
         assertThat(transactionResponse.body().getAmount()).isEqualTo(repaymentAmount);
         assertThat(transactionResponse.body().getPaymentDetailData().getPaymentType().getName()).isEqualTo(paymentType);
-
     }
 
     @Then("Repayment failed because the repayment date is after the business date")

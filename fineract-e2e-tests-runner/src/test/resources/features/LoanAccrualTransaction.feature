@@ -1,4 +1,4 @@
-@LoanAccrualFeature @NewTest
+@LoanAccrualFeature
 Feature: LoanAccrualTransaction
 
   @TestRailId:C2647

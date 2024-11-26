@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.test.api;
 
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.client.util.FineractClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class FineractClientConfiguration {
         long readTimeout = apiProperties.getReadTimeout();
         String apiBaseUrl = baseUrl + "/fineract-provider/api/";
         log.info("Using base URL '{}'", apiBaseUrl);
-
-        return FineractClient.builder().basicAuth(username, password).tenant(tenantId).baseURL(apiBaseUrl).insecure(true).build();
+        return FineractClient.builder().readTimeout(Duration.ofSeconds(readTimeout)).basicAuth(username, password).tenant(tenantId)
+                .baseURL(apiBaseUrl).insecure(true).build();
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.test.messaging.event;
 
+import static org.apache.fineract.test.stepdef.loan.LoanRepaymentStepDef.DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import org.apache.fineract.avro.loan.v1.LoanAccountDataV1;
 import org.apache.fineract.avro.loan.v1.LoanAmountDataV1;
 import org.apache.fineract.avro.loan.v1.LoanInstallmentDelinquencyBucketDataV1;
 import org.apache.fineract.avro.loan.v1.LoanOwnershipTransferDataV1;
+import org.apache.fineract.avro.loan.v1.LoanTransactionAdjustmentDataV1;
 import org.apache.fineract.avro.loan.v1.LoanTransactionDataV1;
 import org.apache.fineract.client.models.ExternalTransferData;
 import org.apache.fineract.client.models.GetClientsClientIdResponse;
@@ -67,6 +69,7 @@ import org.apache.fineract.test.messaging.event.loan.LoanUndoApprovalEvent;
 import org.apache.fineract.test.messaging.event.loan.delinquency.LoanDelinquencyPauseChangedEvent;
 import org.apache.fineract.test.messaging.event.loan.delinquency.LoanDelinquencyRangeChangeEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.AbstractLoanTransactionEvent;
+import org.apache.fineract.test.messaging.event.loan.transaction.LoanAdjustTransactionBusinessEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanDisbursalTransactionEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanRefundPostBusinessEvent;
 import org.apache.fineract.test.messaging.event.loan.transaction.LoanTransactionGoodwillCreditPostEvent;
@@ -234,6 +237,31 @@ public class EventCheckHelper {
 
                     return null;
                 });
+    }
+
+    public GetLoansLoanIdTransactions getNthTransactionType(String nthItemStr, String transactionType, String transactionDate,
+            List<GetLoansLoanIdTransactions> transactions) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        int nthItem = Integer.parseInt(nthItemStr) - 1;
+        GetLoansLoanIdTransactions targetTransaction = transactions//
+                .stream()//
+                .filter(t -> transactionDate.equals(formatter.format(t.getDate())) && transactionType.equals(t.getType().getValue()))//
+                .toList()//
+                .get(nthItem);//
+        return targetTransaction;
+    }
+
+    public void checkTransactionWithLoanTransactionAdjustmentBizEvent(GetLoansLoanIdTransactions transaction) {
+        EventAssertion.EventAssertionBuilder<LoanTransactionAdjustmentDataV1> eventAssertionBuilder = eventAssertion
+                .assertEvent(LoanAdjustTransactionBusinessEvent.class, transaction.getId());
+        eventAssertionBuilder
+                .extractingData(loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getId())
+                .isEqualTo(transaction.getId());
+        eventAssertionBuilder
+                .extractingData(
+                        loanTransactionAdjustmentDataV1 -> loanTransactionAdjustmentDataV1.getTransactionToAdjust().getManuallyReversed())
+                .isEqualTo(Boolean.TRUE);
+        eventAssertionBuilder.extractingData(LoanTransactionAdjustmentDataV1::getNewTransactionDetail).isEqualTo(null);
     }
 
     private boolean areBigDecimalValuesEqual(BigDecimal actual, BigDecimal expected) {

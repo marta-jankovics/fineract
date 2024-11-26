@@ -5868,7 +5868,7 @@ Feature: Loan
       | 01 January 2024  | Disbursement           | 1000.0 | 0.0       | 0.0      | 0.0  | 0.0       | 1000.0       | false    | false    |
       | 22 January 2024  | Merchant Issued Refund | 100.0  | 100.0     | 0.0      | 0.0  | 0.0       | 900.0        | false    | false    |
       | 22 January 2024  | Interest Refund        | 0.57   | 0.57      | 0.0      | 0.0  | 0.0       | 899.43       | false    | false    |
-    When Customer undo "1"th transaction made on "22 January 2024"
+    When Customer undo "1"th "Merchant Issued Refund" transaction made on "22 January 2024" with linked "Interest Refund" transaction
     Then Loan Repayment schedule has 4 periods, with the following data for periods:
       | Nr | Days | Date             | Paid date       | Balance of loan | Principal due | Interest | Fees | Penalties | Due    | Paid   | In advance | Late | Outstanding |
       |    |      | 01 January 2024  |                 | 1000.0          |               |          | 0.0  |           | 0.0    | 0.0    |            |      |             |
@@ -5912,7 +5912,7 @@ Feature: Loan
       | 01 January 2024  | Disbursement     | 1000.0 | 0.0       | 0.0      | 0.0  | 0.0       | 1000.0       | false    | false    |
       | 22 January 2024  | Payout Refund    | 100.0  | 100.0     | 0.0      | 0.0  | 0.0       | 900.0        | false    | false    |
       | 22 January 2024  | Interest Refund  | 0.57   | 0.57      | 0.0      | 0.0  | 0.0       | 899.43       | false    | false    |
-    When Customer undo "1"th transaction made on "22 January 2024"
+    When Customer undo "1"th "Payout Refund" transaction made on "22 January 2024" with linked "Interest Refund" transaction
     Then Loan Repayment schedule has 4 periods, with the following data for periods:
       | Nr | Days | Date             | Paid date       | Balance of loan | Principal due | Interest | Fees | Penalties | Due    | Paid   | In advance | Late | Outstanding |
       |    |      | 01 January 2024  |                 | 1000.0          |               |          | 0.0  |           | 0.0    | 0.0    |            |      |             |
@@ -5930,9 +5930,11 @@ Feature: Loan
       | 22 January 2024  | Interest Refund  | 0.57   | 0.57      | 0.0      | 0.0  | 0.0       | 899.43       | true     | false    |
     Then In Loan Transactions the "3"th Transaction has Transaction type="Interest Refund" and is reverted
 
+  @TestRailId:C3300
   Scenario: Early pay-off loan with interest, TILL_PRECLOSE product
     When Admin sets the business date to "01 January 2024"
     When Admin creates a client with random data
+    When Admin set "LP2_ADV_PYMNT_INTEREST_DAILY_EMI_360_30_INTEREST_RECALCULATION_DAILY_TILL_PRECLOSE" loan product "DEFAULT" transaction type to "NEXT_INSTALLMENT" future installment allocation rule
     When Admin creates a fully customized loan with the following data:
       | LoanProduct                              | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
       | LP2_ADV_PYMNT_INTEREST_DAILY_EMI_360_30_INTEREST_RECALCULATION_DAILY_TILL_PRECLOSE | 01 January 2024   | 100            | 7                      | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 6                 | MONTHS                | 1              | MONTHS                 | 6                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |

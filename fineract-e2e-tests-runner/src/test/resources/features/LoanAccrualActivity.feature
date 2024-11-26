@@ -1,4 +1,4 @@
-@LoanAccrualActivityFeature @NewTest
+@LoanAccrualActivityFeature
 Feature: LoanAccrualActivity
 
   @TestRailId:C3168
