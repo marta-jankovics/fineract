@@ -56,14 +56,12 @@ import org.apache.fineract.infrastructure.event.business.service.BusinessEventNo
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
-import org.apache.fineract.organisation.office.domain.OfficeRepository;
 import org.apache.fineract.portfolio.loanaccount.data.AccrualChargeData;
 import org.apache.fineract.portfolio.loanaccount.data.AccrualPeriodData;
 import org.apache.fineract.portfolio.loanaccount.data.AccrualPeriodsData;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanCharge;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanChargePaidBy;
-import org.apache.fineract.portfolio.loanaccount.domain.LoanChargeRepository;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanInstallmentCharge;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanInterestRecalcualtionAdditionalDetails;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanInterestRecalculationDetails;
@@ -77,8 +75,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionToRepayme
 import org.apache.fineract.portfolio.loanaccount.exception.LoanNotFoundException;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleGenerator;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleGeneratorFactory;
-import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
-import org.apache.fineract.portfolio.loanaccount.serialization.LoanChargeValidator;
 import org.apache.fineract.portfolio.loanproduct.domain.InterestRecalculationCompoundingMethod;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 import org.springframework.stereotype.Component;
@@ -102,9 +98,6 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
     private final LoanTransactionRepository loanTransactionRepository;
     private final LoanScheduleGeneratorFactory loanScheduleFactory;
     private final LoanRepaymentScheduleTransactionProcessorFactory transactionProcessorFactory;
-    private final OfficeRepository officeRepository;
-    private final LoanChargeRepository loanChargeRepository;
-    private final LoanChargeValidator loanChargeValidator;
 
     /**
      * method adds accrual for batch job "Add Periodic Accrual Transactions" and add accruals api for Loan
@@ -331,19 +324,22 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
             return;
         }
         List<LoanTransaction> existingAccruals = retrieveListOfAccrualTransactions(loan);
-        reverseTransactionsAfter(existingAccruals, loan.getLastLoanRepaymentScheduleInstallment().getDueDate());
+        LocalDate lastDueDate = loan.getLastLoanRepaymentScheduleInstallment().getDueDate();
+        reverseTransactionsAfter(existingAccruals, lastDueDate);
         ensureAccrualTransactionMappings(loan);
 
         boolean progressiveAccrual = isProgressiveAccrual(loan);
         LocalDate accruedTill = loan.getAccruedTill();
-        if (progressiveAccrual && accruedTill != null && !DateUtils.isAfter(tillDate, accruedTill)
+        if (progressiveAccrual && !isFinal && accruedTill != null && !DateUtils.isAfter(tillDate, accruedTill)
                 && existingAccruals.stream().anyMatch(t -> !t.isReversed() && !DateUtils.isBefore(t.getDateOf(), tillDate))) {
             return;
         }
 
         AccrualPeriodsData accrualPeriods = calculateAccrualAmounts(loan, tillDate, periodic);
-
-        LocalDate accrualDate = isFinal ? (progressiveAccrual ? DateUtils.getBusinessLocalDate() : getFinalAccrualTransactionDate(loan))
+        LocalDate businessDate = DateUtils.getBusinessLocalDate();
+        LocalDate accrualDate = isFinal
+                ? (progressiveAccrual ? (DateUtils.isBefore(lastDueDate, businessDate) ? lastDueDate : businessDate)
+                        : getFinalAccrualTransactionDate(loan))
                 : tillDate;
         boolean mergeTransactions = isFinal || progressiveAccrual;
         MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
@@ -1229,7 +1225,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
     }
 
     public boolean isProgressiveAccrual(@NotNull Loan loan) {
-        return loan.getLoanProductRelatedDetail().getLoanScheduleType() == LoanScheduleType.PROGRESSIVE;
+        return loan.isProgressiveSchedule();
     }
 
     private void setSetHelpers(Loan loan) {
