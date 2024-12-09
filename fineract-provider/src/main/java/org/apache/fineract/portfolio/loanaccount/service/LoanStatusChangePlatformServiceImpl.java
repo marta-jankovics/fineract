@@ -22,6 +22,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.event.business.BusinessEventListener;
+import org.apache.fineract.infrastructure.event.business.domain.journalentry.LoanSameStatusBusinessEvent;
 import org.apache.fineract.infrastructure.event.business.domain.loan.LoanStatusChangedBusinessEvent;
 import org.apache.fineract.infrastructure.event.business.service.BusinessEventNotifierService;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
@@ -40,6 +41,7 @@ public class LoanStatusChangePlatformServiceImpl implements LoanStatusChangePlat
         businessEventNotifierService.addPostBusinessEventListener(LoanStatusChangedBusinessEvent.class, new LoanStatusChangedListener());
         businessEventNotifierService.addPostBusinessEventListener(LoanStatusChangedBusinessEvent.class,
                 new LoanAccrualActivityPostingLoanStatusChangedListener());
+        businessEventNotifierService.addPostBusinessEventListener(LoanSameStatusBusinessEvent.class, new LoanOverpaymentListener());
     }
 
     private final class LoanStatusChangedListener implements BusinessEventListener<LoanStatusChangedBusinessEvent> {
@@ -47,16 +49,26 @@ public class LoanStatusChangePlatformServiceImpl implements LoanStatusChangePlat
         @Override
         public void onBusinessEvent(LoanStatusChangedBusinessEvent event) {
             final Loan loan = event.get();
-            log.debug("Loan Status change for loan {}", loan.getId());
             LoanStatus oldStatus = event.getOldStatus();
             LoanStatus newStatus = loan.getStatus();
-            if (oldStatus.isActive() && (newStatus.isClosedObligationsMet() || newStatus.isOverpaid())) {
-                log.debug("Loan Status {} for loan {}", newStatus.getCode(), loan.getId());
-                loan.updateLoanSummaryDerivedFields();
+            log.debug("Loan Status change from {} to {} for loan {}", oldStatus.getCode(), newStatus.getCode(), loan.getId());
+            if (oldStatus != newStatus && (newStatus.isClosedObligationsMet() || newStatus.isOverpaid())) {
                 loanAccrualsProcessingService.processAccrualsOnLoanClosure(loan);
-            } else if ((oldStatus.isClosed() || oldStatus.isOverpaid()) && newStatus.isActive()) {
+            } else if ((oldStatus.isClosedObligationsMet() || oldStatus.isOverpaid()) && newStatus.isActive()) {
                 loan.handleMaturityDateActivate();
                 loanAccrualsProcessingService.processAccrualsOnLoanReopen(loan);
+            }
+        }
+    }
+
+    private final class LoanOverpaymentListener implements BusinessEventListener<LoanSameStatusBusinessEvent> {
+
+        @Override
+        public void onBusinessEvent(LoanSameStatusBusinessEvent event) {
+            final Loan loan = event.get();
+            if (loan.getStatus().isOverpaid()) {
+                log.debug("Loan Overpayment change for loan {}", loan.getId());
+                loanAccrualsProcessingService.processAccrualsOnLoanClosure(loan);
             }
         }
     }

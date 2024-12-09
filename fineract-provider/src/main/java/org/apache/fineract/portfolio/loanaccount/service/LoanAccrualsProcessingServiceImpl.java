@@ -75,7 +75,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionToRepayme
 import org.apache.fineract.portfolio.loanaccount.exception.LoanNotFoundException;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleGenerator;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleGeneratorFactory;
-import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
 import org.apache.fineract.portfolio.loanproduct.domain.InterestRecalculationCompoundingMethod;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 import org.springframework.stereotype.Component;
@@ -325,19 +324,22 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
             return;
         }
         List<LoanTransaction> existingAccruals = retrieveListOfAccrualTransactions(loan);
-        reverseTransactionsAfter(existingAccruals, loan.getLastLoanRepaymentScheduleInstallment().getDueDate());
+        LocalDate lastDueDate = loan.getLastLoanRepaymentScheduleInstallment().getDueDate();
+        reverseTransactionsAfter(existingAccruals, lastDueDate);
         ensureAccrualTransactionMappings(loan);
 
         boolean progressiveAccrual = isProgressiveAccrual(loan);
         LocalDate accruedTill = loan.getAccruedTill();
-        if (progressiveAccrual && accruedTill != null && !DateUtils.isAfter(tillDate, accruedTill)
+        if (progressiveAccrual && !isFinal && accruedTill != null && !DateUtils.isAfter(tillDate, accruedTill)
                 && existingAccruals.stream().anyMatch(t -> !t.isReversed() && !DateUtils.isBefore(t.getDateOf(), tillDate))) {
             return;
         }
 
         AccrualPeriodsData accrualPeriods = calculateAccrualAmounts(loan, tillDate, periodic);
-
-        LocalDate accrualDate = isFinal ? (progressiveAccrual ? DateUtils.getBusinessLocalDate() : getFinalAccrualTransactionDate(loan))
+        LocalDate businessDate = DateUtils.getBusinessLocalDate();
+        LocalDate accrualDate = isFinal
+                ? (progressiveAccrual ? (DateUtils.isBefore(lastDueDate, businessDate) ? lastDueDate : businessDate)
+                        : getFinalAccrualTransactionDate(loan))
                 : tillDate;
         boolean mergeTransactions = isFinal || progressiveAccrual;
         MonetaryCurrency currency = loan.getLoanProductRelatedDetail().getCurrency();
@@ -1209,7 +1211,7 @@ public class LoanAccrualsProcessingServiceImpl implements LoanAccrualsProcessing
     }
 
     public boolean isProgressiveAccrual(@NotNull Loan loan) {
-        return loan.getLoanProductRelatedDetail().getLoanScheduleType() == LoanScheduleType.PROGRESSIVE;
+        return loan.isProgressiveSchedule();
     }
 
     private void setSetHelpers(Loan loan) {

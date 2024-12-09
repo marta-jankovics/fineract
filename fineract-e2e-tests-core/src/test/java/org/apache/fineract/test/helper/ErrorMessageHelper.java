@@ -348,9 +348,18 @@ public final class ErrorMessageHelper {
     }
 
     public static String wrongLoanStatus(Integer actual, Integer expected) {
+        return wrongLoanStatus(null, actual, expected);
+    }
+
+    public static String wrongLoanStatus(String resourceId, Integer actual, Integer expected) {
         String actualToStr = actual.toString();
         String expectedToStr = expected.toString();
-        return String.format("Wrong Loan status ID. Actual ID is: %s - But expected ID is: %s", actualToStr, expectedToStr);
+        String prefx = "Wrong Loan status ID";
+        String postfx = ". Actual ID is: %s - But expected ID is: %s";
+        if (resourceId != null) {
+            return String.format(prefx + " of resource %s" + postfx, resourceId, actualToStr, expectedToStr);
+        }
+        return String.format(prefx + postfx, actualToStr, expectedToStr);
     }
 
     public static String wrongFraudFlag(Boolean actualFraudStatus, Boolean expectedFraudStatus) {
@@ -519,6 +528,10 @@ public final class ErrorMessageHelper {
     }
 
     public static String wrongValueInLineInChargesTab(int line, List<List<String>> actual, List<String> expected) {
+        return wrongValueInLineInChargesTab(null, line, actual, expected);
+    }
+
+    public static String wrongValueInLineInChargesTab(String resourceId, int line, List<List<String>> actual, List<String> expected) {
         String lineStr = String.valueOf(line);
         String expectedStr = expected.toString();
         StringBuilder sb = new StringBuilder();
@@ -527,12 +540,20 @@ public final class ErrorMessageHelper {
             sb.append(System.lineSeparator());
         }
 
-        return String.format(
-                "%nWrong value in Charges tab line %s. %nActual values in line (with the same date) are: %n%s %nExpected values in line: %n%s",
-                lineStr, sb.toString(), expectedStr);
+        String prefx = "%nWrong value in Charges tab";
+        String postfx = " line %s. %nActual values in line (with the same date) are: %n%s %nExpected values in line: %n%s";
+        if (resourceId != null) {
+            return String.format(prefx + " of resource %s" + postfx, resourceId, lineStr, sb, expectedStr);
+        }
+        return String.format(prefx + postfx, lineStr, sb.toString(), expectedStr);
     }
 
     public static String wrongValueInLineInJournalEntries(int line, List<List<List<String>>> actual, List<String> expected) {
+        return wrongValueInLineInJournalEntries(null, line, actual, expected);
+    }
+
+    public static String wrongValueInLineInJournalEntries(String resourceId, int line, List<List<List<String>>> actual,
+            List<String> expected) {
         String lineStr = String.valueOf(line);
         String expectedStr = expected.toString();
         StringBuilder sb = new StringBuilder();
@@ -541,9 +562,12 @@ public final class ErrorMessageHelper {
             sb.append(System.lineSeparator());
         }
 
-        return String.format(
-                "%nWrong value in Journal entries line %s. %nActual values for the possible transactions in line (with the same date) are: %n%s %nExpected values in line: %n%s",
-                lineStr, sb.toString(), expectedStr);
+        String prefx = "%nWrong value in Journal entries";
+        String postfx = " line %s. %nActual values for the possible transactions in line (with the same date) are: %n%s %nExpected values in line: %n%s";
+        if (resourceId != null) {
+            return String.format(prefx + " of resource %s" + postfx, resourceId, lineStr, sb, expectedStr);
+        }
+        return String.format(prefx + postfx, lineStr, sb.toString(), expectedStr);
     }
 
     public static String wrongDataInJournalEntriesGlAccountType(int line, String actual, String expected) {

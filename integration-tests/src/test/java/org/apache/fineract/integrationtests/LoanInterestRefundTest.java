@@ -1117,7 +1117,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     transaction(85.63, "Repayment", "10 January 2021"), //
                     transaction(5.7, "Accrual", "22 January 2021"), //
                     transaction(1000.0, "Merchant Issued Refund", "22 January 2021"), //
-                    transaction(5.42, "Interest Refund", "22 January 2021") //
+                    transaction(5.42, "Interest Refund", "22 January 2021"), //
+                    transaction(0.28, "Accrual Adjustment", "22 January 2021") //
             );
         });
     }
@@ -1202,7 +1203,8 @@ public class LoanInterestRefundTest extends BaseLoanIntegrationTest {
                     reversedTransaction(85.63, "Repayment", "10 January 2021"), //
                     transaction(1000.0, "Merchant Issued Refund", "22 January 2021"), //
                     transaction(5.70, "Interest Refund", "22 January 2021"), //
-                    transaction(5.42, "Accrual", "22 January 2021") //
+                    transaction(5.42, "Accrual", "22 January 2021"), //
+                    transaction(0.28, "Accrual", "22 January 2021") //
             );
 
         });

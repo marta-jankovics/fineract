@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.portfolio.loanaccount.domain;
 
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanEvent.LOAN_REPAYMENT_OR_WAIVER;
+
 import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -943,8 +945,7 @@ public class LoanAccountDomainServiceJpa implements LoanAccountDomainService {
             replayedTransactionBusinessEventService.raiseTransactionReplayedEvents(changedTransactionDetail);
         }
 
-        loan.updateLoanSummaryDerivedFields();
-        loan.doPostLoanTransactionChecks(transactionDate, defaultLoanLifecycleStateMachine);
+        loan.updateLoanSummaryAndStatus(transactionDate, defaultLoanLifecycleStateMachine, LOAN_REPAYMENT_OR_WAIVER);
 
         switch (loanTransactionType) {
             case MERCHANT_ISSUED_REFUND -> businessEventNotifierService

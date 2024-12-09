@@ -18,6 +18,9 @@
  */
 package org.apache.fineract.portfolio.loanaccount.service;
 
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanEvent.LOAN_CHARGE_ADDED;
+import static org.apache.fineract.portfolio.loanaccount.domain.LoanEvent.LOAN_CHARGE_ADJUSTMENT;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.math.BigDecimal;
@@ -99,7 +102,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanCharge;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanChargePaidBy;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanChargeRepository;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanDisbursementDetails;
-import org.apache.fineract.portfolio.loanaccount.domain.LoanEvent;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanInstallmentCharge;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanInterestRecalcualtionAdditionalDetails;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanLifecycleStateMachine;
@@ -113,9 +115,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRelation;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRelationTypeEnum;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRepository;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionType;
-import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.LoanRepaymentScheduleTransactionProcessor;
-import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.MoneyHolder;
-import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.TransactionCtx;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.impl.AdvancedPaymentScheduleTransactionProcessor;
 import org.apache.fineract.portfolio.loanaccount.exception.InstallmentNotFoundException;
 import org.apache.fineract.portfolio.loanaccount.exception.InvalidLoanTransactionTypeException;
@@ -282,7 +281,8 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
 
         if (reprocessRequired) {
             ChangedTransactionDetail changedTransactionDetail = overpaidReprocess
-                    ? loan.reprocessTransactionsWithPostTransactionChecks(transactionDate)
+                    ? loan.reprocessTransactionsWithPostTransactionChecks(transactionDate, defaultLoanLifecycleStateMachine,
+                            LOAN_CHARGE_ADDED)
                     : loan.reprocessTransactions();
             if (changedTransactionDetail != null) {
                 for (final Map.Entry<Long, LoanTransaction> mapEntry : changedTransactionDetail.getNewTransactionMappings().entrySet()) {
@@ -838,19 +838,14 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
                 LoanTransactionRelationTypeEnum.CHARGE_ADJUSTMENT);
         loanChargeAdjustmentTransaction.getLoanTransactionRelations().add(loanTransactionRelation);
 
-        final LoanRepaymentScheduleTransactionProcessor loanRepaymentScheduleTransactionProcessor = loanRepaymentScheduleTransactionProcessorFactory
-                .determineProcessor(loan.transactionProcessingStrategy());
         loan.addLoanTransaction(loanChargeAdjustmentTransaction);
         if (loan.isInterestBearing() && loan.getLoanProductRelatedDetail().isInterestRecalculationEnabled()) {
-            loan.reprocessTransactions();
+            loan.reprocessTransactionsWithPostTransactionChecks(null, defaultLoanLifecycleStateMachine, LOAN_CHARGE_ADJUSTMENT);
         } else {
-            loanRepaymentScheduleTransactionProcessor.processLatestTransaction(loanChargeAdjustmentTransaction,
-                    new TransactionCtx(loan.getCurrency(), loan.getRepaymentScheduleInstallments(), loan.getActiveCharges(),
-                            new MoneyHolder(loan.getTotalOverpaidAsMoney()), null));
+            loan.processTransaction(loanChargeAdjustmentTransaction, defaultLoanLifecycleStateMachine,
+                    loan.getRepaymentScheduleInstallments(), loan.getActiveCharges(), LOAN_CHARGE_ADJUSTMENT);
         }
         loanAccountDomainService.saveLoanTransactionWithDataIntegrityViolationChecks(loanChargeAdjustmentTransaction);
-        loan.updateLoanSummaryAndStatus();
-
         loanAccountDomainService.saveAndFlushLoanWithDataIntegrityViolationChecks(loan);
 
         final Map<String, Object> accountingBridgeData = loan.deriveAccountingBridgeData(loan.getCurrency().getCode(),
@@ -1035,9 +1030,11 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
                 || (configurationDomainService.isImmediateChargeAccrualPostMaturityEnabled()
                         && DateUtils.getBusinessLocalDate().isAfter(loan.getMaturityDate()))) {
             final LoanTransaction applyLoanChargeTransaction = loan.handleChargeAppliedTransaction(loanCharge, null);
-            this.loanTransactionRepository.saveAndFlush(applyLoanChargeTransaction);
-            businessEventNotifierService
-                    .notifyPostBusinessEvent(new LoanAccrualTransactionCreatedBusinessEvent(applyLoanChargeTransaction));
+            if (applyLoanChargeTransaction != null) {
+                this.loanTransactionRepository.saveAndFlush(applyLoanChargeTransaction);
+                businessEventNotifierService
+                        .notifyPostBusinessEvent(new LoanAccrualTransactionCreatedBusinessEvent(applyLoanChargeTransaction));
+            }
         }
         return DateUtils.isBeforeBusinessDate(loanCharge.getDueLocalDate());
     }
@@ -1313,7 +1310,7 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
                     "Transaction amount cannot be higher than the available charge amount for adjustment: " + availableAmountForAdjustment);
         }
         checkClientOrGroupActive(loan);
-        loan.validateAccountStatus(LoanEvent.LOAN_CHARGE_ADJUSTMENT);
+        loan.validateAccountStatus(LOAN_CHARGE_ADJUSTMENT);
     }
 
     private BigDecimal calculateAvailableAmountForChargeAdjustment(final LoanCharge loanCharge) {
